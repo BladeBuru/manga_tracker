@@ -1,4 +1,4 @@
-# manga_tracker
+# MangaTracker
 
 A new Flutter project.
 
