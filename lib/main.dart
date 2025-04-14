@@ -9,8 +9,8 @@ Future<void> main() async {
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");
   } else {
-    // await dotenv.load(fileName: "assets/env/.env.development");
-    print("⚠️ Fichier .env non trouvé : ");
+    await dotenv.load(fileName: "assets/env/.env.development");
+    // print("⚠️ Fichier .env non trouvé : ");
   }
 
   // Register all services
