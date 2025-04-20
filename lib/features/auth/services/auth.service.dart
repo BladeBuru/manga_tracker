@@ -31,8 +31,7 @@ class AuthService {
     }
   }
 
-  Future attemptSignUp(
-      String username, String emailAddress, String password) async {
+  Future attemptSignUp(String username, String emailAddress, String password) async {
     var url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
     var res = await http.post(url,
         body: {'name': username, 'email': emailAddress, 'password': password});

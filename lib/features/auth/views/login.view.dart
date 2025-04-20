@@ -30,7 +30,7 @@ class _LoginViewState extends State<LoginView> {
   final ErrorNotifier errorNotification = ErrorNotifier();
 
   onPressed() async {
-    String email = _emailController.text;
+    String email = _emailController.text.toLowerCase();
     String password = _passwordControler.text;
     dynamic payload;
 
@@ -85,7 +85,8 @@ class _LoginViewState extends State<LoginView> {
                 child: Center(
                   child: Form(
                     key: _formKey,
-                    child: Column(children: [
+                    child: Column(
+                        children: [
                       const SizedBox(height: 50),
 
                       Image.asset(
