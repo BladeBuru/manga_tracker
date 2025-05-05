@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +12,6 @@ Future<void> main() async {
     await dotenv.load(fileName: "assets/env/.env.production");
   } else {
     await dotenv.load(fileName: "assets/env/.env.development");
-    // print("⚠️ Fichier .env non trouvé : ");
   }
 
   // Register all services
