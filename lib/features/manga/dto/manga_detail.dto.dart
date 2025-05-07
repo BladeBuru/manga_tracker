@@ -11,6 +11,7 @@ class MangaDetailDto {
   final num? totalChapters;
   final bool? isCompleted;
   final List<AuthorDto>? authors;
+  final List<String>? genres;
 
   const MangaDetailDto(
       {required this.muId,
@@ -22,7 +23,8 @@ class MangaDetailDto {
       required this.rating,
       this.totalChapters,
       this.isCompleted,
-      this.authors});
+      this.authors,
+       this.genres});
 
   factory MangaDetailDto.fromJson(Map<String, dynamic> json) {
     MangaDetailDto o = MangaDetailDto(
@@ -35,7 +37,14 @@ class MangaDetailDto {
         rating: json['rating'] == null || json['rating'] == 0
             ? 'N/A'
             : json['rating'].toString(),
-        totalChapters: json['total_chapters']);
+        totalChapters: json['total_chapters'],
+        genres: (json['genres'] as List<dynamic>?)
+                      ?.map((e) => (e is Map && e.containsKey('genre'))
+                          ? e['genre'].toString()
+                          : e.toString())
+                      .toList() ??
+                  <String>[],
+                  );
     return o;
   }
 }
