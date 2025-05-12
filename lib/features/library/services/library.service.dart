@@ -14,15 +14,10 @@ class LibraryService {
 
   Future<LibraryService> init() async => this;
 
-  // ─────────── Lecture ───────────
+  // ─────────── Getter ───────────
   Future<List<MangaQuickViewDto>> getUserSavedMangas() async {
     final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/all');
     return _fetchMangaList(url);
-  }
-
-  Future<bool> isInLibrary(int muId) async {
-    final list = await getUserSavedMangas();
-    return list.any((m) => m.muId == muId);
   }
 
   // ─────────── Ajout / Suppression ───────────
@@ -32,7 +27,6 @@ class LibraryService {
       method: _httpService.postWithAuthTokens,
       url: url,
       muId: muId,
-      successCode: HttpStatus.ok,
     );
   }
 
@@ -42,11 +36,15 @@ class LibraryService {
       method: _httpService.deleteWithAuthTokens,
       url: url,
       muId: muId,
-      successCode: HttpStatus.ok,
     );
   }
 
   // ─────────── Helpers ───────────
+  Future<bool> isInLibrary(int muId) async {
+    final list = await getUserSavedMangas();
+    return list.any((m) => m.muId == muId);
+  }
+
   Future<List<MangaQuickViewDto>> _fetchMangaList(Uri url) async {
     final Response res = await _httpService.getWithAuthTokens(url);
 
@@ -69,7 +67,6 @@ class LibraryService {
     method,
     required Uri url,
     required int muId,
-    required int successCode,
   }) async {
     final res = await method(
       url,
@@ -77,14 +74,11 @@ class LibraryService {
       body: jsonEncode({'muId': muId}),
     );
 
-    if (res.statusCode == successCode) return;
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
 
     if (res.statusCode == HttpStatus.forbidden) {
-      throw InvalidCredentialsException(
-          'Not authorized to access this resource');
-    } else {
-      throw Exception(
-          'HTTP Request failed with status: ${res.statusCode}.');
+      throw InvalidCredentialsException('Not authorized to access this resource');
     }
+    throw Exception('HTTP Request failed with status: ${res.statusCode}.');
   }
 }
