@@ -9,6 +9,7 @@ import 'package:mangatracker/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../library/services/library.service.dart';
 import '../services/manga.service.dart';
 
 class Detail extends StatefulWidget {
@@ -37,11 +38,30 @@ Widget iconFavorite = const Icon(
 class _DetailState extends State<Detail> {
   late Future<MangaDetailDto> mangaDetail;
   final MangaService mangaService = getIt<MangaService>();
+  final LibraryService libraryService = getIt<LibraryService>();
+
+  bool _inLibrary = false;
+
+  Future<void> _initLibraryState() async {
+    final saved = await libraryService.isInLibrary(int.parse(widget.muId));
+    if (mounted) setState(() => _inLibrary = saved);
+  }
+
+  Future<void> _toggleLibrary() async {
+    final muId = int.parse(widget.muId);
+    if (_inLibrary) {
+      await libraryService.deleteManga(muId);
+    } else {
+      await libraryService.saveManga(muId);
+    }
+    if (mounted) setState(() => _inLibrary = !_inLibrary);
+  }
 
   @override
   void initState() {
     super.initState();
     mangaDetail = mangaService.getMangaDetail(widget.muId);
+    _initLibraryState();
   }
 
   @override
@@ -186,6 +206,25 @@ class _DetailState extends State<Detail> {
                               });
                             },
                             child: iconFavorite,
+                          ),
+                        ),
+                        SizedBox(
+                          height: double.infinity,
+                          width: 100,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                const Color.fromRGBO(235, 245, 255, 1),
+                              ),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                            onPressed: _toggleLibrary,
+                            child: Icon(
+                              _inLibrary ? Icons.remove : Icons.add,
+                              color: Colors.blue,
+                            ),
                           ),
                         ),
                         SizedBox(

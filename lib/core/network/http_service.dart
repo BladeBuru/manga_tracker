@@ -20,6 +20,22 @@ class HttpService {
     return http.get(url, headers: headers);
   }
 
+  Future<Response> deleteWithAuthTokens(
+      Uri url, {
+        Map<String, String>? headers,
+        Object? body,
+      }) async {
+    headers = await _addAuthTokensHeaders(headers);
+    return http.delete(
+      url,
+      headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        ...?headers,
+      },
+      body: body,
+    );
+  }
+
   Future<Response> postWithAuthTokens(Uri url,
       {Map<String, String>? headers, Object? body}) async {
     headers = await _addAuthTokensHeaders(headers);
