@@ -1,3 +1,4 @@
+
 import 'package:mangatracker/features/manga/dto/author.dto.dart';
 
 class MangaDetailDto {
