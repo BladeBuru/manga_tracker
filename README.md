@@ -52,5 +52,21 @@ If you encounter errors when installing dependencies or running the project, try
    flutter pub get
    ```
 
+
+## Build an Android APK
+
+To compile a **release** version of the app as an APK:
+
+```bash
+flutter build apk --release
 ```
+
+The generated APK can be found at:
+
 ```
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+
+
+

@@ -32,17 +32,6 @@ Widget iconFavorite = Icon(
   Icons.star,
 );
 
-final List mangaType = [
-  'Manwha',
-  'Manga',
-  'Ghibli',
-  'JeSaisPas',
-  'JeSaisPas',
-  'JeSaisPas',
-  'JeSaisPas',
-  'JeSaisPas',
-  'JeSaisPas',
-];
 
 class _DetailState extends State<Detail> {
   get image => null;
@@ -54,101 +43,114 @@ class _DetailState extends State<Detail> {
     super.initState();
     mangaDetail = mangaService.getMangaDetail(widget.muId);
   }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: SafeArea(
-        child: Scaffold(
-          body: Column(children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          Navigator.pop(context);
-                        });
-                      },
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 30,
-                      )),
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                SizedBox(
-                  height: 160,
-                  width: 250,
-                  child: Padding(
-                    padding: const EdgeInsets.all(7),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: ImageHelper.loadMangaImage(widget.coverPath),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  height: 20,
-                  width: 300,
-                  child: ListView.builder(
-                    itemCount: mangaType.length,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      return MangaType(type: mangaType[index]);
-                    },
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              constraints: const BoxConstraints(maxWidth: 300),
-              child: Text(parse(widget.mangaTitle).documentElement!.text,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(fontSize: 24),
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.normal,
-                  )),
-            ),
-            FutureBuilder<MangaDetailDto>(
-              future: mangaDetail,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
+    return Scaffold(
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder<MangaDetailDto>(
+                future: mangaDetail,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: \${snapshot.error}'));
+                  }
                   final manga = snapshot.data!;
-                  return Expanded(
-                    child: LateDetailView(
-                      mangaTitle: manga.title,
-                      mangaDescription: manga.description,
-                      rating: manga.rating,
-                      mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
-                      mangaTotalChapters: manga.totalChapters,
-                      isCompleted: manga.isCompleted,
-                      authors: manga.authors,
-                      year: manga.year,
-                    ),
+                  return Column(
+                    children: [
+                      // HEADER FIXE AVEC FULL COVER
+                      Stack(
+                        children: [
+                          // Cover full-width
+                          SizedBox(
+                            width: double.infinity,
+                            height: 280,
+                            child: ImageHelper.loadMangaImage(
+                              widget.coverPath,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          // Surcouche sombre
+                          Container(
+                            width: double.infinity,
+                            height: 280,
+                            color: Colors.black.withOpacity(0.4),
+                          ),
+                          // Flèche de retour
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 8,
+                            left: 8,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                          // Titre centré
+                          Positioned(
+                            top: 60,
+                            left: 16,
+                            right: 16,
+                            child: Text(
+                              parse(widget.mangaTitle).documentElement!.text,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          // Genres en bas
+                          if (manga.genres != null)
+                            Positioned(
+                              bottom: 16,
+                              left: 16,
+                              right: 16,
+                              child: SizedBox(
+                                height: 28,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: manga.genres!
+                                      .map((g) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: MangaType(type: g),
+                                  ))
+                                      .toList(),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      // DÉTAIL DÉFILABLE
+                      Expanded(
+                        child: LateDetailView(
+                          mangaTitle: manga.title,
+                          mangaDescription: manga.description,
+                          rating: manga.rating,
+                          mangaChapters:
+                          ChaptersHelper.buildChapterList(manga.totalChapters),
+                          mangaTotalChapters: manga.totalChapters,
+                          isCompleted: manga.isCompleted,
+                          authors: manga.authors,
+                          year: manga.year,
+                        ),
+                      ),
+                    ],
                   );
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return const SizedBox(
-                    height: 200.0,
-                    width: 200.0,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-              },
+                },
+              ),
             ),
+            // BARRE DE BOUTONS FIXE EN BAS
             Container(
               height: 70,
               decoration: BoxDecoration(
@@ -159,7 +161,7 @@ class _DetailState extends State<Detail> {
                     spreadRadius: 2,
                     blurRadius: 5,
                     offset: const Offset(0, -3),
-                  )
+                  ),
                 ],
               ),
               child: Row(
@@ -170,67 +172,67 @@ class _DetailState extends State<Detail> {
                         height: double.infinity,
                         width: 100,
                         child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                  const Color.fromRGBO(255, 235, 240, 50)),
-                              shape: WidgetStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        8.0), // changer la forme du bouton
-                                  )),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color.fromRGBO(255, 235, 240, 50)),
+                            shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isFavorite = isFavorite == true ? false : true;
-                                loadIconFavorite();
-                              });
-                            },
-                            child: iconFavorite),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isFavorite = !isFavorite;
+                              loadIconFavorite();
+                            });
+                          },
+                          child: iconFavorite,
+                        ),
                       ),
                       SizedBox(
                         height: double.infinity,
                         child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                              WidgetStateProperty.all<Color>(themePage),
-                              shape: WidgetStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        15.0), // changer la forme du bouton
-                                  )),
-                            ),
-                            onPressed: () {},
-                            child: const Text(
-                              'Lire',
-                              style: TextStyle(
-                                fontSize: 17,
+                          style: ButtonStyle(
+                            backgroundColor:
+                            MaterialStateProperty.all(themePage),
+                            shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
                               ),
-                            )),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: const Text(
+                            'Lire',
+                            style: TextStyle(fontSize: 17),
+                          ),
+                        ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
-            )
-          ]),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-loadIconFavorite() {
-  if (isFavorite) {
-    iconFavorite = const Icon(
-      color: Colors.orange,
-      Icons.star,
-    );
-  } else {
-    iconFavorite = const Icon(
-      color: Colors.grey,
-      Icons.star,
-    );
+
+
+  loadIconFavorite() {
+    if (isFavorite) {
+      iconFavorite = const Icon(
+        color: Colors.orange,
+        Icons.star,
+      );
+    } else {
+      iconFavorite = const Icon(
+        color: Colors.grey,
+        Icons.star,
+      );
+    }
   }
 }
