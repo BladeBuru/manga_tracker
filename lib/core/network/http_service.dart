@@ -26,6 +26,12 @@ class HttpService {
     return http.post(url, body: body, headers: headers);
   }
 
+  Future<Response> putWithAuthTokens(Uri url,
+      {Map<String, String>? headers, Object? body}) async {
+    headers = await _addAuthTokensHeaders(headers);
+    return http.put(url, body: body, headers: headers);
+  }
+
   Future<Map<String, String>?> _addAuthTokensHeaders(
       Map<String, String>? headers) async {
     String? accessToken = await storageService.readSecureData('accessToken');

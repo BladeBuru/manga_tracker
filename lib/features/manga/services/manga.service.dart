@@ -8,10 +8,12 @@ import 'package:mangatracker/features/auth/exceptions/invalid_credentials.except
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 
+import '../../library/services/library.service.dart';
 import '../dto/manga_quick_view.dto.dart';
 
 class MangaService {
   HttpService httpService = getIt<HttpService>();
+  LibraryService libraryService = LibraryService();
 
   var offsetTop = 1;
   var offsetLatest = 1;
@@ -106,4 +108,21 @@ class MangaService {
           'HTTP Request Failed with status: ${response.statusCode}.');
     }
   }
+
+
+  Future<num> getReadChapterByUid(String muId) async {
+    final parsedId = num.tryParse(muId);
+    if (parsedId == null) {
+       return 0;
+    }
+    final saved = await libraryService.getUserSavedMangas();
+    for (final m in saved) {
+      if (m.muId == parsedId) {
+        return m.readChapters ?? 0;
+      }
+    }
+    return -1;
+  }
+
+
 }

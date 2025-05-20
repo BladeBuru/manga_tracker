@@ -4,13 +4,18 @@ import 'package:google_fonts/google_fonts.dart';
 class RowChapter extends StatelessWidget {
   final String line;
   final String chapter;
-  final bool lock;
+  final bool read;
+  final num? readCount;
+  final VoidCallback? onTap;
+
 
   const RowChapter({
     super.key,
     required this.line,
     required this.chapter,
-    required this.lock,
+    required this.read,
+    this.readCount,
+    this.onTap,
   });
 
   @override
@@ -56,7 +61,7 @@ class RowChapter extends StatelessWidget {
               width: 50,
               child: Padding(
                 padding: const EdgeInsets.all(10),
-                child: lock == true
+                child: read
                     ? Container(
                         height: 5,
                         width: 5,
@@ -65,7 +70,7 @@ class RowChapter extends StatelessWidget {
                           color: Color.fromARGB(150, 224, 35, 79),
                         ),
                         child: const Icon(
-                          Icons.lock,
+                          Icons.check_box_outlined,
                           color: Colors.white,
                           size: 17,
                         ))
@@ -77,7 +82,7 @@ class RowChapter extends StatelessWidget {
                           color: Color.fromARGB(255, 224, 35, 79),
                         ),
                         child: const Icon(
-                          Icons.auto_stories_outlined,
+                         Icons.check_box_outline_blank_outlined,
                           color: Colors.white,
                           size: 17,
                         )),

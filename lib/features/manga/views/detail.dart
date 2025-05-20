@@ -16,11 +16,13 @@ class Detail extends StatefulWidget {
   final String mangaTitle;
   final String? coverPath;
 
-  const Detail(
-      {super.key,
-        required this.muId,
-        required this.mangaTitle,
-        this.coverPath});
+  const Detail({
+    super.key,
+    required this.muId,
+    required this.mangaTitle,
+    this.coverPath,
+  });
+
   @override
   State<Detail> createState() => _DetailState();
 }
@@ -32,17 +34,19 @@ Widget iconFavorite = Icon(
   Icons.star,
 );
 
-
 class _DetailState extends State<Detail> {
   get image => null;
   late Future<MangaDetailDto> mangaDetail;
+  late Future<num> readChapter;
   MangaService mangaService = getIt<MangaService>();
 
   @override
   void initState() {
     super.initState();
     mangaDetail = mangaService.getMangaDetail(widget.muId);
+    readChapter = mangaService.getReadChapterByUid(widget.muId);
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +73,7 @@ class _DetailState extends State<Detail> {
                           // Cover full-width
                           SizedBox(
                             width: double.infinity,
-                            height: 280,
+                            height: 340,
                             child: ImageHelper.loadMangaImage(
                               widget.coverPath,
                               fit: BoxFit.cover,
@@ -78,7 +82,7 @@ class _DetailState extends State<Detail> {
                           // Surcouche sombre
                           Container(
                             width: double.infinity,
-                            height: 280,
+                            height: 340,
                             color: Colors.black.withOpacity(0.4),
                           ),
                           // Flèche de retour
@@ -112,38 +116,58 @@ class _DetailState extends State<Detail> {
                           // Genres en bas
                           if (manga.genres != null)
                             Positioned(
-                              bottom: 16,
+                              bottom: 14,
                               left: 16,
-                              right: 16,
+                              right: 14,
                               child: SizedBox(
-                                height: 28,
+                                height: 24,
                                 child: ListView(
                                   scrollDirection: Axis.horizontal,
-                                  children: manga.genres!
-                                      .map((g) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: MangaType(type: g),
-                                  ))
-                                      .toList(),
+                                  children:
+                                      manga.genres!
+                                          .map(
+                                            (g) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: MangaType(type: g),
+                                            ),
+                                          )
+                                          .toList(),
                                 ),
                               ),
                             ),
                         ],
                       ),
-
-                      // DÉTAIL DÉFILABLE
-                      Expanded(
-                        child: LateDetailView(
-                          mangaTitle: manga.title,
-                          mangaDescription: manga.description,
-                          rating: manga.rating,
-                          mangaChapters:
-                          ChaptersHelper.buildChapterList(manga.totalChapters),
-                          mangaTotalChapters: manga.totalChapters,
-                          isCompleted: manga.isCompleted,
-                          authors: manga.authors,
-                          year: manga.year,
-                        ),
+                      FutureBuilder<num>(
+                        future: readChapter,
+                        builder: (ctx2, snap2) {
+                          if (snap2.connectionState != ConnectionState.done) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (snap2.hasError) {
+                            final err = snap2.error;
+                            return Center(child: Text('Erreur lecture: $err'));
+                          }
+                          final readChapter = snap2.data!;
+                          // DÉTAIL DÉFILABLE
+                          return Expanded(
+                            child: LateDetailView(
+                              muId: widget.muId,
+                              mangaTitle: manga.title,
+                              mangaDescription: manga.description,
+                              rating: manga.rating,
+                              mangaChapters: ChaptersHelper.buildChapterList(
+                                manga.totalChapters,
+                              ),
+                              mangaTotalChapters: manga.totalChapters,
+                              isCompleted: manga.isCompleted,
+                              authors: manga.authors,
+                              year: manga.year,
+                              readChapters: readChapter,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   );
@@ -174,7 +198,8 @@ class _DetailState extends State<Detail> {
                         child: ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all(
-                                const Color.fromRGBO(255, 235, 240, 50)),
+                              const Color.fromRGBO(255, 235, 240, 50),
+                            ),
                             shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -194,8 +219,9 @@ class _DetailState extends State<Detail> {
                         height: double.infinity,
                         child: ElevatedButton(
                           style: ButtonStyle(
-                            backgroundColor:
-                            MaterialStateProperty.all(themePage),
+                            backgroundColor: MaterialStateProperty.all(
+                              themePage,
+                            ),
                             shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
@@ -220,19 +246,11 @@ class _DetailState extends State<Detail> {
     );
   }
 
-
-
   loadIconFavorite() {
     if (isFavorite) {
-      iconFavorite = const Icon(
-        color: Colors.orange,
-        Icons.star,
-      );
+      iconFavorite = const Icon(color: Colors.orange, Icons.star);
     } else {
-      iconFavorite = const Icon(
-        color: Colors.grey,
-        Icons.star,
-      );
+      iconFavorite = const Icon(color: Colors.grey, Icons.star);
     }
   }
 }
