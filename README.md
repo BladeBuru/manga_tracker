@@ -1,16 +1,72 @@
+
 # MangaTracker
 
-A new Flutter project.
+MangaTracker is a Flutter application to track your favorite mangas.
 
-## Getting Started
+## 🛠️ Prerequisites
 
-This project is a starting point for a Flutter application.
+- [Flutter](https://flutter.dev/docs/get-started/install) SDK installed
+- A code editor such as [Android Studio](https://developer.android.com/studio) or [Visual Studio Code](https://code.visualstudio.com/)
+- A simulator or physical device to run the app
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Quick Start
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. **Clone the project**
+   ```bash
+   git clone https://github.com/BladeBuru/manga_tracker.git
+   cd MangaTracker
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. **Install dependencies**
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Run the application**
+
+   ```bash
+   flutter run
+   ```
+
+## 🔄 Troubleshooting dependencies
+
+If you encounter errors when installing dependencies or running the project, try the following steps:
+
+1. **Upgrade Flutter and dependencies**
+
+   ```bash
+   flutter upgrade
+   flutter pub upgrade
+   ```
+
+2. **Clean the project**
+
+   ```bash
+   flutter clean
+   ```
+
+3. **Delete and reinstall packages**
+
+   ```bash
+   rm pubspec.lock
+   flutter pub get
+   ```
+
+
+## Build an Android APK
+
+To compile a **release** version of the app as an APK:
+
+```bash
+flutter build apk --release
+```
+
+The generated APK can be found at:
+
+```
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+
+
+

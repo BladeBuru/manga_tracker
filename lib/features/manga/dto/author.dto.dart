@@ -1,13 +1,15 @@
 class AuthorDto {
   final String name;
-  final String authorId;
+  final int? authorId;
+  final String? url;
   final String type;
 
+
   const AuthorDto(
-      {required this.name, required this.authorId, required this.type});
+      {required this.name, this.authorId,this.url, required this.type});
 
   factory AuthorDto.fromJson(Map<String, dynamic> json) {
     return AuthorDto(
-        name: json['name'], authorId: json['author_id'], type: json['type']);
+        name: json['name'], authorId: json['author_id'], url: json['url'], type: json['type'] );
   }
 }
