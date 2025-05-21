@@ -110,19 +110,6 @@ class MangaService {
   }
 
 
-  Future<num> getReadChapterByUid(String muId) async {
-    final parsedId = num.tryParse(muId);
-    if (parsedId == null) {
-       return 0;
-    }
-    final saved = await libraryService.getUserSavedMangas();
-    for (final m in saved) {
-      if (m.muId == parsedId) {
-        return m.readChapters ?? 0;
-      }
-    }
-    return -1;
-  }
 
 
 }

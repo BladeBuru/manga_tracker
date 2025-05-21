@@ -9,6 +9,7 @@ import 'package:mangatracker/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../library/services/library.service.dart';
 import '../services/manga.service.dart';
 
 class Detail extends StatefulWidget {
@@ -38,18 +39,61 @@ class _DetailState extends State<Detail> {
   get image => null;
   late Future<MangaDetailDto> mangaDetail;
   late Future<num> readChapter;
-  MangaService mangaService = getIt<MangaService>();
+  final MangaService _mangaService = getIt<MangaService>();
+  final LibraryService _libraryService = getIt<LibraryService>();
 
   @override
   void initState() {
     super.initState();
-    mangaDetail = mangaService.getMangaDetail(widget.muId);
-    readChapter = mangaService.getReadChapterByUid(widget.muId);
+    mangaDetail = _mangaService.getMangaDetail(widget.muId);
+    readChapter = _libraryService.getReadChapterByUid(widget.muId);
   }
+
+  /*Future<void> _handleToggleReadLater() async {
+    final id = widget.muId;
+    bool success;
+
+    if (!_isReadLater) {
+      // on ajoute « À lire plus tard »
+      success = await _readLater.addToReadLater(id);
+    } else {
+      // on retire de la liste readLater
+      success = await _readLater.removeFromReadLater(id);
+    }
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur sur la liste À lire plus tard.')),
+      );
+      return;
+    }
+
+    setState(() => _isReadLater = !_isReadLater);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isReadLater
+                ? 'Ajouté à « À lire plus tard »'
+                : 'Retiré de « À lire plus tard »',
+          ),
+        ),
+      );
+    }
+  }*/
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 34),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -83,24 +127,12 @@ class _DetailState extends State<Detail> {
                           Container(
                             width: double.infinity,
                             height: 340,
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withValues(alpha: 0.4),
                           ),
-                          // Flèche de retour
-                          Positioned(
-                            top: MediaQuery.of(context).padding.top + 8,
-                            left: 8,
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                          ),
+
                           // Titre centré
                           Positioned(
-                            top: 60,
+                            top: 70,
                             left: 16,
                             right: 16,
                             child: Text(
@@ -143,7 +175,9 @@ class _DetailState extends State<Detail> {
                         future: readChapter,
                         builder: (ctx2, snap2) {
                           if (snap2.connectionState != ConnectionState.done) {
-                            return const Center(child: CircularProgressIndicator());
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
                           if (snap2.hasError) {
                             final err = snap2.error;
@@ -188,56 +222,74 @@ class _DetailState extends State<Detail> {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  ButtonBar(
-                    children: [
-                      SizedBox(
-                        height: double.infinity,
-                        width: 100,
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              const Color.fromRGBO(255, 235, 240, 50),
-                            ),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
+              child: FractionallySizedBox(
+                heightFactor: 0.9,
+                child: Row(
+                  children: [
+                    // Bouton 1 => ratio 3 sur total 8, maxWidth = 150
+                    const SizedBox(width: 10),
+                    Flexible(
+                      flex: 3,
+                      fit: FlexFit.loose,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 150),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                const Color.fromRGBO(255, 235, 240, 50),
+                              ),
+                              shape: WidgetStateProperty.all<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
                             ),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              isFavorite = !isFavorite;
-                              loadIconFavorite();
-                            });
-                          },
-                          child: iconFavorite,
-                        ),
-                      ),
-                      SizedBox(
-                        height: double.infinity,
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              themePage,
-                            ),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                            ),
-                          ),
-                          onPressed: () {},
-                          child: const Text(
-                            'Lire',
-                            style: TextStyle(fontSize: 17),
+                            onPressed: () {
+                              /* … */
+                            },
+                            child: iconFavorite,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+
+                    const SizedBox(width: 15), // espace entre boutons
+                    // Bouton 2 => ratio 5 sur total 8, maxWidth = 350
+                    Flexible(
+                      flex: 5,
+                      fit: FlexFit.loose,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                themePage,
+                              ),
+                              shape: WidgetStateProperty.all<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              /* … */
+                            },
+                            child: const Text(
+                              'Lire plus tard',
+                              style: TextStyle(fontSize: 17,color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

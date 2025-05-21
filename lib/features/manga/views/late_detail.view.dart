@@ -40,8 +40,7 @@ class LateDetailView extends StatefulWidget {
 class _LateDetailViewState extends State<LateDetailView> {
   bool _isExpanded = false;
   num? _currentReadCount;
-  final LibraryService _libraryService =
-      getIt<LibraryService>(); // Obtenir l'instance du service
+  final LibraryService _libraryService = getIt<LibraryService>();
   @override
   void initState() {
     super.initState();
@@ -50,6 +49,7 @@ class _LateDetailViewState extends State<LateDetailView> {
 
   @override
   Widget build(BuildContext context) {
+
     final synopsisText =
         parse(widget.mangaDescription).documentElement!.text.trim();
 
@@ -67,8 +67,8 @@ class _LateDetailViewState extends State<LateDetailView> {
             .toList() ??
         [];
 
-    Future<void> _handleAddToLibrary(String mangaId) async {
-      print('UI: Tentative d\'ajout du manga ID: $mangaId à la bibliothèque');
+    Future<void> handleAddToLibrary(String mangaId) async {
+      
       bool success = await _libraryService.addMangaToLibrary(mangaId);
       if (success && mounted) {
         setState(() {
@@ -76,37 +76,57 @@ class _LateDetailViewState extends State<LateDetailView> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${widget.mangaTitle} ajouté à la bibliothèque !'),
+            content: Text('${widget.mangaTitle} a été ajouté à la bibliothèque !'),
           ),
         );
       } else if (mounted) {
-        print(success);
-        print(mounted) ;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de l\'ajout à la bibliothèque.')),
         );
       }
     }
 
-    Future<void> _handleSaveChapter(String mangaId, num chapterNumber) async {
-      print(
-        'UI: Tentative de sauvegarde du chapitre $chapterNumber pour le manga ID: $mangaId',
-      );
-
+    Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
       if (_currentReadCount! < 0) {
-        await _handleAddToLibrary(mangaId);
+        await handleAddToLibrary(mangaId);
       }
 
-      bool success = await _libraryService.saveChapterProgress(mangaId, chapterNumber);
-      if (success && mounted) {
-        setState(() => _currentReadCount = chapterNumber.toInt());
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Chapitre $chapterNumber marqué comme lu !')));
-      } else if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Erreur lors de la sauvegarde du chapitre.')));
+      int newCount;
+      bool success;
+      if (_currentReadCount! >= chapterNumber) {
+        newCount = chapterNumber.toInt() - 1;
+        if (newCount == 0) {
+          print('Removing manga from library $mangaId');
+          success = await _libraryService.removeMangaFromLibrary(mangaId);
+        } else {
+          success = await _libraryService.saveChapterProgress(mangaId, newCount);
+        }
+      } else {
+        newCount = chapterNumber.toInt();
+        success = await _libraryService.saveChapterProgress(mangaId, newCount);
+      }
+
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors de la mise à jour du chapitre.')),
+        );
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentReadCount = newCount;
+        });
+
+        final message = newCount == 0
+            ? 'Manga retiré de la bibliothèque'
+            : 'Chapitre $chapterNumber ${_currentReadCount! >= chapterNumber ? 'lu' : 'non lu'}';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
       }
     }
+
 
     final total = widget.mangaTotalChapters?.toInt() ?? 0;
     final chapNumbers = List<int>.generate(total, (i) => i + 1)
@@ -305,11 +325,11 @@ class _LateDetailViewState extends State<LateDetailView> {
                     children:
                         chapNumbers.map((chapNum) {
                           final line = chapNum.toString().padLeft(2, '0');
-                          final isRead = chapNum <= widget.readChapters;
+                          final isRead = chapNum <= _currentReadCount!;
 
                           return GestureDetector(
                             onTap: () async {
-                                await _handleSaveChapter(widget.muId, chapNum);
+                              handleSaveChapter(widget.muId, chapNum);
                             },
                             child: RowChapter(
                               line: line,

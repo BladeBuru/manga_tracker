@@ -14,32 +14,60 @@ class HttpService {
   StorageService storageService = getIt<StorageService>();
   AuthService authService = getIt<AuthService>();
 
-  Future<Response> getWithAuthTokens(Uri url,
-      {Map<String, String>? headers, Object? body}) async {
+  Future<Response> _requestWithAuthTokens(
+    String method,
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
     headers = await _addAuthTokensHeaders(headers);
-    return http.get(url, headers: headers);
+
+    switch (method.toUpperCase()) {
+      case 'GET':
+        return http.get(url, headers: headers);
+      case 'POST':
+        return http.post(url, headers: headers, body: body);
+      case 'PUT':
+        return http.put(url, headers: headers, body: body);
+      case 'DELETE':
+        return http.delete(url, headers: headers, body: body);
+      default:
+        throw UnsupportedError('Method $method is not supported');
+    }
   }
 
-  Future<Response> postWithAuthTokens(Uri url,
-      {Map<String, String>? headers, Object? body}) async {
-    headers = await _addAuthTokensHeaders(headers);
-    return http.post(url, body: body, headers: headers);
-  }
+  Future<Response> getWithAuthTokens(Uri url, {Map<String, String>? headers}) =>
+      _requestWithAuthTokens('GET', url, headers: headers);
 
-  Future<Response> putWithAuthTokens(Uri url,
-      {Map<String, String>? headers, Object? body}) async {
-    headers = await _addAuthTokensHeaders(headers);
-    return http.put(url, body: body, headers: headers);
-  }
+  Future<Response> postWithAuthTokens(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) => _requestWithAuthTokens('POST', url, headers: headers, body: body);
+
+  Future<Response> putWithAuthTokens(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) => _requestWithAuthTokens('PUT', url, headers: headers, body: body);
+
+  Future<Response> deleteWithAuthTokens(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) => _requestWithAuthTokens('DELETE', url, headers: headers, body: body);
+
 
   Future<Map<String, String>?> _addAuthTokensHeaders(
-      Map<String, String>? headers) async {
+    Map<String, String>? headers,
+  ) async {
     String? accessToken = await storageService.readSecureData('accessToken');
     String? refreshToken = await storageService.readSecureData('refreshToken');
 
     if (authService.isTokenExpired(refreshToken)) {
       throw InvalidCredentialsException(
-          'Both AccessToken and refreshToken are invalid');
+        'Both AccessToken and refreshToken are invalid',
+      );
     }
 
     if (authService.isTokenExpired(accessToken)) {
@@ -47,23 +75,29 @@ class HttpService {
     }
 
     headers ??= {};
-    headers.putIfAbsent(HttpHeaders.authorizationHeader,
-        () => "Bearer ${accessToken.toString()}");
+    headers.putIfAbsent(
+      HttpHeaders.authorizationHeader,
+      () => "Bearer ${accessToken.toString()}",
+    );
     return headers;
   }
 
   Future<String> renewAccessToken(String refreshToken) async {
     var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-    var res = await http.post(url, headers: {
-      HttpHeaders.authorizationHeader: "Bearer ${refreshToken.toString()}"
-    });
+    var res = await http.post(
+      url,
+      headers: {
+        HttpHeaders.authorizationHeader: "Bearer ${refreshToken.toString()}",
+      },
+    );
 
     switch (res.statusCode) {
       case HttpStatus.created:
         return jsonDecode(res.body)['refreshToken'];
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
-            'Invalid Refresh Token ${res.statusCode}');
+          'Invalid Refresh Token ${res.statusCode}',
+        );
       default:
         throw Exception('Unknown Error ${res.statusCode}');
     }
