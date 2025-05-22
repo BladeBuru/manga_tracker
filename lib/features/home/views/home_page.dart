@@ -309,27 +309,29 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ),
-                          child: indexButtonBar == 2
-                              ? const Text('Nouveautés',
-                                  style: TextStyle(color: Colors.white))
-                              : const Text('Nouveautés',
-                                  style: TextStyle(color: Color(0xff858597)))),
-                    ],
-                  )
+                          child:
+                              indexButtonBar == 2
+                                  ? const Text(
+                                    'Nouveautés',
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                  : const Text(
+                                    'Nouveautés',
+                                    style: TextStyle(color: Color(0xff858597)),
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: SizedBox(height: 500, child: childWidget)),
                 ],
               ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 450,
-                    child: childWidget,
-                  ),
-                ),
-              ],
-            )
-          ]),
+            ],
+          ),
         ),
       ),
     );
