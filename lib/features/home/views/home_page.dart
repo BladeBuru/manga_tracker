@@ -56,28 +56,25 @@ class _HomePageState extends State<HomePage> {
       return List<MangaQuickViewDto>.empty();
     }, test: (err) => err is InvalidCredentialsException);
 
-    userService
-        .getUserInformation()
-        .then((value) {
-      if (!mounted) return;
+    userService.getUserInformation().then((value) {
       setState(() {
-            user = value;
-            displayUsername = value.username;
-          });
-        })
-        .catchError((err) {
-      if (!mounted) return;
+        if (!mounted || hasAlreadyBeenRedirected) return;
+        user = value;
+        displayUsername = value.username;
+      });
+    }).catchError((err) {
+      if (!mounted || hasAlreadyBeenRedirected) return;
       _errorHandler();
-        }, test: (err) => err is InvalidCredentialsException);
+    }, test: (err) => err is InvalidCredentialsException);
   }
 
   void _errorHandler() {
-    if (!mounted || hasAlreadyBeenRedirected) return;
     if (!hasAlreadyBeenRedirected && context.mounted) {
       authService.logout();
       redirectToLoginPage();
       errorNotification.showErrorSnackBar('Expired session', context);
       setState(() {
+        if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
       });
     }
