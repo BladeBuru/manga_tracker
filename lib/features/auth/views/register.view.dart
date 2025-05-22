@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 
+import '../../../core/components/password_fields.dart';
 import '../services/validator.service.dart';
 import 'widgets/intput_textfield.dart';
 import '../../../core/components/auth_button.dart';
 import 'login.view.dart';
 import 'widgets/square_tile.dart';
+import '../services/auth.service.dart';
 
 class RegisterView extends StatefulWidget {
   final String emailText;
+
   const RegisterView({Key? key, required this.emailText}) : super(key: key);
 
   @override
@@ -16,22 +19,34 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
+  final _formKey = GlobalKey<FormState>();
+  final authService = getIt<AuthService>();
   final emailController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordControler = TextEditingController();
-  final confirmPasswordControler = TextEditingController();
 
   final ValidatorService validatorService = getIt<ValidatorService>();
 
   void singUpUser() async {
-    /*await ConnectionAPI(
-      email : widget.emailController.text,
-      passord : passwordControler.text
-    );*/
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    if (!_formKey.currentState!.validate()) return;
+
+    await authService.attemptSignUp(
+      usernameController.text.trim().toLowerCase(),
+      emailController.text.trim(),
+      passwordControler.text,
+    );
+
+    if (!mounted) return;
+    this.redirectToLoginPage();
   }
+
   void redirectToLoginPage() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const LoginView()));
+      context,
+      MaterialPageRoute(builder: (context) => const LoginView()),
+    );
   }
 
   @override
@@ -41,30 +56,32 @@ class _RegisterViewState extends State<RegisterView> {
     previous screen (which can be my account screen)
     */
     return WillPopScope(
-        onWillPop: () async => false,
-        child: Container(
-          color: Colors.grey[200],
-          child: SafeArea(
-            child: Scaffold(
-                resizeToAvoidBottomInset: false,
-                backgroundColor: Colors.grey[200],
-                body: SingleChildScrollView(
-                  child: SafeArea(
-                    child: Center(
-                      child: Column(children: [
+      onWillPop: () async => false,
+      child: Container(
+        color: Colors.grey[200],
+        child: SafeArea(
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.grey[200],
+            body: SingleChildScrollView(
+              child: SafeArea(
+                child: Center(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
                         const SizedBox(height: 20),
 
-                        Image.asset(
-                          'assets/images/mask_logo.png',
-                          height: 150,
-                        ),
+                        Image.asset('assets/images/mask_logo.png', height: 150),
 
                         const SizedBox(height: 30),
 
                         Text(
-                          "Start Reading Now",
-                          style:
-                              TextStyle(color: Colors.grey[500], fontSize: 16),
+                          "Commencez à lire maintenant",
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                          ),
                         ),
 
                         const SizedBox(height: 50),
@@ -72,7 +89,7 @@ class _RegisterViewState extends State<RegisterView> {
                         //Login texte field
                         IntputTexteField(
                           controller: emailController,
-                          textField: "Email Address",
+                          textField: "Adresse e-mail",
                           obscureText: false,
                           validator: validatorService.validateEmailAddress,
                         ),
@@ -88,33 +105,15 @@ class _RegisterViewState extends State<RegisterView> {
 
                         const SizedBox(height: 15),
 
-                        //Password texte field
-                        IntputTexteField(
-                          controller: passwordControler,
-                          textField: "Password",
-                          obscureText: true,
-                          validator: validatorService.validatePassword,
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        //Confimr Password texte field
-                        IntputTexteField(
-                          controller: confirmPasswordControler,
-                          textField: "Confirm password",
-                          obscureText: true,
-                          validator: (value) {
-                            return validatorService.validateConfirmPassword(
-                                value, passwordControler);
-                          },
+                        PasswordFields(
+                          passwordControler: passwordControler,
+                          confirmPasswordControler: TextEditingController(),
+                          validatorService: validatorService,
                         ),
 
                         const SizedBox(height: 30),
 
-                        AuthButton(
-                          text: "Sign Up",
-                          onTap: singUpUser,
-                        ),
+                        AuthButton(text: "S'inscrire", onTap: singUpUser),
 
                         const SizedBox(height: 40),
 
@@ -130,9 +129,10 @@ class _RegisterViewState extends State<RegisterView> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0),
+                                  horizontal: 10.0,
+                                ),
                                 child: Text(
-                                  'Or',
+                                  'Ou',
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                               ),
@@ -152,12 +152,12 @@ class _RegisterViewState extends State<RegisterView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
                             SquareTile(
-                                imagePath: 'assets/images/google_logo.png'),
-                            SizedBox(
-                              width: 20,
+                              imagePath: 'assets/images/google_logo.png',
                             ),
+                            SizedBox(width: 20),
                             SquareTile(
-                                imagePath: 'assets/images/apple_logo.png'),
+                              imagePath: 'assets/images/apple_logo.png',
+                            ),
                           ],
                         ),
 
@@ -167,7 +167,7 @@ class _RegisterViewState extends State<RegisterView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Already have an account?",
+                              "Vous avez déjà un compte ?",
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                             const SizedBox(width: 3),
@@ -176,19 +176,24 @@ class _RegisterViewState extends State<RegisterView> {
                                 redirectToLoginPage();
                               },
                               child: Text(
-                                "Log In",
+                                "Se connecter",
                                 style: TextStyle(color: Colors.red[400]),
                               ),
                             ),
                           ],
                         ),
                         const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20.0))
-                      ]),
+                          padding: EdgeInsets.symmetric(vertical: 20.0),
+                        ),
+                      ],
                     ),
                   ),
-                )),
+                ),
+              ),
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

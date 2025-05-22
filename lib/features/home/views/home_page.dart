@@ -58,10 +58,12 @@ class _HomePageState extends State<HomePage> {
 
     userService.getUserInformation().then((value) {
       setState(() {
+        if (!mounted || hasAlreadyBeenRedirected) return;
         user = value;
         displayUsername = value.username;
       });
     }).catchError((err) {
+      if (!mounted || hasAlreadyBeenRedirected) return;
       _errorHandler();
     }, test: (err) => err is InvalidCredentialsException);
   }
@@ -72,6 +74,7 @@ class _HomePageState extends State<HomePage> {
       redirectToLoginPage();
       errorNotification.showErrorSnackBar('Expired session', context);
       setState(() {
+        if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
       });
     }
@@ -79,7 +82,9 @@ class _HomePageState extends State<HomePage> {
 
   void redirectToLoginPage() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const LoginView()));
+      context,
+      MaterialPageRoute(builder: (context) => const LoginView()),
+    );
   }
 
   get border => null;
@@ -97,109 +102,114 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(25.0),
-          child: Column(children: [
-            //Espace
-            const SizedBox(height: 20),
+          child: Column(
+            children: [
+              //Espace
+              const SizedBox(height: 20),
 
-            //PP et Texte
-            Row(
-              children: [
-                const CircleAvatar(
-                  minRadius: 20.0,
-                  maxRadius: 20.0,
-                  backgroundImage: AssetImage('assets/images/mask_logo.png'),
-                  backgroundColor: Colors.transparent,
-                ),
-                const SizedBox(width: 10),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    'Hello,',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+              //PP et Texte
+              Row(
+                children: [
+                  const CircleAvatar(
+                    minRadius: 20.0,
+                    maxRadius: 20.0,
+                    backgroundImage: AssetImage('assets/images/mask_logo.png'),
+                    backgroundColor: Colors.transparent,
                   ),
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 800),
-                    opacity: displayUsername == null ? 0.0 : 1.0,
-                    child: Text(
-                      displayUsername == null ? '' : displayUsername!,
-                      textAlign: TextAlign.left,
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bonjour,',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 800),
+                        opacity: displayUsername == null ? 0.0 : 1.0,
+                        child: Text(
+                          displayUsername == null ? '' : displayUsername!,
+                          textAlign: TextAlign.left,
+                          style: GoogleFonts.poppins(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xff1f1f39),
+                          ),
+                          key: ValueKey<String>(
+                            displayUsername == null ? '' : displayUsername!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Trending Mangas
+              SizedBox(
+                child: Row(
+                  children: [
+                    const SizedBox(height: 50),
+                    Text(
+                      'Tendances',
                       style: GoogleFonts.poppins(
-                        fontSize: 22,
+                        fontSize: 14.0,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xff1f1f39),
                       ),
-                      key: ValueKey<String>(
-                          displayUsername == null ? '' : displayUsername!),
                     ),
-                  ),
-                ])
-              ],
-            ),
-
-            // Trending Mangas
-            SizedBox(
-              child: Row(
-                children: [
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  Text('Trending Manga',
-                      style: GoogleFonts.poppins(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xff1f1f39))),
-                  const Spacer(),
-                  const Icon(Icons.add_circle_outline)
-                ],
+                    const Spacer(),
+                    const Icon(Icons.add_circle_outline),
+                  ],
+                ),
               ),
-            ),
-            //Espace
-            const SizedBox(height: 1),
+              //Espace
+              const SizedBox(height: 1),
 
-            //Carousel
-            SizedBox(
-              height: 200,
-              child: FutureBuilder<List<MangaQuickViewDto>>(
-                future: trendingMangas,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final mangaList = snapshot.data!;
-                    return ListView.builder(
-                      itemCount: mangaList.length,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        final manga = mangaList[index];
-                        return MangaCard(
+              //Carousel
+              SizedBox(
+                height: 200,
+                child: FutureBuilder<List<MangaQuickViewDto>>(
+                  future: trendingMangas,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final mangaList = snapshot.data!;
+                      return ListView.builder(
+                        itemCount: mangaList.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          final manga = mangaList[index];
+                          return MangaCard(
                             muId: manga.muId.toString(),
                             mangaTitle: manga.title,
                             mangaAuthor: manga.year.toString(),
                             largeImgPath: manga.largeCoverUrl,
-                            rating: manga.rating);
-                      },
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    return const SizedBox(
-                      height: 200.0,
-                      width: 200.0,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                },
+                            rating: manga.rating,
+                          );
+                        },
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      return const SizedBox(
+                        height: 200.0,
+                        width: 200.0,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                  },
+                ),
               ),
-            ),
-            SizedBox(
-              height: 80,
-              child: Row(
-                children: [
-                  ButtonBar(
-                    children: [
-                      ElevatedButton(
+              SizedBox(
+                height: 80,
+                child: Row(
+                  children: [
+                    ButtonBar(
+                      children: [
+                        ElevatedButton(
                           onPressed: () {
                             setState(() {
                               indexButtonBar = 0;
@@ -207,22 +217,36 @@ class _HomePageState extends State<HomePage> {
                             });
                           },
                           style: ButtonStyle(
-                            backgroundColor: indexButtonBar == 0
-                                ? MaterialStateProperty.all<Color>(themePage)
-                                : MaterialStateProperty.all<Color>(
-                                    Colors.white),
+                            backgroundColor:
+                                indexButtonBar == 0
+                                    ? MaterialStateProperty.all<Color>(
+                                      themePage,
+                                    )
+                                    : MaterialStateProperty.all<Color>(
+                                      Colors.white,
+                                    ),
                             shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  18.0), // changer la forme du bouton
-                            )),
+                              RoundedRectangleBorder
+                            >(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  18.0,
+                                ), // changer la forme du bouton
+                              ),
+                            ),
                           ),
-                          child: indexButtonBar == 0
-                              ? const Text('All',
-                                  style: TextStyle(color: Colors.white))
-                              : const Text('All',
-                                  style: TextStyle(color: Color(0xff858597)))),
-                      ElevatedButton(
+                          child:
+                              indexButtonBar == 0
+                                  ? const Text(
+                                    'Tous',
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                  : const Text(
+                                    'Tous',
+                                    style: TextStyle(color: Color(0xff858597)),
+                                  ),
+                        ),
+                        ElevatedButton(
                           onPressed: () {
                             setState(() {
                               indexButtonBar = 1;
@@ -230,22 +254,36 @@ class _HomePageState extends State<HomePage> {
                             });
                           },
                           style: ButtonStyle(
-                            backgroundColor: indexButtonBar == 1
-                                ? MaterialStateProperty.all<Color>(themePage)
-                                : MaterialStateProperty.all<Color>(
-                                    Colors.white),
+                            backgroundColor:
+                                indexButtonBar == 1
+                                    ? MaterialStateProperty.all<Color>(
+                                      themePage,
+                                    )
+                                    : MaterialStateProperty.all<Color>(
+                                      Colors.white,
+                                    ),
                             shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  18.0), // changer la forme du bouton
-                            )),
+                              RoundedRectangleBorder
+                            >(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  18.0,
+                                ), // changer la forme du bouton
+                              ),
+                            ),
                           ),
-                          child: indexButtonBar == 1
-                              ? const Text('Popular',
-                                  style: TextStyle(color: Colors.white))
-                              : const Text('Popular',
-                                  style: TextStyle(color: Color(0xff858597)))),
-                      ElevatedButton(
+                          child:
+                              indexButtonBar == 1
+                                  ? const Text(
+                                    'Populaires',
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                  : const Text(
+                                    'Populaires',
+                                    style: TextStyle(color: Color(0xff858597)),
+                                  ),
+                        ),
+                        ElevatedButton(
                           onPressed: () {
                             setState(() {
                               indexButtonBar = 2;
@@ -253,37 +291,47 @@ class _HomePageState extends State<HomePage> {
                             });
                           },
                           style: ButtonStyle(
-                            backgroundColor: indexButtonBar == 2
-                                ? MaterialStateProperty.all<Color>(themePage)
-                                : MaterialStateProperty.all<Color>(
-                                    Colors.white),
+                            backgroundColor:
+                                indexButtonBar == 2
+                                    ? MaterialStateProperty.all<Color>(
+                                      themePage,
+                                    )
+                                    : MaterialStateProperty.all<Color>(
+                                      Colors.white,
+                                    ),
                             shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  18.0), // changer la forme du bouton
-                            )),
+                              RoundedRectangleBorder
+                            >(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  18.0,
+                                ), // changer la forme du bouton
+                              ),
+                            ),
                           ),
-                          child: indexButtonBar == 2
-                              ? const Text('New',
-                                  style: TextStyle(color: Colors.white))
-                              : const Text('New',
-                                  style: TextStyle(color: Color(0xff858597)))),
-                    ],
-                  )
+                          child:
+                              indexButtonBar == 2
+                                  ? const Text(
+                                    'Nouveautés',
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                  : const Text(
+                                    'Nouveautés',
+                                    style: TextStyle(color: Color(0xff858597)),
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: SizedBox(height: 500, child: childWidget)),
                 ],
               ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 290,
-                    child: childWidget,
-                  ),
-                ),
-              ],
-            )
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -297,8 +345,9 @@ class _HomePageState extends State<HomePage> {
     } else if (indexButtonBar == 2) {
       childWidget = HomepageMangaList(mangas: newMangas);
     } else {
-      childWidget =
-          const Text('Sorry, we\'re currently unable to load this section :/');
+      childWidget = const Text(
+        'Désolé, nous ne parvenons actuellement pas à charger cette section :/',
+      );
     }
   }
 }
