@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 
+import '../../../core/components/password_fields.dart';
 import '../services/validator.service.dart';
 import 'widgets/intput_textfield.dart';
 import '../../../core/components/auth_button.dart';
@@ -23,7 +24,6 @@ class _RegisterViewState extends State<RegisterView> {
   final emailController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordControler = TextEditingController();
-  final confirmPasswordControler = TextEditingController();
 
   final ValidatorService validatorService = getIt<ValidatorService>();
 
@@ -77,7 +77,7 @@ class _RegisterViewState extends State<RegisterView> {
                         const SizedBox(height: 30),
 
                         Text(
-                          "Start Reading Now",
+                          "Commencez à lire maintenant",
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 16,
@@ -89,7 +89,7 @@ class _RegisterViewState extends State<RegisterView> {
                         //Login texte field
                         IntputTexteField(
                           controller: emailController,
-                          textField: "Email Address",
+                          textField: "Adresse e-mail",
                           obscureText: false,
                           validator: validatorService.validateEmailAddress,
                         ),
@@ -105,32 +105,15 @@ class _RegisterViewState extends State<RegisterView> {
 
                         const SizedBox(height: 15),
 
-                        //Password texte field
-                        IntputTexteField(
-                          controller: passwordControler,
-                          textField: "Password",
-                          obscureText: true,
-                          validator: validatorService.validatePassword,
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        //Confimr Password texte field
-                        IntputTexteField(
-                          controller: confirmPasswordControler,
-                          textField: "Confirm password",
-                          obscureText: true,
-                          validator: (value) {
-                            return validatorService.validateConfirmPassword(
-                              value,
-                              passwordControler,
-                            );
-                          },
+                        PasswordFields(
+                          passwordControler: passwordControler,
+                          confirmPasswordControler: TextEditingController(),
+                          validatorService: validatorService,
                         ),
 
                         const SizedBox(height: 30),
 
-                        AuthButton(text: "Sign Up", onTap: singUpUser),
+                        AuthButton(text: "S'inscrire", onTap: singUpUser),
 
                         const SizedBox(height: 40),
 
@@ -149,7 +132,7 @@ class _RegisterViewState extends State<RegisterView> {
                                   horizontal: 10.0,
                                 ),
                                 child: Text(
-                                  'Or',
+                                  'Ou',
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                               ),
@@ -184,7 +167,7 @@ class _RegisterViewState extends State<RegisterView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Already have an account?",
+                              "Vous avez déjà un compte ?",
                               style: TextStyle(color: Colors.grey[600]),
                             ),
                             const SizedBox(width: 3),
@@ -193,7 +176,7 @@ class _RegisterViewState extends State<RegisterView> {
                                 redirectToLoginPage();
                               },
                               child: Text(
-                                "Log In",
+                                "Se connecter",
                                 style: TextStyle(color: Colors.red[400]),
                               ),
                             ),
