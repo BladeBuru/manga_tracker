@@ -57,7 +57,6 @@ class HttpService {
     Object? body,
   }) => _requestWithAuthTokens('DELETE', url, headers: headers, body: body);
 
-
   Future<Map<String, String>?> _addAuthTokensHeaders(
     Map<String, String>? headers,
   ) async {
