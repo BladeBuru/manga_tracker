@@ -59,17 +59,20 @@ class _HomePageState extends State<HomePage> {
     userService
         .getUserInformation()
         .then((value) {
-          setState(() {
+      if (!mounted) return;
+      setState(() {
             user = value;
             displayUsername = value.username;
           });
         })
         .catchError((err) {
-          _errorHandler();
+      if (!mounted) return;
+      _errorHandler();
         }, test: (err) => err is InvalidCredentialsException);
   }
 
   void _errorHandler() {
+    if (!mounted || hasAlreadyBeenRedirected) return;
     if (!hasAlreadyBeenRedirected && context.mounted) {
       authService.logout();
       redirectToLoginPage();
