@@ -80,7 +80,7 @@ class _RechercheState extends State<Search> {
                       onChanged: _onChangeHandler,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Search Manga, Manwha, ...',
+                        hintText: 'Rechercher Mangas, Manwhas, ...',
                         hintStyle: TextStyle(color: Color(0xffb8b8d2)),
                       ),
                     ),
