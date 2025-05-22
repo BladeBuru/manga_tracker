@@ -59,15 +59,13 @@ class HttpService {
 
 
   Future<Map<String, String>?> _addAuthTokensHeaders(
-    Map<String, String>? headers,
-  ) async {
+      Map<String, String>? headers) async {
     String? accessToken = await storageService.readSecureData('accessToken');
     String? refreshToken = await storageService.readSecureData('refreshToken');
 
     if (authService.isTokenExpired(refreshToken)) {
       throw InvalidCredentialsException(
-        'Both AccessToken and refreshToken are invalid',
-      );
+          'Both AccessToken and refreshToken are invalid');
     }
 
     if (authService.isTokenExpired(accessToken)) {
@@ -84,20 +82,16 @@ class HttpService {
 
   Future<String> renewAccessToken(String refreshToken) async {
     var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-    var res = await http.post(
-      url,
-      headers: {
-        HttpHeaders.authorizationHeader: "Bearer ${refreshToken.toString()}",
-      },
-    );
+    var res = await http.post(url, headers: {
+      HttpHeaders.authorizationHeader: "Bearer ${refreshToken.toString()}"
+    });
 
     switch (res.statusCode) {
       case HttpStatus.created:
         return jsonDecode(res.body)['refreshToken'];
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
-          'Invalid Refresh Token ${res.statusCode}',
-        );
+            'Invalid Refresh Token ${res.statusCode}');
       default:
         throw Exception('Unknown Error ${res.statusCode}');
     }

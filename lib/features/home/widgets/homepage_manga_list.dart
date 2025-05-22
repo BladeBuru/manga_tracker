@@ -5,8 +5,9 @@ import '../../manga/widgets/manga_row.dart';
 
 class HomepageMangaList extends StatelessWidget {
   final Future<List<MangaQuickViewDto>> mangas;
+  final VoidCallback? onDetailReturn;
 
-  const HomepageMangaList({super.key, required this.mangas});
+  const HomepageMangaList({super.key, required this.mangas, this.onDetailReturn});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class HomepageMangaList extends StatelessWidget {
                     mangaAuthor: manga.year,
                     largeImgPath: manga.largeCoverUrl,
                     lastChapter: manga.rating,
+                    onDetailReturn: onDetailReturn,
                   );
                 },
               );

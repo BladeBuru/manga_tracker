@@ -31,6 +31,12 @@ class _LibraryViewState extends State<LibraryView> {
     }
   }
 
+  void reloadMangas() {
+    setState(() {
+      savedMangas = libraryService.getUserSavedMangas();
+    });
+  }
+
   void redirectToLoginPage() {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => const LoginView()));
@@ -41,9 +47,10 @@ class _LibraryViewState extends State<LibraryView> {
     return Row(
       children: [
         Expanded(
-          child: SizedBox(
-            height: 290,
-            child: HomepageMangaList(mangas: savedMangas),
+
+          child: HomepageMangaList(
+            mangas: savedMangas,
+            onDetailReturn: reloadMangas,
           ),
         ),
       ],

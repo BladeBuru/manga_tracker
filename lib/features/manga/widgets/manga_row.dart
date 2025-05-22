@@ -10,6 +10,7 @@ class MangaRow extends StatelessWidget {
   final String mangaAuthor;
   final String lastChapter;
   final String? largeImgPath;
+  final VoidCallback? onDetailReturn;
 
   const MangaRow({
     super.key,
@@ -18,13 +19,14 @@ class MangaRow extends StatelessWidget {
     required this.mangaAuthor,
     required this.lastChapter,
     this.largeImgPath,
+    this.onDetailReturn,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => Detail(
@@ -33,6 +35,9 @@ class MangaRow extends StatelessWidget {
                     coverPath: largeImgPath,
                   )),
         );
+        if (onDetailReturn != null) {
+          onDetailReturn!();
+        }
       },
       child: Padding(
         padding: const EdgeInsets.only(

@@ -69,7 +69,7 @@ class _LateDetailViewState extends State<LateDetailView> {
 
     Future<void> handleAddToLibrary(String mangaId) async {
       
-      bool success = await _libraryService.addMangaToLibrary(mangaId);
+      bool success = await _libraryService.addMangaToLibrary(int.parse(mangaId));
       if (success && mounted) {
         setState(() {
           _currentReadCount = 0;
@@ -97,13 +97,13 @@ class _LateDetailViewState extends State<LateDetailView> {
         newCount = chapterNumber.toInt() - 1;
         if (newCount == 0) {
           print('Removing manga from library $mangaId');
-          success = await _libraryService.removeMangaFromLibrary(mangaId);
+          success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
         } else {
-          success = await _libraryService.saveChapterProgress(mangaId, newCount);
+          success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
         }
       } else {
         newCount = chapterNumber.toInt();
-        success = await _libraryService.saveChapterProgress(mangaId, newCount);
+        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
       }
 
       if (!success && mounted) {

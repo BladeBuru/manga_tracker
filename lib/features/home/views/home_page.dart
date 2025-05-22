@@ -277,7 +277,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 290,
+                    height: 450,
                     child: childWidget,
                   ),
                 ),

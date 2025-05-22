@@ -46,7 +46,7 @@ class _DetailState extends State<Detail> {
   void initState() {
     super.initState();
     mangaDetail = _mangaService.getMangaDetail(widget.muId);
-    readChapter = _libraryService.getReadChapterByUid(widget.muId);
+    readChapter = _libraryService.getReadChapterByUid(int.parse(widget.muId));
   }
 
   /*Future<void> _handleToggleReadLater() async {
