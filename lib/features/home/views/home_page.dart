@@ -327,7 +327,7 @@ class _HomePageState extends State<HomePage> {
               ),
               Row(
                 children: [
-                  Expanded(child: SizedBox(height: 290, child: childWidget)),
+                  Expanded(child: SizedBox(height: 500, child: childWidget)),
                 ],
               ),
             ],
