@@ -1,23 +1,30 @@
 import 'package:flutter/widgets.dart';
 
 class ImageHelper {
-  static Image loadMangaImage(String? imagePath) {
-    Image img;
+
+  static Image loadMangaImage(
+      String? imagePath, {
+        BoxFit fit = BoxFit.cover,
+      }) {
     if (imagePath == null) {
-      img = loadPlaceholderImage();
-    } else {
-      img = Image.network(
-        imagePath,
-        errorBuilder:
-            (BuildContext context, Object error, StackTrace? stackTrace) {
-          return loadPlaceholderImage();
-        },
-      );
+      // Placeholder, en lui passant aussi le `fit`
+      return _loadPlaceholderImage(fit);
     }
-    return img;
+
+    return Image.network(
+      imagePath,
+      fit: fit,
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return _loadPlaceholderImage(fit);
+      },
+    );
   }
 
-  static Image loadPlaceholderImage() {
-    return Image.asset('assets/images/placeholders/image_placeholder.png');
+  static Image _loadPlaceholderImage(BoxFit fit) {
+    return Image.asset(
+      'assets/images/placeholders/image_placeholder.png',
+      fit: fit,
+    );
   }
 }

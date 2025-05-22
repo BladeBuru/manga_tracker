@@ -30,239 +30,279 @@ class Detail extends StatefulWidget {
 
 bool isFavorite = true;
 
-Widget iconFavorite = const Icon(
+Widget iconFavorite = Icon(
+  color: isFavorite == true ? Colors.grey : Colors.orange,
   Icons.star,
-  color: Colors.orange,
 );
 
 class _DetailState extends State<Detail> {
+  get image => null;
   late Future<MangaDetailDto> mangaDetail;
-  final MangaService mangaService = getIt<MangaService>();
-  final LibraryService libraryService = getIt<LibraryService>();
-
-  bool _inLibrary = false;
-
-  Future<void> _initLibraryState() async {
-    final saved = await libraryService.isInLibrary(int.parse(widget.muId));
-    if (mounted) setState(() => _inLibrary = saved);
-  }
-
-  Future<void> _toggleLibrary() async {
-    final muId = int.parse(widget.muId);
-    if (_inLibrary) {
-      await libraryService.deleteManga(muId);
-    } else {
-      await libraryService.saveManga(muId);
-    }
-    if (mounted) setState(() => _inLibrary = !_inLibrary);
-  }
+  late Future<num> readChapter;
+  final MangaService _mangaService = getIt<MangaService>();
+  final LibraryService _libraryService = getIt<LibraryService>();
 
   @override
   void initState() {
     super.initState();
-    mangaDetail = mangaService.getMangaDetail(widget.muId);
-    _initLibraryState();
+    mangaDetail = _mangaService.getMangaDetail(widget.muId);
+    readChapter = _libraryService.getReadChapterByUid(int.parse(widget.muId));
   }
+
+  /*Future<void> _handleToggleReadLater() async {
+    final id = widget.muId;
+    bool success;
+
+    if (!_isReadLater) {
+      // on ajoute « À lire plus tard »
+      success = await _readLater.addToReadLater(id);
+    } else {
+      // on retire de la liste readLater
+      success = await _readLater.removeFromReadLater(id);
+    }
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur sur la liste À lire plus tard.')),
+      );
+      return;
+    }
+
+    setState(() => _isReadLater = !_isReadLater);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isReadLater
+                ? 'Ajouté à « À lire plus tard »'
+                : 'Retiré de « À lire plus tard »',
+          ),
+        ),
+      );
+    }
+  }*/
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: SafeArea(
-        child: Scaffold(
-          body: Column(
-            children: [
-              // ─────────── Barre supérieure ───────────
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // ─────────── Couverture + puces de genres ───────────
-              Column(
-                children: [
-                  SizedBox(
-                    height: 160,
-                    width: 250,
-                    child: Padding(
-                      padding: const EdgeInsets.all(7),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: ImageHelper.loadMangaImage(widget.coverPath),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Affichage dynamique des genres
-                  SizedBox(
-                    height: 20,
-                    width: 300,
-                    child: FutureBuilder<MangaDetailDto>(
-                      future: mangaDetail,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final List<String> genres =
-                              snapshot.data!.genres ?? <String>[];
-                          return ListView.builder(
-                            itemCount: genres.length,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) =>
-                                MangaType(type: genres[index]),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              // ─────────── Titre ───────────
-              Container(
-                constraints: const BoxConstraints(maxWidth: 300),
-                child: Text(
-                  parse(widget.mangaTitle).documentElement!.text,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(fontSize: 24),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-              // ─────────── Détails (description, chapitres…) ───────────
-              FutureBuilder<MangaDetailDto>(
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 34),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder<MangaDetailDto>(
                 future: mangaDetail,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final manga = snapshot.data!;
-                    return LateDetailView(
-                      mangaTitle: manga.title,
-                      mangaDescription: manga.description,
-                      rating: manga.rating,
-                      mangaChapters:
-                          ChaptersHelper.buildChapterList(manga.totalChapters),
-                      mangaTotalChapters: manga.totalChapters,
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
                   }
-                  return const SizedBox(
-                    height: 200,
-                    width: 200,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                },
-              ),
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: \${snapshot.error}'));
+                  }
+                  final manga = snapshot.data!;
+                  return Column(
+                    children: [
+                      // HEADER FIXE AVEC FULL COVER
+                      Stack(
+                        children: [
+                          // Cover full-width
+                          SizedBox(
+                            width: double.infinity,
+                            height: 340,
+                            child: ImageHelper.loadMangaImage(
+                              widget.coverPath,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          // Surcouche sombre
+                          Container(
+                            width: double.infinity,
+                            height: 340,
+                            color: Colors.black.withValues(alpha: 0.4),
+                          ),
 
-              // ─────────── Barre inférieure ───────────
-              Container(
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade100,
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, -3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    ButtonBar(
-                      children: [
-                        SizedBox(
-                          height: double.infinity,
-                          width: 100,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  const Color.fromRGBO(255, 235, 240, 50)),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                          // Titre centré
+                          Positioned(
+                            top: 70,
+                            left: 16,
+                            right: 16,
+                            child: Text(
+                              parse(widget.mangaTitle).documentElement!.text,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          // Genres en bas
+                          if (manga.genres != null)
+                            Positioned(
+                              bottom: 14,
+                              left: 16,
+                              right: 14,
+                              child: SizedBox(
+                                height: 24,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children:
+                                      manga.genres!
+                                          .map(
+                                            (g) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: MangaType(type: g),
+                                            ),
+                                          )
+                                          .toList(),
                                 ),
                               ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isFavorite = !isFavorite;
-                                loadIconFavorite();
-                              });
-                            },
-                            child: iconFavorite,
-                          ),
-                        ),
-                        SizedBox(
+                        ],
+                      ),
+                      FutureBuilder<num>(
+                        future: readChapter,
+                        builder: (ctx2, snap2) {
+                          if (snap2.connectionState != ConnectionState.done) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snap2.hasError) {
+                            final err = snap2.error;
+                            return Center(child: Text('Erreur lecture: $err'));
+                          }
+                          final readChapter = snap2.data!;
+                          // DÉTAIL DÉFILABLE
+                          return Expanded(
+                            child: LateDetailView(
+                              muId: widget.muId,
+                              mangaTitle: manga.title,
+                              mangaDescription: manga.description,
+                              rating: manga.rating,
+                              mangaChapters: ChaptersHelper.buildChapterList(
+                                manga.totalChapters,
+                              ),
+                              mangaTotalChapters: manga.totalChapters,
+                              isCompleted: manga.isCompleted,
+                              authors: manga.authors,
+                              year: manga.year,
+                              readChapters: readChapter,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            // BARRE DE BOUTONS FIXE EN BAS
+            Container(
+              height: 70,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade100,
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
+              ),
+              child: FractionallySizedBox(
+                heightFactor: 0.9,
+                child: Row(
+                  children: [
+                    // Bouton 1 => ratio 3 sur total 8, maxWidth = 150
+                    const SizedBox(width: 10),
+                    Flexible(
+                      flex: 3,
+                      fit: FlexFit.loose,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 150),
+                        child: SizedBox(
+                          width: double.infinity,
                           height: double.infinity,
-                          width: 100,
                           child: ElevatedButton(
                             style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                const Color.fromRGBO(235, 245, 255, 1),
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                const Color.fromRGBO(255, 235, 240, 50),
                               ),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                            onPressed: _toggleLibrary,
-                            child: Icon(
-                              _inLibrary ? Icons.remove : Icons.add,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: double.infinity,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(themePage),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                              shape: WidgetStateProperty.all<OutlinedBorder>(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              /* … */
+                            },
+                            child: iconFavorite,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 15), // espace entre boutons
+                    // Bouton 2 => ratio 5 sur total 8, maxWidth = 350
+                    Flexible(
+                      flex: 5,
+                      fit: FlexFit.loose,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                themePage,
+                              ),
+                              shape: WidgetStateProperty.all<OutlinedBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              /* … */
+                            },
                             child: const Text(
-                              'Lire',
-                              style: TextStyle(fontSize: 17),
+                              'Lire plus tard',
+                              style: TextStyle(fontSize: 17,color: Colors.white),
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-void loadIconFavorite() {
-  iconFavorite = Icon(
-    Icons.star,
-    color: isFavorite ? Colors.orange : Colors.grey,
-  );
+  loadIconFavorite() {
+    if (isFavorite) {
+      iconFavorite = const Icon(color: Colors.orange, Icons.star);
+    } else {
+      iconFavorite = const Icon(color: Colors.grey, Icons.star);
+    }
+  }
 }
