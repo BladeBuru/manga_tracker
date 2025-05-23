@@ -79,8 +79,8 @@ class _LoginViewState extends State<LoginView> {
     WillPopScope forbids swipe back gesture to restrict user from going back to
     previous screen (which can be my account screen)
     */
-    return WillPopScope(
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         backgroundColor: Colors.grey[200],
         body: SafeArea(
@@ -149,6 +149,27 @@ class _LoginViewState extends State<LoginView> {
                     const SizedBox(height: 30),
 
                     AuthButton(text: "Se connecter", onTap: onPressed),
+                    const SizedBox(height: 15),
+
+                    TextButton.icon(
+                      onPressed: () async {
+                        final success = await authService.tryBiometricLogin();
+                        if (!mounted) return;
+
+                        if (success) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => const BottomNavbar()),
+                          );
+                        } else {
+                          errorNotification.showErrorSnackBar(
+                            'Échec de l’authentification biométrique',
+                            context,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.fingerprint, color: Colors.grey),
+                      label: const Text("Connexion biométrique", style: TextStyle(color: Colors.grey)),
+                    ),
 
                     const SizedBox(height: 40),
 
