@@ -11,35 +11,52 @@ class StartupPage extends StatefulWidget {
   State<StartupPage> createState() => _StartupPageState();
 }
 
+
 class _StartupPageState extends State<StartupPage> {
   final authService = getIt<AuthService>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  bool _biometricTriggered = false;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: authService.isUserAuthenticated(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data as bool == true) {
-              // User credentials still valid
-              return const BottomNavbar();
-            } else {
-              // User credentials not valid anymore
-              return const LoginView();
-            }
-          }
-          return const SizedBox(
-            height: 200.0,
-            width: 200.0,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+    return FutureBuilder<bool>(
+      future: authService.isUserAuthenticated(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
           );
-        });
+        }
+
+        if (!snapshot.hasData || snapshot.data == false) {
+          return const LoginView();
+        }
+
+        // ✅ Exécuter _checkBiometric uniquement après que le build est fini
+        if (!_biometricTriggered) {
+          _biometricTriggered = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _checkBiometric();
+          });
+        }
+
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      },
+    );
+  }
+
+  void _checkBiometric() async {
+    final token = await authService.getTokenWithBiometric();
+
+    if (token != null && !authService.isTokenExpired(token)) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const BottomNavbar()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginView()),
+      );
+    }
   }
 }

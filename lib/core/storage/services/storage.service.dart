@@ -12,13 +12,13 @@ class StorageService {
     return this;
   }
 
-  Future<void> writeSecureData(StorageItem newItem) async {
-    await _secureStorage.write(key: newItem.key, value: newItem.value);
+  Future<void> writeSecureData(String key, String value) async {
+    await _secureStorage.write(key: key, value: value);
   }
 
   Future<void> writeAllSecureData(List<StorageItem> newItems) async {
     for (var newItem in newItems) {
-      writeSecureData(newItem);
+      writeSecureData(newItem.key,newItem.value);
     }
   }
 
