@@ -11,52 +11,57 @@ class StartupPage extends StatefulWidget {
   State<StartupPage> createState() => _StartupPageState();
 }
 
-
 class _StartupPageState extends State<StartupPage> {
   final authService = getIt<AuthService>();
-  bool _biometricTriggered = false;
+
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: authService.isUserAuthenticated(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+  void initState() {
+    super.initState();
+    _attemptAutoLogin();
+  }
 
-        if (!snapshot.hasData || snapshot.data == false) {
-          return const LoginView();
-        }
+  void _attemptAutoLogin() async {
+    // Étape 1 : accessToken valide ?
+    final accessToken = await authService.storageService.readSecureData('accessToken');
+    if (accessToken != null && !authService.isTokenExpired(accessToken)) {
+      _goToApp();
+      return;
+    }
 
-        // ✅ Exécuter _checkBiometric uniquement après que le build est fini
-        if (!_biometricTriggered) {
-          _biometricTriggered = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _checkBiometric();
-          });
-        }
+    // Étape 2 : refreshToken ?
+    final refreshed = await authService.refreshAccessToken();
+    if (refreshed) {
+      _goToApp();
+      return;
+    }
 
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
-      },
+    // Étape 3 : tentative de login biométrique
+    final biometricSuccess = await authService.tryBiometricLogin();
+    if (biometricSuccess) {
+      _goToApp();
+      return;
+    }
+    // Sinon → écran de login
+    _goToLogin();
+  }
+
+  void _goToApp() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const BottomNavbar()),
     );
   }
 
-  void _checkBiometric() async {
-    final token = await authService.getTokenWithBiometric();
+  void _goToLogin() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginView()),
+    );
+  }
 
-    if (token != null && !authService.isTokenExpired(token)) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const BottomNavbar()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginView()),
-      );
-    }
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }
