@@ -53,9 +53,7 @@ class BottomNavbarState extends State<BottomNavbar> {
         selectedFontSize: 15,
         selectedIconTheme: IconThemeData(color: selectedColor, size: 30),
         selectedItemColor: selectedColor,
-        unselectedIconTheme: IconThemeData(
-          color: unselectedColor,
-        ),
+        unselectedIconTheme: IconThemeData(color: unselectedColor),
         unselectedItemColor: unselectedColor,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -63,28 +61,28 @@ class BottomNavbarState extends State<BottomNavbar> {
               Icons.home,
               color: currntIndex == 0 ? selectedColor : unselectedColor,
             ),
-            label: 'Home',
+            label: 'Accueil',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.book,
               color: currntIndex == 1 ? selectedColor : unselectedColor,
             ),
-            label: 'Library',
+            label: 'Bibliothèque',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
               color: currntIndex == 2 ? selectedColor : unselectedColor,
             ),
-            label: 'Search',
+            label: 'Recherche',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.person,
               color: currntIndex == 3 ? selectedColor : unselectedColor,
             ),
-            label: 'Account',
+            label: 'Mon compte',
           ),
         ],
       ),

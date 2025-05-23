@@ -9,6 +9,7 @@ import '../../manga/services/manga.service.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
+
   @override
   State<Search> createState() => _RechercheState();
 }
@@ -21,8 +22,9 @@ class _RechercheState extends State<Search> {
   Timer? searchOnStoppedTyping;
   final Color themePage = const Color(0xffe0234f);
   int indexButtonBar = 0;
-  late Widget childWidget =
-      const Center(child: Text("Nothing to display yet!"));
+  late Widget childWidget = const Center(
+    child: Text("Rien à afficher pour le moment !"),
+  );
 
   void doSearchManga() async {
     if (searchController.text.isEmpty) {
@@ -40,7 +42,8 @@ class _RechercheState extends State<Search> {
       setState(() => searchOnStoppedTyping?.cancel());
     }
     setState(
-        () => searchOnStoppedTyping = Timer(duration, () => doSearchManga()));
+      () => searchOnStoppedTyping = Timer(duration, () => doSearchManga()),
+    );
   }
 
   @override
@@ -49,56 +52,55 @@ class _RechercheState extends State<Search> {
       resizeToAvoidBottomInset: false,
       body: Padding(
         padding: const EdgeInsets.all(25.0),
-        child: Column(children: [
-          //Espace
-          const SizedBox(height: 20),
+        child: Column(
+          children: [
+            //Espace
+            const SizedBox(height: 20),
 
-          // Search bar
-          Container(
-            width: 950,
-            decoration: BoxDecoration(
+            // Search bar
+            Container(
+              width: 950,
+              decoration: BoxDecoration(
                 color: const Color(0xfff4f3fd),
                 border: Border.all(color: Colors.white),
-                borderRadius: BorderRadius.circular(12)),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: SizedBox(
-                    height: 20,
-                    child: Image.asset('assets/images/mask_logo.png'),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: SizedBox(
+                      height: 20,
+                      child: Image.asset('assets/images/mask_logo.png'),
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: TextField(
+                  Expanded(
+                    child: TextField(
                       controller: searchController,
                       onChanged: _onChangeHandler,
                       decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Search Manga, Manwha, ...',
-                          hintStyle: TextStyle(color: Color(0xffb8b8d2)))),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: IconButton(
-                    icon: const Icon(Icons.clear, size: 20),
-                    onPressed: () {
-                      searchController.clear();
-                    },
+                        border: InputBorder.none,
+                        hintText: 'Rechercher Mangas, Manwhas, ...',
+                        hintStyle: TextStyle(color: Color(0xffb8b8d2)),
+                      ),
+                    ),
                   ),
-                )
-              ],
+                  const SizedBox(width: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.clear, size: 20),
+                      onPressed: () {
+                        searchController.clear();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: SizedBox(
-              child: childWidget,
-            ),
-          )
-        ]),
+            Expanded(child: SizedBox(child: childWidget)),
+          ],
+        ),
       ),
     );
   }

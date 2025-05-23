@@ -47,11 +47,10 @@ class _LibraryViewState extends State<LibraryView> {
     return Row(
       children: [
         Expanded(
-
-          child: HomepageMangaList(
-            mangas: savedMangas,
-            onDetailReturn: reloadMangas,
-          ),
+            child: HomepageMangaList(
+              mangas: savedMangas,
+              onDetailReturn: reloadMangas,
+            ),
         ),
       ],
     );
