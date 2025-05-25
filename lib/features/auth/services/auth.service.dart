@@ -114,6 +114,8 @@ class AuthService {
   logout() {
     storageService.deleteSecureData('refreshToken');
     storageService.deleteSecureData('accessToken');
+    // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
+
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
@@ -123,6 +125,9 @@ class AuthService {
 
 
   Future<bool> tryBiometricLogin() async {
+    final hasCreds = await storageService.hasBiometricCredentials();
+    if (!hasCreds) return false;
+
     final isAvailable = await biometricService.hasBiometricSupport();
     if (!isAvailable) return false;
 

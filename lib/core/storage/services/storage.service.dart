@@ -58,4 +58,8 @@ class StorageService {
   Future<String?> readSecureDataBiometric(String key) async {
     return await _biometricStorage.read(key: key);
   }
+  Future<bool> hasBiometricCredentials() async {
+    final creds = await readSecureDataBiometric('secure_credentials');
+    return creds != null;
+  }
 }
