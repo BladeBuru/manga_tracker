@@ -40,6 +40,7 @@ class LateDetailView extends StatefulWidget {
 class _LateDetailViewState extends State<LateDetailView> {
   bool _isExpanded = false;
   num? _currentReadCount;
+  bool _isSaving = false;
   final LibraryService _libraryService = getIt<LibraryService>();
   @override
   void initState() {
@@ -87,6 +88,9 @@ class _LateDetailViewState extends State<LateDetailView> {
     }
 
     Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
+      if (_isSaving) return;
+      setState(() => _isSaving = true);
+
       if (_currentReadCount! < 0) {
         await handleAddToLibrary(mangaId);
       }
@@ -107,6 +111,7 @@ class _LateDetailViewState extends State<LateDetailView> {
       }
 
       if (!success && mounted) {
+        setState(()  => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erreur lors de la mise à jour du chapitre.')),
         );
@@ -116,6 +121,7 @@ class _LateDetailViewState extends State<LateDetailView> {
       if (mounted) {
         setState(() {
           _currentReadCount = newCount;
+          _isSaving = false;
         });
 
         final message = newCount == 0
@@ -322,22 +328,33 @@ class _LateDetailViewState extends State<LateDetailView> {
                   ),
                   const SizedBox(height: 10),
                   Column(
-                    children:
-                        chapNumbers.map((chapNum) {
-                          final line = chapNum.toString().padLeft(2, '0');
-                          final isRead = chapNum <= _currentReadCount!;
+                    children: chapNumbers.map((chapNum) {
+                      final line = chapNum.toString().padLeft(2, '0');
+                      final isRead = chapNum <= _currentReadCount!;
 
-                          return GestureDetector(
-                            onTap: () async {
-                              handleSaveChapter(widget.muId, chapNum);
-                            },
-                            child: RowChapter(
-                              line: line,
-                              chapter: chapNum.toString(),
-                              read: isRead,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Material(
+                          color: Colors.white,              // couleur de fond de la ligne
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _isSaving
+                                ? null
+                                : () => handleSaveChapter(widget.muId, chapNum),
+                            child: AnimatedScale(
+                              scale: _isSaving ? 1.0 : 1.0,
+                              duration: const Duration(milliseconds: 100),
+                              child: RowChapter(
+                                line: line,
+                                chapter: chapNum.toString(),
+                                read: isRead,
+                              ),
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),

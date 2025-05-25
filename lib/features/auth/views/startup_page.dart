@@ -14,32 +14,54 @@ class StartupPage extends StatefulWidget {
 class _StartupPageState extends State<StartupPage> {
   final authService = getIt<AuthService>();
 
+
   @override
   void initState() {
     super.initState();
+    _attemptAutoLogin();
+  }
+
+  void _attemptAutoLogin() async {
+    // Étape 1 : accessToken valide ?
+    final accessToken = await authService.storageService.readSecureData('accessToken');
+    if (accessToken != null && !authService.isTokenExpired(accessToken)) {
+      _goToApp();
+      return;
+    }
+
+    // Étape 2 : refreshToken ?
+    final refreshed = await authService.refreshAccessToken();
+    if (refreshed) {
+      _goToApp();
+      return;
+    }
+
+    // Étape 3 : tentative de login biométrique
+    final biometricSuccess = await authService.tryBiometricLogin();
+    if (biometricSuccess) {
+      _goToApp();
+      return;
+    }
+    // Sinon → écran de login
+    _goToLogin();
+  }
+
+  void _goToApp() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const BottomNavbar()),
+    );
+  }
+
+  void _goToLogin() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginView()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: authService.isUserAuthenticated(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data as bool == true) {
-              // User credentials still valid
-              return const BottomNavbar();
-            } else {
-              // User credentials not valid anymore
-              return const LoginView();
-            }
-          }
-          return const SizedBox(
-            height: 200.0,
-            width: 200.0,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        });
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }

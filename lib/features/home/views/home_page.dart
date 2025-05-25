@@ -110,12 +110,17 @@ class _HomePageState extends State<HomePage> {
               //PP et Texte
               Row(
                 children: [
-                  const CircleAvatar(
-                    minRadius: 20.0,
-                    maxRadius: 20.0,
-                    backgroundImage: AssetImage('assets/images/mask_logo.png'),
+                  CircleAvatar(
+                    radius: 20,
                     backgroundColor: Colors.transparent,
-                  ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/mask_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                  ,
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
