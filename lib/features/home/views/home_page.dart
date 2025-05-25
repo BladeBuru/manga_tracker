@@ -4,6 +4,7 @@ import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 
+import '../../../core/notifier/notifier.dart';
 import '../../auth/services/auth.service.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/services/manga.service.dart';
@@ -12,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../manga/widgets/manga_card.dart';
-import '../../../core/errors/error_notifier.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   final MangaService mangaService = getIt<MangaService>();
   final UserService userService = getIt<UserService>();
   final AuthService authService = getIt<AuthService>();
-  final ErrorNotifier errorNotification = ErrorNotifier();
+  final Notifier notifier = Notifier();
   String? displayUsername;
   bool hasAlreadyBeenRedirected = false;
 
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
     if (!hasAlreadyBeenRedirected && context.mounted) {
       authService.logout();
       redirectToLoginPage();
-      errorNotification.showErrorSnackBar('Expired session', context);
+      notifier.error( context,'Expired session');
       setState(() {
         if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;

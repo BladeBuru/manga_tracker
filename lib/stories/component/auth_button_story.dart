@@ -1,8 +1,8 @@
 import 'package:dashbook/dashbook.dart';
 import 'package:flutter/material.dart';
 
-import '../core/components/auth_button.dart';
-import '../core/theme/app_theme.dart';
+import '../../core/components/auth_button.dart';
+import '../../core/theme/app_theme.dart';
 
 void addAuthButtonStory(Dashbook dashbook) {
   dashbook.storiesOf('Core/AuthButton')
