@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../features/auth/services/validator.service.dart';
-import '../../features/auth/views/widgets/intput_textfield.dart';
+import 'intput_textfield.dart';
 
 class PasswordFields extends StatefulWidget {
   final TextEditingController passwordControler;
@@ -28,17 +28,20 @@ class _PasswordFieldsState extends State<PasswordFields> {
       children: [
         IntputTexteField(
           controller: widget.passwordControler,
-          textField: widget.update ? 'Nouveau mot de passe' : 'Mot de passe',
+          hintText: widget.update ? 'Nouveau mot de passe' : 'Mot de passe',
           obscureText: true,
+          keyboardType: TextInputType.visiblePassword,
           validator: widget.validatorService.validatePassword,
+          autofillHints: const [AutofillHints.newPassword,AutofillHints.password],
         ),
 
         const SizedBox(height: 15),
 
         IntputTexteField(
           controller: widget.confirmPasswordControler,
-          textField: 'Confirmation',
+          hintText: 'Confirmation',
           obscureText: true,
+          keyboardType: TextInputType.visiblePassword,
           validator: (value) {
             return widget.validatorService.validateConfirmPassword(
               value,

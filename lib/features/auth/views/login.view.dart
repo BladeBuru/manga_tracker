@@ -11,7 +11,7 @@ import 'register.view.dart';
 import 'package:flutter/material.dart';
 import 'widgets/square_tile.dart';
 import '../../home/views/bottom_navbar.dart';
-import 'widgets/intput_textfield.dart';
+import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';
 
 class LoginView extends StatefulWidget {
@@ -116,9 +116,11 @@ class _LoginViewState extends State<LoginView> {
                     //Login texte field
                     IntputTexteField(
                       controller: _emailController,
-                      textField: "Adresse e-mail",
+                      hintText: "Adresse e-mail",
                       obscureText: false,
+                      autofillHints: const [AutofillHints.email],
                       validator: validatorService.validateEmailAddress,
+                        keyboardType:  TextInputType.emailAddress
                     ),
 
                     const SizedBox(height: 15),
@@ -126,8 +128,9 @@ class _LoginViewState extends State<LoginView> {
                     //Password texte field
                     IntputTexteField(
                       controller: _passwordControler,
-                      textField: "Mot de passe",
+                      hintText: "Mot de passe",
                       obscureText: true,
+                      autofillHints: const [AutofillHints.password],
                       validator: validatorService.noValidation,
                     ),
 

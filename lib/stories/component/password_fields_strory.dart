@@ -1,5 +1,6 @@
 import 'package:dashbook/dashbook.dart';
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/components/auth_button.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/components/password_fields.dart';
 import '../../../features/auth/services/validator.service.dart';
@@ -31,12 +32,10 @@ void addPasswordFieldsStory(Dashbook dashbook) {
                         validatorService: validator,
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          final isValid = formKey.currentState?.validate() ?? false;
-                          debugPrint("Formulaire valide : $isValid");
-                        },
-                        child: const Text('Valider'),
+                      AuthButton(
+                          text: 'Valider',
+                          onTap: () { final isValid = formKey.currentState?.validate() ?? false;}
+
                       ),
                     ],
                   ),
