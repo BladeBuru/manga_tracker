@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dashbook/dashbook.dart';
+import 'package:mangatracker/stories/component/Square_Title_story.dart';
 import 'package:mangatracker/stories/component/auth_button_story.dart';
 import 'package:mangatracker/stories/component/inpute_textfield_story.dart';
 import 'package:mangatracker/stories/component/password_fields_strory.dart';
@@ -13,6 +14,7 @@ void main() {
   addInputTextFieldStory(dashbook);
   addPasswordFieldsStory(dashbook);
   addNotifierServiceStory(dashbook);
+  addSquareTileStory(dashbook);
 
   runApp(dashbook);
 }
