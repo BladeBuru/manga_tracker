@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
@@ -11,18 +9,16 @@ import '../service_locator/service_locator.dart';
 import '../storage/services/storage.service.dart';
 
 class HttpService {
-  StorageService storageService = getIt<StorageService>();
-  AuthService authService = getIt<AuthService>();
+  final StorageService _storage = getIt<StorageService>();
+  final AuthService _auth = getIt<AuthService>();
 
-  Future<Response> _requestWithAuthTokens(
-    String method,
-    Uri url, {
-    Map<String, String>? headers,
-    Object? body,
-  }) async {
-    headers = await _addAuthTokensHeaders(headers);
-
-    switch (method.toUpperCase()) {
+  Future<Response> _performRequest(
+      String method,
+      Uri url, {
+        required Map<String, String> headers,
+        Object? body,
+      }) {
+    switch (method) {
       case 'GET':
         return http.get(url, headers: headers);
       case 'POST':
@@ -36,63 +32,90 @@ class HttpService {
     }
   }
 
-  Future<Response> getWithAuthTokens(Uri url, {Map<String, String>? headers}) =>
-      _requestWithAuthTokens('GET', url, headers: headers);
+  Future<Response> _requestWithAuthTokens(
+      String method,
+      Uri url, {
+        Map<String, String>? headers,
+        Object? body,
+      }) async {
+    headers = await _addAuthHeaders(headers);
 
-  Future<Response> postWithAuthTokens(
-    Uri url, {
-    Map<String, String>? headers,
-    Object? body,
-  }) => _requestWithAuthTokens('POST', url, headers: headers, body: body);
 
-  Future<Response> putWithAuthTokens(
-    Uri url, {
-    Map<String, String>? headers,
-    Object? body,
-  }) => _requestWithAuthTokens('PUT', url, headers: headers, body: body);
-
-  Future<Response> deleteWithAuthTokens(
-    Uri url, {
-    Map<String, String>? headers,
-    Object? body,
-  }) => _requestWithAuthTokens('DELETE', url, headers: headers, body: body);
-
-  Future<Map<String, String>?> _addAuthTokensHeaders(
-      Map<String, String>? headers) async {
-    String? accessToken = await storageService.readSecureData('accessToken');
-    String? refreshToken = await storageService.readSecureData('refreshToken');
-
-    if (authService.isTokenExpired(refreshToken)) {
-      throw InvalidCredentialsException(
-          'Both AccessToken and refreshToken are invalid');
-    }
-
-    if (authService.isTokenExpired(accessToken)) {
-      accessToken = await renewAccessToken(refreshToken!);
-    }
-
-    headers ??= {};
-    headers.putIfAbsent(
-      HttpHeaders.authorizationHeader,
-      () => "Bearer ${accessToken.toString()}",
+    Response res = await _performRequest(
+      method,
+      url,
+      headers: headers,
+      body: body,
     );
+
+
+    if (res.statusCode == HttpStatus.unauthorized) {
+
+      final refreshToken = await _storage.readSecureData('refreshToken');
+      if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
+        throw InvalidCredentialsException('Both tokens expired');
+      }
+
+      final refreshed = await _auth.refreshAccessToken();
+      if (!refreshed) {
+        throw InvalidCredentialsException('Could not refresh access token');
+      }
+
+
+      headers = await _addAuthHeaders(null);
+
+      res = await _performRequest(
+        method,
+        url,
+        headers: headers,
+        body: body,
+      );
+      if (res.statusCode == HttpStatus.unauthorized) {
+        throw InvalidCredentialsException('Invalid credentials');
+      }
+    }
+
+    return res;
+  }
+
+  Future<Map<String, String>> _addAuthHeaders(Map<String, String>? h) async {
+    final headers = h == null ? <String,String>{} : Map.of(h);
+
+
+    String? accessToken = await _storage.readSecureData('accessToken');
+    String? refreshToken = await _storage.readSecureData('refreshToken');
+
+    if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
+      throw InvalidCredentialsException('Refresh token expired');
+    }
+
+
+    if (accessToken == null || _auth.isTokenExpired(accessToken)) {
+      final ok = await _auth.refreshAccessToken();
+      if (!ok) {
+        throw InvalidCredentialsException('Could not refresh access token');
+      }
+      accessToken = await _storage.readSecureData('accessToken');
+    }
+
+    headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
     return headers;
   }
 
-  Future<String> renewAccessToken(String refreshToken) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-    var res = await http.post(url, headers: {
-      HttpHeaders.authorizationHeader: "Bearer ${refreshToken.toString()}"
-    });
+  // Méthodes publiques
+  Future<Response> getWithAuthTokens(Uri url,
+      {Map<String, String>? headers}) =>
+      _requestWithAuthTokens('GET', url, headers: headers);
 
-    switch (res.statusCode) {
-      case HttpStatus.created:
-        return jsonDecode(res.body)['refreshToken'];
-      case HttpStatus.notFound:
-        throw InvalidCredentialsException(
-            'Invalid Refresh Token ${res.statusCode}');
-      default:
-        throw Exception('Unknown Error ${res.statusCode}');
-    }
-  }
+  Future<Response> postWithAuthTokens(Uri url,
+      {Map<String, String>? headers, Object? body}) =>
+      _requestWithAuthTokens('POST', url, headers: headers, body: body);
+
+  Future<Response> putWithAuthTokens(Uri url,
+      {Map<String, String>? headers, Object? body}) =>
+      _requestWithAuthTokens('PUT', url, headers: headers, body: body);
+
+  Future<Response> deleteWithAuthTokens(Uri url,
+      {Map<String, String>? headers, Object? body}) =>
+      _requestWithAuthTokens('DELETE', url, headers: headers, body: body);
 }

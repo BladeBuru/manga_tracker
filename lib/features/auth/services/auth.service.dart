@@ -92,6 +92,7 @@ class AuthService {
 
     return false;
   }
+
   String _decodeBase64(String str) {
     String output = str.replaceAll('-', '+').replaceAll('_', '/');
 
