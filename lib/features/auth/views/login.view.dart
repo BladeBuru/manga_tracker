@@ -153,7 +153,7 @@ class _LoginViewState extends State<LoginView> {
 
                     TextButton.icon(
                       onPressed: () async {
-                        final success = await authService.tryBiometricLogin();
+                        final success = await authService.tryBiometricLogin(context);
                         if (!mounted) return;
 
                         if (success) {
