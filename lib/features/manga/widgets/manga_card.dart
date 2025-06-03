@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 
 import '../helpers/image.helper.dart';
@@ -71,11 +70,7 @@ class MangaCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             parseFragment(mangaTitle).text!,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: const Color(0xff1f1f39),
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall,
                             overflow: TextOverflow.fade,
                             maxLines: 2,
                           ),
@@ -88,11 +83,7 @@ class MangaCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           mangaAuthor,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style:Theme.of(context).textTheme.bodySmall,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
