@@ -6,7 +6,7 @@ import '../services/validator.service.dart';
 import '../../../core/components/intput_textfield.dart';
 import '../../../core/components/auth_button.dart';
 import 'login.view.dart';
-import 'widgets/square_tile.dart';
+import '../widgets/square_tile.dart';
 import '../services/auth.service.dart';
 
 class RegisterView extends StatefulWidget {
@@ -55,9 +55,9 @@ class _RegisterViewState extends State<RegisterView> {
     WillPopScope forbids swipe back gesture to restrict user from going back to
     previous screen (which can be my account screen)
     */
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Container(
+     return PopScope(
+       canPop: false,
+       child: Container(
         color: Colors.grey[200],
         child: SafeArea(
           child: Scaffold(

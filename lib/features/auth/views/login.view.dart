@@ -9,7 +9,7 @@ import '../../../core/storage/services/storage.service.dart';
 import '../services/validator.service.dart';
 import 'register.view.dart';
 import 'package:flutter/material.dart';
-import 'widgets/square_tile.dart';
+import '../widgets/square_tile.dart';
 import '../../home/views/bottom_navbar.dart';
 import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';

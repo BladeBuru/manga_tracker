@@ -1,7 +1,7 @@
 import 'package:dashbook/dashbook.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
-import '../../features/auth/views/widgets/square_tile.dart';
+import '../../features/auth/widgets/square_tile.dart';
 
 void addSquareTileStory(Dashbook dashbook) {
   dashbook.storiesOf('Auth/SquareTile')
