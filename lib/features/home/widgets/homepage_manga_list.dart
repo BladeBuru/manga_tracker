@@ -29,7 +29,9 @@ class HomepageMangaList extends StatelessWidget {
                     muId: manga.muId.toString(),
                     mangaAuthor: manga.year,
                     largeImgPath: manga.largeCoverUrl,
-                    lastChapter: manga.rating,
+                    lastChapter: manga.totalChapters,
+                    readChapter: manga.readChapters,
+                    rating: manga.rating,
                     onDetailReturn: onDetailReturn,
                   );
                 },

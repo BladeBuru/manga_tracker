@@ -7,6 +7,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/views/startup_page.dart';
 
+import 'core/theme/app_theme.dart';
+
 Future<void> main() async {
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");
@@ -38,6 +40,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MangaTracker',
       debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      // darkTheme: AppTheme.dark,
+      // themeMode: ThemeMode.system,
       home: const StartupPage(),
       scrollBehavior: ScrollConfiguration.of(context).copyWith(
         physics: const BouncingScrollPhysics(

@@ -2,16 +2,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/profile/helpers/user.helper.dart';
-import 'package:mangatracker/core/errors/error_notifier.dart';
+import '../../../core/notifier/notifier.dart';
 import '../../../core/service_locator/service_locator.dart';
 import '../../../core/storage/model/storage_item.model.dart';
 import '../../../core/storage/services/storage.service.dart';
 import '../services/validator.service.dart';
 import 'register.view.dart';
 import 'package:flutter/material.dart';
-import 'widgets/square_tile.dart';
+import '../widgets/square_tile.dart';
 import '../../home/views/bottom_navbar.dart';
-import 'widgets/intput_textfield.dart';
+import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';
 
 class LoginView extends StatefulWidget {
@@ -28,7 +28,7 @@ class _LoginViewState extends State<LoginView> {
   final authService = getIt<AuthService>();
   final StorageService storageService = getIt<StorageService>();
   final ValidatorService validatorService = getIt<ValidatorService>();
-  final ErrorNotifier errorNotification = ErrorNotifier();
+  final Notifier notifier = Notifier();
 
   onPressed() async {
     String email = _emailController.text.toLowerCase();
@@ -45,10 +45,10 @@ class _LoginViewState extends State<LoginView> {
     try {
       payload = await authService.attemptLogIn(email, password);
     } on InvalidCredentialsException {
-      errorNotification.showErrorSnackBar('Invalid Credentials', context);
+      notifier.error(context, 'Identifiants invalides');
       return;
     } on Exception {
-      errorNotification.showErrorSnackBar('Unknown Error', context);
+      notifier.error(context, 'Erreur inconnue');
     }
 
     final List<StorageItem> tokens = <StorageItem>[
@@ -116,9 +116,11 @@ class _LoginViewState extends State<LoginView> {
                     //Login texte field
                     IntputTexteField(
                       controller: _emailController,
-                      textField: "Adresse e-mail",
+                      hintText: "Adresse e-mail",
                       obscureText: false,
+                      autofillHints: const [AutofillHints.email],
                       validator: validatorService.validateEmailAddress,
+                        keyboardType:  TextInputType.emailAddress
                     ),
 
                     const SizedBox(height: 15),
@@ -126,8 +128,9 @@ class _LoginViewState extends State<LoginView> {
                     //Password texte field
                     IntputTexteField(
                       controller: _passwordControler,
-                      textField: "Mot de passe",
+                      hintText: "Mot de passe",
                       obscureText: true,
+                      autofillHints: const [AutofillHints.password],
                       validator: validatorService.noValidation,
                     ),
 
@@ -153,7 +156,7 @@ class _LoginViewState extends State<LoginView> {
 
                     TextButton.icon(
                       onPressed: () async {
-                        final success = await authService.tryBiometricLogin();
+                        final success = await authService.tryBiometricLogin(context);
                         if (!mounted) return;
 
                         if (success) {
@@ -161,10 +164,7 @@ class _LoginViewState extends State<LoginView> {
                             MaterialPageRoute(builder: (_) => const BottomNavbar()),
                           );
                         } else {
-                          errorNotification.showErrorSnackBar(
-                            'Échec de l’authentification biométrique',
-                            context,
-                          );
+                          notifier.error(context, 'Échec de l’authentification biométrique');
                         }
                       },
                       icon: const Icon(Icons.fingerprint, color: Colors.grey),

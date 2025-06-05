@@ -5,7 +5,6 @@ import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
-import 'package:mangatracker/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -269,7 +268,7 @@ class _DetailState extends State<Detail> {
                           child: ElevatedButton(
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all<Color>(
-                                themePage,
+                                Theme.of(context).colorScheme.primary,
                               ),
                               shape: WidgetStateProperty.all<OutlinedBorder>(
                                 RoundedRectangleBorder(

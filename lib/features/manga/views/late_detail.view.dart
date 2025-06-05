@@ -161,13 +161,13 @@ class _LateDetailViewState extends State<LateDetailView> {
                   ),
                   Wrap(
                     children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 30),
+                       Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 25),
                       Text(
                         widget.rating,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(fontSize: 20),
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 138, 40, 31),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
@@ -303,7 +303,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                 icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
                 label: Text(_isExpanded ? 'Voir moins' : 'Voir plus'),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.pinkAccent,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                 ),

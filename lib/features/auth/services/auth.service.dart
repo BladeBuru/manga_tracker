@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -125,14 +126,14 @@ class AuthService {
   }
 
 
-  Future<bool> tryBiometricLogin() async {
+  Future<bool> tryBiometricLogin(BuildContext context) async {
     final hasCreds = await storageService.hasBiometricCredentials();
     if (!hasCreds) return false;
 
     final isAvailable = await biometricService.hasBiometricSupport();
     if (!isAvailable) return false;
 
-    final authenticated = await biometricService.authenticateWithBiometrics();
+    final authenticated = await biometricService.authenticateWithBiometrics(context);
     if (!authenticated) return false;
 
     final jsonCreds = await storageService.readSecureDataBiometric('secure_credentials');

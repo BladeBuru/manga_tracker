@@ -1,57 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class AuthButton extends StatefulWidget {
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+
+class AuthButton extends StatelessWidget {
   final String text;
   final Function()? onTap;
+  final EdgeInsetsGeometry padding;
+  final double borderRadius;
 
-  const AuthButton({super.key, required this.text, required this.onTap});
-
-  @override
-  State<AuthButton> createState() => _AuthButtonState();
-}
-
-class _AuthButtonState extends State<AuthButton> {
-  Color backgroundColor = Colors.white54;
-  Color boundaryColor = Colors.red.shade400;
-  Color txtColor = Colors.red.shade400;
+  const AuthButton({
+    super.key,
+    required this.text,
+    required this.onTap,
+    this.padding = const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
+    this.borderRadius = 30,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 30),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(30)),
-        child: Material(
-          child: InkWell(
-            highlightColor: Colors.orange.withOpacity(0.3),
-            splashColor: Colors.red.withOpacity(0.5),
-            onTap: callBtnAction,
-            child: Ink(
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: const BorderRadius.all(Radius.circular(30)),
-                border: Border.all(width: 2.5, color: boundaryColor),
-              ),
-              child: Center(
-                child: Text(
-                  widget.text,
-                  style: TextStyle(
-                      color: txtColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
+    return Material(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(borderRadius),
+        highlightColor: AppColors.highlight,
+        splashColor: AppColors.splash,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap?.call();
+        },
+        child: Ink(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(width: 2.5, color: AppColors.border),
+          ),
+          padding: padding,
+          child: Center(
+            child: Text(
+              text,
+              style: AppTextStyles.authButton,
             ),
           ),
         ),
       ),
     );
-  }
-
-  callBtnAction() {
-    HapticFeedback.lightImpact();
-    widget.onTap!();
   }
 }

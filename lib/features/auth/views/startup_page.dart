@@ -18,10 +18,13 @@ class _StartupPageState extends State<StartupPage> {
   @override
   void initState() {
     super.initState();
-    _attemptAutoLogin();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _attemptAutoLogin(context); // ici tu peux passer le context en toute sécurité
+    });
   }
 
-  void _attemptAutoLogin() async {
+
+  void _attemptAutoLogin(BuildContext context) async {
     // Étape 1 : accessToken valide ?
     final accessToken = await authService.storageService.readSecureData('accessToken');
     if (accessToken != null && !authService.isTokenExpired(accessToken)) {
@@ -37,7 +40,7 @@ class _StartupPageState extends State<StartupPage> {
     }
 
     // Étape 3 : tentative de login biométrique
-    final biometricSuccess = await authService.tryBiometricLogin();
+    final biometricSuccess = await authService.tryBiometricLogin(context);
     if (biometricSuccess) {
       _goToApp();
       return;

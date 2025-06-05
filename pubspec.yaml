@@ -44,6 +44,7 @@ dependencies:
   html: ^0.15.4
   fancy_button_flutter: ^1.0.3+1
   get_it: ^8.0.3
+  dashbook: ^0.1.10
 
 
 dev_dependencies:
