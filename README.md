@@ -9,10 +9,6 @@ MangaTracker is a Flutter application to track your favorite mangas.
 - A code editor such as [Android Studio](https://developer.android.com/studio) or [Visual Studio Code](https://code.visualstudio.com/)
 - A simulator or physical device to run the app
 
-Bien sûr ! Voici ta section **`🚀 Quick Start`** mise à jour avec la commande pour démarrer **Dashbook** (storybook Flutter) :
-
----
-
 ## 🚀 Quick Start
 
 1. **Clone the project**
