@@ -1,6 +1,4 @@
 import 'package:html/parser.dart';
-
-import '../../../core/theme/app_colors.dart';
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
 import 'package:flutter/material.dart';
@@ -153,7 +151,7 @@ class MangaRow extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 12.0),
                     child: Row(
                       children: [
-                         Icon(Icons.star, color: AppColors.primary, size: 14),
+                         Icon(Icons.star, color:Theme.of(context).colorScheme.primary, size: 14),
                         const SizedBox(width: 2),
                         Text(
                           rating!,

@@ -10,7 +10,6 @@ class MangaCard extends StatelessWidget {
   final String mangaAuthor;
   final String? largeImgPath;
   final String rating;
-  final Color themePage = const Color(0xffe0234f);
 
   const MangaCard({
     super.key,
@@ -93,7 +92,7 @@ class MangaCard extends StatelessWidget {
 
                       Text(
                         rating.toString(),
-                        style: TextStyle(color: themePage),
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
                       ),
                     ],
                   )
