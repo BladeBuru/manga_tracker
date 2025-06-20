@@ -29,23 +29,20 @@ class BiometricService {
       // Gestion spécifique des blocages biométriques
       if (e.code == 'PermanentlyLockedOut' || e.message?.contains('ERROR_LOCKOUT') == true) {
         Notifier().error(
-          context,
           'Trop de tentatives : veuillez déverrouiller votre téléphone avec votre code avant de réessayer.',
         );
       } else if (e.code == 'NotAvailable') {
         Notifier().info(
-          context,
           'La biométrie n\'est pas disponible sur cet appareil.',
         );
       } else {
         Notifier().error(
-          context,
           'Erreur biométrique : ${e.message ?? 'inconnue'}',
         );
       }
       return false;
     } catch (e) {
-      Notifier().error(context, 'Erreur inattendue : $e');
+      Notifier().error( 'Erreur inattendue : $e');
       return false;
     }
   }

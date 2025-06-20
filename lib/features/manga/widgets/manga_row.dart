@@ -18,7 +18,7 @@ class MangaRow extends StatelessWidget {
     required this.mangaName,
     required this.muId,
     required this.mangaAuthor,
-     this.lastChapter,
+    this.lastChapter,
     this.readChapter,
     this.rating,
     this.largeImgPath,
@@ -109,6 +109,7 @@ class MangaRow extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 7),
+                              if (lastChapter != null)
                               Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -135,7 +136,6 @@ class MangaRow extends StatelessWidget {
 
                                 ],
                               ),
-
                             ],
 
                           ),

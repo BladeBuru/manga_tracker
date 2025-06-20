@@ -1,4 +1,5 @@
 {
- "latestVersion": "0.1.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.1/app-debug.apk"
+  "latestVersion": "0.1.1",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.1/app-debug.apk",
+  "inherit": true
 }

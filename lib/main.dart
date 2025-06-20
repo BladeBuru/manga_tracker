@@ -9,6 +9,7 @@ import 'package:mangatracker/features/auth/views/startup_page.dart';
 
 import 'core/theme/app_theme.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
           parent: AlwaysScrollableScrollPhysics(),
         ),
       ),
+      navigatorKey: navigatorKey,
     );
   }
 }
