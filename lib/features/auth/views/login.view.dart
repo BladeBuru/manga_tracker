@@ -45,10 +45,10 @@ class _LoginViewState extends State<LoginView> {
     try {
       payload = await authService.attemptLogIn(email, password);
     } on InvalidCredentialsException {
-      notifier.error(context, 'Identifiants invalides');
+      notifier.error( 'Identifiants invalides');
       return;
     } on Exception {
-      notifier.error(context, 'Erreur inconnue');
+      notifier.error( 'Erreur inconnue');
     }
 
     final List<StorageItem> tokens = <StorageItem>[
@@ -164,7 +164,7 @@ class _LoginViewState extends State<LoginView> {
                             MaterialPageRoute(builder: (_) => const BottomNavbar()),
                           );
                         } else {
-                          notifier.error(context, 'Échec de l’authentification biométrique');
+                          notifier.error( 'Échec de l’authentification biométrique');
                         }
                       },
                       icon: const Icon(Icons.fingerprint, color: Colors.grey),

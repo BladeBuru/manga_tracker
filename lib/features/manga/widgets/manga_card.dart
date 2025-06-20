@@ -57,7 +57,12 @@ class MangaCard extends StatelessWidget {
                         width: 90,
                         child: Align(
                           alignment: Alignment.center,
-                          child: ImageHelper.loadMangaImage(largeImgPath),
+                          child: ImageHelper.loadMangaImage(
+                            largeImgPath,
+                            width: 100,
+                            height: 140,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),

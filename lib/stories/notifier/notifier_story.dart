@@ -17,7 +17,7 @@ void addNotifierServiceStory(Dashbook dashbook) {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton(
-                  onPressed: () => Notifier().success(context, 'Opération réussie !'),
+                  onPressed: () => Notifier().success( 'Opération réussie !'),
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
                   child: Text(
                     'Afficher Success',
@@ -26,7 +26,7 @@ void addNotifierServiceStory(Dashbook dashbook) {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => Notifier().error(context, 'Une erreur est survenue'),
+                  onPressed: () => Notifier().error( 'Une erreur est survenue'),
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
                   child: Text(
                     'Afficher Error',
@@ -35,7 +35,7 @@ void addNotifierServiceStory(Dashbook dashbook) {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => Notifier().warning(context, 'Attention requise'),
+                  onPressed: () => Notifier().warning( 'Attention requise'),
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
                   child: Text(
                     'Afficher Warning',
@@ -44,7 +44,7 @@ void addNotifierServiceStory(Dashbook dashbook) {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => Notifier().info(context, 'Information utile'),
+                  onPressed: () => Notifier().info( 'Information utile'),
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.info),
                   child: Text(
                     'Afficher Info',

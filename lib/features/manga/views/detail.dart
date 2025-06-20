@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
@@ -10,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../library/services/library.service.dart';
 import '../services/manga.service.dart';
+
 
 class Detail extends StatefulWidget {
   final String muId;
@@ -134,9 +136,10 @@ class _DetailState extends State<Detail> {
                             top: 70,
                             left: 16,
                             right: 16,
-                            child: Text(
-                              parse(widget.mangaTitle).documentElement!.text,
+                            child: AutoSizeText(
+                              parse(widget.mangaTitle).documentElement?.text ?? '',
                               textAlign: TextAlign.center,
+                              maxLines: 2,
                               style: GoogleFonts.poppins(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -144,6 +147,7 @@ class _DetailState extends State<Detail> {
                               ),
                             ),
                           ),
+
                           // Genres en bas
                           if (manga.genres != null)
                             Positioned(

@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
     if (!hasAlreadyBeenRedirected && context.mounted) {
       authService.logout();
       redirectToLoginPage();
-      notifier.error(context, 'Expired session');
+      notifier.error( 'Expired session');
       setState(() {
         if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
