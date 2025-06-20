@@ -4,6 +4,7 @@ import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/home/views/bottom_navbar.dart';
 import '../../../core/services/version_checker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -45,6 +46,11 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   void _goToApp() async {
+    if (kIsWeb) {
+      _navigateToHome(); // On va directement à l'écran d'accueil
+      return;
+    }
+
     final updateAvailable = await versionChecker.isUpdateAvailable();
 
     if (updateAvailable) {
