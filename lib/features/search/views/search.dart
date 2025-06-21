@@ -8,7 +8,7 @@ import '../../manga/dto/manga_quick_view.dto.dart';
 import '../../manga/services/manga.service.dart';
 
 class Search extends StatefulWidget {
-  const Search({Key? key}) : super(key: key);
+  const Search({super.key});
 
   @override
   State<Search> createState() => _RechercheState();
