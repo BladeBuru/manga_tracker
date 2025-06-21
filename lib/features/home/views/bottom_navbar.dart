@@ -16,7 +16,6 @@ class BottomNavbarState extends State<BottomNavbar> {
   final PageController pageCont = PageController(initialPage: 0);
   int currntIndex = 0;
 
-  final Color selectedColor = const Color(0xffe0234f);
   final Color unselectedColor = const Color(0xffb8b8d2);
 
   @override
@@ -51,36 +50,36 @@ class BottomNavbarState extends State<BottomNavbar> {
           pageCont.jumpToPage(currntIndex);
         },
         selectedFontSize: 15,
-        selectedIconTheme: IconThemeData(color: selectedColor, size: 30),
-        selectedItemColor: selectedColor,
+        selectedIconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary, size: 30),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedIconTheme: IconThemeData(color: unselectedColor),
         unselectedItemColor: unselectedColor,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home,
-              color: currntIndex == 0 ? selectedColor : unselectedColor,
+              color: currntIndex == 0 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.book,
-              color: currntIndex == 1 ? selectedColor : unselectedColor,
+              color: currntIndex == 1 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
             label: 'Bibliothèque',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
-              color: currntIndex == 2 ? selectedColor : unselectedColor,
+              color: currntIndex == 2 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
             label: 'Recherche',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.person,
-              color: currntIndex == 3 ? selectedColor : unselectedColor,
+              color: currntIndex == 3 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
             label: 'Mon compte',
           ),

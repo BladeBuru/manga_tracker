@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 
+import '../../../core/notifier/notifier.dart';
 import '../../../core/service_locator/service_locator.dart';
 import '../../library/services/library.service.dart';
 import '../dto/author.dto.dart';
@@ -10,7 +11,7 @@ import 'row_chapter.dart';
 class LateDetailView extends StatefulWidget {
   final String muId;
   final String mangaTitle;
-  final String mangaDescription;
+  final String? mangaDescription;
   final String rating;
   final List mangaChapters;
   final num? mangaTotalChapters;
@@ -23,7 +24,7 @@ class LateDetailView extends StatefulWidget {
     super.key,
     required this.muId,
     required this.mangaTitle,
-    required this.mangaDescription,
+    this.mangaDescription,
     required this.rating,
     required this.mangaChapters,
     this.mangaTotalChapters,
@@ -40,18 +41,23 @@ class LateDetailView extends StatefulWidget {
 class _LateDetailViewState extends State<LateDetailView> {
   bool _isExpanded = false;
   num? _currentReadCount;
+  bool _isSaving = false;
   final LibraryService _libraryService = getIt<LibraryService>();
+  final Notifier _notifier = getIt<Notifier>();
+
   @override
   void initState() {
     super.initState();
     _currentReadCount = widget.readChapters;
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final synopsisText = widget.mangaDescription != null
+        ? parse(widget.mangaDescription!).documentElement?.text.trim() ?? ''
+        : '';
 
-    final synopsisText =
-        parse(widget.mangaDescription).documentElement!.text.trim();
 
     // Séparer auteurs / artistes
     final authors =
@@ -59,34 +65,30 @@ class _LateDetailViewState extends State<LateDetailView> {
             ?.where((a) => a.type.toLowerCase() == 'author')
             .map((a) => a.name)
             .toList() ??
-        [];
+            [];
     final artists =
         widget.authors
             ?.where((a) => a.type.toLowerCase() == 'artist')
             .map((a) => a.name)
             .toList() ??
-        [];
+            [];
 
     Future<void> handleAddToLibrary(String mangaId) async {
-      
       bool success = await _libraryService.addMangaToLibrary(int.parse(mangaId));
       if (success && mounted) {
         setState(() {
           _currentReadCount = 0;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.mangaTitle} a été ajouté à la bibliothèque !'),
-          ),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'ajout à la bibliothèque.')),
-        );
+        _notifier.success('${widget.mangaTitle} a été ajouté à la bibliothèque !');
+      } else if (mounted) { // Ajout du else if
+        _notifier.error('Erreur lors de l\'ajout à la bibliothèque.');
       }
     }
 
     Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
+      if (_isSaving) return;
+      setState(() => _isSaving = true);
+
       if (_currentReadCount! < 0) {
         await handleAddToLibrary(mangaId);
       }
@@ -97,33 +99,39 @@ class _LateDetailViewState extends State<LateDetailView> {
         newCount = chapterNumber.toInt() - 1;
         if (newCount == 0) {
           print('Removing manga from library $mangaId');
-          success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
+          success =
+          await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
+
         } else {
-          success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+          success = await _libraryService.saveChapterProgress(
+              int.parse(mangaId), newCount);
         }
       } else {
         newCount = chapterNumber.toInt();
-        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+        success =
+        await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
       }
 
       if (!success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de la mise à jour du chapitre.')),
-        );
+        setState(() => _isSaving = false);
+        print("curentReadCount: $_currentReadCount, newCount: $newCount, chapterNumber: $chapterNumber");
+        _notifier.error('Erreur lors de la mise à jour du chapitre.');
         return;
       }
 
       if (mounted) {
         setState(() {
-          _currentReadCount = newCount;
+          _currentReadCount = (newCount == 0) ? -1 : newCount;
+          _isSaving = false;
         });
 
         final message = newCount == 0
             ? 'Manga retiré de la bibliothèque'
-            : 'Chapitre $chapterNumber ${_currentReadCount! >= chapterNumber ? 'lu' : 'non lu'}';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+            : 'Chapitre $chapterNumber ${_currentReadCount! >= chapterNumber
+            ? 'lu'
+            : 'non lu'}';
+
+        _notifier.info(message);
       }
     }
 
@@ -155,13 +163,19 @@ class _LateDetailViewState extends State<LateDetailView> {
                   ),
                   Wrap(
                     children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 30),
+                      Icon(Icons.star, color: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary, size: 25),
                       Text(
                         widget.rating,
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(fontSize: 20),
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 138, 40, 31),
+                          color: Theme
+                              .of(context)
+                              .colorScheme
+                              .primary,
                         ),
                       ),
                     ],
@@ -179,7 +193,9 @@ class _LateDetailViewState extends State<LateDetailView> {
                   Flexible(
                     flex: 1,
                     child: Text(
-                      'Statut : ${widget.isCompleted == true ? "Terminé" : "En cours"}',
+                      'Statut : ${widget.isCompleted == true
+                          ? "Terminé"
+                          : "En cours"}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
@@ -221,7 +237,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               ),
                             ),
                             ...authors.map(
-                              (n) => Text(n, textAlign: TextAlign.center),
+                                  (n) => Text(n, textAlign: TextAlign.center),
                             ),
                           ],
                         ),
@@ -240,7 +256,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               ),
                             ),
                             ...artists.map(
-                              (n) => Text(n, textAlign: TextAlign.center),
+                                  (n) => Text(n, textAlign: TextAlign.center),
                             ),
                           ],
                         ),
@@ -252,58 +268,66 @@ class _LateDetailViewState extends State<LateDetailView> {
             const SizedBox(height: 8),
 
             // SYNOPSIS avec Voir plus / Voir moins
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Synopsis',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(fontSize: 18),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: AnimatedCrossFade(
-                firstChild: Text(
-                  synopsisText,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
+            if (widget.mangaDescription != null &&
+                widget.mangaDescription!.isNotEmpty)
+              ... [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Synopsis',
+                    style: GoogleFonts.poppins(
+                      textStyle: const TextStyle(fontSize: 18),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                secondChild: Text(
-                  synopsisText,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                crossFadeState:
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 4),
+                  child: AnimatedCrossFade(
+                    firstChild: Text(
+                      synopsisText,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    secondChild: Text(
+                      synopsisText,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    crossFadeState:
                     _isExpanded
                         ? CrossFadeState.showSecond
                         : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 200),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: TextButton.icon(
-                onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-                label: Text(_isExpanded ? 'Voir moins' : 'Voir plus'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.pinkAccent,
-                  padding: EdgeInsets.zero,
-                  alignment: Alignment.centerLeft,
+                    duration: const Duration(milliseconds: 200),
+                  ),
                 ),
-              ),
-            ),
-
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: TextButton.icon(
+                    onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                    icon: Icon(
+                        _isExpanded ? Icons.expand_less : Icons.expand_more),
+                    label: Text(_isExpanded ? 'Voir moins' : 'Voir plus'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                      padding: EdgeInsets.zero,
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                ),
+              ],
             const SizedBox(height: 8),
 
             Padding(
@@ -322,22 +346,33 @@ class _LateDetailViewState extends State<LateDetailView> {
                   ),
                   const SizedBox(height: 10),
                   Column(
-                    children:
-                        chapNumbers.map((chapNum) {
-                          final line = chapNum.toString().padLeft(2, '0');
-                          final isRead = chapNum <= _currentReadCount!;
+                    children: chapNumbers.map((chapNum) {
+                      final line = chapNum.toString().padLeft(2, '0');
+                      final isRead = chapNum <= _currentReadCount!;
 
-                          return GestureDetector(
-                            onTap: () async {
-                              handleSaveChapter(widget.muId, chapNum);
-                            },
-                            child: RowChapter(
-                              line: line,
-                              chapter: chapNum.toString(),
-                              read: isRead,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Material(
+                          color: Colors.white, // couleur de fond de la ligne
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _isSaving
+                                ? null
+                                : () => handleSaveChapter(widget.muId, chapNum),
+                            child: AnimatedScale(
+                              scale: _isSaving ? 1.0 : 1.0,
+                              duration: const Duration(milliseconds: 100),
+                              child: RowChapter(
+                                line: line,
+                                chapter: chapNum.toString(),
+                                read: isRead,
+                              ),
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),

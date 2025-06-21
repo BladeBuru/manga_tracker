@@ -65,9 +65,10 @@ class RowChapter extends StatelessWidget {
                     ? Container(
                         height: 5,
                         width: 5,
-                        decoration: const BoxDecoration(
+                        decoration:  BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color.fromARGB(150, 224, 35, 79),
+                          color: Theme.of(context).colorScheme.primary.withAlpha(77)
+                          ,
                         ),
                         child: const Icon(
                           Icons.check_box_outlined,
@@ -77,9 +78,9 @@ class RowChapter extends StatelessWidget {
                     : Container(
                         height: 5,
                         width: 5,
-                        decoration: const BoxDecoration(
+                        decoration:  BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color.fromARGB(255, 224, 35, 79),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         child: const Icon(
                          Icons.check_box_outline_blank_outlined,

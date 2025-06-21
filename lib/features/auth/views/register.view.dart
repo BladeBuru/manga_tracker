@@ -3,10 +3,10 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 
 import '../../../core/components/password_fields.dart';
 import '../services/validator.service.dart';
-import 'widgets/intput_textfield.dart';
+import '../../../core/components/intput_textfield.dart';
 import '../../../core/components/auth_button.dart';
 import 'login.view.dart';
-import 'widgets/square_tile.dart';
+import '../widgets/square_tile.dart';
 import '../services/auth.service.dart';
 
 class RegisterView extends StatefulWidget {
@@ -55,9 +55,9 @@ class _RegisterViewState extends State<RegisterView> {
     WillPopScope forbids swipe back gesture to restrict user from going back to
     previous screen (which can be my account screen)
     */
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Container(
+     return PopScope(
+       canPop: false,
+       child: Container(
         color: Colors.grey[200],
         child: SafeArea(
           child: Scaffold(
@@ -77,7 +77,7 @@ class _RegisterViewState extends State<RegisterView> {
                         const SizedBox(height: 30),
 
                         Text(
-                          "Commencez à lire maintenant",
+                          "Commencez à suivre votre lecture maintenant",
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 16,
@@ -87,21 +87,26 @@ class _RegisterViewState extends State<RegisterView> {
                         const SizedBox(height: 50),
 
                         //Login texte field
-                        IntputTexteField(
-                          controller: emailController,
-                          textField: "Adresse e-mail",
-                          obscureText: false,
-                          validator: validatorService.validateEmailAddress,
-                        ),
+                      IntputTexteField(
+                        controller: emailController,
+                        hintText: "Adresse e-mail",
+                        obscureText: false,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: validatorService.validateEmailAddress,
+                        autofillHints: const [AutofillHints.email],
+                      ),
+
 
                         const SizedBox(height: 15),
 
                         IntputTexteField(
                           controller: usernameController,
-                          textField: "Username",
+                          hintText: "Nom d'utilisateur",
                           obscureText: false,
                           validator: validatorService.noValidation,
+                          autofillHints: const [AutofillHints.username],
                         ),
+
 
                         const SizedBox(height: 15),
 

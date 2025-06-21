@@ -1,5 +1,4 @@
 import 'package:html/parser.dart';
-
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +7,10 @@ class MangaRow extends StatelessWidget {
   final String mangaName;
   final String muId;
   final String mangaAuthor;
-  final String lastChapter;
+  final num? lastChapter;
+  final num? readChapter;
   final String? largeImgPath;
+  final String? rating;
   final VoidCallback? onDetailReturn;
 
   const MangaRow({
@@ -17,7 +18,9 @@ class MangaRow extends StatelessWidget {
     required this.mangaName,
     required this.muId,
     required this.mangaAuthor,
-    required this.lastChapter,
+    this.lastChapter,
+    this.readChapter,
+    this.rating,
     this.largeImgPath,
     this.onDetailReturn,
   });
@@ -106,7 +109,9 @@ class MangaRow extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 7),
+                              if (lastChapter != null)
                               Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
@@ -117,22 +122,47 @@ class MangaRow extends StatelessWidget {
                                       padding: const EdgeInsets.only(
                                           top: 1, bottom: 1, right: 5, left: 5),
                                       child: Text(
-                                        lastChapter,
+                                        readChapter != null
+                                            ? 'Chapitre $readChapter / $lastChapter'
+                                            : 'Chapitre ${lastChapter ?? 0 }',
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 12.0,
+                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                           color: Colors.orange,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ),
+
                                 ],
                               ),
                             ],
-                          ))
+
+                          ),
+
+                      ),
+
                     ],
                   ),
-                )
+
+                ),
+                if (rating != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Row(
+                      children: [
+                         Icon(Icons.star, color:Theme.of(context).colorScheme.primary, size: 14),
+                        const SizedBox(width: 2),
+                        Text(
+                          rating!,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

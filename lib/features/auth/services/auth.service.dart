@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 
 import '../../../core/storage/services/storage.service.dart';
+import 'biometric.service.dart';
 
 class AuthService {
   StorageService storageService = getIt<StorageService>();
+  BiometricService biometricService = getIt<BiometricService>();
 
   Future<AuthService> init() async {
     return this;
@@ -22,7 +25,11 @@ class AuthService {
 
     switch (res.statusCode) {
       case HttpStatus.created:
-        return jsonDecode(res.body);
+        var data = jsonDecode(res.body);
+        await storageService.writeSecureData('accessToken', data['accessToken']);
+        await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        await saveCredentialsWithBiometric(emailAddress, password);
+        return data;
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
             'Invalid Credentials ${res.statusCode}');
@@ -48,18 +55,43 @@ class AuthService {
       return true;
     }
 
-    Map<String, dynamic> payloadMap = parseJwt(token, 1);
-    int exp = payloadMap['exp'];
-    DateTime expDateTime =
-        DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
-    return expDateTime.isBefore(DateTime.now().toUtc());
+    try {
+      Map<String, dynamic> payloadMap = parseJwt(token, 1);
+      int exp = payloadMap['exp'];
+      DateTime expDateTime =
+      DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+      return expDateTime.isBefore(DateTime.now().toUtc());
+    } catch (e) {
+      return true;
+    }
   }
+
 
   Map<String, dynamic> parseJwt(String token, int part) {
     String base64Url = token.split('.')[part];
     String payload = _decodeBase64(base64Url);
     Map<String, dynamic> payloadMap = json.decode(payload);
     return payloadMap;
+  }
+
+  Future<bool> refreshAccessToken({String? token}) async {
+    final refreshToken = token ?? await storageService.readSecureData('refreshToken');
+    if (refreshToken == null || isTokenExpired(refreshToken)) {
+      return false;
+    }
+
+    final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
+    final res = await http.post(url, headers: {
+      HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
+    });
+
+    if (res.statusCode == HttpStatus.created) {
+      final data = jsonDecode(res.body);
+      await storageService.writeSecureData('accessToken', data['accessToken']);
+      return true;
+    }
+
+    return false;
   }
 
   String _decodeBase64(String str) {
@@ -84,5 +116,42 @@ class AuthService {
   logout() {
     storageService.deleteSecureData('refreshToken');
     storageService.deleteSecureData('accessToken');
+    // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
+
   }
+
+  Future<void> saveCredentialsWithBiometric(String email, String password) async {
+    final credentials = jsonEncode({'email': email, 'password': password});
+    await storageService.writeSecureDataBiometric('secure_credentials', credentials);
+  }
+
+
+  Future<bool> tryBiometricLogin(BuildContext context) async {
+    final hasCreds = await storageService.hasBiometricCredentials();
+    if (!hasCreds) return false;
+
+    final isAvailable = await biometricService.hasBiometricSupport();
+    if (!isAvailable) return false;
+
+    final authenticated = await biometricService.authenticateWithBiometrics(context);
+    if (!authenticated) return false;
+
+    final jsonCreds = await storageService.readSecureDataBiometric('secure_credentials');
+    if (jsonCreds == null) return false;
+
+    final decoded = jsonDecode(jsonCreds);
+    final email = decoded['email'];
+    final password = decoded['password'];
+
+    try {
+      final result = await attemptLogIn(email, password);
+      await storageService.writeSecureData('accessToken', result['accessToken']);
+      await storageService.writeSecureData('refreshToken', result['refreshToken']);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+
 }

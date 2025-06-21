@@ -4,18 +4,19 @@ import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 
+import '../../../core/components/filter_button.dart';
+import '../../../core/components/welcome_header.dart';
+import '../../../core/notifier/notifier.dart';
 import '../../auth/services/auth.service.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/services/manga.service.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../manga/widgets/manga_card.dart';
-import '../../../core/errors/error_notifier.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   final MangaService mangaService = getIt<MangaService>();
   final UserService userService = getIt<UserService>();
   final AuthService authService = getIt<AuthService>();
-  final ErrorNotifier errorNotification = ErrorNotifier();
+  final Notifier notifier = Notifier();
   String? displayUsername;
   bool hasAlreadyBeenRedirected = false;
 
@@ -56,23 +57,26 @@ class _HomePageState extends State<HomePage> {
       return List<MangaQuickViewDto>.empty();
     }, test: (err) => err is InvalidCredentialsException);
 
-    userService.getUserInformation().then((value) {
-      setState(() {
-        if (!mounted || hasAlreadyBeenRedirected) return;
-        user = value;
-        displayUsername = value.username;
-      });
-    }).catchError((err) {
-      if (!mounted || hasAlreadyBeenRedirected) return;
-      _errorHandler();
-    }, test: (err) => err is InvalidCredentialsException);
+    userService
+        .getUserInformation()
+        .then((value) {
+          setState(() {
+            if (!mounted || hasAlreadyBeenRedirected) return;
+            user = value;
+            displayUsername = value.username;
+          });
+        })
+        .catchError((err) {
+          if (!mounted || hasAlreadyBeenRedirected) return;
+          _errorHandler();
+        }, test: (err) => err is InvalidCredentialsException);
   }
 
   void _errorHandler() {
     if (!hasAlreadyBeenRedirected && context.mounted) {
       authService.logout();
       redirectToLoginPage();
-      errorNotification.showErrorSnackBar('Expired session', context);
+      notifier.error( 'Expired session');
       setState(() {
         if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
@@ -93,261 +97,108 @@ class _HomePageState extends State<HomePage> {
 
   int indexButtonBar = 0;
 
-  late Widget childWidget = HomepageMangaList(mangas: trendingMangas);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              //Espace
-              const SizedBox(height: 20),
+      body: Padding(
+        padding: const EdgeInsets.all(25.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            WelcomeHeader(username: displayUsername),
 
-              //PP et Texte
-              Row(
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Text(
+                  'Tendances',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const Spacer(),
+                const Icon(Icons.add_circle_outline),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: FutureBuilder<List<MangaQuickViewDto>>(
+                future: trendingMangas,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final mangaList = snapshot.data!;
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: mangaList.length,
+                      itemBuilder: (context, index) {
+                        final manga = mangaList[index];
+                        return MangaCard(
+                          muId: manga.muId.toString(),
+                          mangaTitle: manga.title,
+                          mangaAuthor: manga.year.toString(),
+                          largeImgPath: manga.largeCoverUrl,
+                          rating: manga.rating,
+                        );
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Erreur : ${snapshot.error}');
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
+            // Boutons filtres
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  const CircleAvatar(
-                    minRadius: 20.0,
-                    maxRadius: 20.0,
-                    backgroundImage: AssetImage('assets/images/mask_logo.png'),
-                    backgroundColor: Colors.transparent,
+                  FilterButton(
+                    label: 'Tous',
+                    selected: indexButtonBar == 0,
+                    onPressed: () => setState(() => indexButtonBar = 0),
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bonjour,',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      AnimatedOpacity(
-                        duration: const Duration(milliseconds: 800),
-                        opacity: displayUsername == null ? 0.0 : 1.0,
-                        child: Text(
-                          displayUsername == null ? '' : displayUsername!,
-                          textAlign: TextAlign.left,
-                          style: GoogleFonts.poppins(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xff1f1f39),
-                          ),
-                          key: ValueKey<String>(
-                            displayUsername == null ? '' : displayUsername!,
-                          ),
-                        ),
-                      ),
-                    ],
+                  FilterButton(
+                    label: 'Populaires',
+                    selected: indexButtonBar == 1,
+                    onPressed: () => setState(() => indexButtonBar = 1),
+                  ),
+                  const SizedBox(width: 10),
+                  FilterButton(
+                    label: 'Nouveautés',
+                    selected: indexButtonBar == 2,
+                    onPressed: () => setState(() => indexButtonBar = 2),
                   ),
                 ],
               ),
+            ),
 
-              // Trending Mangas
-              SizedBox(
-                child: Row(
-                  children: [
-                    const SizedBox(height: 50),
-                    Text(
-                      'Tendances',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xff1f1f39),
-                      ),
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.add_circle_outline),
-                  ],
-                ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  switch (indexButtonBar) {
+                    case 0:
+                      return HomepageMangaList(mangas: trendingMangas);
+                    case 1:
+                      return HomepageMangaList(mangas: popularMangas);
+                    case 2:
+                      return HomepageMangaList(mangas: newMangas);
+                    default:
+                      return const Center(child: Text('Erreur de chargement'));
+                  }
+                },
               ),
-              //Espace
-              const SizedBox(height: 1),
-
-              //Carousel
-              SizedBox(
-                height: 200,
-                child: FutureBuilder<List<MangaQuickViewDto>>(
-                  future: trendingMangas,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final mangaList = snapshot.data!;
-                      return ListView.builder(
-                        itemCount: mangaList.length,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) {
-                          final manga = mangaList[index];
-                          return MangaCard(
-                            muId: manga.muId.toString(),
-                            mangaTitle: manga.title,
-                            mangaAuthor: manga.year.toString(),
-                            largeImgPath: manga.largeCoverUrl,
-                            rating: manga.rating,
-                          );
-                        },
-                      );
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      return const SizedBox(
-                        height: 200.0,
-                        width: 200.0,
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                  },
-                ),
-              ),
-              SizedBox(
-                height: 80,
-                child: Row(
-                  children: [
-                    ButtonBar(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              indexButtonBar = 0;
-                              loadChildWidget(indexButtonBar);
-                            });
-                          },
-                          style: ButtonStyle(
-                            backgroundColor:
-                                indexButtonBar == 0
-                                    ? MaterialStateProperty.all<Color>(
-                                      themePage,
-                                    )
-                                    : MaterialStateProperty.all<Color>(
-                                      Colors.white,
-                                    ),
-                            shape: MaterialStateProperty.all<
-                              RoundedRectangleBorder
-                            >(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  18.0,
-                                ), // changer la forme du bouton
-                              ),
-                            ),
-                          ),
-                          child:
-                              indexButtonBar == 0
-                                  ? const Text(
-                                    'Tous',
-                                    style: TextStyle(color: Colors.white),
-                                  )
-                                  : const Text(
-                                    'Tous',
-                                    style: TextStyle(color: Color(0xff858597)),
-                                  ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              indexButtonBar = 1;
-                              loadChildWidget(indexButtonBar);
-                            });
-                          },
-                          style: ButtonStyle(
-                            backgroundColor:
-                                indexButtonBar == 1
-                                    ? MaterialStateProperty.all<Color>(
-                                      themePage,
-                                    )
-                                    : MaterialStateProperty.all<Color>(
-                                      Colors.white,
-                                    ),
-                            shape: MaterialStateProperty.all<
-                              RoundedRectangleBorder
-                            >(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  18.0,
-                                ), // changer la forme du bouton
-                              ),
-                            ),
-                          ),
-                          child:
-                              indexButtonBar == 1
-                                  ? const Text(
-                                    'Populaires',
-                                    style: TextStyle(color: Colors.white),
-                                  )
-                                  : const Text(
-                                    'Populaires',
-                                    style: TextStyle(color: Color(0xff858597)),
-                                  ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              indexButtonBar = 2;
-                              loadChildWidget(indexButtonBar);
-                            });
-                          },
-                          style: ButtonStyle(
-                            backgroundColor:
-                                indexButtonBar == 2
-                                    ? MaterialStateProperty.all<Color>(
-                                      themePage,
-                                    )
-                                    : MaterialStateProperty.all<Color>(
-                                      Colors.white,
-                                    ),
-                            shape: MaterialStateProperty.all<
-                              RoundedRectangleBorder
-                            >(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  18.0,
-                                ), // changer la forme du bouton
-                              ),
-                            ),
-                          ),
-                          child:
-                              indexButtonBar == 2
-                                  ? const Text(
-                                    'Nouveautés',
-                                    style: TextStyle(color: Colors.white),
-                                  )
-                                  : const Text(
-                                    'Nouveautés',
-                                    style: TextStyle(color: Color(0xff858597)),
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(child: SizedBox(height: 500, child: childWidget)),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  loadChildWidget(indexButtonBar) {
-    if (indexButtonBar == 0) {
-      childWidget = HomepageMangaList(mangas: trendingMangas);
-    } else if (indexButtonBar == 1) {
-      childWidget = HomepageMangaList(mangas: popularMangas);
-    } else if (indexButtonBar == 2) {
-      childWidget = HomepageMangaList(mangas: newMangas);
-    } else {
-      childWidget = const Text(
-        'Désolé, nous ne parvenons actuellement pas à charger cette section :/',
-      );
-    }
-  }
 }

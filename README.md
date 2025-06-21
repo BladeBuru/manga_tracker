@@ -12,9 +12,11 @@ MangaTracker is a Flutter application to track your favorite mangas.
 ## 🚀 Quick Start
 
 1. **Clone the project**
+
    ```bash
    git clone https://github.com/BladeBuru/manga_tracker.git
-   cd MangaTracker
+   cd manga_tracker
+   ```
 
 2. **Install dependencies**
 
@@ -27,6 +29,13 @@ MangaTracker is a Flutter application to track your favorite mangas.
    ```bash
    flutter run
    ```
+
+4. **Run the component storybook (Dashbook)**
+
+   ```bash
+   flutter run -t lib/storybook.dart
+   ```
+
 
 ## 🔄 Troubleshooting dependencies
 

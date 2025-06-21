@@ -4,7 +4,7 @@ import 'package:mangatracker/features/manga/dto/author.dto.dart';
 class MangaDetailDto {
   final num muId;
   final String title;
-  final String description;
+  final String? description;
   final String year;
   final String? mediumCoverUrl;
   final String? largeCoverUrl;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 
 import '../helpers/image.helper.dart';
@@ -11,7 +10,6 @@ class MangaCard extends StatelessWidget {
   final String mangaAuthor;
   final String? largeImgPath;
   final String rating;
-  final Color themePage = const Color(0xffe0234f);
 
   const MangaCard({
     super.key,
@@ -59,7 +57,12 @@ class MangaCard extends StatelessWidget {
                         width: 90,
                         child: Align(
                           alignment: Alignment.center,
-                          child: ImageHelper.loadMangaImage(largeImgPath),
+                          child: ImageHelper.loadMangaImage(
+                            largeImgPath,
+                            width: 100,
+                            height: 140,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
@@ -71,11 +74,7 @@ class MangaCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             parseFragment(mangaTitle).text!,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: const Color(0xff1f1f39),
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall,
                             overflow: TextOverflow.fade,
                             maxLines: 2,
                           ),
@@ -88,11 +87,7 @@ class MangaCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           mangaAuthor,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
+                          style:Theme.of(context).textTheme.bodySmall,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -102,7 +97,7 @@ class MangaCard extends StatelessWidget {
 
                       Text(
                         rating.toString(),
-                        style: TextStyle(color: themePage),
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
                       ),
                     ],
                   )
