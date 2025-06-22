@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:html/parser.dart';
 
 import '../../../core/notifier/notifier.dart';
 import '../../../core/service_locator/service_locator.dart';
 import '../../library/services/library.service.dart';
 import '../dto/author.dto.dart';
 import 'row_chapter.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -19,6 +20,7 @@ class LateDetailView extends StatefulWidget {
   final List<AuthorDto>? authors;
   final String year;
   final num readChapters;
+  final Function(num)? onReadCountChanged;
 
   const LateDetailView({
     super.key,
@@ -32,6 +34,7 @@ class LateDetailView extends StatefulWidget {
     this.authors,
     required this.year,
     required this.readChapters,
+    this.onReadCountChanged,
   });
 
   @override
@@ -54,12 +57,8 @@ class _LateDetailViewState extends State<LateDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final synopsisText = widget.mangaDescription != null
-        ? parse(widget.mangaDescription!).documentElement?.text.trim() ?? ''
-        : '';
 
 
-    // Séparer auteurs / artistes
     final authors =
         widget.authors
             ?.where((a) => a.type.toLowerCase() == 'author')
@@ -98,7 +97,6 @@ class _LateDetailViewState extends State<LateDetailView> {
       if (_currentReadCount! >= chapterNumber) {
         newCount = chapterNumber.toInt() - 1;
         if (newCount == 0) {
-          print('Removing manga from library $mangaId');
           success =
           await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
 
@@ -114,7 +112,6 @@ class _LateDetailViewState extends State<LateDetailView> {
 
       if (!success && mounted) {
         setState(() => _isSaving = false);
-        print("curentReadCount: $_currentReadCount, newCount: $newCount, chapterNumber: $chapterNumber");
         _notifier.error('Erreur lors de la mise à jour du chapitre.');
         return;
       }
@@ -132,9 +129,20 @@ class _LateDetailViewState extends State<LateDetailView> {
             : 'non lu'}';
 
         _notifier.info(message);
+        if (widget.onReadCountChanged != null) {
+          widget.onReadCountChanged!(_currentReadCount!);
+        }
       }
     }
 
+    Future<void> handleLinkTap(String url) async {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _notifier.error("Impossible d'ouvrir le lien : $url");
+      }
+    }
 
     final total = widget.mangaTotalChapters?.toInt() ?? 0;
     final chapNumbers = List<int>.generate(total, (i) => i + 1)
@@ -268,9 +276,8 @@ class _LateDetailViewState extends State<LateDetailView> {
             const SizedBox(height: 8),
 
             // SYNOPSIS avec Voir plus / Voir moins
-            if (widget.mangaDescription != null &&
-                widget.mangaDescription!.isNotEmpty)
-              ... [
+            if (widget.mangaDescription != null && widget.mangaDescription!.isNotEmpty)
+              ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -282,46 +289,44 @@ class _LateDetailViewState extends State<LateDetailView> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 4),
-                  child: AnimatedCrossFade(
-                    firstChild: Text(
-                      synopsisText,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: AnimatedContainer(
+                    constraints: BoxConstraints(
+                      maxHeight: _isExpanded ? 1000 : 70.0,
+                    ),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+
+                    child: SingleChildScrollView(
+
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: MarkdownBody(
+                        data: widget.mangaDescription!,
+                        onTapLink: (text, href, title) {
+                          if (href != null) handleLinkTap(href);
+                        },
+                        styleSheet: MarkdownStyleSheet(
+                          p: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                          strong: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    secondChild: Text(
-                      synopsisText,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    crossFadeState:
-                    _isExpanded
-                        ? CrossFadeState.showSecond
-                        : CrossFadeState.showFirst,
-                    duration: const Duration(milliseconds: 200),
                   ),
                 ),
+                // Le bouton "Voir plus / Voir moins" ne change pas
                 Padding(
                   padding: const EdgeInsets.only(left: 16),
                   child: TextButton.icon(
                     onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                    icon: Icon(
-                        _isExpanded ? Icons.expand_less : Icons.expand_more),
+                    icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
                     label: Text(_isExpanded ? 'Voir moins' : 'Voir plus'),
                     style: TextButton.styleFrom(
-                      foregroundColor: Theme
-                          .of(context)
-                          .colorScheme
-                          .primary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: EdgeInsets.zero,
                       alignment: Alignment.centerLeft,
                     ),
