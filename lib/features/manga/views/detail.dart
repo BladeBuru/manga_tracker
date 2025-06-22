@@ -197,39 +197,67 @@ class _DetailState extends State<Detail> {
   }
 
 
+
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = int.parse(widget.muId);
 
-    Widget leftButton;
+
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    );
+
 
     if (status == null) {
-      leftButton = ElevatedButton.icon(
-        icon: const Icon(Icons.bookmark_add_outlined),
-        label: const Text('Ajouter à "À lire plus tard"'),
-        onPressed: () async {
-          final success = await _libraryService.addMangaToLibrary(muId);
-          if (success) _refreshLibraryState(); // APPEL CORRIGÉ
-        },
-        style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12)),
-      );
+
       return Container(
-          padding: const EdgeInsets.all(16),
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        child: SizedBox(
           width: double.infinity,
-          child: leftButton);
-    } else {
-      leftButton = ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: status.color.withValues(alpha: 0.2),
-          foregroundColor: status.color,
-          elevation: 0,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          height: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.bookmark_add_outlined),
+            label: const Text('Ajouter à "À lire plus tard"'),
+            onPressed: () async {
+              final success = await _libraryService.addMangaToLibrary(muId);
+              if (success) _refreshLibraryState();
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              shape: buttonShape,
+              textStyle: const TextStyle(fontSize: 17),
+            ),
+          ),
         ),
-        onPressed: () => _showManageLibrarySheet(status),
-        child: Icon(status.icon),
       );
     }
+
+
+
+
+    final leftButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: status.color.withAlpha(50),
+        foregroundColor: status.color,
+        elevation: 0,
+        shape: buttonShape,
+      ),
+      onPressed: () => _showManageLibrarySheet(status),
+      child: Icon(status.icon),
+    );
+
+
+    final rightButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        shape: buttonShape,
+      ),
+      onPressed: () { _notifier.info("La lecture directe arrivera dans une future version !"); },
+      child: const Text('Commencer la lecture', style: TextStyle(fontSize: 17)),
+    );
 
     return Container(
       height: 70,
@@ -238,23 +266,21 @@ class _DetailState extends State<Detail> {
         children: [
           Flexible(
             flex: 3,
+            // On s'assure que le bouton remplit la hauteur
             child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: leftButton),
+              width: double.infinity,
+              height: double.infinity,
+              child: leftButton,
+            ),
           ),
           const SizedBox(width: 15),
           Flexible(
             flex: 5,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)),
-              ),
-              onPressed: () { /* TODO: Naviguer vers la lecture */ },
-              child: const Text('Commencer la lecture', style: TextStyle(fontSize: 17)),
+            // MODIFICATION : On ajoute SizedBox pour forcer la même hauteur
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: rightButton,
             ),
           ),
         ],
