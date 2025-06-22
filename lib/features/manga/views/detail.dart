@@ -1,17 +1,26 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
-import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
+import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/notifier/notifier.dart';
 import '../../library/services/library.service.dart';
+import '../dto/reading_status.enum.dart';
+import '../helpers/chapters.helper.dart';
 import '../services/manga.service.dart';
 
+
+class _PageData {
+  final MangaDetailDto mangaDetail;
+  final MangaQuickViewDto? libraryEntry;
+  _PageData({required this.mangaDetail, this.libraryEntry});
+}
 
 class Detail extends StatefulWidget {
   final String muId;
@@ -29,59 +38,46 @@ class Detail extends StatefulWidget {
   State<Detail> createState() => _DetailState();
 }
 
-bool isFavorite = true;
-
-Widget iconFavorite = Icon(
-  color: isFavorite == true ? Colors.grey : Colors.orange,
-  Icons.star,
-);
-
 class _DetailState extends State<Detail> {
-  get image => null;
-  late Future<MangaDetailDto> mangaDetail;
-  late Future<num> readChapter;
+  late Future<_PageData> _pageDataFuture;
+  final Notifier _notifier = getIt<Notifier>();
+
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
+  MangaDetailDto? _mangaDetailCache;
+
 
   @override
   void initState() {
     super.initState();
-    mangaDetail = _mangaService.getMangaDetail(widget.muId);
-    readChapter = _libraryService.getReadChapterByUid(int.parse(widget.muId));
+    _pageDataFuture = _loadPageData();
   }
 
-  /*Future<void> _handleToggleReadLater() async {
-    final id = widget.muId;
-    bool success;
+  Future<_PageData> _loadPageData() async {
+    final muId = int.parse(widget.muId);
 
-    if (!_isReadLater) {
-      // on ajoute « À lire plus tard »
-      success = await _readLater.addToReadLater(id);
-    } else {
-      // on retire de la liste readLater
-      success = await _readLater.removeFromReadLater(id);
-    }
+    final mangaDetailFuture = _mangaDetailCache != null
+        ? Future.value(_mangaDetailCache)
+        : _mangaService.getMangaDetail(widget.muId);
 
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur sur la liste À lire plus tard.')),
-      );
-      return;
-    }
+    final libraryEntryFuture = _libraryService.getLibraryEntry(muId);
 
-    setState(() => _isReadLater = !_isReadLater);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isReadLater
-                ? 'Ajouté à « À lire plus tard »'
-                : 'Retiré de « À lire plus tard »',
-          ),
-        ),
-      );
-    }
-  }*/
+    final results = await Future.wait([mangaDetailFuture, libraryEntryFuture]);
+
+
+    _mangaDetailCache = results[0] as MangaDetailDto;
+
+    return _PageData(
+      mangaDetail: _mangaDetailCache!,
+      libraryEntry: results[1] as MangaQuickViewDto?,
+    );
+  }
+
+  void _refreshLibraryState() {
+    setState(() {
+      _pageDataFuture = _loadPageData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,22 +96,24 @@ class _DetailState extends State<Detail> {
         child: Column(
           children: [
             Expanded(
-              child: FutureBuilder<MangaDetailDto>(
-                future: mangaDetail,
+              child: FutureBuilder<_PageData>(
+                future: _pageDataFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: \${snapshot.error}'));
+                    return Center(child: Text('Erreur: ${snapshot.error}'));
                   }
-                  final manga = snapshot.data!;
+
+                  final manga = snapshot.data!.mangaDetail;
+                  final libraryEntry = snapshot.data!.libraryEntry;
+                  final readChapters = libraryEntry?.readChapters ?? -1;
+
                   return Column(
                     children: [
-                      // HEADER FIXE AVEC FULL COVER
                       Stack(
                         children: [
-                          // Cover full-width
                           SizedBox(
                             width: double.infinity,
                             height: 340,
@@ -124,14 +122,11 @@ class _DetailState extends State<Detail> {
                               fit: BoxFit.cover,
                             ),
                           ),
-                          // Surcouche sombre
                           Container(
                             width: double.infinity,
                             height: 340,
                             color: Colors.black.withValues(alpha: 0.4),
                           ),
-
-                          // Titre centré
                           Positioned(
                             top: 70,
                             left: 16,
@@ -147,8 +142,6 @@ class _DetailState extends State<Detail> {
                               ),
                             ),
                           ),
-
-                          // Genres en bas
                           if (manga.genres != null)
                             Positioned(
                               bottom: 14,
@@ -158,154 +151,190 @@ class _DetailState extends State<Detail> {
                                 height: 24,
                                 child: ListView(
                                   scrollDirection: Axis.horizontal,
-                                  children:
-                                      manga.genres!
-                                          .map(
-                                            (g) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 8,
-                                              ),
-                                              child: MangaType(type: g),
-                                            ),
-                                          )
-                                          .toList(),
+                                  children: manga.genres!
+                                      .map((g) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: MangaType(type: g),
+                                  ))
+                                      .toList(),
                                 ),
                               ),
                             ),
                         ],
                       ),
-                      FutureBuilder<num>(
-                        future: readChapter,
-                        builder: (ctx2, snap2) {
-                          if (snap2.connectionState != ConnectionState.done) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          if (snap2.hasError) {
-                            final err = snap2.error;
-                            return Center(child: Text('Erreur lecture: $err'));
-                          }
-                          final readChapter = snap2.data!;
-                          // DÉTAIL DÉFILABLE
-                          return Expanded(
-                            child: LateDetailView(
-                              muId: widget.muId,
-                              mangaTitle: manga.title,
-                              mangaDescription: manga.description,
-                              rating: manga.rating,
-                              mangaChapters: ChaptersHelper.buildChapterList(
-                                manga.totalChapters,
-                              ),
-                              mangaTotalChapters: manga.totalChapters,
-                              isCompleted: manga.isCompleted,
-                              authors: manga.authors,
-                              year: manga.year,
-                              readChapters: readChapter,
-                            ),
-                          );
-                        },
+                      Expanded(
+                        child: LateDetailView(
+                          muId: widget.muId,
+                          mangaTitle: manga.title,
+                          mangaDescription: manga.description,
+                          rating: manga.rating,
+                          mangaChapters: ChaptersHelper.buildChapterList(
+                            manga.totalChapters,
+                          ),
+                          mangaTotalChapters: manga.totalChapters,
+                          isCompleted: manga.isCompleted,
+                          authors: manga.authors,
+                          year: manga.year,
+                          readChapters: readChapters,
+                          onReadCountChanged: (newCount) {
+                            _refreshLibraryState();
+                          },
+                        ),
                       ),
+                      _buildBottomActionBar(libraryEntry?.readingStatus),
                     ],
+
                   );
                 },
               ),
             ),
             // BARRE DE BOUTONS FIXE EN BAS
-            Container(
-              height: 70,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade100,
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
-              child: FractionallySizedBox(
-                heightFactor: 0.9,
-                child: Row(
-                  children: [
-                    // Bouton 1 => ratio 3 sur total 8, maxWidth = 150
-                    const SizedBox(width: 10),
-                    Flexible(
-                      flex: 3,
-                      fit: FlexFit.loose,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 150),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                const Color.fromRGBO(255, 235, 240, 50),
-                              ),
-                              shape: WidgetStateProperty.all<OutlinedBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                            ),
-                            onPressed: () {
-                              /* … */
-                            },
-                            child: iconFavorite,
-                          ),
-                        ),
-                      ),
-                    ),
 
-                    const SizedBox(width: 15), // espace entre boutons
-                    // Bouton 2 => ratio 5 sur total 8, maxWidth = 350
-                    Flexible(
-                      flex: 5,
-                      fit: FlexFit.loose,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: double.infinity,
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                Theme.of(context).colorScheme.primary,
-                              ),
-                              shape: WidgetStateProperty.all<OutlinedBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                            ),
-                            onPressed: () {
-                              /* … */
-                            },
-                            child: const Text(
-                              'Lire plus tard',
-                              style: TextStyle(fontSize: 17,color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  loadIconFavorite() {
-    if (isFavorite) {
-      iconFavorite = const Icon(color: Colors.orange, Icons.star);
-    } else {
-      iconFavorite = const Icon(color: Colors.grey, Icons.star);
+
+
+  Widget _buildBottomActionBar(ReadingStatus? status) {
+    final muId = int.parse(widget.muId);
+
+
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    );
+
+
+    if (status == null) {
+
+      return Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.bookmark_add_outlined),
+            label: const Text('Ajouter à "À lire plus tard"'),
+            onPressed: () async {
+              final success = await _libraryService.addMangaToLibrary(muId);
+              if (success) _refreshLibraryState();
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              shape: buttonShape,
+              textStyle: const TextStyle(fontSize: 17),
+            ),
+          ),
+        ),
+      );
     }
+
+
+
+
+    final leftButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: status.color.withAlpha(50),
+        foregroundColor: status.color,
+        elevation: 0,
+        shape: buttonShape,
+      ),
+      onPressed: () => _showManageLibrarySheet(status),
+      child: Icon(status.icon),
+    );
+
+
+    final rightButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        shape: buttonShape,
+      ),
+      onPressed: () { _notifier.info("La lecture directe arrivera dans une future version !"); },
+      child: const Text('Commencer la lecture', style: TextStyle(fontSize: 17)),
+    );
+
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+      child: Row(
+        children: [
+          Flexible(
+            flex: 3,
+            // On s'assure que le bouton remplit la hauteur
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: leftButton,
+            ),
+          ),
+          const SizedBox(width: 15),
+          Flexible(
+            flex: 5,
+            // MODIFICATION : On ajoute SizedBox pour forcer la même hauteur
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: rightButton,
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+  void _showManageLibrarySheet(ReadingStatus status) {
+    final muId = int.parse(widget.muId);
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              if (status == ReadingStatus.reading)
+                ListTile(
+                  leading: const Icon(Icons.bookmark_outline),
+                  title: const Text("Passer à 'À lire plus tard'"),
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    final success = await _libraryService.updateMangaStatus(
+                        muId, ReadingStatus.readLater);
+                    if (success) {
+                      _notifier.info("Manga passé à 'À lire plus tard'.");
+                      _refreshLibraryState();
+                    } else {
+                      _notifier.error("Erreur lors du changement de statut.");
+                    }
+
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('Retirer de la bibliothèque',
+                    style: TextStyle(color: Colors.red)),
+                onTap: () async {
+                  Navigator.of(ctx).pop();
+                  final success =
+                  await _libraryService.removeMangaFromLibrary(muId);
+                  if (success){
+                    _notifier.info("Manga retiré de la bibliothèque");
+                    _refreshLibraryState();
+                  } else {
+                    _notifier.error("Erreur lors du retrait du manga.");
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
 }

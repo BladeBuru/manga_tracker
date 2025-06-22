@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../library/views/library.view.dart';
 
 class BottomNavbar extends StatefulWidget {
-  const BottomNavbar({Key? key}) : super(key: key);
+  const BottomNavbar({super.key});
 
   @override
   State<BottomNavbar> createState() => BottomNavbarState();
