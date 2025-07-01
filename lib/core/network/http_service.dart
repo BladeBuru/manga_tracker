@@ -87,7 +87,7 @@ class HttpService {
 
     switch (res.statusCode) {
       case HttpStatus.created:
-        return jsonDecode(res.body)['refreshToken'];
+        return jsonDecode(res.body)['accessToken'];
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
             'Invalid Refresh Token ${res.statusCode}');
