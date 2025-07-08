@@ -55,6 +55,8 @@ jobs:
           mkdir -p assets/env
           echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
 
+      - name: 📄 Créer .env.development (fictif pour éviter le crash)
+        run: echo "" > assets/env/.env.development
 
       - name: 🛠 Build release APK
         run: flutter build apk --flavor prod --release
