@@ -1,4 +1,3 @@
-
 # MangaTracker
 
 MangaTracker is a Flutter application to track your favorite mangas.
