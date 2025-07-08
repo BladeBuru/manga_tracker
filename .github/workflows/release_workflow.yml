@@ -50,6 +50,12 @@ jobs:
           VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: 🛠️ Générer le fichier .env.production
+        run: |
+          mkdir -p assets/env
+          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+
+
       - name: 🛠 Build release APK
         run: flutter build apk --flavor prod --release
 
