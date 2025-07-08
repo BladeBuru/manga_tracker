@@ -73,7 +73,7 @@ flutter build apk --flavor prod --release
 The generated APK can be found at:
 
 ```
-build/app/outputs/flutter-apk/app-release.apk
+build/app/outputs/flutter-apk/app-release.apk 
 ```
 
 
