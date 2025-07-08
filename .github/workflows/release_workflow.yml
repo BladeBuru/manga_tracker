@@ -51,7 +51,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: 🛠 Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --flavor prod --release
 
       - name: 🏷 Commit and tag version
         run: |
