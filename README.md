@@ -1,5 +1,6 @@
+
 # MangaTracker
-  
+
 MangaTracker is a Flutter application to track your favorite mangas.
 
 ## 🛠️ Prerequisites
@@ -26,7 +27,7 @@ MangaTracker is a Flutter application to track your favorite mangas.
 3. **Run the application**
 
    ```bash
-   flutter run --flavor dev 
+   flutter run
    ```
 
 4. **Run the component storybook (Dashbook)**
@@ -66,13 +67,13 @@ If you encounter errors when installing dependencies or running the project, try
 To compile a **release** version of the app as an APK:
 
 ```bash
-flutter build apk --flavor prod --release
+flutter build apk --release
 ```
 
 The generated APK can be found at:
 
 ```
-build/app/outputs/flutter-apk/app-release.apk 
+build/app/outputs/flutter-apk/app-release.apk
 ```
 
 

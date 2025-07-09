@@ -4,10 +4,8 @@ class ValidatorService {
   final RegExp emailRegex = RegExp(
     '^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})',
   );
-
-
   final RegExp pwdRegex = RegExp(
-    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,64}$',
+    '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{8,64}',
   );
 
   String? validateEmailAddress(String? value) {

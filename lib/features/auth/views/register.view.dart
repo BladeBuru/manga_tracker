@@ -12,7 +12,7 @@ import '../services/auth.service.dart';
 class RegisterView extends StatefulWidget {
   final String emailText;
 
-  const RegisterView({super.key, required this.emailText});
+  const RegisterView({Key? key, required this.emailText}) : super(key: key);
 
   @override
   State<RegisterView> createState() => _RegisterViewState();
@@ -39,7 +39,7 @@ class _RegisterViewState extends State<RegisterView> {
     );
 
     if (!mounted) return;
-    redirectToLoginPage();
+    this.redirectToLoginPage();
   }
 
   void redirectToLoginPage() {
