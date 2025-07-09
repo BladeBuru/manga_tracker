@@ -19,7 +19,7 @@ void addPasswordFieldsStory(Dashbook dashbook) {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Center(
-              child: SizedBox(
+              child: Container(
                 width: 350,
                 child: Form(
                   key: formKey,
@@ -34,8 +34,7 @@ void addPasswordFieldsStory(Dashbook dashbook) {
                       const SizedBox(height: 20),
                       AuthButton(
                           text: 'Valider',
-                          onTap: () { final isValid = formKey.currentState?.validate() ?? false;
-                          print("Est valide $isValid");}
+                          onTap: () { final isValid = formKey.currentState?.validate() ?? false;}
 
                       ),
                     ],

@@ -63,7 +63,7 @@ class _ProfileState extends State<Profile> {
   void showConfirmDeleteAccount() {
     Widget continueButton = TextButton(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all<Color>(
+        backgroundColor: MaterialStateProperty.all<Color>(
           deleteAccountBtnColor,
         ),
       ),
@@ -91,7 +91,7 @@ class _ProfileState extends State<Profile> {
 
     Widget saveButton = TextButton(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all<Color>(
+        backgroundColor: MaterialStateProperty.all<Color>(
           changePasswordBtnColor,
         ),
       ),
