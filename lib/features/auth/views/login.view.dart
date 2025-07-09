@@ -15,7 +15,7 @@ import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
   State<StatefulWidget> createState() => _LoginViewState();

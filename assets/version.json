@@ -1,5 +1,31 @@
 {
-  "latestVersion": "0.1.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.1/app-debug.apk",
-  "inherit": true
+  "latestVersion": "0.1.2",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.2/MangaTracker.apk",
+  "inherit": true,
+  "changelog": [
+    {
+      "version": "0.1.2",
+      "notes": [
+        "**Gestion de bibliothèque améliorée !** Le nouveau bouton de statut sur la page de détail vous permet de gérer vos mangas plus facilement.",
+        "**Performances accrues.** Le temps de chargement de la page de détail a été optimisé pour une expérience plus fluide.",
+        "**Notifications interactives.** Les messages de l'application peuvent maintenant être fermés manuellement grâce à un nouveau bouton.",
+        "Corrections de bugs divers et améliorations de la stabilité."
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "notes": [
+        "**Connexion par empreinte digitale.** Connectez-vous plus rapidement et en toute sécurité grâce à l'authentification biométrique.",
+        "**Votre bibliothèque personnelle.** Vous pouvez maintenant ajouter des mangas à votre bibliothèque pour suivre votre progression de lecture.",
+        "**Nouveaux statuts de lecture.** Suivez vos mangas avec les statuts 'En cours', 'À lire plus tard' et 'Terminé'."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "notes": [
+        "Lancement initial de Manga Tracker.",
+        "Recherche et consultation des détails des mangas."
+      ]
+    }
+  ]
 }

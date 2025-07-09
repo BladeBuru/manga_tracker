@@ -1,4 +1,3 @@
-// features/library/services/library.service.dart
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,27 +7,37 @@ import 'package:mangatracker/core/network/http_service.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 
+import '../../manga/dto/reading_status.enum.dart';
+
 class LibraryService {
   final HttpService _http = getIt<HttpService>();
-
   Future<LibraryService> init() async => this;
+  List<MangaQuickViewDto>? _userLibraryCache;
+
 
   // ─────────── GET /library/all ───────────
   Future<List<MangaQuickViewDto>> getUserSavedMangas() async {
+    if (_userLibraryCache != null) {
+      return _userLibraryCache!;
+    }
     final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/all');
-    return _fetchMangaList(url);
+    final library = await _fetchMangaList(url);
+    _userLibraryCache = library;
+    return library;
   }
 
   // ─────────── POST /library/save ───────────
 
   Future<bool> addMangaToLibrary(int muId) async {
     final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/save');
-    return _postOrDelete(
+    final success = await _postOrDelete(
       method: _http.postWithAuthTokens,
       url: url,
       muId: muId,
       expectStatus: HttpStatus.created,
     );
+    if (success) _userLibraryCache = null; // On vide le cache
+    return success;
   }
 
 
@@ -40,69 +49,61 @@ class LibraryService {
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
       body: jsonEncode({'muId': muId, 'readChapters': readChapters}),
     );
-    return res.statusCode == HttpStatus.ok;
+    final success = res.statusCode == HttpStatus.ok;
+    if (success) _userLibraryCache = null; // On vide le cache
+    return success;
   }
+
 
   // ─────────── DELETE /library/delete ───────────
   Future<bool> removeMangaFromLibrary(int muId) async {
     final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/delete');
-    return _postOrDelete(
+    final success = await _postOrDelete(
       method: _http.deleteWithAuthTokens,
       url: url,
       muId: muId,
     );
+    if (success) _userLibraryCache = null; // On vide le cache
+    return success;
   }
 
-  // ─────────── GET /favorites/all ───────────
-  Future<List<int>> getReadLaterList() async {
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/favorites/all');
-    final res = await _http.getWithAuthTokens(
+  // ─────────── Update /library/status ───────────
+  Future<bool> updateMangaStatus(int muId, ReadingStatus status) async {
+    final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/status');
+    final response = await _http.putWithAuthTokens(
       url,
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: jsonEncode({
+        'muId': muId,
+        'readingStatus': status.value,
+      }),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('Impossible de charger la liste ReadLater');
-    }
-    final List<dynamic> list = jsonDecode(res.body);
-    return list.map((e) => e['mangaId'] as int).toList();
+    final success = response.statusCode == HttpStatus.ok;
+    if (success) _userLibraryCache = null;
+    return success;
   }
 
-  // ─────────── POST /favorites/save ───────────
-  Future<bool> addToReadLater(int mangaId) async {
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/favorites/save');
-    return _postOrDelete(
-      method: _http.postWithAuthTokens,
-      url: url,
-      muId: mangaId,
-      expectStatus: HttpStatus.created,
-      bodyKey: 'mangaId',
-    );
-  }
-
-  // ─────────── DELETE /favorites/delete ───────────
-  Future<bool> removeFromReadLater(int mangaId) async {
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/favorites/delete');
-    return _postOrDelete(
-      method: _http.deleteWithAuthTokens,
-      url: url,
-      muId: mangaId,
-      bodyKey: 'mangaId',
-    );
-  }
   // ─────────── UTILS & HELPERS ───────────
+
+
+  Future<MangaQuickViewDto?> getLibraryEntry(int muId) async {
+    final library = await getUserSavedMangas();
+    try {
+      return library.firstWhere((manga) => manga.muId == muId);
+    } catch (e) {
+      return null;
+    }
+  }
 
   /// Récupère la progression lue pour un manga, ou -1 si absent.
   Future<num> getReadChapterByUid(int muId) async {
-    final saved = await getUserSavedMangas();
+    final manga = await getLibraryEntry(muId);
+    return  manga?.readChapters ?? -1;
+  }
 
-    for (final m in saved) {
-      if (m.muId == muId) {
-        // Si trouvé, renvoie la progression (ou -1 si null)
-        return m.readChapters ?? 0;
-      }
-    }
-    // Si pas trouvé
-    return -1;
+  Future<ReadingStatus?> getReadingStatusByUid(int muId) async {
+    final manga = await getLibraryEntry(muId);
+    return  manga?.readingStatus;
   }
 
   Future<List<MangaQuickViewDto>> _fetchMangaList(Uri url) async {

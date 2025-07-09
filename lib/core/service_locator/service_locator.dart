@@ -8,7 +8,7 @@ import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 
 import '../../features/auth/services/biometric.service.dart';
-import '../services/version_checker.dart';
+import '../services/app_update_service.dart';
 import '../storage/services/storage.service.dart';
 
 GetIt getIt = GetIt.instance;
@@ -29,8 +29,8 @@ void setupServiceLocator() {
       dependsOn: [HttpService, MangaService]);
   getIt.registerSingletonWithDependencies<UserService>(() => UserService(),
       dependsOn: [HttpService]);
-  getIt.registerSingletonWithDependencies<VersionCheckerService>(
-      () => VersionCheckerService(),
+  getIt.registerSingletonWithDependencies<AppUpdateService>(
+      () => AppUpdateService(),
       dependsOn: [HttpService]);
   getIt.registerSingleton(Notifier());
 }
