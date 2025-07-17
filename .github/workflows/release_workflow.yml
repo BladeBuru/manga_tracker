@@ -66,16 +66,12 @@ jobs:
         run: echo "" > assets/env/.env.development
 
       - name: 🛠 Build release APK
+        if: false
         run: flutter build apk --flavor prod --release
 
-      - name: 🏷 Commit and tag version
+      - name: 🚀 Push tag
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add pubspec.yaml
-          git commit -m "🔖 Release version ${{ steps.version.outputs.version }}"
-          git tag v${{ steps.version.outputs.version }}
-          git push origin v${{ steps.version.outputs.version }}
+          git push origin --tags
           git push
 
       - name: 🔁 Update version.json
