@@ -74,25 +74,27 @@ jobs:
           git push origin --tags
           git push
 
-      - name: 🔁 Update version.json
-        run: |
-          echo '{
-            "latestVersion": "${{ steps.version.outputs.version }}",
-            "apkUrl": "https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/app-release.apk"
-          }' > version.json
-          git add version.json
-          git commit -m "📝 Update version.json for ${{ steps.version.outputs.version }}"
-          git push
-
       - name: 🧾 Extract changelog from PR
         id: changelog
-        run:  |
+        run: |
           BODY=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
           CONTENT=$(printf "%s\n" "$BODY" | sed -n '/<!-- CHANGELOG:START -->/,/<!-- CHANGELOG:END -->/p' | sed '1d;$d')
-          # Transforme les lignes en JSON array
-          NOTES=$(printf "%s\n" "$CONTENT" | sed -E 's/^- (.+)/"\1",/' | sed -E 's/^### (.+)/"\1",/')
-          # Ajoute dans la sortie
-          echo "notes=[${NOTES%?}]" >> $GITHUB_OUTPUT
+          ESCAPED=$(echo "$CONTENT" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
+          echo "log=$ESCAPED" >> $GITHUB_OUTPUT
+
+      - name: 📝 Update version.json with changelog
+        run: dart run bin/update_version_json.dart
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          APK_URL: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/app-prod-release.apk
+          NOTES: ${{ steps.changelog.outputs.log }}
+
+
+      - name: 🔁 Commit version.json
+        run: |
+          git add assets/version.json
+          git commit -m "📝 Update version.json for ${{ steps.version.outputs.version }}" || echo "Nothing to commit"
+          git push
 
 
       - name: 🚀 Create GitHub Release

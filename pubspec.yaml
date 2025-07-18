@@ -124,3 +124,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+executables:
+  update_version_json: bin/update_version_json.dart
