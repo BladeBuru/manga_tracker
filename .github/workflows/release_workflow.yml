@@ -66,7 +66,6 @@ jobs:
         run: echo "" > assets/env/.env.development
 
       - name: 🛠 Build release APK
-        if: false
         run: flutter build apk --flavor prod --release
 
       - name: 🚀 Push tag
