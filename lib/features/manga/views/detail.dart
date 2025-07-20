@@ -45,6 +45,7 @@ class _DetailState extends State<Detail> {
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
   MangaDetailDto? _mangaDetailCache;
+  String? customLink;
 
 
   @override
@@ -79,6 +80,31 @@ class _DetailState extends State<Detail> {
     });
   }
 
+  Future<void> _saveCustomLink(String link) async {
+    final muId = int.parse(widget.muId);
+    final success = await _libraryService.updateCustomLink(muId, link);
+    if (success) {
+      setState(() {
+        customLink = link;
+      });
+      _notifier.success("Lien enregistré !");
+    } else {
+      _notifier.error("Erreur lors de l'enregistrement du lien.");
+    }
+  }
+
+  Future<void> _removeCustomLink() async {
+    final muId = int.parse(widget.muId);
+    final success = await _libraryService.deleteCustomLink(muId);
+    if (success) {
+      setState(() {
+        customLink = null;
+      });
+      _notifier.success("Lien supprimé !");
+    } else {
+      _notifier.error("Erreur lors de la suppression du lien.");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -200,6 +226,8 @@ class _DetailState extends State<Detail> {
 
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = int.parse(widget.muId);
+    final customLink = _mangaDetailCache?.customLink;
+
 
 
     final buttonShape = RoundedRectangleBorder(
@@ -248,16 +276,89 @@ class _DetailState extends State<Detail> {
       child: Icon(status.icon),
     );
 
+    if (customLink == null) {
+      final rightButton = ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          shape: buttonShape,
+        ),
+        onPressed: _addCustomLink,
+        icon: const Icon(Icons.link_off),
+        label: const Text('Ajouter un lien', style: TextStyle(fontSize: 17)  ),
+      );
 
-    final rightButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        shape: buttonShape,
+      return Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        child: Row(
+          children: [
+            Flexible(
+              flex: 3,
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: leftButton,
+              ),
+            ),
+            const SizedBox(width: 15),
+            Flexible(
+              flex: 5,
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: rightButton,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final rightButton = SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: Stack(
+        children: [
+          // Le bouton principal
+          Positioned.fill(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: buttonShape,
+              ),
+              onPressed: () {
+                _notifier.info("Ouverture dans WebView bientôt disponible. $customLink");
+              },
+              icon: const Icon(Icons.link),
+              label: const Padding(
+                padding: EdgeInsets.only(right: 24), // Décale le texte vers la gauche
+                child: Text('Lire en ligne', style: TextStyle(fontSize: 17)),
+              ),
+            ),
+          ),
+
+          // Les trois petits points bien alignés à droite
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 8,
+            child: Center(
+              child: IconButton(
+                icon: const Icon(Icons.more_vert, size: 20),
+                color: Theme.of(context).colorScheme.onPrimary,
+                onPressed: _showCustomLinkMenu,
+                tooltip: 'Gérer le lien',
+              ),
+            ),
+          ),
+
+        ],
       ),
-      onPressed: () { _notifier.info("La lecture directe arrivera dans une future version !"); },
-      child: const Text('Commencer la lecture', style: TextStyle(fontSize: 17)),
     );
+
+
 
     return Container(
       height: 70,
@@ -276,13 +377,12 @@ class _DetailState extends State<Detail> {
           const SizedBox(width: 15),
           Flexible(
             flex: 5,
-            // MODIFICATION : On ajoute SizedBox pour forcer la même hauteur
             child: SizedBox(
               width: double.infinity,
               height: double.infinity,
               child: rightButton,
             ),
-          ),
+          )
         ],
       ),
     );
@@ -335,6 +435,82 @@ class _DetailState extends State<Detail> {
       },
     );
   }
+
+  void _showCustomLinkMenu() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: false,
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                title: const Text("Modifier le lien"),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _addCustomLink();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text("Supprimer le lien", style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _removeCustomLink();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+  Future<void> _addCustomLink() async {
+    final controller = TextEditingController(text: customLink);
+    final link = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ajouter ou modifier un lien'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'https://exemple.com'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: Text('Annuler', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            onPressed: () {
+              final link = controller.text.trim();
+              final uri = Uri.tryParse(link);
+              final isValid = uri != null && uri.hasScheme && (uri.isAbsolute || uri.host.isNotEmpty);
+
+              if (isValid) {
+                Navigator.of(ctx).pop(link);
+              } else {
+                _notifier.error("Lien invalide. Le lien doit commencer par http:// ou https://");
+              }
+
+            },
+            child: const Text('Valider'),
+          ),
+        ],
+      ),
+    );
+
+    if (link != null) {
+      await _saveCustomLink(link);
+    }
+  }
+
 
 
 }
