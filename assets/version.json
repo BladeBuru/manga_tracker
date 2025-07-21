@@ -3,6 +3,7 @@
   "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.2/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+
     {
       "version": "0.1.2",
       "notes": [
