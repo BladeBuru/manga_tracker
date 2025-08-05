@@ -28,7 +28,7 @@ class HomepageMangaList extends StatelessWidget {
                     mangaName: manga.title,
                     muId: manga.muId.toString(),
                     mangaAuthor: manga.year,
-                    largeImgPath: manga.largeCoverUrl,
+                    mediumImgPath: manga.mediumCoverUrl,
                     lastChapter: manga.totalChapters,
                     readChapter: manga.readChapters,
                     rating: manga.rating,

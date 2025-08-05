@@ -92,7 +92,7 @@ class _LibraryViewState extends State<LibraryView> {
                   mangaAuthor: manga.year,
                    lastChapter: manga.totalChapters,
                   readChapter: manga.readChapters,
-                  largeImgPath: manga.largeCoverUrl,
+                  mediumImgPath: manga.mediumCoverUrl,
                   rating: manga.rating,
                    onDetailReturn: reloadMangas
                 ),
