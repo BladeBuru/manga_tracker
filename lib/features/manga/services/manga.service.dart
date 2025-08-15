@@ -7,6 +7,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/core/network/http_service.dart';
+import 'package:mangatracker/features/manga/dto/manga_recommendation_view.dto.dart';
 
 import '../../library/services/library.service.dart';
 import '../dto/manga_quick_view.dto.dart';
@@ -22,8 +23,11 @@ class MangaService {
     return this;
   }
 
-  Future<List<MangaQuickViewDto>> getMangas(Uri url,
-      {bool post = false, Map<String, String> body = const {}}) async {
+  Future<List<MangaQuickViewDto>> getMangas(
+    Uri url, {
+    bool post = false,
+    Map<String, String> body = const {},
+  }) async {
     Response response;
     if (post) {
       response = await httpService.postWithAuthTokens(url, body: body);
@@ -41,10 +45,12 @@ class MangaService {
       return mangaList;
     } else if (response.statusCode == HttpStatus.forbidden) {
       throw InvalidCredentialsException(
-          "Not authorized to access this resource");
+        "Not authorized to access this resource",
+      );
     } else {
       throw Exception(
-          'HTTP Request Failed with status: ${response.statusCode}.');
+        'HTTP Request Failed with status: ${response.statusCode}.',
+      );
     }
   }
 
@@ -54,7 +60,10 @@ class MangaService {
       'limit': 25.toString(),
     };
     var url = Uri.https(
-        dotenv.env['MT_API_URL']!, '/mangas/trending', queryParameters);
+      dotenv.env['MT_API_URL']!,
+      '/mangas/trending',
+      queryParameters,
+    );
     return getMangas(url);
   }
 
@@ -64,7 +73,10 @@ class MangaService {
       'limit': 25.toString(),
     };
     var url = Uri.https(
-        dotenv.env['MT_API_URL']!, '/mangas/popular', queryParameters);
+      dotenv.env['MT_API_URL']!,
+      '/mangas/popular',
+      queryParameters,
+    );
     return getMangas(url);
   }
 
@@ -78,8 +90,11 @@ class MangaService {
       'offset': offsetTop.toString(),
       'limit': 25.toString(),
     };
-    Uri url =
-        Uri.https(dotenv.env['MT_API_URL']!, '/mangas/new', queryParameters);
+    Uri url = Uri.https(
+      dotenv.env['MT_API_URL']!,
+      '/mangas/new',
+      queryParameters,
+    );
     return getMangas(url);
   }
 
@@ -102,14 +117,40 @@ class MangaService {
       return MangaDetailDto.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == HttpStatus.forbidden) {
       throw InvalidCredentialsException(
-          "Not authorized to access this resource");
+        "Not authorized to access this resource",
+      );
     } else {
       throw Exception(
-          'HTTP Request Failed with status: ${response.statusCode}.');
+        'HTTP Request Failed with status: ${response.statusCode}.',
+      );
     }
   }
 
+  Future<List<MangaRecommendationView>> getMangaRecommendations(
+    String muId,
+  ) async {
+    Uri url = Uri.https(
+      dotenv.env['MT_API_URL']!,
+      '/mangas/recommendations/$muId',
+    );
 
+    Response response = await httpService.getWithAuthTokens(url);
 
-
+    if (response.statusCode == HttpStatus.ok) {
+      dynamic data = jsonDecode(response.body);
+      final List<MangaRecommendationView> mangaList = [];
+      for (var i = 0; i < data.length; i++) {
+        mangaList.add(MangaRecommendationView.fromJson(data[i]));
+      }
+      return mangaList;
+    } else if (response.statusCode == HttpStatus.forbidden) {
+      throw InvalidCredentialsException(
+        "Not authorized to access this resource",
+      );
+    } else {
+      throw Exception(
+        'HTTP Request Failed with status: ${response.statusCode}.',
+      );
+    }
+  }
 }

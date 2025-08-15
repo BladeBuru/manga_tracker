@@ -136,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                         return MangaCard(
                           muId: manga.muId.toString(),
                           mangaTitle: manga.title,
-                          mangaAuthor: manga.year.toString(),
+                          mangaAuthor: manga.year,
                           mediumImgPath: manga.mediumCoverUrl,
                           rating: manga.rating,
                         );

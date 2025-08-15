@@ -5,6 +5,7 @@ import 'package:html/parser.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/manga/dto/manga_recommendation_view.dto.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
@@ -14,11 +15,12 @@ import '../../library/services/library.service.dart';
 import '../dto/reading_status.enum.dart';
 import '../helpers/chapters.helper.dart';
 import '../services/manga.service.dart';
-
+import '../widgets/manga_card.dart';
 
 class _PageData {
   final MangaDetailDto mangaDetail;
   final MangaQuickViewDto? libraryEntry;
+
   _PageData({required this.mangaDetail, this.libraryEntry});
 }
 
@@ -45,7 +47,7 @@ class _DetailState extends State<Detail> {
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
   MangaDetailDto? _mangaDetailCache;
-
+  List<MangaRecommendationView>? _mangaRecommendationsCache;
 
   @override
   void initState() {
@@ -56,14 +58,14 @@ class _DetailState extends State<Detail> {
   Future<_PageData> _loadPageData() async {
     final muId = int.parse(widget.muId);
 
-    final mangaDetailFuture = _mangaDetailCache != null
-        ? Future.value(_mangaDetailCache)
-        : _mangaService.getMangaDetail(widget.muId);
+    final mangaDetailFuture =
+        _mangaDetailCache != null
+            ? Future.value(_mangaDetailCache)
+            : _mangaService.getMangaDetail(widget.muId);
 
     final libraryEntryFuture = _libraryService.getLibraryEntry(muId);
 
     final results = await Future.wait([mangaDetailFuture, libraryEntryFuture]);
-
 
     _mangaDetailCache = results[0] as MangaDetailDto;
 
@@ -132,7 +134,8 @@ class _DetailState extends State<Detail> {
                             left: 16,
                             right: 16,
                             child: AutoSizeText(
-                              parse(widget.mangaTitle).documentElement?.text ?? '',
+                              parse(widget.mangaTitle).documentElement?.text ??
+                                  '',
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               style: GoogleFonts.poppins(
@@ -151,12 +154,17 @@ class _DetailState extends State<Detail> {
                                 height: 24,
                                 child: ListView(
                                   scrollDirection: Axis.horizontal,
-                                  children: manga.genres!
-                                      .map((g) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: MangaType(type: g),
-                                  ))
-                                      .toList(),
+                                  children:
+                                      manga.genres!
+                                          .map(
+                                            (g) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: MangaType(type: g),
+                                            ),
+                                          )
+                                          .toList(),
                                 ),
                               ),
                             ),
@@ -183,59 +191,124 @@ class _DetailState extends State<Detail> {
                       ),
                       _buildBottomActionBar(libraryEntry?.readingStatus),
                     ],
-
                   );
                 },
               ),
             ),
-            // BARRE DE BOUTONS FIXE EN BAS
 
+            // BARRE DE BOUTONS FIXE EN BAS
           ],
         ),
       ),
     );
   }
 
-
-
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = int.parse(widget.muId);
-
 
     final buttonShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(15),
     );
 
+    final rightButton = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        shape: buttonShape,
+        textStyle: const TextStyle(fontSize: 17),
+      ),
+      onPressed: () async {
+        _mangaRecommendationsCache ??= await _mangaService
+            .getMangaRecommendations(muId.toString());
+
+        showDialog(
+          context: context,
+          builder:
+              (_) => AlertDialog(
+                title: const Text('Mangas recommandés'),
+                content: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: 200,
+                  child:
+                      _mangaRecommendationsCache!.isEmpty
+                          ? const Center(
+                            child: Text(
+                              'Aucune recommandation disponible.',
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                          : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _mangaRecommendationsCache!.length,
+                            itemBuilder: (_, index) {
+                              final manga = _mangaRecommendationsCache![index];
+                              return MangaCard(
+                                muId: manga.muId.toString(),
+                                mangaTitle: manga.title,
+                                mangaAuthor: manga.year,
+                                mediumImgPath: manga.mediumCoverUrl,
+                                rating: manga.rating,
+                              );
+                            },
+                          ),
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text('Fermer'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+        );
+      },
+      child: const Text('Mangas recommandés', style: TextStyle(fontSize: 17)),
+    );
 
     if (status == null) {
-
       return Container(
         height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.bookmark_add_outlined),
-            label: const Text('Ajouter à "À lire plus tard"'),
-            onPressed: () async {
-              final success = await _libraryService.addMangaToLibrary(muId);
-              if (success) _refreshLibraryState();
-            },
+        child: Row(
+          children: [
+            Flexible(
+              flex: 6,
+              // On s'assure que le bouton remplit la hauteur
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  label: const Text('Ajouter à "À lire plus tard"'),
+                  onPressed: () async {
+                    final success = await _libraryService.addMangaToLibrary(
+                      muId,
+                    );
+                    if (success) _refreshLibraryState();
+                  },
 
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              shape: buttonShape,
-              textStyle: const TextStyle(fontSize: 17),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: buttonShape,
+                    textStyle: const TextStyle(fontSize: 17),
+                  ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 15),
+            Flexible(
+              flex: 2,
+              // On s'assure que le bouton remplit la hauteur
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: rightButton,
+              ),
+            ),
+          ],
         ),
       );
     }
-
-
-
 
     final leftButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -248,14 +321,15 @@ class _DetailState extends State<Detail> {
       child: Icon(status.icon),
     );
 
-
-    final rightButton = ElevatedButton(
+    final middleButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         shape: buttonShape,
       ),
-      onPressed: () { _notifier.info("La lecture directe arrivera dans une future version !"); },
+      onPressed: () {
+        _notifier.info("La lecture directe arrivera dans une future version !");
+      },
       child: const Text('Commencer la lecture', style: TextStyle(fontSize: 17)),
     );
 
@@ -275,7 +349,17 @@ class _DetailState extends State<Detail> {
           ),
           const SizedBox(width: 15),
           Flexible(
-            flex: 5,
+            flex: 3,
+            // MODIFICATION : On ajoute SizedBox pour forcer la même hauteur
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: middleButton,
+            ),
+          ),
+          const SizedBox(width: 15),
+          Flexible(
+            flex: 2,
             // MODIFICATION : On ajoute SizedBox pour forcer la même hauteur
             child: SizedBox(
               width: double.infinity,
@@ -303,25 +387,29 @@ class _DetailState extends State<Detail> {
                   onTap: () async {
                     Navigator.of(ctx).pop();
                     final success = await _libraryService.updateMangaStatus(
-                        muId, ReadingStatus.readLater);
+                      muId,
+                      ReadingStatus.readLater,
+                    );
                     if (success) {
                       _notifier.info("Manga passé à 'À lire plus tard'.");
                       _refreshLibraryState();
                     } else {
                       _notifier.error("Erreur lors du changement de statut.");
                     }
-
                   },
                 ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('Retirer de la bibliothèque',
-                    style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Retirer de la bibliothèque',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () async {
                   Navigator.of(ctx).pop();
-                  final success =
-                  await _libraryService.removeMangaFromLibrary(muId);
-                  if (success){
+                  final success = await _libraryService.removeMangaFromLibrary(
+                    muId,
+                  );
+                  if (success) {
                     _notifier.info("Manga retiré de la bibliothèque");
                     _refreshLibraryState();
                   } else {
@@ -335,6 +423,4 @@ class _DetailState extends State<Detail> {
       },
     );
   }
-
-
 }
