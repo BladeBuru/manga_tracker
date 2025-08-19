@@ -7,6 +7,7 @@ import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
+import 'package:mangatracker/features/manga/views/web_view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
 
 import '../../../core/notifier/notifier.dart';
@@ -15,10 +16,10 @@ import '../dto/reading_status.enum.dart';
 import '../helpers/chapters.helper.dart';
 import '../services/manga.service.dart';
 
-
 class _PageData {
   final MangaDetailDto mangaDetail;
   final MangaQuickViewDto? libraryEntry;
+
   _PageData({required this.mangaDetail, this.libraryEntry});
 }
 
@@ -47,7 +48,6 @@ class _DetailState extends State<Detail> {
   MangaDetailDto? _mangaDetailCache;
   String? customLink;
 
-
   @override
   void initState() {
     super.initState();
@@ -57,14 +57,14 @@ class _DetailState extends State<Detail> {
   Future<_PageData> _loadPageData() async {
     final muId = int.parse(widget.muId);
 
-    final mangaDetailFuture = _mangaDetailCache != null
-        ? Future.value(_mangaDetailCache)
-        : _mangaService.getMangaDetail(widget.muId);
+    final mangaDetailFuture =
+        _mangaDetailCache != null
+            ? Future.value(_mangaDetailCache)
+            : _mangaService.getMangaDetail(widget.muId);
 
     final libraryEntryFuture = _libraryService.getLibraryEntry(muId);
 
     final results = await Future.wait([mangaDetailFuture, libraryEntryFuture]);
-
 
     _mangaDetailCache = results[0] as MangaDetailDto;
 
@@ -105,6 +105,7 @@ class _DetailState extends State<Detail> {
       _notifier.error("Erreur lors de la suppression du lien.");
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,7 +159,8 @@ class _DetailState extends State<Detail> {
                             left: 16,
                             right: 16,
                             child: AutoSizeText(
-                              parse(widget.mangaTitle).documentElement?.text ?? '',
+                              parse(widget.mangaTitle).documentElement?.text ??
+                                  '',
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               style: GoogleFonts.poppins(
@@ -177,12 +179,17 @@ class _DetailState extends State<Detail> {
                                 height: 24,
                                 child: ListView(
                                   scrollDirection: Axis.horizontal,
-                                  children: manga.genres!
-                                      .map((g) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: MangaType(type: g),
-                                  ))
-                                      .toList(),
+                                  children:
+                                      manga.genres!
+                                          .map(
+                                            (g) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: MangaType(type: g),
+                                            ),
+                                          )
+                                          .toList(),
                                 ),
                               ),
                             ),
@@ -209,34 +216,27 @@ class _DetailState extends State<Detail> {
                       ),
                       _buildBottomActionBar(libraryEntry?.readingStatus),
                     ],
-
                   );
                 },
               ),
             ),
-            // BARRE DE BOUTONS FIXE EN BAS
 
+            // BARRE DE BOUTONS FIXE EN BAS
           ],
         ),
       ),
     );
   }
 
-
-
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = int.parse(widget.muId);
     final customLink = _mangaDetailCache?.customLink;
-
-
 
     final buttonShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(15),
     );
 
-
     if (status == null) {
-
       return Container(
         height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
@@ -262,9 +262,6 @@ class _DetailState extends State<Detail> {
       );
     }
 
-
-
-
     final leftButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: status.color.withAlpha(50),
@@ -285,7 +282,7 @@ class _DetailState extends State<Detail> {
         ),
         onPressed: _addCustomLink,
         icon: const Icon(Icons.link_off),
-        label: const Text('Ajouter un lien', style: TextStyle(fontSize: 17)  ),
+        label: const Text('Ajouter un lien', style: TextStyle(fontSize: 17)),
       );
 
       return Container(
@@ -329,11 +326,28 @@ class _DetailState extends State<Detail> {
                 shape: buttonShape,
               ),
               onPressed: () {
-                _notifier.info("Ouverture dans WebView bientôt disponible. $customLink");
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (_) => ReaderWebView(
+                          url: customLink!,
+                          onChapterDetected: (chapter, currentUrl) async {
+                            // exemple : maj progression
+                            final muId = int.parse(widget.muId);
+                            await getIt<LibraryService>().saveChapterProgress(
+                              muId,
+                              chapter,
+                            );
+                            _notifier.info('Chapitre $chapter détecté ✅');
+                          },
+                        ),
+                  ),
+                );
               },
               icon: const Icon(Icons.link),
               label: const Padding(
-                padding: EdgeInsets.only(right: 24), // Décale le texte vers la gauche
+                padding: EdgeInsets.only(right: 24),
+                // Décale le texte vers la gauche
                 child: Text('Lire en ligne', style: TextStyle(fontSize: 17)),
               ),
             ),
@@ -353,12 +367,9 @@ class _DetailState extends State<Detail> {
               ),
             ),
           ),
-
         ],
       ),
     );
-
-
 
     return Container(
       height: 70,
@@ -382,7 +393,7 @@ class _DetailState extends State<Detail> {
               height: double.infinity,
               child: rightButton,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -403,25 +414,29 @@ class _DetailState extends State<Detail> {
                   onTap: () async {
                     Navigator.of(ctx).pop();
                     final success = await _libraryService.updateMangaStatus(
-                        muId, ReadingStatus.readLater);
+                      muId,
+                      ReadingStatus.readLater,
+                    );
                     if (success) {
                       _notifier.info("Manga passé à 'À lire plus tard'.");
                       _refreshLibraryState();
                     } else {
                       _notifier.error("Erreur lors du changement de statut.");
                     }
-
                   },
                 ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('Retirer de la bibliothèque',
-                    style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Retirer de la bibliothèque',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () async {
                   Navigator.of(ctx).pop();
-                  final success =
-                  await _libraryService.removeMangaFromLibrary(muId);
-                  if (success){
+                  final success = await _libraryService.removeMangaFromLibrary(
+                    muId,
+                  );
+                  if (success) {
                     _notifier.info("Manga retiré de la bibliothèque");
                     _refreshLibraryState();
                   } else {
@@ -445,7 +460,10 @@ class _DetailState extends State<Detail> {
           child: Wrap(
             children: [
               ListTile(
-                leading: Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                leading: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 title: const Text("Modifier le lien"),
                 onTap: () {
                   Navigator.of(ctx).pop();
@@ -454,7 +472,10 @@ class _DetailState extends State<Detail> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text("Supprimer le lien", style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  "Supprimer le lien",
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   _removeCustomLink();
@@ -467,50 +488,58 @@ class _DetailState extends State<Detail> {
     );
   }
 
-
   Future<void> _addCustomLink() async {
     final controller = TextEditingController(text: customLink);
     final link = await showDialog<String?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter ou modifier un lien'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'https://exemple.com'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: Text('Annuler', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Ajouter ou modifier un lien'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'https://exemple.com',
+              ),
             ),
-            onPressed: () {
-              final link = controller.text.trim();
-              final uri = Uri.tryParse(link);
-              final isValid = uri != null && uri.hasScheme && (uri.isAbsolute || uri.host.isNotEmpty);
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(null),
+                child: Text(
+                  'Annuler',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+                onPressed: () {
+                  final link = controller.text.trim();
+                  final uri = Uri.tryParse(link);
+                  final isValid =
+                      uri != null &&
+                      uri.hasScheme &&
+                      (uri.isAbsolute || uri.host.isNotEmpty);
 
-              if (isValid) {
-                Navigator.of(ctx).pop(link);
-              } else {
-                _notifier.error("Lien invalide. Le lien doit commencer par http:// ou https://");
-              }
-
-            },
-            child: const Text('Valider'),
+                  if (isValid) {
+                    Navigator.of(ctx).pop(link);
+                  } else {
+                    _notifier.error(
+                      "Lien invalide. Le lien doit commencer par http:// ou https://",
+                    );
+                  }
+                },
+                child: const Text('Valider'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (link != null) {
       await _saveCustomLink(link);
     }
   }
-
-
-
 }
