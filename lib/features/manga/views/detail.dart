@@ -12,6 +12,7 @@ import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
 
 import '../../../core/notifier/notifier.dart';
 import '../../library/services/library.service.dart';
+import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/reading_status.enum.dart';
 import '../helpers/chapters.helper.dart';
 import '../services/manga.service.dart';
@@ -27,6 +28,7 @@ class Detail extends StatefulWidget {
   final String muId;
   final String mangaTitle;
   final String? coverPath;
+
 
   const Detail({
     super.key,
@@ -47,6 +49,7 @@ class _DetailState extends State<Detail> {
   final LibraryService _libraryService = getIt<LibraryService>();
   MangaDetailDto? _mangaDetailCache;
   String? customLink;
+  int lastReadChapters = -1;
 
   @override
   void initState() {
@@ -67,7 +70,7 @@ class _DetailState extends State<Detail> {
     final results = await Future.wait([mangaDetailFuture, libraryEntryFuture]);
 
     _mangaDetailCache = results[0] as MangaDetailDto;
-
+    lastReadChapters = _mangaDetailCache?.readChaptersCount ?? 0;
     return _PageData(
       mangaDetail: _mangaDetailCache!,
       libraryEntry: results[1] as MangaQuickViewDto?,
@@ -136,6 +139,7 @@ class _DetailState extends State<Detail> {
                   final manga = snapshot.data!.mangaDetail;
                   final libraryEntry = snapshot.data!.libraryEntry;
                   final readChapters = libraryEntry?.readChapters ?? -1;
+
 
                   return Column(
                     children: [
@@ -324,26 +328,24 @@ class _DetailState extends State<Detail> {
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 shape: buttonShape,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (_) => ReaderWebView(
-                          url: customLink!,
-                          onChapterDetected: (chapter, currentUrl) async {
-                            // exemple : maj progression
-                            final muId = int.parse(widget.muId);
-                            await getIt<LibraryService>().saveChapterProgress(
-                              muId,
-                              chapter,
-                            );
-                            _notifier.info('Chapitre $chapter détecté ✅');
-                          },
-                        ),
+              ),onPressed: () async {
+              final muId = int.parse(widget.muId);
+              final lastRead = lastReadChapters;      // ex. 119
+              final baseLink = customLink;                              // lien enregistré par l’utilisateur
+              final targetUrl = ChapterLinkResolver.buildUrlForChapter(
+                  baseLink, lastRead + 1) ?? baseLink;                 // vise le chapitre suivant si possible
+
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ReaderWebView(
+                    muId: muId,
+                    initialLastRead: lastRead,
+                    initialUrl: targetUrl,
+                    baseUserLink: baseLink, // pour calculer les "next" robustement
                   ),
-                );
-              },
+                ),
+              );
+            },
               icon: const Icon(Icons.link),
               label: const Padding(
                 padding: EdgeInsets.only(right: 24),
