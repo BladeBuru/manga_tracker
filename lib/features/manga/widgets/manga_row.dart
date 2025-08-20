@@ -9,7 +9,7 @@ class MangaRow extends StatelessWidget {
   final String mangaAuthor;
   final num? lastChapter;
   final num? readChapter;
-  final String? largeImgPath;
+  final String? mediumImgPath;
   final String? rating;
   final VoidCallback? onDetailReturn;
 
@@ -21,7 +21,7 @@ class MangaRow extends StatelessWidget {
     this.lastChapter,
     this.readChapter,
     this.rating,
-    this.largeImgPath,
+    this.mediumImgPath,
     this.onDetailReturn,
   });
 
@@ -35,7 +35,7 @@ class MangaRow extends StatelessWidget {
               builder: (context) => Detail(
                     muId: muId,
                     mangaTitle: mangaName,
-                    coverPath: largeImgPath,
+                    coverPath: mediumImgPath,
                   )),
         );
         if (onDetailReturn != null) {
@@ -69,7 +69,7 @@ class MangaRow extends StatelessWidget {
                     padding: const EdgeInsets.all(7),
                     child: Align(
                       alignment: Alignment.center,
-                      child: ImageHelper.loadMangaImage(largeImgPath),
+                      child: ImageHelper.loadMangaImage(mediumImgPath),
                     ),
                   ),
                 ),
@@ -123,8 +123,8 @@ class MangaRow extends StatelessWidget {
                                           top: 1, bottom: 1, right: 5, left: 5),
                                       child: Text(
                                         readChapter != null
-                                            ? 'Chapitre $readChapter / $lastChapter'
-                                            : 'Chapitre ${lastChapter ?? 0 }',
+                                            ? '$readChapter / ${lastChapter ?? 0 } ${lastChapter! > 1 ? "chapitres" : "chapitre"}'
+                                            : '${lastChapter ?? 0 } ${lastChapter! > 1 ? "chapitres" : "chapitre"}',
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                           color: Colors.orange,

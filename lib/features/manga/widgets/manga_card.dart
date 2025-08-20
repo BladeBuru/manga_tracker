@@ -8,7 +8,7 @@ class MangaCard extends StatelessWidget {
   final String mangaTitle;
   final String muId;
   final String mangaAuthor;
-  final String? largeImgPath;
+  final String? mediumImgPath;
   final String rating;
 
   const MangaCard({
@@ -16,7 +16,7 @@ class MangaCard extends StatelessWidget {
     required this.mangaTitle,
     required this.muId,
     required this.mangaAuthor,
-    this.largeImgPath,
+    this.mediumImgPath,
     required this.rating,
   });
 
@@ -30,7 +30,7 @@ class MangaCard extends StatelessWidget {
               builder: (context) => Detail(
                     muId: muId,
                     mangaTitle: mangaTitle,
-                    coverPath: largeImgPath,
+                    coverPath: mediumImgPath,
                   )),
         );
       },
@@ -58,7 +58,7 @@ class MangaCard extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.center,
                           child: ImageHelper.loadMangaImage(
-                            largeImgPath,
+                            mediumImgPath,
                             width: 100,
                             height: 140,
                             fit: BoxFit.cover,
