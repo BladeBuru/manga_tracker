@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                           muId: manga.muId.toString(),
                           mangaTitle: manga.title,
                           mangaAuthor: manga.year.toString(),
-                          largeImgPath: manga.largeCoverUrl,
+                          largeImgPath: manga.mediumCoverUrl,
                           rating: manga.rating,
                         );
                       },

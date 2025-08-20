@@ -7,7 +7,7 @@ class MangaQuickViewDto {
   final String title;
   final String year;
   final String? mediumCoverUrl;
-  final String? largeCoverUrl;
+  final String? smalCoverUrl;
   final String rating;
   final ReadingStatus? readingStatus ;
   final num? readChapters;
@@ -18,7 +18,7 @@ class MangaQuickViewDto {
     required this.title,
     required this.year,
     this.mediumCoverUrl,
-    this.largeCoverUrl,
+    this.smalCoverUrl,
     required this.rating,
     this.readingStatus,
     this.readChapters,
@@ -31,7 +31,7 @@ class MangaQuickViewDto {
         title: json['title'],
         year: json['year'].toString(),
         mediumCoverUrl: json['mediumCoverUrl'],
-        largeCoverUrl: json['largeCoverUrl'],
+        smalCoverUrl: json['smallCoverUrl'],
         rating: json['rating'] == null || json['rating'] == 0
             ? 'N/A'
             : json['rating'].toString(),

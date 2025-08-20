@@ -145,6 +145,7 @@ class AppUpdateService {
   }
 
   bool _isVersionHigher(String remote, String local) {
+    if (remote.contains('-dev')) return false;
     final remoteParts = remote.split('.').map(int.parse).toList();
     final localParts = local.split('.').map(int.parse).toList();
     for (int i = 0; i < remoteParts.length; i++) {
