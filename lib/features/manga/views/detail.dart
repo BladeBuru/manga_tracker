@@ -13,9 +13,11 @@ import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
 import '../../../core/notifier/notifier.dart';
 import '../../library/services/library.service.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
+import '../dto/manga_recommendation_view.dto.dart';
 import '../dto/reading_status.enum.dart';
 import '../helpers/chapters.helper.dart';
 import '../services/manga.service.dart';
+import '../widgets/manga_card.dart';
 
 class _PageData {
   final MangaDetailDto mangaDetail;
@@ -48,6 +50,7 @@ class _DetailState extends State<Detail> {
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
   MangaDetailDto? _mangaDetailCache;
+  List<MangaRecommendationView>? _mangaRecommendationsCache;
   String? customLink;
   int lastReadChapters = -1;
 
@@ -61,9 +64,9 @@ class _DetailState extends State<Detail> {
     final muId = int.parse(widget.muId);
 
     final mangaDetailFuture =
-        _mangaDetailCache != null
-            ? Future.value(_mangaDetailCache)
-            : _mangaService.getMangaDetail(widget.muId);
+    _mangaDetailCache != null
+        ? Future.value(_mangaDetailCache)
+        : _mangaService.getMangaDetail(widget.muId);
 
     final libraryEntryFuture = _libraryService.getLibraryEntry(muId);
 
@@ -244,24 +247,33 @@ class _DetailState extends State<Detail> {
       return Container(
         height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.bookmark_add_outlined),
-            label: const Text('Ajouter à "À lire plus tard"'),
-            onPressed: () async {
-              final success = await _libraryService.addMangaToLibrary(muId);
-              if (success) _refreshLibraryState();
-            },
-
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              shape: buttonShape,
-              textStyle: const TextStyle(fontSize: 17),
+        child: Row(
+          children: [
+            // Gros bouton "Ajouter à 'À lire plus tard'"
+            Expanded(
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  label: const Text('Ajouter à "À lire plus tard"'),
+                  onPressed: () async {
+                    final success = await _libraryService.addMangaToLibrary(muId);
+                    if (success) _refreshLibraryState();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: buttonShape,
+                    textStyle: const TextStyle(fontSize: 17),
+                  ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            // Icône recommandations compact
+            _buildRecommendationButton(buttonShape, muId),
+          ],
         ),
       );
     }
@@ -276,7 +288,6 @@ class _DetailState extends State<Detail> {
       onPressed: () => _showManageLibrarySheet(status),
       child: Icon(status.icon),
     );
-
     if (customLink == null) {
       final rightButton = ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
@@ -311,6 +322,8 @@ class _DetailState extends State<Detail> {
                 child: rightButton,
               ),
             ),
+            const SizedBox(width: 12),
+        _buildRecommendationButton(buttonShape, muId),
           ],
         ),
       );
@@ -380,7 +393,6 @@ class _DetailState extends State<Detail> {
         children: [
           Flexible(
             flex: 3,
-            // On s'assure que le bouton remplit la hauteur
             child: SizedBox(
               width: double.infinity,
               height: double.infinity,
@@ -396,6 +408,8 @@ class _DetailState extends State<Detail> {
               child: rightButton,
             ),
           ),
+          const SizedBox(width: 12),
+      _buildRecommendationButton(buttonShape, muId),
         ],
       ),
     );
@@ -544,4 +558,66 @@ class _DetailState extends State<Detail> {
       await _saveCustomLink(link);
     }
   }
+  Widget _buildRecommendationButton(RoundedRectangleBorder buttonShape, int muId) {
+    return SizedBox(
+      width: 52,
+      height: double.infinity,
+      child: Tooltip(
+        message: 'Recommandations',
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            padding: EdgeInsets.zero,
+            elevation: 0,
+            shape: buttonShape,
+            minimumSize: Size.zero,
+          ),
+          onPressed: () async {
+            _mangaRecommendationsCache ??=
+            await _mangaService.getMangaRecommendations(muId.toString());
+            if (!mounted) return;
+
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Mangas recommandés'),
+                content: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: 200,
+                  child: (_mangaRecommendationsCache?.isEmpty ?? true)
+                      ? const Center(
+                    child: Text('Aucune recommandation disponible.',
+                        textAlign: TextAlign.center),
+                  )
+                      : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _mangaRecommendationsCache!.length,
+                    itemBuilder: (_, index) {
+                      final manga = _mangaRecommendationsCache![index];
+                      return MangaCard(
+                        muId: manga.muId.toString(),
+                        mangaTitle: manga.title,
+                        mangaAuthor: manga.year,
+                        mediumImgPath: manga.mediumCoverUrl,
+                        rating: manga.rating,
+                      );
+                    },
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text('Fermer'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: const Icon(Icons.auto_awesome, size: 22),
+        ),
+      ),
+    );
+  }
+
 }
