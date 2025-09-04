@@ -82,6 +82,7 @@ class _DetailState extends State<Detail> {
 
   void _refreshLibraryState() {
     setState(() {
+      _mangaDetailCache = null;
       _pageDataFuture = _loadPageData();
     });
   }
@@ -94,6 +95,7 @@ class _DetailState extends State<Detail> {
         customLink = link;
       });
       _notifier.success("Lien enregistré !");
+      _refreshLibraryState();
     } else {
       _notifier.error("Erreur lors de l'enregistrement du lien.");
     }
@@ -107,6 +109,7 @@ class _DetailState extends State<Detail> {
         customLink = null;
       });
       _notifier.success("Lien supprimé !");
+      _refreshLibraryState();
     } else {
       _notifier.error("Erreur lors de la suppression du lien.");
     }
@@ -348,7 +351,7 @@ class _DetailState extends State<Detail> {
               final targetUrl = ChapterLinkResolver.buildUrlForChapter(
                   baseLink, lastRead + 1) ?? baseLink;                 // vise le chapitre suivant si possible
 
-              Navigator.of(context).push(
+              await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => ReaderWebView(
                     muId: muId,
@@ -358,6 +361,7 @@ class _DetailState extends State<Detail> {
                   ),
                 ),
               );
+              if (mounted ) _refreshLibraryState();
             },
               icon: const Icon(Icons.link),
               label: const Padding(
