@@ -65,10 +65,13 @@ jobs:
       - name: 🛠️ Générer le fichier .env.production
         run: |
           mkdir -p assets/env
-          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+          echo "::add-mask::${{ secrets.ENV_PRODUCTION }}"
+          printf '%s' "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
 
-      - name: 📄 Créer .env.development (fictif pour éviter le crash)
-        run: echo "" > assets/env/.env.development
+      - name: ✅ Vérifier que l'env n'est pas vide (fail si vide)
+        run: |
+          test -s assets/env/.env.production || { echo "❌ .env.production vide"; exit 1; }
+          wc -c assets/env/.env.production   # taille en octets
 
       - name: 🛠 Build release APK
         if: steps.get_bump.outputs.bump == 'true'

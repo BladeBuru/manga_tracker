@@ -95,8 +95,6 @@ class AppUpdateService {
       }
       return null;
     } catch (e, st) {
-      // logs non bloquants
-      // ignore: avoid_print
       print('getNewChangelog error: $e\n$st');
       return null;
     }
