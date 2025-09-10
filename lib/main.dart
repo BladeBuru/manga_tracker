@@ -11,11 +11,14 @@ import 'core/theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
-  print('ENV loaded: ${dotenv.env}');
+  //
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");
+    print('ENV loaded: ${dotenv.env}');
   } else {
+
     await dotenv.load(fileName: "assets/env/.env.development");
+    print('ENV loaded: ${dotenv.env}');
   }
 
   // Register all services
