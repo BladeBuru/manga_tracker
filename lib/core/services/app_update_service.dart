@@ -68,26 +68,40 @@ class AppUpdateService {
   /// Récupère les notes de version qui n'ont pas encore été montrées à l'utilisateur.
   /// Retourne un objet ChangelogInfo s'il y a des nouveautés, sinon null.
   Future<ChangelogInfo?> getNewChangelog() async {
-    final data = await _fetchAndCacheData();
-    final allChangelogs = data?['changelog'] as List<dynamic>?;
-    if (data == null || allChangelogs == null) return null;
+    try {
+      final data = await _fetchAndCacheData();
+      final allChangelogs = data?['changelog'] as List<dynamic>?;
+      if (data == null || allChangelogs == null) return null;
 
-    final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = packageInfo.version;
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
 
-    final prefs = await SharedPreferences.getInstance();
-    final lastShownVersion = prefs.getString(_prefsKey) ?? '0.0.0';
+      final prefs = await SharedPreferences.getInstance();
+      final lastShownVersion = prefs.getString(_prefsKey) ?? '0.0.0';
 
-    if (_isVersionHigher(currentVersion, lastShownVersion)) {
-      final relevantNotes = allChangelogs
-          .where((entry) => _isVersionHigher(entry['version'], lastShownVersion))
-          .map((entry) => VersionChanges(version: entry['version'], notes: entry['notes']))
-          .toList();
+      if (_isVersionHigher(currentVersion, lastShownVersion)) {
+        final relevantNotes = allChangelogs
+            .where((entry) {
+          final v = (entry as Map)['version']?.toString() ?? '';
+          return v.isNotEmpty && _isVersionHigher(v, lastShownVersion);
+        })
+            .map((entry) => VersionChanges(
+          version: (entry as Map)['version'] as String,
+          notes: entry['notes'] as List<dynamic>,
+        ))
+            .toList();
 
-      return ChangelogInfo(relevantNotes);
+        return ChangelogInfo(relevantNotes);
+      }
+      return null;
+    } catch (e, st) {
+      // logs non bloquants
+      // ignore: avoid_print
+      print('getNewChangelog error: $e\n$st');
+      return null;
     }
-    return null;
   }
+
 
   /// Sauvegarde la version actuelle comme étant la dernière version "vue".
   Future<void> markChangelogAsSeen() async {
@@ -146,12 +160,38 @@ class AppUpdateService {
 
   bool _isVersionHigher(String remote, String local) {
     if (remote.contains('-dev')) return false;
-    final remoteParts = remote.split('.').map(int.parse).toList();
-    final localParts = local.split('.').map(int.parse).toList();
-    for (int i = 0; i < remoteParts.length; i++) {
-      if (i >= localParts.length || remoteParts[i] > localParts[i]) return true;
-      if (remoteParts[i] < localParts[i]) return false;
+
+    final rp = _parseSemver(remote);
+    final lp = _parseSemver(local);
+    for (int i = 0; i < 3; i++) {
+      if (rp[i] > lp[i]) return true;
+      if (rp[i] < lp[i]) return false;
     }
     return false;
   }
+  List<int> _parseSemver(String v) {
+    if (v.isEmpty) return [0, 0, 0];
+    v = v.trim();
+    if (v.startsWith('v') || v.startsWith('V')) {
+      v = v.substring(1);
+    }
+    final plus = v.indexOf('+');
+    if (plus != -1) v = v.substring(0, plus);
+
+    final dash = v.indexOf('-');
+    if (dash != -1) v = v.substring(0, dash);
+
+    final parts = v.split('.');
+    final major = _safeInt(parts.isNotEmpty ? parts[0] : '0');
+    final minor = _safeInt(parts.length > 1 ? parts[1] : '0');
+    final patch = _safeInt(parts.length > 2 ? parts[2] : '0');
+    return [major, minor, patch];
+  }
+
+  int _safeInt(String s) {
+    final m = RegExp(r'^\d+').firstMatch(s.trim());
+    return m != null ? int.parse(m.group(0)!) : 0;
+  }
+
+
 }

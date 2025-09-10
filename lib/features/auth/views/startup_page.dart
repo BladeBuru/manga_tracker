@@ -41,7 +41,7 @@ class _StartupPageState extends State<StartupPage> {
       _onLoginSuccess();
       return;
     }
-    // Note: `tryBiometricLogin` peut nécessiter un `context`, c'est une exception acceptable.
+
     final biometricSuccess = await authService.tryBiometricLogin(context);
     if (!mounted) return;
     if (biometricSuccess) {
@@ -97,10 +97,10 @@ class _StartupPageState extends State<StartupPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Version ${changes.version}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Version ${cleanVersion(changes.version)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
                     ...changes.notes.map((note) => MarkdownBody(
-                      data: "• $note",
+                      data: RegExp(r'^[#\-\*]').hasMatch("$note") ? "$note" : "- $note",
                       styleSheet: MarkdownStyleSheet(p: const TextStyle(fontSize: 14)),
                     )),
                   ],
@@ -144,6 +144,8 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   // --- Fonctions de navigation ---
+  String cleanVersion(String v) =>
+      v.replaceFirst(RegExp(r'^[vV]'), '').replaceFirst(RegExp(r'\+.*$'), '');
 
   void _navigateToHome() {
     if (mounted) {
