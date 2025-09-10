@@ -1,8 +1,12 @@
 {
-  "latestVersion": "0.2.1+7",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.2.1+7/app-prod-release.apk",
+  "latestVersion": "0.2.2+8",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.2.2+8/app-prod-release.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.2.2+8",
+      "notes": []
+    },
     {
       "version": "0.2.1+7",
       "notes": []
