@@ -9,7 +9,7 @@ import 'package:mangatracker/stories/manga/Mang_row%20_story.dart';
 import 'package:mangatracker/stories/manga/manga_card_story.dart';
 import 'package:mangatracker/stories/notifier/notifier_story.dart';
 
-import 'core/components/welcom_header_story.dart';
+import 'stories/welcom_header_story.dart';
 
 
 

@@ -10,6 +10,7 @@ import 'package:mangatracker/core/network/http_service.dart';
 
 import '../../library/services/library.service.dart';
 import '../dto/manga_quick_view.dto.dart';
+import '../dto/manga_recommendation_view.dto.dart';
 
 class MangaService {
   HttpService httpService = getIt<HttpService>();
@@ -110,6 +111,32 @@ class MangaService {
   }
 
 
+  Future<List<MangaRecommendationView>> getMangaRecommendations(
+      String muId,
+      ) async {
+    Uri url = Uri.https(
+      dotenv.env['MT_API_URL']!,
+      '/mangas/recommendations/$muId',
+    );
 
+    Response response = await httpService.getWithAuthTokens(url);
+
+    if (response.statusCode == HttpStatus.ok) {
+      dynamic data = jsonDecode(response.body);
+      final List<MangaRecommendationView> mangaList = [];
+      for (var i = 0; i < data.length; i++) {
+        mangaList.add(MangaRecommendationView.fromJson(data[i]));
+      }
+      return mangaList;
+    } else if (response.statusCode == HttpStatus.forbidden) {
+      throw InvalidCredentialsException(
+        "Not authorized to access this resource",
+      );
+    } else {
+      throw Exception(
+        'HTTP Request Failed with status: ${response.statusCode}.',
+      );
+    }
+  }
 
 }

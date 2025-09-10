@@ -83,6 +83,32 @@ class LibraryService {
     return success;
   }
 
+// ─────────── PUT /library/custom-link ───────────
+  Future<bool> updateCustomLink(int muId, String customLink) async {
+    final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+    final res = await _http.putWithAuthTokens(
+      url,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: jsonEncode({'muId': muId, 'customLink': customLink}),
+    );
+    final success = res.statusCode == HttpStatus.ok;
+    if (success) _userLibraryCache = null;
+    return success;
+  }
+
+// ─────────── DELETE /library/custom-link ───────────
+  Future<bool> deleteCustomLink(int muId) async {
+    final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+    final res = await _http.deleteWithAuthTokens(
+      url,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: jsonEncode({'muId': muId}),
+    );
+    final success = res.statusCode == HttpStatus.ok;
+    if (success) _userLibraryCache = null;
+    return success;
+  }
+
   // ─────────── UTILS & HELPERS ───────────
 
 
