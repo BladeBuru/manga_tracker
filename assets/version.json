@@ -1,8 +1,20 @@
 {
-  "latestVersion": "0.1.3+5",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.3+5/app-prod-release.apk",
+  "latestVersion": "0.2.0+6",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.2.0+6/app-prod-release.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.2.0+6",
+      "notes": [
+        "### ✨ Ajouts",
+        "- Lecture en ligne via WebView (mobile) avec ad-block léger",
+        "- Suivi automatique des chapitres (détection navigation) et MAJ du lien vers le chapitre suivant",
+        "- Fallback Web : ouverture dans un nouvel onglet + validation rapide du dernier chapitre lu au retour",
+        "### 🐛 Corrections",
+        "- Refresh automatique de la page Détail après retour du lecteur et après ajout/modif/suppression du lien",
+        "- Null-safety pour éviter les TypeError/NoSuchMethod en cas de lien/URL manquants"
+      ]
+    },
     {
       "version": "0.1.3+5",
       "notes": [
