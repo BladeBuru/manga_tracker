@@ -19,27 +19,61 @@ class AuthService {
   }
 
   Future attemptLogIn(String emailAddress, String password) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/login');
-    print('MT_API_URL=${dotenv.env['MT_API_URL']}');
-    print('Calling URL=$url');
+    try {
+      print('🔹 [attemptLogIn] Début');
 
-    var res = await http.post(url,
-        body: <String, String>{'email': emailAddress, 'password': password});
+      final env = dotenv.isInitialized;
+      print('🔹 dotenv initialisé: $env');
+      print('🔹 Toutes les variables dotenv: ${dotenv.env}');
 
-    switch (res.statusCode) {
-      case HttpStatus.created:
-        var data = jsonDecode(res.body);
-        await storageService.writeSecureData('accessToken', data['accessToken']);
-        await storageService.writeSecureData('refreshToken', data['refreshToken']);
-        await saveCredentialsWithBiometric(emailAddress, password);
-        return data;
-      case HttpStatus.notFound:
-        throw InvalidCredentialsException(
-            'Invalid Credentials ${res.statusCode}');
-      default:
-        throw Exception('Unknown Error ${res.statusCode}');
+      final apiUrl = dotenv.env['MT_API_URL'];
+      print('🔹 MT_API_URL lu = $apiUrl');
+
+      if (apiUrl == null || apiUrl.isEmpty) {
+        print('❌ MT_API_URL est null ou vide !');
+        throw StateError('MT_API_URL manquant');
+      }
+
+      final url = Uri.https(apiUrl, '/auth/login');
+      print('🔹 URL construite = $url');
+
+      print('🔹 Envoi requête POST avec email=$emailAddress / password=****');
+      final res = await http.post(url, body: {
+        'email': emailAddress,
+        'password': password,
+      });
+
+      print('🔹 Réponse reçue status=${res.statusCode}');
+      print('🔹 Corps brut=${res.body}');
+
+      switch (res.statusCode) {
+        case HttpStatus.created:
+          print('✅ Connexion OK → parse JSON');
+          final data = jsonDecode(res.body);
+          print('🔹 accessToken=${data['accessToken']}');
+
+          await storageService.writeSecureData('accessToken', data['accessToken']);
+          await storageService.writeSecureData('refreshToken', data['refreshToken']);
+          await saveCredentialsWithBiometric(emailAddress, password);
+
+          print('✅ Tokens sauvegardés, login terminé');
+          return data;
+
+        case HttpStatus.notFound:
+          print('❌ Erreur credentials');
+          throw InvalidCredentialsException('Invalid Credentials ${res.statusCode}');
+
+        default:
+          print('❌ Erreur inconnue status=${res.statusCode}');
+          throw Exception('Unknown Error ${res.statusCode}');
+      }
+    } catch (e, st) {
+      print('❌ EXCEPTION dans attemptLogIn: $e');
+      print('❌ Stack: $st');
+      rethrow;
     }
   }
+
 
   Future attemptSignUp(String username, String emailAddress, String password) async {
     var url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
