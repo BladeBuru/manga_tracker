@@ -20,6 +20,9 @@ class AuthService {
 
   Future attemptLogIn(String emailAddress, String password) async {
     var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/login');
+    print('MT_API_URL=${dotenv.env['MT_API_URL']}');
+    print('Calling URL=$url');
+
     var res = await http.post(url,
         body: <String, String>{'email': emailAddress, 'password': password});
 
