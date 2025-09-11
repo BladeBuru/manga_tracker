@@ -62,11 +62,12 @@ jobs:
           VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: 🛠️ Générer le fichier .env.production
+      - name: 🛠️ Générer les fichiers .env
         run: |
           mkdir -p assets/env
           echo "::add-mask::${{ secrets.ENV_PRODUCTION }}"
           printf '%s' "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+          test -f assets/env/.env.development || printf '' > assets/env/.env.development
 
       - name: ✅ Vérifier que l'env n'est pas vide (fail si vide)
         run: |
