@@ -1,5 +1,51 @@
 {
-  "latestVersion": "0.1.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.1.1/app-debug.apk",
-  "inherit": true
+  "latestVersion": "0.2.4+10",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.2.4+10/app-prod-release.apk",
+  "inherit": true,
+  "changelog": [
+    {
+      "version": "0.2.4+10",
+      "notes": [
+        "### ✨ Ajouts",
+        "- Lecture en ligne via WebView (mobile) avec ad-block léger",
+        "- Suivi automatique des chapitres (détection navigation) et MAJ du lien vers le chapitre suivant",
+        "- Fallback Web : ouverture dans un nouvel onglet + validation rapide du dernier chapitre lu au retour",
+        "### 🐛 Corrections",
+        "- Refresh automatique de la page Détail après retour du lecteur et après ajout/modif/suppression du lien",
+        "- Null-safety pour éviter les TypeError/NoSuchMethod en cas de lien/URL manquants"
+      ]
+    },
+    {
+      "version": "0.1.3+5",
+      "notes": [
+        "### 🐛 Corrections",
+        "- Harmonisation des URL d'images en lien avec l'API",
+        "- Prise en considération des nouveaux champs renvoyés par l'API, à savoir pour les genres, le type et les recommandations associées pour un manga donné"
+      ]
+    },
+    {
+      "version": "0.1.2",
+      "notes": [
+        "**Gestion de bibliothèque améliorée !** Le nouveau bouton de statut sur la page de détail vous permet de gérer vos mangas plus facilement.",
+        "**Performances accrues.** Le temps de chargement de la page de détail a été optimisé pour une expérience plus fluide.",
+        "**Notifications interactives.** Les messages de l'application peuvent maintenant être fermés manuellement grâce à un nouveau bouton.",
+        "Corrections de bugs divers et améliorations de la stabilité."
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "notes": [
+        "**Connexion par empreinte digitale.** Connectez-vous plus rapidement et en toute sécurité grâce à l'authentification biométrique.",
+        "**Votre bibliothèque personnelle.** Vous pouvez maintenant ajouter des mangas à votre bibliothèque pour suivre votre progression de lecture.",
+        "**Nouveaux statuts de lecture.** Suivez vos mangas avec les statuts 'En cours', 'À lire plus tard' et 'Terminé'."
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "notes": [
+        "Lancement initial de Manga Tracker.",
+        "Recherche et consultation des détails des mangas."
+      ]
+    }
+  ]
 }
