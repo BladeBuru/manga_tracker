@@ -41,4 +41,18 @@ class MangaQuickViewDto {
         readChapters: json['readChapters'],
         totalChapters: json['totalChapters']);
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'muId': muId,
+      'title': title,
+      'year': year,
+      'smallCoverUrl': smallCoverUrl,
+      'mediumCoverUrl': mediumCoverUrl,
+      'rating': rating,
+      'readingStatus': readingStatus?.name,
+      'readChapters': readChapters,
+      'totalChapters': totalChapters,
+    };
+  }
 }

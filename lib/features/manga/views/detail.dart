@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/cache_helper_service.dart';
+import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
@@ -46,6 +48,9 @@ class Detail extends StatefulWidget {
 class _DetailState extends State<Detail> {
   late Future<_PageData> _pageDataFuture;
   final Notifier _notifier = getIt<Notifier>();
+  final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
+  final ConnectivityService _connectivityService = getIt<ConnectivityService>();
+  bool _isOffline = false;
 
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
@@ -58,15 +63,41 @@ class _DetailState extends State<Detail> {
   void initState() {
     super.initState();
     _pageDataFuture = _loadPageData();
+    _listenToConnectivity();
+  }
+
+  void _listenToConnectivity() {
+    _connectivityService.connectivityStream.listen((isConnected) {
+      if (mounted) {
+        setState(() {
+          _isOffline = !isConnected;
+        });
+      }
+    });
+    
+    // Vérifier l'état initial
+    _checkInitialConnectivity();
+  }
+  
+  void _checkInitialConnectivity() async {
+    final isConnected = await _connectivityService.checkConnectivity();
+    if (mounted) {
+      setState(() {
+        _isOffline = !isConnected;
+      });
+    }
   }
 
   Future<_PageData> _loadPageData() async {
     final muId = int.parse(widget.muId);
 
-    final mangaDetailFuture =
-    _mangaDetailCache != null
+    // Utiliser le cache pour les détails du manga
+    final mangaDetailFuture = _mangaDetailCache != null
         ? Future.value(_mangaDetailCache)
-        : _mangaService.getMangaDetail(widget.muId);
+        : _cacheHelper.loadMangaDetail(
+            muId: muId,
+            networkCall: () => _mangaService.getMangaDetail(widget.muId),
+          );
 
     final libraryEntryFuture = _libraryService.getLibraryEntry(muId);
 
@@ -126,6 +157,25 @@ class _DetailState extends State<Detail> {
           icon: const Icon(Icons.arrow_back, color: Colors.white, size: 34),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          if (_isOffline)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_off, size: 16, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text('Hors ligne', style: TextStyle(color: Colors.white, fontSize: 12)),
+                ],
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         top: false,

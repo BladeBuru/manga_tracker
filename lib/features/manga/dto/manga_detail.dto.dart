@@ -98,4 +98,31 @@ class MangaDetailDto {
       bonusChapters: bonus,
     );
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'muId': muId,
+      'title': title,
+      'description': description,
+      'status': status,
+      'publicationStatus': publicationStatus,
+      'year': year,
+      'smallCoverUrl': smallCoverUrl,
+      'mediumCoverUrl': mediumCoverUrl,
+      'largeCoverUrl': largeCoverUrl,
+      'rating': rating,
+      'totalChapters': totalChapters,
+      'isCompleted': isCompleted,
+      'authors': authors?.map((e) => e.toJson()).toList(),
+      'genres': genres,
+      'customLink': customLink,
+      'inLibrary': inLibrary,
+      'readChaptersCount': readChaptersCount,
+      'associated': associated,
+      'recommendations': recommendations,
+      'type': type,
+      'seasonChapters': seasonChapters?.map((e) => e.toJson()).toList(),
+      'bonusChapters': bonusChapters?.map((e) => e.toJson()).toList(),
+    };
+  }
 }
