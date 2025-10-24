@@ -124,9 +124,8 @@ class _LateDetailViewState extends State<LateDetailView> {
       if (_isSaving) return;
       setState(() => _isSaving = true);
 
-      if (_currentReadCount! < 0) {
-        await handleAddToLibrary(mangaId);
-      }
+      // NE PLUS appeler handleAddToLibrary ici car le BLoC gère maintenant
+      // automatiquement l'ajout à la bibliothèque dans _onSaveChapterProgress
 
       int newCount;
       

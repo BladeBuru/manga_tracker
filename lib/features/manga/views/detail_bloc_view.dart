@@ -122,6 +122,22 @@ class _DetailBlocViewState extends State<DetailBlocView> {
               return const Center(child: CircularProgressIndicator());
             }
             
+            if (state is DetailActionInProgress) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      state.action,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
+              );
+            }
+            
             if (state is DetailError) {
               return Center(
                 child: Column(

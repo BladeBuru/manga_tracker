@@ -74,12 +74,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       final pendingActions = await _getPendingActionsCount();
       
-      // Récupérer le statut de lecture depuis la bibliothèque si le manga y est
+      // Récupérer le statut de lecture et le nombre de chapitres lus depuis la bibliothèque si le manga y est
       MangaDetailDto updatedMangaDetail = mangaDetail;
       try {
         final libraryStatus = await _libraryService.getReadingStatusByUid(event.muId);
+        final readChaptersCount = await _libraryService.getReadChapterByUid(event.muId);
+        
         if (libraryStatus != null) {
-          // Le manga est dans la bibliothèque, mettre à jour le statut
+          // Le manga est dans la bibliothèque, mettre à jour le statut et le nombre de chapitres lus
           updatedMangaDetail = MangaDetailDto(
             muId: mangaDetail.muId,
             title: mangaDetail.title,
@@ -97,7 +99,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             genres: mangaDetail.genres,
             customLink: mangaDetail.customLink,
             inLibrary: true,
-            readChaptersCount: mangaDetail.readChaptersCount,
+            readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
             readingStatus: libraryStatus,
             associated: mangaDetail.associated,
             recommendations: mangaDetail.recommendations,
@@ -105,7 +107,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             seasonChapters: mangaDetail.seasonChapters,
             bonusChapters: mangaDetail.bonusChapters,
           );
-          print('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name}');
+          print('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name} et ${readChaptersCount} chapitres lus');
         } else {
           print('📚 DetailBloc: Manga non trouvé dans la bibliothèque');
         }
@@ -186,7 +188,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           genres: currentState.mangaDetail.genres,
           customLink: currentState.mangaDetail.customLink,
           inLibrary: true, // Le manga est maintenant dans la bibliothèque
-          readChaptersCount: currentState.mangaDetail.readChaptersCount,
+          readChaptersCount: 0, // Réinitialiser le nombre de chapitres lus
           readingStatus: ReadingStatus.readLater, // Statut par défaut lors de l'ajout
           associated: currentState.mangaDetail.associated,
           recommendations: currentState.mangaDetail.recommendations,
@@ -251,7 +253,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           genres: currentState.mangaDetail.genres,
           customLink: currentState.mangaDetail.customLink,
           inLibrary: false, // Le manga n'est plus dans la bibliothèque
-          readChaptersCount: currentState.mangaDetail.readChaptersCount,
+          readChaptersCount: null, // Réinitialiser le nombre de chapitres lus
           readingStatus: null, // Réinitialiser le statut
           associated: currentState.mangaDetail.associated,
           recommendations: currentState.mangaDetail.recommendations,
@@ -394,8 +396,8 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
       
       // Si le manga n'est pas dans la bibliothèque, l'ajouter d'abord
-      bool inLibrary = currentState.mangaDetail.inLibrary;
-      if (!inLibrary) {
+      bool wasAddedToLibrary = false;
+      if (!currentState.mangaDetail.inLibrary) {
         print('📚 Le manga n\'est pas dans la bibliothèque, ajout automatique...');
         final addSuccess = await _libraryService.addMangaToLibrary(event.muId);
         if (!addSuccess) {
@@ -406,12 +408,16 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           ));
           return;
         }
-        inLibrary = true;
+        wasAddedToLibrary = true;
+        print('✅ DetailBloc: Manga ajouté automatiquement à la bibliothèque');
       }
       
+      print('🔍 Sauvegarde du chapitre dans le service...');
       final success = await _libraryService.saveChapterProgress(event.muId, event.readChapters);
+      print('🔍 Résultat de la sauvegarde: $success');
       
       if (success) {
+        print('🔍 Détermination du statut de lecture...');
         // Déterminer le statut de lecture automatiquement
         ReadingStatus newStatus = _determineReadingStatus(
           currentReadingStatus: currentState.mangaDetail.readingStatus,
@@ -419,9 +425,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           totalChapters: currentState.mangaDetail.totalChapters,
           isCompleted: currentState.mangaDetail.isCompleted,
         );
+        print('🔍 Nouveau statut déterminé: ${newStatus.name}');
         
-        // Si le statut a changé, mettre à jour également le statut
-        if (newStatus != currentState.mangaDetail.readingStatus && inLibrary) {
+        // Si le statut a changé, mettre à jour également le statut (uniquement si dans la bibliothèque)
+        final isNowInLibrary = currentState.mangaDetail.inLibrary || wasAddedToLibrary;
+        print('🔍 isNowInLibrary: $isNowInLibrary, statut actuel: ${currentState.mangaDetail.readingStatus}, nouveau statut: ${newStatus.name}');
+        if (newStatus != currentState.mangaDetail.readingStatus && isNowInLibrary) {
           print('🔄 Mise à jour automatique du statut vers: ${newStatus.name}');
           await _libraryService.updateMangaStatus(event.muId, newStatus);
         }
@@ -444,7 +453,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           authors: currentState.mangaDetail.authors,
           genres: currentState.mangaDetail.genres,
           customLink: currentState.mangaDetail.customLink,
-          inLibrary: inLibrary,
+          inLibrary: isNowInLibrary,
           readChaptersCount: event.readChapters,
           readingStatus: newStatus,
           associated: currentState.mangaDetail.associated,
