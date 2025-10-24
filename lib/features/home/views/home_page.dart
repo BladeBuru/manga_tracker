@@ -102,8 +102,8 @@ class _HomePageState extends State<HomePage> {
     userService
         .getUserInformation()
         .then((value) {
+          if (!mounted || hasAlreadyBeenRedirected) return;
           setState(() {
-            if (!mounted || hasAlreadyBeenRedirected) return;
             user = value;
             displayUsername = value.username;
           });
@@ -119,8 +119,8 @@ class _HomePageState extends State<HomePage> {
       authService.logout();
       redirectToLoginPage();
       notifier.error( 'Expired session');
+      if (!mounted || hasAlreadyBeenRedirected) return;
       setState(() {
-        if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
       });
     }

@@ -28,6 +28,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<RefreshLibrary>(_onRefreshLibrary);
     
     _initializeConnectivityListener();
+    _checkInitialConnectivity();
   }
 
   @override
@@ -41,9 +42,17 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   void _initializeConnectivityListener() {
     _connectivitySubscription = _connectivityService.connectivityStream.listen(
       (isConnected) {
+        // Mettre à jour l'état de connectivité dans tous les cas
         if (state is LibraryLoaded) {
           final currentState = state as LibraryLoaded;
           emit(currentState.copyWith(isOffline: !isConnected));
+        } else if (state is LibraryError) {
+          final currentState = state as LibraryError;
+          emit(LibraryError(
+            message: currentState.message,
+            isOffline: !isConnected,
+            cachedMangas: currentState.cachedMangas,
+          ));
         }
       },
     );
@@ -301,6 +310,17 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       return queue.length;
     } catch (e) {
       return 0;
+    }
+  }
+
+  /// Vérifie l'état initial de la connectivité
+  Future<void> _checkInitialConnectivity() async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      // Cette information sera utilisée lors du premier chargement
+      print('🔍 État initial de connectivité: ${isConnected ? "Connecté" : "Hors ligne"}');
+    } catch (e) {
+      print('⚠️ Erreur lors de la vérification de connectivité: $e');
     }
   }
 }
