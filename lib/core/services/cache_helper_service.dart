@@ -167,4 +167,15 @@ class CacheHelperService {
   Future<void> cleanExpiredCaches() async {
     await _cacheService.cleanExpiredCaches();
   }
+  
+  /// Récupère la bibliothèque depuis le cache
+  Future<List<MangaQuickViewDto>?> getCachedLibrary() async {
+    return await _cacheService.getCachedLibrary();
+  }
+  
+  /// Récupère la queue des actions hors ligne
+  Future<List<OfflineAction>> getOfflineQueue() async {
+    final queue = await _cacheService.getOfflineQueue();
+    return queue.map((actionData) => OfflineAction.fromJson(actionData)).toList();
+  }
 }
