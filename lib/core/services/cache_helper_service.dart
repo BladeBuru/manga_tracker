@@ -178,4 +178,14 @@ class CacheHelperService {
     final queue = await _cacheService.getOfflineQueue();
     return queue.map((actionData) => OfflineAction.fromJson(actionData)).toList();
   }
+  
+  /// Récupère les données de la page d'accueil depuis le cache
+  Future<List<MangaQuickViewDto>?> getCachedHomePageData() async {
+    return await _cacheService.getCachedHomePageData();
+  }
+  
+  /// Récupère les détails d'un manga depuis le cache
+  Future<MangaDetailDto?> getCachedMangaDetail(int muId) async {
+    return await _cacheService.getCachedMangaDetail(muId);
+  }
 }

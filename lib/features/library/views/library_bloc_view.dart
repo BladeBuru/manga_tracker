@@ -29,6 +29,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   @override
   void initState() {
     super.initState();
+    print('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
     // Charger la bibliothèque au démarrage
     _libraryBloc.add(const LoadLibrary());
   }

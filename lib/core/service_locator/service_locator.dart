@@ -16,6 +16,8 @@ import '../services/sync_service.dart';
 import '../services/cache_helper_service.dart';
 import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
+import '../../features/home/bloc/homepage_bloc.dart';
+import '../../features/manga/bloc/detail_bloc.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -80,4 +82,6 @@ void setupServiceLocator() {
   // BLoCs pour la gestion d'état réactive
   getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
   getIt.registerLazySingleton<LibraryBloc>(() => LibraryBloc());
+  getIt.registerLazySingleton<HomePageBloc>(() => HomePageBloc());
+  getIt.registerLazySingleton<DetailBloc>(() => DetailBloc());
 }

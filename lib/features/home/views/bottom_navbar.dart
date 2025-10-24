@@ -1,4 +1,4 @@
-import 'home_page.dart';
+import 'homepage_bloc_view.dart';
 import '../../profile/views/profile.dart';
 import 'package:mangatracker/features/search/views/search.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
 import 'package:mangatracker/features/library/views/library_bloc_view.dart';
+import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 
 class BottomNavbar extends StatefulWidget {
   const BottomNavbar({super.key});
@@ -36,7 +37,10 @@ class BottomNavbarState extends State<BottomNavbar> {
         },
         controller: pageCont,
         children: <Widget>[
-          const HomePage(),
+          BlocProvider<HomePageBloc>(
+            create: (context) => getIt<HomePageBloc>(),
+            child: const HomePageBlocView(),
+          ),
           BlocProvider<LibraryBloc>(
             create: (context) => getIt<LibraryBloc>(),
             child: const LibraryBlocView(),

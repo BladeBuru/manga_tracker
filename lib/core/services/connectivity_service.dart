@@ -16,24 +16,37 @@ class ConnectivityService {
   
   /// Initialise le service et commence l'écoute
   Future<void> initialize() async {
-    // Vérifier l'état initial
-    await _checkConnectivity();
-    
-    // Écouter les changements de connectivité
-    _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
+    try {
+      // Vérifier l'état initial
+      await _checkConnectivity();
+      
+      // Écouter les changements de connectivité
+      _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
+    } catch (e) {
+      print('⚠️ Erreur lors de l\'initialisation du ConnectivityService: $e');
+      // En cas d'erreur, supposer que l'appareil est connecté
+      _isConnected = true;
+      _connectivityController.add(true);
+    }
   }
   
   /// Vérifie l'état actuel de la connectivité
   Future<bool> checkConnectivity() async {
-    final result = await _connectivity.checkConnectivity();
-    final isConnected = result != ConnectivityResult.none;
-    
-    if (_isConnected != isConnected) {
-      _isConnected = isConnected;
-      _connectivityController.add(isConnected);
+    try {
+      final result = await _connectivity.checkConnectivity();
+      final isConnected = result != ConnectivityResult.none;
+      
+      if (_isConnected != isConnected) {
+        _isConnected = isConnected;
+        _connectivityController.add(isConnected);
+      }
+      
+      return isConnected;
+    } catch (e) {
+      print('⚠️ Erreur lors de la vérification de connectivité: $e');
+      // En cas d'erreur, supposer que l'appareil est connecté
+      return true;
     }
-    
-    return isConnected;
   }
   
   /// Gère les changements de connectivité

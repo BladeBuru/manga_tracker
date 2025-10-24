@@ -21,6 +21,8 @@ class LateDetailView extends StatefulWidget {
   final String year;
   final num readChapters;
   final Function(num)? onReadCountChanged;
+  final VoidCallback? onAddToLibrary;
+  final VoidCallback? onRemoveFromLibrary;
 
   const LateDetailView({
     super.key,
@@ -35,6 +37,8 @@ class LateDetailView extends StatefulWidget {
     required this.year,
     required this.readChapters,
     this.onReadCountChanged,
+    this.onAddToLibrary,
+    this.onRemoveFromLibrary,
   });
 
   @override
@@ -47,11 +51,33 @@ class _LateDetailViewState extends State<LateDetailView> {
   bool _isSaving = false;
   final LibraryService _libraryService = getIt<LibraryService>();
   final Notifier _notifier = getIt<Notifier>();
+  int? _pendingChapterUpdate; // Pour tracker la mise à jour en cours
 
   @override
   void initState() {
     super.initState();
     _currentReadCount = widget.readChapters;
+  }
+  
+  @override
+  void didUpdateWidget(LateDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si les chapitres ont changé et correspondent à notre mise à jour en attente
+    if (widget.readChapters != oldWidget.readChapters) {
+      if (_pendingChapterUpdate != null && widget.readChapters == _pendingChapterUpdate) {
+        // La mise à jour est terminée, on peut réactiver les boutons
+        setState(() {
+          _currentReadCount = widget.readChapters;
+          _isSaving = false;
+          _pendingChapterUpdate = null;
+        });
+      } else {
+        // Mise à jour externe (pas initiée par nous)
+        setState(() {
+          _currentReadCount = widget.readChapters;
+        });
+      }
+    }
   }
 
 
@@ -73,13 +99,23 @@ class _LateDetailViewState extends State<LateDetailView> {
             [];
 
     Future<void> handleAddToLibrary(String mangaId) async {
+      // Utiliser le callback BLoC si disponible
+      if (widget.onAddToLibrary != null) {
+        widget.onAddToLibrary!();
+        setState(() {
+          _currentReadCount = 0;
+        });
+        return;
+      }
+      
+      // Sinon, fallback sur l'ancien comportement
       bool success = await _libraryService.addMangaToLibrary(int.parse(mangaId));
       if (success && mounted) {
         setState(() {
           _currentReadCount = 0;
         });
         _notifier.success('${widget.mangaTitle} a été ajouté à la bibliothèque !');
-      } else if (mounted) { // Ajout du else if
+      } else if (mounted) {
         _notifier.error('Erreur lors de l\'ajout à la bibliothèque.');
       }
     }
@@ -93,21 +129,40 @@ class _LateDetailViewState extends State<LateDetailView> {
       }
 
       int newCount;
-      bool success;
+      
+      // Calculer le nouveau compte de chapitres
       if (_currentReadCount! >= chapterNumber) {
         newCount = chapterNumber.toInt() - 1;
-        if (newCount == 0) {
-          success =
-          await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
-
-        } else {
-          success = await _libraryService.saveChapterProgress(
-              int.parse(mangaId), newCount);
-        }
       } else {
         newCount = chapterNumber.toInt();
-        success =
-        await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+      }
+
+      // Utiliser le callback BLoC si disponible (mise à jour réactive)
+      if (widget.onReadCountChanged != null) {
+        // Marquer la mise à jour comme en attente
+        setState(() {
+          _currentReadCount = newCount;
+          _pendingChapterUpdate = newCount;
+          // _isSaving reste à true jusqu'à ce que didUpdateWidget détecte le changement
+        });
+        
+        // Appeler le callback BLoC
+        widget.onReadCountChanged!(newCount);
+        
+        // _isSaving sera remis à false dans didUpdateWidget quand le BLoC aura terminé
+        return;
+      }
+
+      // Sinon, fallback sur l'ancien comportement
+      bool success;
+      if (_currentReadCount! >= chapterNumber) {
+        if (newCount == 0) {
+          success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
+        } else {
+          success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+        }
+      } else {
+        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
       }
 
       if (!success && mounted) {
@@ -129,9 +184,6 @@ class _LateDetailViewState extends State<LateDetailView> {
             : 'non lu'}';
 
         _notifier.info(message);
-        if (widget.onReadCountChanged != null) {
-          widget.onReadCountChanged!(_currentReadCount!);
-        }
       }
     }
 
@@ -372,6 +424,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                 line: line,
                                 chapter: chapNum.toString(),
                                 read: isRead,
+                                enabled: !_isSaving,
                               ),
                             ),
                           ),
