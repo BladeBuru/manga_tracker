@@ -1,8 +1,20 @@
 {
-  "latestVersion": "0.3.0+11",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.3.0+11/app-prod-release.apk",
+  "latestVersion": "0.4.0+12",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.4.0+12/app-prod-release.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.4.0+12",
+      "notes": [
+        "### ✨ Améliorations",
+        "- **Nouvelle page de profil** : Interface moderne et intuitive avec vos informations, organisée par sections (Compte, Paramètres, Actions)",
+        "- **Nouveautés de l'app** : Affichage automatique des nouvelles fonctionnalités avec un badge \\\"Nouveau\\\" et possibilité de consulter toutes les améliorations précédentes",
+        "- **Meilleure sécurité** : Confirmations claires pour les actions importantes comme la suppression de compte ou la déconnexion",
+        "### 🐛 Corrections",
+        "- Amélioration de l'affichage des informations de votre compte",
+        "- Correction de l'expérience lors de la modification du mot de passe"
+      ]
+    },
     {
       "version": "0.3.0+11",
       "notes": [
