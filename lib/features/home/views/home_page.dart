@@ -1,4 +1,6 @@
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/cache_helper_service.dart';
+import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
@@ -26,9 +28,12 @@ class _HomePageState extends State<HomePage> {
   final MangaService mangaService = getIt<MangaService>();
   final UserService userService = getIt<UserService>();
   final AuthService authService = getIt<AuthService>();
+  final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
+  final ConnectivityService _connectivityService = getIt<ConnectivityService>();
   final Notifier notifier = Notifier();
   String? displayUsername;
   bool hasAlreadyBeenRedirected = false;
+  bool _isOffline = false;
 
   UserInformationDto? user;
   late Future<List<MangaQuickViewDto>> trendingMangas;
@@ -39,20 +44,57 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadResources();
+    _listenToConnectivity();
+  }
+
+  void _listenToConnectivity() {
+    _connectivityService.connectivityStream.listen((isConnected) {
+      if (mounted) {
+        setState(() {
+          _isOffline = !isConnected;
+        });
+        // Rafraîchir les données si on revient en ligne
+        if (isConnected) {
+          loadResources();
+        }
+      }
+    });
+    
+    // Vérifier l'état initial
+    _checkInitialConnectivity();
+  }
+  
+  void _checkInitialConnectivity() async {
+    final isConnected = await _connectivityService.checkConnectivity();
+    if (mounted) {
+      setState(() {
+        _isOffline = !isConnected;
+      });
+    }
   }
 
   void loadResources() {
-    trendingMangas = mangaService.getTrendingMangas().catchError((err) {
+    // Utiliser le cache pour chaque section séparément
+    trendingMangas = _cacheHelper.loadSearchResults(
+      query: 'trending',
+      networkCall: () => mangaService.getTrendingMangas(),
+    ).catchError((err) {
       _errorHandler();
       return List<MangaQuickViewDto>.empty();
     }, test: (err) => err is InvalidCredentialsException);
 
-    popularMangas = mangaService.getPopularMangas().catchError((err) {
+    popularMangas = _cacheHelper.loadSearchResults(
+      query: 'popular',
+      networkCall: () => mangaService.getPopularMangas(),
+    ).catchError((err) {
       _errorHandler();
       return List<MangaQuickViewDto>.empty();
     }, test: (err) => err is InvalidCredentialsException);
 
-    newMangas = mangaService.getNewMangas().catchError((err) {
+    newMangas = _cacheHelper.loadSearchResults(
+      query: 'new',
+      networkCall: () => mangaService.getNewMangas(),
+    ).catchError((err) {
       _errorHandler();
       return List<MangaQuickViewDto>.empty();
     }, test: (err) => err is InvalidCredentialsException);
@@ -60,8 +102,8 @@ class _HomePageState extends State<HomePage> {
     userService
         .getUserInformation()
         .then((value) {
+          if (!mounted || hasAlreadyBeenRedirected) return;
           setState(() {
-            if (!mounted || hasAlreadyBeenRedirected) return;
             user = value;
             displayUsername = value.username;
           });
@@ -77,8 +119,8 @@ class _HomePageState extends State<HomePage> {
       authService.logout();
       redirectToLoginPage();
       notifier.error( 'Expired session');
+      if (!mounted || hasAlreadyBeenRedirected) return;
       setState(() {
-        if (!mounted || hasAlreadyBeenRedirected) return;
         hasAlreadyBeenRedirected = true;
       });
     }
@@ -107,6 +149,31 @@ class _HomePageState extends State<HomePage> {
           children: [
             const SizedBox(height: 20),
             WelcomeHeader(username: displayUsername),
+            
+            // Indicateur de mode hors ligne
+            if (_isOffline)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.cloud_off, color: Colors.orange, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Mode hors ligne - Données en cache',
+                        style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             const SizedBox(height: 20),
             Row(

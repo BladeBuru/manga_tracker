@@ -60,6 +60,19 @@ dependencies:
   webview_flutter: ^4.0.7
   webview_flutter_web: ^0.2.3
   flutter_inappwebview: ^6.0.0
+  
+  # BLoC et gestion d'état réactive
+  flutter_bloc: ^8.1.3
+  bloc: ^8.1.2
+  equatable: ^2.0.5
+  
+  # Connectivité et mode hors ligne
+  connectivity_plus: ^5.0.2
+  
+  # Cache d'images pour le mode offline
+  cached_network_image: ^3.3.1
+  # Base de données utilisée par flutter_cache_manager
+  sqflite: ^2.3.3+1
 
 
 

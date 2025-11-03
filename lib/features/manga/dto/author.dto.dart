@@ -12,4 +12,13 @@ class AuthorDto {
     return AuthorDto(
         name: json['name'], authorId: json['author_id'], url: json['url'], type: json['type'] );
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'author_id': authorId,
+      'url': url,
+      'type': type,
+    };
+  }
 }

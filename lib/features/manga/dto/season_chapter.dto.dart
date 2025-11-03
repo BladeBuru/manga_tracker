@@ -10,4 +10,11 @@ class SeasonChapter {
       chapters: json['chapters'],
     );
   }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'season': season,
+      'chapters': chapters,
+    };
+  }
 }

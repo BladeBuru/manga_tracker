@@ -1,5 +1,6 @@
 import 'package:mangatracker/features/manga/dto/author.dto.dart';
 import 'package:mangatracker/features/manga/dto/season_chapter.dto.dart';
+import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 
 class MangaDetailDto {
   final num muId;
@@ -19,6 +20,7 @@ class MangaDetailDto {
   final String? customLink;
   final bool inLibrary;
   final int? readChaptersCount;
+  final ReadingStatus? readingStatus;
   final List<String>? associated;
   final List<int>? recommendations;
   final String? type;
@@ -43,6 +45,7 @@ class MangaDetailDto {
     this.customLink,
     this.inLibrary = false,
     this.readChaptersCount,
+    this.readingStatus,
     this.associated,
     this.recommendations,
     this.type,
@@ -91,11 +94,42 @@ class MangaDetailDto {
       customLink: (j['customLink'] ?? j['custom_link'])?.toString(),
       inLibrary: (j['inLibrary'] ?? j['in_library'] ?? false) as bool,
       readChaptersCount: int.tryParse((j['readChaptersCount'] ?? j['read_chapters_count'] ?? '').toString()),
+      readingStatus: (j['readingStatus'] ?? j['reading_status']) != null 
+          ? ReadingStatusExtension.fromValue((j['readingStatus'] ?? j['reading_status']).toString())
+          : null,
       associated: (j['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
       recommendations: (j['recommendations'] as List?)?.map((e) => int.tryParse(e.toString()) ?? 0).toList(),
       type: (j['type'] ?? j['kind'])?.toString(),
       seasonChapters: seasons,
       bonusChapters: bonus,
     );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'muId': muId,
+      'title': title,
+      'description': description,
+      'status': status,
+      'publicationStatus': publicationStatus,
+      'year': year,
+      'smallCoverUrl': smallCoverUrl,
+      'mediumCoverUrl': mediumCoverUrl,
+      'largeCoverUrl': largeCoverUrl,
+      'rating': rating,
+      'totalChapters': totalChapters,
+      'isCompleted': isCompleted,
+      'authors': authors?.map((e) => e.toJson()).toList(),
+      'genres': genres,
+      'customLink': customLink,
+      'inLibrary': inLibrary,
+      'readChaptersCount': readChaptersCount,
+      'readingStatus': readingStatus?.name,
+      'associated': associated,
+      'recommendations': recommendations,
+      'type': type,
+      'seasonChapters': seasonChapters?.map((e) => e.toJson()).toList(),
+      'bonusChapters': bonusChapters?.map((e) => e.toJson()).toList(),
+    };
   }
 }
