@@ -125,7 +125,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -148,11 +148,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            border: Border.all(color: Colors.blue),
-            borderRadius: BorderRadius.circular(8),
-          ),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              border: Border.all(color: Colors.blue),
+              borderRadius: BorderRadius.circular(8),
+            ),
           child: Row(
             children: [
               const SizedBox(
@@ -192,7 +192,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
               borderRadius: BorderRadius.circular(8),
             ),

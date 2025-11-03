@@ -51,7 +51,7 @@ class LibraryService {
           muId: muId,
           expectStatus: HttpStatus.created,
         );
-        if (success) _userLibraryCache = null; // On vide le cache
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -79,7 +79,7 @@ class LibraryService {
           body: jsonEncode({'muId': muId, 'readChapters': readChapters}),
         );
         final success = res.statusCode == HttpStatus.ok;
-        if (success) _userLibraryCache = null; // On vide le cache
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -106,7 +106,7 @@ class LibraryService {
           url: url,
           muId: muId,
         );
-        if (success) _userLibraryCache = null; // On vide le cache
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -136,7 +136,7 @@ class LibraryService {
           }),
         );
         final success = response.statusCode == HttpStatus.ok;
-        if (success) _userLibraryCache = null;
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -163,7 +163,7 @@ class LibraryService {
           body: jsonEncode({'muId': muId, 'customLink': customLink}),
         );
         final success = res.statusCode == HttpStatus.ok;
-        if (success) _userLibraryCache = null;
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -190,7 +190,7 @@ class LibraryService {
           body: jsonEncode({'muId': muId}),
         );
         final success = res.statusCode == HttpStatus.ok;
-        if (success) _userLibraryCache = null;
+        // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
