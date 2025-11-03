@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:fancy_button_flutter/fancy_button_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
-
-import '../../../core/components/password_fields.dart';
+import 'package:mangatracker/core/components/password_fields.dart';
+import 'package:mangatracker/core/notifier/notifier.dart';
 import '../../auth/services/validator.service.dart';
+import '../dto/user_information.dto.dart';
+import '../widgets/profile_header.dart';
+import '../widgets/profile_option_tile.dart';
+import '../widgets/profile_section.dart';
+import '../widgets/changelog_card.dart';
 
+/// Page de profil moderne avec Material 3 et composants réutilisables
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -17,152 +22,263 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final AuthService authService = getIt<AuthService>();
-  final UserService userService = getIt<UserService>();
+  final AuthService _authService = getIt<AuthService>();
+  final UserService _userService = getIt<UserService>();
+  final Notifier _notifier = getIt<Notifier>();
+  
+  UserInformationDto? _userInfo;
+  bool _isLoading = true;
 
-  final Color logoutBtnColor = Colors.black;
-  final Color deleteAccountBtnColor = Colors.red;
-  final Color changePasswordBtnColor = Colors.orange;
-  final Color buttonTextColor = Colors.white;
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInformation();
+  }
 
-  void redirectToLoginPage() {
+  Future<void> _loadUserInformation() async {
+    try {
+      final userInfo = await _userService.getUserInformation();
+      setState(() {
+        _userInfo = userInfo;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      // En cas d'erreur, on garde les valeurs par défaut
+      if (mounted) {
+        _notifier.error('Impossible de charger les informations utilisateur');
+      }
+    }
+  }
+
+  void _redirectToLoginPage() {
     HapticFeedback.lightImpact();
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginView()),
     );
   }
 
-  Widget cancelButton() {
-    return TextButton(
-      child: Text('Annuler'),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-  }
-
-  Widget fancyButton(icon, text, backgroundColor, textColor, onClick) {
-    return FancyButton(
-      button_icon: icon,
-      button_text: text,
-      button_height: 40,
-      button_width: 250,
-      button_radius: 50,
-      button_color: backgroundColor,
-      button_outline_color: backgroundColor,
-      button_outline_width: 1,
-      button_text_color: textColor,
-      button_icon_color: textColor,
-      icon_size: 22,
-      button_text_size: 15,
-      onClick: onClick,
-    );
-  }
-
-  void showConfirmDeleteAccount() {
-    Widget continueButton = TextButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all<Color>(
-          deleteAccountBtnColor,
+  void _showConfirmDeleteAccount() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+        title: const Text('Supprimer le compte'),
+        content: const Text(
+          'Cette action est irréversible. Toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                await _userService.deleteAccount();
+                _redirectToLoginPage();
+                _notifier.success('Compte supprimé avec succès');
+              } catch (e) {
+                _notifier.error('Erreur lors de la suppression du compte');
+              }
+            },
+            child: const Text('Supprimer'),
+          ),
+        ],
       ),
-      onPressed: () {
-        redirectToLoginPage();
-        userService.deleteAccount();
-      },
-      child: Text('Continuer', style: TextStyle(color: buttonTextColor)),
     );
-
-    AlertDialog alert = AlertDialog(
-      title: Text('Supprimer le compte'),
-      content: Text(
-        'Cette action est irréversible. Toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.',
-      ),
-      actions: [cancelButton(), continueButton],
-    );
-
-    showDialog(context: context, builder: (context) => alert);
   }
 
-  void showConfirmChangePassword() {
+  void _showChangePasswordDialog() {
     final formKey = GlobalKey<FormState>();
-    final passwordControler = TextEditingController();
+    final passwordController = TextEditingController();
 
-    Widget saveButton = TextButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all<Color>(
-          changePasswordBtnColor,
-        ),
-      ),
-      onPressed: () {
-        if (!formKey.currentState!.validate()) return;
-        userService.changePassword(passwordControler.text);
-        Navigator.of(context).pop();
-      },
-      child: Text('Enregistrer', style: TextStyle(color: buttonTextColor)),
-    );
-
-    AlertDialog alert = AlertDialog(
-      title: Text('Modifier le mot de passe'),
-      content: Form(
-        key: formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PasswordFields(
-              passwordControler: passwordControler,
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifier le mot de passe'),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: PasswordFields(
+              passwordControler: passwordController,
               confirmPasswordControler: TextEditingController(),
               validatorService: getIt<ValidatorService>(),
               update: true,
             ),
-          ],
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              
+              try {
+                await _userService.changePassword(passwordController.text);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  _notifier.success('Mot de passe modifié avec succès');
+                }
+              } catch (e) {
+                _notifier.error('Erreur lors de la modification du mot de passe');
+              }
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
       ),
-      actions: [cancelButton(), saveButton],
     );
+  }
 
-    showDialog(context: context, builder: (context) => alert);
+  void _handleLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Se déconnecter'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              _authService.logout();
+              Navigator.of(context).pop();
+              _redirectToLoginPage();
+            },
+            child: const Text('Déconnecter'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          fancyButton(
-            Icons.logout,
-            '  Se déconnecter  ',
-            logoutBtnColor,
-            buttonTextColor,
-            () {
-              redirectToLoginPage();
-              authService.logout();
-            },
-          ),
-          const SizedBox(height: 16),
-          fancyButton(
-            Icons.delete,
-            '  Supprimer le compte  ',
-            deleteAccountBtnColor,
-            buttonTextColor,
-            () {
-              showConfirmDeleteAccount();
-            },
-          ),
-          const SizedBox(height: 16),
-          fancyButton(
-            Icons.password,
-            '  Modifier le mot de passe  ',
-            changePasswordBtnColor,
-            buttonTextColor,
-            () {
-              showConfirmChangePassword();
-            },
-          ),
-        ],
-      ),
+    final theme = Theme.of(context);
+    final username = _userInfo?.username ?? 'Utilisateur';
+    final email = _userInfo?.email ?? '';
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : CustomScrollView(
+              slivers: [
+                // Header avec informations utilisateur
+                SliverToBoxAdapter(
+                  child: ProfileHeader(
+                    username: username,
+                    email: email,
+                    onAvatarTap: () {
+                      // Possibilité d'ajouter une fonctionnalité de changement d'avatar
+                      _notifier.info('Fonctionnalité à venir : changement d\'avatar');
+                    },
+                  ),
+                ),
+
+                // Section Changelog/Versions
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: const ChangelogCard(),
+                  ),
+                ),
+
+                // Section Compte
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: 'Compte',
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.lock_outline,
+                        title: 'Modifier le mot de passe',
+                        subtitle: 'Changez votre mot de passe de connexion',
+                        onTap: _showChangePasswordDialog,
+                        iconColor: Colors.orange,
+                      ),
+                      ProfileOptionTile(
+                        icon: Icons.info_outline,
+                        title: 'Informations du compte',
+                        subtitle: 'Email: $email',
+                        showArrow: false,
+                        iconColor: theme.colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Paramètres (pour futures fonctionnalités)
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: 'Paramètres',
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.notifications_outlined,
+                        title: 'Notifications',
+                        subtitle: 'Gérer les notifications',
+                        onTap: () {
+                          _notifier.info('Fonctionnalité à venir');
+                        },
+                        iconColor: Colors.blue,
+                      ),
+                      ProfileOptionTile(
+                        icon: Icons.dark_mode_outlined,
+                        title: 'Thème',
+                        subtitle: 'Mode clair',
+                        onTap: () {
+                          _notifier.info('Fonctionnalité à venir');
+                        },
+                        iconColor: Colors.indigo,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Actions
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: 'Actions',
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.logout,
+                        title: 'Se déconnecter',
+                        subtitle: 'Déconnectez-vous de votre compte',
+                        onTap: _handleLogout,
+                        iconColor: Colors.grey,
+                        backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                      ),
+                      ProfileOptionTile(
+                        icon: Icons.delete_outline,
+                        title: 'Supprimer le compte',
+                        subtitle: 'Action irréversible',
+                        onTap: _showConfirmDeleteAccount,
+                        iconColor: Colors.red,
+                        backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Espacement en bas
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 24),
+                ),
+              ],
+            ),
     );
   }
 }

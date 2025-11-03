@@ -65,6 +65,27 @@ class AppUpdateService {
     }
   }
 
+  /// Récupère tous les changelogs disponibles
+  Future<ChangelogInfo?> getAllChangelogs() async {
+    try {
+      final data = await _fetchAndCacheData();
+      final allChangelogs = data?['changelog'] as List<dynamic>?;
+      if (data == null || allChangelogs == null) return null;
+
+      final relevantNotes = allChangelogs
+          .map((entry) => VersionChanges(
+                version: (entry as Map)['version'] as String,
+                notes: entry['notes'] as List<dynamic>,
+              ))
+          .toList();
+
+      return ChangelogInfo(relevantNotes);
+    } catch (e, st) {
+      print('getAllChangelogs error: $e\n$st');
+      return null;
+    }
+  }
+
   /// Récupère les notes de version qui n'ont pas encore été montrées à l'utilisateur.
   /// Retourne un objet ChangelogInfo s'il y a des nouveautés, sinon null.
   Future<ChangelogInfo?> getNewChangelog() async {
