@@ -41,20 +41,11 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
   /// Initialise l'écoute de la connectivité
   void _initializeConnectivityListener() {
+    // L'état offline est maintenant détecté directement via les erreurs réseau
+    // Plus besoin de mettre à jour l'état via le listener
     _connectivitySubscription = _connectivityService.connectivityStream.listen(
       (isConnected) {
-        // Mettre à jour l'état de connectivité dans tous les cas
-        if (state is DetailLoaded) {
-          final currentState = state as DetailLoaded;
-          emit(currentState.copyWith(isOffline: !isConnected));
-        } else if (state is DetailError) {
-          final currentState = state as DetailError;
-          emit(DetailError(
-            message: currentState.message,
-            isOffline: !isConnected,
-            cachedMangaDetail: currentState.cachedMangaDetail,
-          ));
-        }
+        // L'état sera mis à jour automatiquement lors des prochains chargements
       },
     );
   }
@@ -62,11 +53,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   /// Charge les détails d'un manga
   Future<void> _onLoadMangaDetail(LoadMangaDetail event, Emitter<DetailState> emit) async {
     print('🔄 DetailBloc: Chargement du manga ${event.muId}...');
+    emit(const DetailLoading());
+    _currentMuId = event.muId;
+    
     try {
-      emit(const DetailLoading());
-      _currentMuId = event.muId;
-      
-      final isOffline = !_connectivityService.isConnected;
       final mangaDetail = await _cacheHelper.loadMangaDetail(
         muId: event.muId,
         networkCall: () => _mangaService.getMangaDetail(event.muId.toString()),
@@ -82,30 +72,11 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         
         if (libraryStatus != null) {
           // Le manga est dans la bibliothèque, mettre à jour le statut et le nombre de chapitres lus
-          updatedMangaDetail = MangaDetailDto(
-            muId: mangaDetail.muId,
-            title: mangaDetail.title,
-            description: mangaDetail.description,
-            status: mangaDetail.status,
-            publicationStatus: mangaDetail.publicationStatus,
-            year: mangaDetail.year,
-            smallCoverUrl: mangaDetail.smallCoverUrl,
-            mediumCoverUrl: mangaDetail.mediumCoverUrl,
-            largeCoverUrl: mangaDetail.largeCoverUrl,
-            rating: mangaDetail.rating,
-            totalChapters: mangaDetail.totalChapters,
-            isCompleted: mangaDetail.isCompleted,
-            authors: mangaDetail.authors,
-            genres: mangaDetail.genres,
-            customLink: mangaDetail.customLink,
+          updatedMangaDetail = _copyMangaDetail(
+            mangaDetail,
             inLibrary: true,
             readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
             readingStatus: libraryStatus,
-            associated: mangaDetail.associated,
-            recommendations: mangaDetail.recommendations,
-            type: mangaDetail.type,
-            seasonChapters: mangaDetail.seasonChapters,
-            bonusChapters: mangaDetail.bonusChapters,
           );
           print('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name} et ${readChaptersCount} chapitres lus');
         } else {
@@ -116,16 +87,20 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         // Continuer avec les détails de base si la récupération du statut échoue
       }
       
+      // Si aucune erreur, on est online
       emit(DetailLoaded(
         mangaDetail: updatedMangaDetail,
-        isOffline: isOffline,
+        isOffline: false,
         pendingActions: pendingActions,
       ));
     } catch (e) {
-      // En cas d'erreur, essayer de charger depuis le cache
+      // Erreur réseau détectée : on est offline
+      print('⚠️ Erreur de chargement du manga, tentative de récupération depuis le cache...');
+      
       try {
         final cachedMangaDetail = await _cacheHelper.getCachedMangaDetail(event.muId);
         if (cachedMangaDetail != null) {
+          print('✅ Données du manga chargées depuis le cache (mode offline)');
           emit(DetailLoaded(
             mangaDetail: cachedMangaDetail,
             isOffline: true,
@@ -134,13 +109,13 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         } else {
           emit(DetailError(
             message: e.toString(),
-            isOffline: !_connectivityService.isConnected,
+            isOffline: true,
           ));
         }
       } catch (cacheError) {
         emit(DetailError(
           message: e.toString(),
-          isOffline: !_connectivityService.isConnected,
+          isOffline: true,
         ));
       }
     }
@@ -158,10 +133,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     if (state is! DetailLoaded) return;
     
     final currentState = state as DetailLoaded;
+    
+    // Vérifier si on est offline
+    final isOffline = !_connectivityService.isConnected;
+    
     emit(DetailActionInProgress(
       mangaDetail: currentState.mangaDetail,
-      action: 'Ajout à la bibliothèque...',
-      isOffline: currentState.isOffline,
+      action: isOffline ? 'Action mise en queue (hors ligne)...' : 'Ajout à la bibliothèque...',
+      isOffline: isOffline,
     ));
     
     try {
@@ -171,50 +150,40 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       if (success) {
         // Mettre à jour l'état local sans recharger
         print('✅ DetailBloc: Manga ajouté, mise à jour locale de l\'état...');
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: currentState.mangaDetail.customLink,
-          inLibrary: true, // Le manga est maintenant dans la bibliothèque
-          readChaptersCount: 0, // Réinitialiser le nombre de chapitres lus
-          readingStatus: ReadingStatus.readLater, // Statut par défaut lors de l'ajout
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
+          inLibrary: true,
+          readChaptersCount: 0,
+          readingStatus: ReadingStatus.readLater,
         );
+        
+        final pendingActions = isOffline ? currentState.pendingActions + 1 : currentState.pendingActions;
         
         emit(DetailLoaded(
           mangaDetail: updatedMangaDetail,
-          isOffline: currentState.isOffline,
-          pendingActions: currentState.pendingActions,
+          isOffline: isOffline,
+          pendingActions: pendingActions,
         ));
       } else {
+        // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
+        if (!isOffline) {
+          emit(DetailError(
+            message: 'Erreur lors de l\'ajout à la bibliothèque',
+            isOffline: false,
+            cachedMangaDetail: currentState.mangaDetail,
+          ));
+        }
+      }
+    } catch (e) {
+      // En cas d'exception, vérifier si c'est à cause du mode offline
+      final isNowOffline = !_connectivityService.isConnected;
+      if (!isNowOffline) {
         emit(DetailError(
-          message: 'Erreur lors de l\'ajout à la bibliothèque',
-          isOffline: currentState.isOffline,
+          message: e.toString(),
+          isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
         ));
       }
-    } catch (e) {
-      emit(DetailError(
-        message: e.toString(),
-        isOffline: currentState.isOffline,
-        cachedMangaDetail: currentState.mangaDetail,
-      ));
     }
   }
 
@@ -223,10 +192,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     if (state is! DetailLoaded) return;
     
     final currentState = state as DetailLoaded;
+    
+    // Vérifier si on est offline
+    final isOffline = !_connectivityService.isConnected;
+    
     emit(DetailActionInProgress(
       mangaDetail: currentState.mangaDetail,
-      action: 'Suppression de la bibliothèque...',
-      isOffline: currentState.isOffline,
+      action: isOffline ? 'Action mise en queue (hors ligne)...' : 'Suppression de la bibliothèque...',
+      isOffline: isOffline,
     ));
     
     try {
@@ -236,50 +209,40 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       if (success) {
         // Mettre à jour l'état local sans recharger
         print('✅ DetailBloc: Manga retiré, mise à jour locale de l\'état...');
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: currentState.mangaDetail.customLink,
-          inLibrary: false, // Le manga n'est plus dans la bibliothèque
-          readChaptersCount: null, // Réinitialiser le nombre de chapitres lus
-          readingStatus: null, // Réinitialiser le statut
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
+          inLibrary: false,
+          clearReadChaptersCount: true,
+          clearReadingStatus: true,
         );
+        
+        final pendingActions = isOffline ? currentState.pendingActions + 1 : currentState.pendingActions;
         
         emit(DetailLoaded(
           mangaDetail: updatedMangaDetail,
-          isOffline: currentState.isOffline,
-          pendingActions: currentState.pendingActions,
+          isOffline: isOffline,
+          pendingActions: pendingActions,
         ));
       } else {
+        // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
+        if (!isOffline) {
+          emit(DetailError(
+            message: 'Erreur lors de la suppression de la bibliothèque',
+            isOffline: false,
+            cachedMangaDetail: currentState.mangaDetail,
+          ));
+        }
+      }
+    } catch (e) {
+      // En cas d'exception, vérifier si c'est à cause du mode offline
+      final isNowOffline = !_connectivityService.isConnected;
+      if (!isNowOffline) {
         emit(DetailError(
-          message: 'Erreur lors de la suppression de la bibliothèque',
-          isOffline: currentState.isOffline,
+          message: e.toString(),
+          isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
         ));
       }
-    } catch (e) {
-      emit(DetailError(
-        message: e.toString(),
-        isOffline: currentState.isOffline,
-        cachedMangaDetail: currentState.mangaDetail,
-      ));
     }
   }
 
@@ -288,10 +251,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     if (state is! DetailLoaded || _currentMuId == null) return;
     
     final currentState = state as DetailLoaded;
+    
+    // Vérifier si on est offline
+    final isOffline = !_connectivityService.isConnected;
+    
     emit(DetailActionInProgress(
       mangaDetail: currentState.mangaDetail,
-      action: 'Mise à jour du statut...',
-      isOffline: currentState.isOffline,
+      action: isOffline ? 'Action mise en queue (hors ligne)...' : 'Mise à jour du statut...',
+      isOffline: isOffline,
     ));
     
     try {
@@ -301,50 +268,39 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       if (success) {
         // Mettre à jour l'état local sans recharger
         print('✅ DetailBloc: Statut mis à jour, mise à jour locale de l\'état...');
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: currentState.mangaDetail.customLink,
-          inLibrary: true, // Le manga est maintenant dans la bibliothèque
-          readChaptersCount: currentState.mangaDetail.readChaptersCount,
-          readingStatus: event.status, // Mise à jour du statut de lecture
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
+          inLibrary: true,
+          readingStatus: event.status,
         );
+        
+        final pendingActions = isOffline ? currentState.pendingActions + 1 : currentState.pendingActions;
         
         emit(DetailLoaded(
           mangaDetail: updatedMangaDetail,
-          isOffline: currentState.isOffline,
-          pendingActions: currentState.pendingActions,
+          isOffline: isOffline,
+          pendingActions: pendingActions,
         ));
       } else {
+        // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
+        if (!isOffline) {
+          emit(DetailError(
+            message: 'Erreur lors de la mise à jour du statut',
+            isOffline: false,
+            cachedMangaDetail: currentState.mangaDetail,
+          ));
+        }
+      }
+    } catch (e) {
+      // En cas d'exception, vérifier si c'est à cause du mode offline
+      final isNowOffline = !_connectivityService.isConnected;
+      if (!isNowOffline) {
         emit(DetailError(
-          message: 'Erreur lors de la mise à jour du statut',
-          isOffline: currentState.isOffline,
+          message: e.toString(),
+          isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
         ));
       }
-    } catch (e) {
-      emit(DetailError(
-        message: e.toString(),
-        isOffline: currentState.isOffline,
-        cachedMangaDetail: currentState.mangaDetail,
-      ));
     }
   }
 
@@ -355,40 +311,28 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     
     final currentState = state as DetailLoaded;
     
+    // Vérifier le statut de connectivité
+    final isOffline = !_connectivityService.isConnected;
+    
     try {
       // Si on décoche tous les chapitres (0 chapitres lus), retirer de la bibliothèque
       if (event.readChapters == 0 && currentState.mangaDetail.inLibrary) {
         print('🗑️ Aucun chapitre lu, retrait automatique de la bibliothèque...');
         final removeSuccess = await _libraryService.removeMangaFromLibrary(event.muId);
         if (removeSuccess) {
-          final updatedMangaDetail = MangaDetailDto(
-            muId: currentState.mangaDetail.muId,
-            title: currentState.mangaDetail.title,
-            description: currentState.mangaDetail.description,
-            status: currentState.mangaDetail.status,
-            publicationStatus: currentState.mangaDetail.publicationStatus,
-            year: currentState.mangaDetail.year,
-            smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-            mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-            largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-            rating: currentState.mangaDetail.rating,
-            totalChapters: currentState.mangaDetail.totalChapters,
-            isCompleted: currentState.mangaDetail.isCompleted,
-            authors: currentState.mangaDetail.authors,
-            genres: currentState.mangaDetail.genres,
-            customLink: currentState.mangaDetail.customLink,
+          final updatedMangaDetail = _copyMangaDetail(
+            currentState.mangaDetail,
             inLibrary: false,
-            readChaptersCount: 0,
-            readingStatus: null,
-            associated: currentState.mangaDetail.associated,
-            recommendations: currentState.mangaDetail.recommendations,
-            type: currentState.mangaDetail.type,
-            seasonChapters: currentState.mangaDetail.seasonChapters,
-            bonusChapters: currentState.mangaDetail.bonusChapters,
+            clearReadChaptersCount: true,
+            clearReadingStatus: true,
           );
           
-          emit(currentState.copyWith(
+          final pendingActions = isOffline ? currentState.pendingActions + 1 : currentState.pendingActions;
+          
+          emit(DetailLoaded(
             mangaDetail: updatedMangaDetail,
+            isOffline: isOffline,
+            pendingActions: pendingActions,
           ));
           print('✅ Manga retiré de la bibliothèque');
         }
@@ -400,10 +344,11 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       if (!currentState.mangaDetail.inLibrary) {
         print('📚 Le manga n\'est pas dans la bibliothèque, ajout automatique...');
         final addSuccess = await _libraryService.addMangaToLibrary(event.muId);
-        if (!addSuccess) {
+        // Si offline et addSuccess, ça veut dire que c'est en queue
+        if (!addSuccess && !isOffline) {
           emit(DetailError(
             message: 'Erreur lors de l\'ajout à la bibliothèque',
-            isOffline: currentState.isOffline,
+            isOffline: false,
             cachedMangaDetail: currentState.mangaDetail,
           ));
           return;
@@ -435,50 +380,50 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           await _libraryService.updateMangaStatus(event.muId, newStatus);
         }
         
+        // Compter le nombre d'actions offline
+        int offlineActionCount = 0;
+        if (isOffline) {
+          if (wasAddedToLibrary) offlineActionCount++; // Ajout à la bibliothèque
+          offlineActionCount++; // Sauvegarde du chapitre
+          if (newStatus != currentState.mangaDetail.readingStatus && isNowInLibrary) {
+            offlineActionCount++; // Mise à jour du statut
+          }
+        }
+        
         // Mettre à jour l'état local sans recharger
         print('✅ DetailBloc: Chapitre sauvegardé, mise à jour locale...');
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: currentState.mangaDetail.customLink,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
           inLibrary: isNowInLibrary,
           readChaptersCount: event.readChapters,
           readingStatus: newStatus,
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
         );
         
-        emit(currentState.copyWith(
+        emit(DetailLoaded(
           mangaDetail: updatedMangaDetail,
+          isOffline: isOffline,
+          pendingActions: currentState.pendingActions + offlineActionCount,
         ));
       } else {
+        // Échec uniquement si on est online
+        if (!isOffline) {
+          emit(DetailError(
+            message: 'Erreur lors de la sauvegarde de la progression',
+            isOffline: false,
+            cachedMangaDetail: currentState.mangaDetail,
+          ));
+        }
+      }
+    } catch (e) {
+      // Exception uniquement si on est online
+      final isNowOffline = !_connectivityService.isConnected;
+      if (!isNowOffline) {
         emit(DetailError(
-          message: 'Erreur lors de la sauvegarde de la progression',
-          isOffline: currentState.isOffline,
+          message: e.toString(),
+          isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
         ));
       }
-    } catch (e) {
-      emit(DetailError(
-        message: e.toString(),
-        isOffline: currentState.isOffline,
-        cachedMangaDetail: currentState.mangaDetail,
-      ));
     }
   }
   
@@ -529,30 +474,9 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       if (success) {
         // Mettre à jour l'état local sans recharger
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: event.customLink, // Mise à jour du lien personnalisé
-          inLibrary: currentState.mangaDetail.inLibrary,
-          readChaptersCount: currentState.mangaDetail.readChaptersCount,
-          readingStatus: currentState.mangaDetail.readingStatus,
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
+          customLink: event.customLink,
         );
         
         emit(DetailLoaded(
@@ -592,30 +516,9 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       if (success) {
         // Mettre à jour l'état local sans recharger
-        final updatedMangaDetail = MangaDetailDto(
-          muId: currentState.mangaDetail.muId,
-          title: currentState.mangaDetail.title,
-          description: currentState.mangaDetail.description,
-          status: currentState.mangaDetail.status,
-          publicationStatus: currentState.mangaDetail.publicationStatus,
-          year: currentState.mangaDetail.year,
-          smallCoverUrl: currentState.mangaDetail.smallCoverUrl,
-          mediumCoverUrl: currentState.mangaDetail.mediumCoverUrl,
-          largeCoverUrl: currentState.mangaDetail.largeCoverUrl,
-          rating: currentState.mangaDetail.rating,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          authors: currentState.mangaDetail.authors,
-          genres: currentState.mangaDetail.genres,
-          customLink: null, // Supprimer le lien personnalisé
-          inLibrary: currentState.mangaDetail.inLibrary,
-          readChaptersCount: currentState.mangaDetail.readChaptersCount,
-          readingStatus: currentState.mangaDetail.readingStatus,
-          associated: currentState.mangaDetail.associated,
-          recommendations: currentState.mangaDetail.recommendations,
-          type: currentState.mangaDetail.type,
-          seasonChapters: currentState.mangaDetail.seasonChapters,
-          bonusChapters: currentState.mangaDetail.bonusChapters,
+        final updatedMangaDetail = _copyMangaDetail(
+          currentState.mangaDetail,
+          clearCustomLink: true,
         );
         
         emit(DetailLoaded(
@@ -647,5 +550,43 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     } catch (e) {
       return 0;
     }
+  }
+
+  /// Helper pour créer une copie de MangaDetailDto avec des champs modifiés
+  MangaDetailDto _copyMangaDetail(
+    MangaDetailDto original, {
+    bool? inLibrary,
+    int? readChaptersCount,
+    ReadingStatus? readingStatus,
+    String? customLink,
+    bool clearCustomLink = false,
+    bool clearReadingStatus = false,
+    bool clearReadChaptersCount = false,
+  }) {
+    return MangaDetailDto(
+      muId: original.muId,
+      title: original.title,
+      description: original.description,
+      status: original.status,
+      publicationStatus: original.publicationStatus,
+      year: original.year,
+      smallCoverUrl: original.smallCoverUrl,
+      mediumCoverUrl: original.mediumCoverUrl,
+      largeCoverUrl: original.largeCoverUrl,
+      rating: original.rating,
+      totalChapters: original.totalChapters,
+      isCompleted: original.isCompleted,
+      authors: original.authors,
+      genres: original.genres,
+      customLink: clearCustomLink ? null : (customLink ?? original.customLink),
+      inLibrary: inLibrary ?? original.inLibrary,
+      readChaptersCount: clearReadChaptersCount ? null : (readChaptersCount ?? original.readChaptersCount),
+      readingStatus: clearReadingStatus ? null : (readingStatus ?? original.readingStatus),
+      associated: original.associated,
+      recommendations: original.recommendations,
+      type: original.type,
+      seasonChapters: original.seasonChapters,
+      bonusChapters: original.bonusChapters,
+    );
   }
 }

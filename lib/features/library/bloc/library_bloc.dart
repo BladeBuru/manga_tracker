@@ -40,46 +40,40 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   /// Initialise l'écoute de la connectivité
   void _initializeConnectivityListener() {
+    // L'état offline est maintenant détecté directement via les erreurs réseau
+    // Plus besoin de mettre à jour l'état via le listener
     _connectivitySubscription = _connectivityService.connectivityStream.listen(
       (isConnected) {
-        // Mettre à jour l'état de connectivité dans tous les cas
-        if (state is LibraryLoaded) {
-          final currentState = state as LibraryLoaded;
-          emit(currentState.copyWith(isOffline: !isConnected));
-        } else if (state is LibraryError) {
-          final currentState = state as LibraryError;
-          emit(LibraryError(
-            message: currentState.message,
-            isOffline: !isConnected,
-            cachedMangas: currentState.cachedMangas,
-          ));
-        }
+        // L'état sera mis à jour automatiquement lors des prochains chargements
       },
     );
   }
 
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
+    emit(const LibraryLoading());
+    
     try {
-      emit(const LibraryLoading());
-      
-      final isOffline = !_connectivityService.isConnected;
       final mangas = await _cacheHelper.loadLibraryData(
         networkCall: () => _libraryService.getUserSavedMangas(),
       );
       
       final pendingActions = await _getPendingActionsCount();
       
+      // Si aucune erreur, on est online
       emit(LibraryLoaded(
         mangas: mangas,
-        isOffline: isOffline,
+        isOffline: false,
         pendingActions: pendingActions,
       ));
     } catch (e) {
-      // En cas d'erreur, essayer de charger depuis le cache
+      // Erreur réseau détectée : on est offline
+      print('⚠️ Erreur de chargement de la bibliothèque, tentative de récupération depuis le cache...');
+      
       try {
         final cachedMangas = await _cacheHelper.getCachedLibrary();
         if (cachedMangas != null && cachedMangas.isNotEmpty) {
+          print('✅ Données de la bibliothèque chargées depuis le cache (mode offline)');
           emit(LibraryLoaded(
             mangas: cachedMangas,
             isOffline: true,
@@ -88,13 +82,13 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         } else {
           emit(LibraryError(
             message: e.toString(),
-            isOffline: !_connectivityService.isConnected,
+            isOffline: true,
           ));
         }
       } catch (cacheError) {
         emit(LibraryError(
           message: e.toString(),
-          isOffline: !_connectivityService.isConnected,
+          isOffline: true,
         ));
       }
     }

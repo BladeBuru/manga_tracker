@@ -38,23 +38,11 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
   /// Initialise l'écoute de la connectivité
   void _initializeConnectivityListener() {
+    // L'état offline est maintenant détecté directement via les erreurs réseau
+    // Plus besoin de mettre à jour l'état via le listener
     _connectivitySubscription = _connectivityService.connectivityStream.listen(
       (isConnected) {
-        // Mettre à jour l'état de connectivité dans tous les cas
-        if (state is HomePageLoaded) {
-          final currentState = state as HomePageLoaded;
-          emit(currentState.copyWith(isOffline: !isConnected));
-        } else if (state is HomePageError) {
-          final currentState = state as HomePageError;
-          emit(HomePageError(
-            message: currentState.message,
-            isOffline: !isConnected,
-            cachedPopularMangas: currentState.cachedPopularMangas,
-            cachedNewMangas: currentState.cachedNewMangas,
-            cachedTrendingMangas: currentState.cachedTrendingMangas,
-            cachedUser: currentState.cachedUser,
-          ));
-        }
+        // L'état sera mis à jour automatiquement lors des prochains chargements
       },
     );
   }
@@ -62,11 +50,9 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   /// Charge la page d'accueil complète
   Future<void> _onLoadHomePage(LoadHomePage event, Emitter<HomePageState> emit) async {
     print('🔄 HomePageBloc: Chargement de la page d\'accueil...');
+    emit(const HomePageLoading());
+    
     try {
-      emit(const HomePageLoading());
-      
-      final isOffline = !_connectivityService.isConnected;
-      
       // Charger toutes les données en parallèle
       final results = await Future.wait([
         _loadPopularMangas(),
@@ -77,21 +63,25 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       
       final pendingActions = await _getPendingActionsCount();
       
+      // Si aucune erreur, on est online
       emit(HomePageLoaded(
         popularMangas: results[0] as List<MangaQuickViewDto>,
         newMangas: results[1] as List<MangaQuickViewDto>,
         trendingMangas: results[2] as List<MangaQuickViewDto>,
         user: results[3] as UserDto?,
-        isOffline: isOffline,
+        isOffline: false,
         pendingActions: pendingActions,
       ));
     } catch (e) {
-      // En cas d'erreur, essayer de charger depuis le cache
+      // Erreur réseau détectée : on est offline
+      print('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
+      
       try {
         final cachedPopular = await _cacheHelper.getCachedHomePageData();
         final cachedUser = await _getCachedUserInfo();
         
         if (cachedPopular != null && cachedPopular.isNotEmpty) {
+          print('✅ Données chargées depuis le cache (mode offline)');
           emit(HomePageLoaded(
             popularMangas: cachedPopular,
             newMangas: cachedPopular,
@@ -103,13 +93,13 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         } else {
           emit(HomePageError(
             message: e.toString(),
-            isOffline: !_connectivityService.isConnected,
+            isOffline: true,
           ));
         }
       } catch (cacheError) {
         emit(HomePageError(
           message: e.toString(),
-          isOffline: !_connectivityService.isConnected,
+          isOffline: true,
         ));
       }
     }
