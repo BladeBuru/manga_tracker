@@ -84,40 +84,53 @@ class SyncService {
   Future<void> _processOfflineAction(Map<String, dynamic> actionData) async {
     final action = OfflineAction.fromJson(actionData);
     
+    bool success = false;
+    
     switch (action.type) {
       case 'addManga':
-        await _libraryService.addMangaToLibrary(action.muId);
+        success = await _libraryService.addMangaToLibrary(action.muId);
         break;
         
       case 'removeManga':
-        await _libraryService.removeMangaFromLibrary(action.muId);
+        success = await _libraryService.removeMangaFromLibrary(action.muId);
         break;
         
       case 'updateStatus':
       case 'updateMangaStatus':
         if (action.status != null) {
-          await _libraryService.updateMangaStatus(action.muId, action.status!);
+          success = await _libraryService.updateMangaStatus(action.muId, action.status!);
+        } else {
+          throw Exception('Statut manquant pour l\'action ${action.type}');
         }
         break;
         
       case 'saveChapterProgress':
         if (action.readChapters != null) {
-          await _libraryService.saveChapterProgress(action.muId, action.readChapters!);
+          success = await _libraryService.saveChapterProgress(action.muId, action.readChapters!);
+        } else {
+          throw Exception('Nombre de chapitres manquant pour l\'action ${action.type}');
         }
         break;
         
       case 'updateCustomLink':
         if (action.customLink != null) {
-          await _libraryService.updateCustomLink(action.muId, action.customLink!);
+          success = await _libraryService.updateCustomLink(action.muId, action.customLink!);
+        } else {
+          throw Exception('Lien personnalisé manquant pour l\'action ${action.type}');
         }
         break;
         
       case 'deleteCustomLink':
-        await _libraryService.deleteCustomLink(action.muId);
+        success = await _libraryService.deleteCustomLink(action.muId);
         break;
         
       default:
-        print('⚠️ Type d\'action inconnu: ${action.type}');
+        throw Exception('Type d\'action inconnu: ${action.type}');
+    }
+    
+    // Si l'action a échoué, lancer une exception pour qu'elle soit ajoutée à failedActions
+    if (!success) {
+      throw Exception('Échec de l\'action ${action.type} pour le manga ${action.muId}');
     }
   }
   

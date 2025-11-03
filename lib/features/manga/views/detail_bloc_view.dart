@@ -16,7 +16,6 @@ import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
-import '../../library/services/library.service.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import '../../auth/views/login.view.dart';
@@ -39,20 +38,9 @@ class DetailBlocView extends StatefulWidget {
 }
 
 class _DetailBlocViewState extends State<DetailBlocView> {
-  final DetailBloc _detailBloc = getIt<DetailBloc>();
+  // Plus besoin de _detailBloc car on utilise BlocProvider maintenant
   final MangaService _mangaService = getIt<MangaService>();
   final Notifier _notifier = getIt<Notifier>();
-  
-  List<MangaRecommendationView>? _mangaRecommendationsCache;
-  String? customLink;
-  int lastReadChapters = -1;
-
-  @override
-  void initState() {
-    super.initState();
-    print('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
-    _detailBloc.add(LoadMangaDetail(widget.muId));
-  }
 
   void _redirectToLoginPage() {
     Navigator.push(
@@ -61,9 +49,62 @@ class _DetailBlocViewState extends State<DetailBlocView> {
     );
   }
 
-  void _refreshLibraryState() {
-    _detailBloc.add(const RefreshMangaDetail());
+  void _refreshLibraryState(BuildContext context) {
+    context.read<DetailBloc>().add(const RefreshMangaDetail());
   }
+
+  @override
+  Widget build(BuildContext context) {
+    // Créer une instance unique de DetailBloc pour cette page
+    return BlocProvider(
+      create: (context) {
+        final bloc = DetailBloc();
+        print('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
+        // Charger les détails immédiatement après création
+        bloc.add(LoadMangaDetail(widget.muId));
+        return bloc;
+      },
+      child: _DetailBlocViewContent(
+        muId: widget.muId,
+        mangaTitle: widget.mangaTitle,
+        coverPath: widget.coverPath,
+        mangaService: _mangaService,
+        notifier: _notifier,
+        onRefreshLibraryState: _refreshLibraryState,
+        onRedirectToLogin: _redirectToLoginPage,
+      ),
+    );
+  }
+}
+
+/// Widget séparé pour accéder au contexte BlocProvider
+class _DetailBlocViewContent extends StatefulWidget {
+  final int muId;
+  final String? mangaTitle;
+  final String? coverPath;
+  final MangaService mangaService;
+  final Notifier notifier;
+  final void Function(BuildContext) onRefreshLibraryState;
+  final VoidCallback onRedirectToLogin;
+  
+  const _DetailBlocViewContent({
+    required this.muId,
+    this.mangaTitle,
+    this.coverPath,
+    required this.mangaService,
+    required this.notifier,
+    required this.onRefreshLibraryState,
+    required this.onRedirectToLogin,
+  });
+
+  @override
+  State<_DetailBlocViewContent> createState() => _DetailBlocViewContentState();
+}
+
+class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
+  List<MangaRecommendationView>? _mangaRecommendationsCache;
+  String? customLink;
+  int lastReadChapters = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +119,6 @@ class _DetailBlocViewState extends State<DetailBlocView> {
         ),
         actions: [
           BlocBuilder<DetailBloc, DetailState>(
-            bloc: _detailBloc,
             builder: (context, state) {
               final isOffline = state is DetailLoaded && state.isOffline ||
                                state is DetailError && state.isOffline;
@@ -108,12 +148,11 @@ class _DetailBlocViewState extends State<DetailBlocView> {
       body: SafeArea(
         top: false,
         child: BlocConsumer<DetailBloc, DetailState>(
-          bloc: _detailBloc,
           listener: (context, state) {
             if (state is DetailError) {
               if (state.message.contains('InvalidCredentials') || 
                   state.message.contains('Expired session')) {
-                _redirectToLoginPage();
+                widget.onRedirectToLogin();
               }
             }
           },
@@ -157,7 +196,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => _detailBloc.add(LoadMangaDetail(widget.muId)),
+                      onPressed: () => context.read<DetailBloc>().add(LoadMangaDetail(widget.muId)),
                       child: const Text('Réessayer'),
                     ),
                   ],
@@ -257,15 +296,15 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   readChapters: readChapters,
                   onReadCountChanged: (newCount) {
                     // Dispatcher l'événement au BLoC pour mise à jour réactive
-                    _detailBloc.add(SaveChapterProgress(widget.muId, newCount.toInt()));
+                    context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));
                   },
                   onAddToLibrary: () {
                     // Dispatcher l'événement au BLoC
-                    _detailBloc.add(AddToLibrary(widget.muId));
+                    context.read<DetailBloc>().add(AddToLibrary(widget.muId));
                   },
                   onRemoveFromLibrary: () {
                     // Dispatcher l'événement au BLoC
-                    _detailBloc.add(RemoveFromLibrary(widget.muId));
+                    context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
                   },
                 ),
               ),
@@ -298,8 +337,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   icon: Icon(ReadingStatus.readLater.icon),
                   label: const Text('Ajouter à "À lire plus tard"'),
                   onPressed: () {
-                    _detailBloc.add(AddToLibrary(muId));
-                    _notifier.info("Manga ajouté à 'À lire plus tard'");
+                    context.read<DetailBloc>().add(AddToLibrary(muId));
+                    widget.notifier.info("Manga ajouté à 'À lire plus tard'");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
@@ -392,12 +431,12 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                     builder: (_) => ReaderWebView(
                       muId: muId,
                       initialLastRead: lastRead,
-                      initialUrl: targetUrl ?? '',
+                      initialUrl: targetUrl,
                       baseUserLink: baseLink,
                     ),
                   ),
                 );
-                if (mounted) _refreshLibraryState();
+                if (mounted) widget.onRefreshLibraryState(context);
               },
               icon: const Icon(Icons.link),
               label: const Padding(
@@ -469,7 +508,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
           ),
           onPressed: () async {
             _mangaRecommendationsCache ??=
-                await _mangaService.getMangaRecommendations(muId.toString());
+                await widget.mangaService.getMangaRecommendations(muId.toString());
             if (!mounted) return;
 
             showDialog(
@@ -541,8 +580,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   title: Text(ReadingStatus.reading.label),
                   onTap: () {
                     Navigator.of(ctx).pop();
-                    _detailBloc.add(const UpdateReadingStatus(ReadingStatus.reading));
-                    _notifier.info("Manga marqué comme '${ReadingStatus.reading.label}'");
+                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
+                    widget.notifier.info("Manga marqué comme '${ReadingStatus.reading.label}'");
                   },
                 ),
               
@@ -553,8 +592,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   title: Text(ReadingStatus.readLater.label),
                   onTap: () {
                     Navigator.of(ctx).pop();
-                    _detailBloc.add(const UpdateReadingStatus(ReadingStatus.readLater));
-                    _notifier.info("Manga marqué comme '${ReadingStatus.readLater.label}'");
+                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
+                    widget.notifier.info("Manga marqué comme '${ReadingStatus.readLater.label}'");
                   },
                 ),
               
@@ -565,8 +604,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   title: Text(ReadingStatus.caughtUp.label),
                   onTap: () {
                     Navigator.of(ctx).pop();
-                    _detailBloc.add(const UpdateReadingStatus(ReadingStatus.caughtUp));
-                    _notifier.info("Manga marqué comme '${ReadingStatus.caughtUp.label}'");
+                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
+                    widget.notifier.info("Manga marqué comme '${ReadingStatus.caughtUp.label}'");
                   },
                 ),
               
@@ -577,8 +616,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                   title: Text(ReadingStatus.completed.label),
                   onTap: () {
                     Navigator.of(ctx).pop();
-                    _detailBloc.add(const UpdateReadingStatus(ReadingStatus.completed));
-                    _notifier.info("Manga marqué comme '${ReadingStatus.completed.label}'");
+                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
+                    widget.notifier.info("Manga marqué comme '${ReadingStatus.completed.label}'");
                   },
                 ),
               
@@ -593,8 +632,8 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  _detailBloc.add(RemoveFromLibrary(muId));
-                  _notifier.info("Manga retiré de la bibliothèque");
+                  context.read<DetailBloc>().add(RemoveFromLibrary(muId));
+                  widget.notifier.info("Manga retiré de la bibliothèque");
                 },
               ),
             ],
@@ -631,7 +670,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  _removeCustomLink();
+                  _removeCustomLink(context);
                 },
               ),
             ],
@@ -678,7 +717,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
               if (isValid) {
                 Navigator.of(ctx).pop(link);
               } else {
-                _notifier.error(
+                widget.notifier.error(
                   "Lien invalide. Le lien doit commencer par http:// ou https://",
                 );
               }
@@ -690,17 +729,17 @@ class _DetailBlocViewState extends State<DetailBlocView> {
     );
 
     if (link != null) {
-      await _saveCustomLink(link);
+      await _saveCustomLink(link, context);
     }
   }
 
-  Future<void> _saveCustomLink(String link) async {
-    _detailBloc.add(UpdateCustomLink(link));
-    _notifier.success("Lien enregistré !");
+  Future<void> _saveCustomLink(String link, BuildContext context) async {
+    context.read<DetailBloc>().add(UpdateCustomLink(link));
+    widget.notifier.success("Lien enregistré !");
   }
 
-  Future<void> _removeCustomLink() async {
-    _detailBloc.add(DeleteCustomLink());
-    _notifier.success("Lien supprimé !");
+  Future<void> _removeCustomLink(BuildContext context) async {
+    context.read<DetailBloc>().add(DeleteCustomLink());
+    widget.notifier.success("Lien supprimé !");
   }
 }
