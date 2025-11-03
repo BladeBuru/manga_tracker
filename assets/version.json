@@ -1,8 +1,22 @@
 {
-  "latestVersion": "0.2.4+10",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.2.4+10/app-prod-release.apk",
+  "latestVersion": "0.3.0+11",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.3.0+11/app-prod-release.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.3.0+11",
+      "notes": [
+        "### ✨ Améliorations",
+        "- **Mode hors ligne amélioré** : Indicateurs visuels clairs sur toutes les pages avec le nombre d'actions en attente",
+        "- **Images hors ligne** : Les couvertures de mangas s'affichent maintenant même sans connexion internet grâce au cache",
+        "- **Actions instantanées** : Plus de rechargement de page ! Toutes les actions (ajout/suppression de manga, changement de statut, progression de lecture) sont maintenant instantanées avec une mise à jour fluide de l'interface",
+        "- **Détection automatique** : L'application détecte automatiquement quand vous êtes hors ligne et adapte son comportement",
+        "### 🐛 Corrections",
+        "- Correction de l'affichage des indicateurs de mode hors ligne dans la bibliothèque",
+        "- Correction de l'affichage des données en cache sur la page d'accueil",
+        "- Amélioration de la fiabilité de la détection du mode hors ligne"
+      ]
+    },
     {
       "version": "0.2.4+10",
       "notes": [
