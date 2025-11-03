@@ -83,5 +83,7 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
   getIt.registerLazySingleton<LibraryBloc>(() => LibraryBloc());
   getIt.registerLazySingleton<HomePageBloc>(() => HomePageBloc());
-  getIt.registerLazySingleton<DetailBloc>(() => DetailBloc());
+  // DetailBloc doit être une factory, pas un singleton, pour éviter les race conditions
+  // Chaque page de détails doit avoir sa propre instance de bloc
+  getIt.registerFactory<DetailBloc>(() => DetailBloc());
 }
