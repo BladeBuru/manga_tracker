@@ -26,12 +26,14 @@ class LibraryService {
 
   // ─────────── GET /library/all ───────────
   Future<List<MangaQuickViewDto>> getUserSavedMangas() async {
-    if (_userLibraryCache != null) {
-      return _userLibraryCache!;
-    }
+    // Ne plus utiliser le cache en mémoire pour permettre la détection offline
+    // Le CacheHelperService gère maintenant le cache offline
+    // if (_userLibraryCache != null) {
+    //   return _userLibraryCache!;
+    // }
     final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/all');
     final library = await _fetchMangaList(url);
-    _userLibraryCache = library;
+    // _userLibraryCache = library; // Désactivé pour permettre la détection offline
     return library;
   }
 

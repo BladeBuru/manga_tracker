@@ -180,6 +180,9 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   }
 
   Widget _buildLibraryContent(LibraryLoaded state) {
+    // Debug : afficher l'état offline
+    print('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
+    
     return Column(
       children: [
         // Indicateur de mode hors ligne

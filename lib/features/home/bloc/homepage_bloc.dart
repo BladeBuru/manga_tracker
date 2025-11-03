@@ -77,18 +77,26 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       print('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
       
       try {
-        final cachedPopular = await _cacheHelper.getCachedHomePageData();
+        // Récupérer les caches séparés pour chaque type de manga
+        final cachedPopular = await _cacheHelper.getCachedSearchResults('popular');
+        final cachedNew = await _cacheHelper.getCachedSearchResults('new');
+        final cachedTrending = await _cacheHelper.getCachedSearchResults('trending');
         final cachedUser = await _getCachedUserInfo();
         
-        if (cachedPopular != null && cachedPopular.isNotEmpty) {
-          print('✅ Données chargées depuis le cache (mode offline)');
+        // Si au moins un cache existe, afficher les données
+        if ((cachedPopular != null && cachedPopular.isNotEmpty) ||
+            (cachedNew != null && cachedNew.isNotEmpty) ||
+            (cachedTrending != null && cachedTrending.isNotEmpty)) {
+          final pendingActions = await _getPendingActionsCount();
+          print('✅ Données chargées depuis le cache (mode offline) - Popular: ${cachedPopular?.length ?? 0}, New: ${cachedNew?.length ?? 0}, Trending: ${cachedTrending?.length ?? 0}, Pending: $pendingActions');
+          
           emit(HomePageLoaded(
-            popularMangas: cachedPopular,
-            newMangas: cachedPopular,
-            trendingMangas: cachedPopular,
+            popularMangas: cachedPopular ?? [],
+            newMangas: cachedNew ?? [],
+            trendingMangas: cachedTrending ?? [],
             user: cachedUser,
             isOffline: true,
-            pendingActions: await _getPendingActionsCount(),
+            pendingActions: pendingActions,
           ));
         } else {
           emit(HomePageError(

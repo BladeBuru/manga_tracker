@@ -11,6 +11,8 @@ import 'core/theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
+  // S'assure que les plugins de plateforme sont initialisés avant toute opération async
+  WidgetsFlutterBinding.ensureInitialized();
   //
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");

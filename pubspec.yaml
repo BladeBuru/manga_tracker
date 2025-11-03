@@ -68,6 +68,11 @@ dependencies:
   
   # Connectivité et mode hors ligne
   connectivity_plus: ^5.0.2
+  
+  # Cache d'images pour le mode offline
+  cached_network_image: ^3.3.1
+  # Base de données utilisée par flutter_cache_manager
+  sqflite: ^2.3.3+1
 
 
 

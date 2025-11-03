@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ImageHelper {
 
@@ -14,17 +15,15 @@ class ImageHelper {
       return _loadPlaceholderImage(fit, width, height);
     }
 
-    return Image.network(
-      imagePath,
-
+    // Utiliser CachedNetworkImage pour gérer le cache en mode offline
+    return CachedNetworkImage(
+      imageUrl: imagePath,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder:
-          (BuildContext context, Object error, StackTrace? stackTrace) {
-        // On passe aussi width et height au placeholder en cas d'erreur
-        return _loadPlaceholderImage(fit, width, height);
-      },
+      placeholder: (context, url) => _loadPlaceholderImage(fit, width, height),
+      errorWidget: (context, url, error) => _loadPlaceholderImage(fit, width, height),
+      cacheKey: imagePath, // Utiliser l'URL comme clé de cache
     );
   }
 

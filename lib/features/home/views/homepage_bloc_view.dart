@@ -111,6 +111,8 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     
     if (!isOffline) return const SizedBox.shrink();
     
+    final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -120,14 +122,14 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
         border: Border.all(color: Colors.orange),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.cloud_off, color: Colors.orange, size: 20),
-          SizedBox(width: 8),
+          const Icon(Icons.cloud_off, color: Colors.orange, size: 20),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Mode hors ligne - Données en cache',
-              style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+              'Mode hors ligne - Données en cache${pendingActions > 0 ? ' ($pendingActions actions en attente)' : ''}',
+              style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
             ),
           ),
         ],

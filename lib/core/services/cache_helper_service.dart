@@ -121,4 +121,9 @@ class CacheHelperService {
   Future<MangaDetailDto?> getCachedMangaDetail(int muId) async {
     return await _cacheService.getCachedMangaDetail(muId);
   }
+  
+  /// Récupère les résultats de recherche depuis le cache
+  Future<List<MangaQuickViewDto>?> getCachedSearchResults(String query) async {
+    return await _cacheService.getCachedSearchResults(query);
+  }
 }

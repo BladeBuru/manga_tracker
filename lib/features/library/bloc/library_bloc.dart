@@ -51,9 +51,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
+    print('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
     emit(const LibraryLoading());
     
     try {
+      print('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
       final mangas = await _cacheHelper.loadLibraryData(
         networkCall: () => _libraryService.getUserSavedMangas(),
       );
@@ -61,6 +63,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       final pendingActions = await _getPendingActionsCount();
       
       // Si aucune erreur, on est online
+      print('✅ LibraryBloc: Données chargées depuis le réseau - ${mangas.length} mangas, $pendingActions actions en attente');
       emit(LibraryLoaded(
         mangas: mangas,
         isOffline: false,
@@ -68,24 +71,28 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       ));
     } catch (e) {
       // Erreur réseau détectée : on est offline
-      print('⚠️ Erreur de chargement de la bibliothèque, tentative de récupération depuis le cache...');
+      print('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
+      print('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
       try {
         final cachedMangas = await _cacheHelper.getCachedLibrary();
         if (cachedMangas != null && cachedMangas.isNotEmpty) {
-          print('✅ Données de la bibliothèque chargées depuis le cache (mode offline)');
+          final pendingActions = await _getPendingActionsCount();
+          print('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${cachedMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
             mangas: cachedMangas,
             isOffline: true,
-            pendingActions: await _getPendingActionsCount(),
+            pendingActions: pendingActions,
           ));
         } else {
+          print('❌ LibraryBloc: Aucune donnée en cache disponible');
           emit(LibraryError(
             message: e.toString(),
             isOffline: true,
           ));
         }
       } catch (cacheError) {
+        print('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
         emit(LibraryError(
           message: e.toString(),
           isOffline: true,
