@@ -84,23 +84,6 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
-  }
-  
-  // Méthode publique pour changer la langue depuis l'extérieur
-  static void changeLocale(Locale locale) {
-    // Cette méthode sera appelée depuis le Profile
-    // On va utiliser un mécanisme de callback via un GlobalKey
-    final context = navigatorKey.currentContext;
-    if (context != null) {
-      final appState = context.findAncestorStateOfType<_MyAppState>();
-      appState?._setLocale(locale);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(

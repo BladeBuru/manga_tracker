@@ -99,30 +99,6 @@ class _LateDetailViewState extends State<LateDetailView> {
             .toList() ??
             [];
 
-    Future<void> handleAddToLibrary(String mangaId) async {
-      // Utiliser le callback BLoC si disponible
-      if (widget.onAddToLibrary != null) {
-        widget.onAddToLibrary!();
-        setState(() {
-          _currentReadCount = 0;
-        });
-        return;
-      }
-      
-      // Sinon, fallback sur l'ancien comportement
-      bool success = await _libraryService.addMangaToLibrary(int.parse(mangaId));
-      if (success && mounted) {
-        setState(() {
-          _currentReadCount = 0;
-        });
-        final l10n = AppLocalizations.of(context);
-        _notifier.success(l10n?.mangaAddedToLibrarySuccess(widget.mangaTitle) ?? '${widget.mangaTitle} a été ajouté à la bibliothèque !');
-      } else if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        _notifier.error(l10n?.errorAddingToLibrary ?? 'Erreur lors de l\'ajout à la bibliothèque.');
-      }
-    }
-
     Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
       if (_isSaving) return;
       setState(() => _isSaving = true);

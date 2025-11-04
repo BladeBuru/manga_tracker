@@ -15,7 +15,6 @@ class LibraryService {
   final HttpService _http = getIt<HttpService>();
   late final ConnectivityService _connectivityService;
   late final OfflineCacheService _cacheService;
-  List<MangaQuickViewDto>? _userLibraryCache;
   
   Future<LibraryService> init() async {
     _connectivityService = getIt<ConnectivityService>();
