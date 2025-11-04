@@ -4,6 +4,7 @@ import 'package:mangatracker/core/storage/services/storage.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
+import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 
 /// Actions hors ligne à synchroniser
 class OfflineAction {
@@ -102,6 +103,7 @@ class OfflineCacheService {
   static const String _mangaDetailCacheKey = 'cached_manga_detail_';
   static const String _homePageCacheKey = 'cached_homepage';
   static const String _searchCacheKey = 'cached_search_';
+  static const String _userInfoCacheKey = 'cached_user_info';
   static const String _offlineQueueKey = 'offline_queue';
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
@@ -206,6 +208,29 @@ class OfflineCacheService {
     }
     return null;
   }
+
+  /// Cache les informations utilisateur
+  Future<void> cacheUserInformation(UserInformationDto userInfo) async {
+    try {
+      await _storage.writeSecureData(_userInfoCacheKey, jsonEncode(userInfo.toJson()));
+      await _updateCacheMetadata('user_info', DateTime.now());
+    } catch (e) {
+      print('Erreur lors du cache des informations utilisateur: $e');
+    }
+  }
+
+  /// Récupère les informations utilisateur depuis le cache
+  Future<UserInformationDto?> getCachedUserInformation() async {
+    try {
+      final cached = await _storage.readSecureData(_userInfoCacheKey);
+      if (cached != null) {
+        return UserInformationDto.fromJson(jsonDecode(cached));
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération du cache informations utilisateur: $e');
+    }
+    return null;
+  }
   
   /// Ajoute une action à la queue hors ligne
   Future<void> queueOfflineAction(OfflineAction action) async {
@@ -285,6 +310,7 @@ class OfflineCacheService {
     try {
       await _storage.deleteSecureData(_libraryCacheKey);
       await _storage.deleteSecureData(_homePageCacheKey);
+      await _storage.deleteSecureData(_userInfoCacheKey);
       await _storage.deleteSecureData(_offlineQueueKey);
       await _storage.deleteSecureData(_lastSyncKey);
       await _storage.deleteSecureData(_cacheMetadataKey);

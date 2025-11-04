@@ -7,4 +7,11 @@ class UserInformationDto {
   factory UserInformationDto.fromJson(Map<String, dynamic> json) {
     return UserInformationDto(email: json['email'], username: json['username']);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'username': username,
+    };
+  }
 }
