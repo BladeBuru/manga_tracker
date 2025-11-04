@@ -13,6 +13,7 @@ import '../widgets/square_tile.dart';
 import '../../home/views/bottom_navbar.dart';
 import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -42,13 +43,14 @@ class _LoginViewState extends State<LoginView> {
 
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context);
     try {
       payload = await authService.attemptLogIn(email, password);
     } on InvalidCredentialsException {
-      notifier.error( 'Identifiants invalides');
+      notifier.error(l10n?.invalidCredentials ?? 'Identifiants invalides');
       return;
     } on Exception {
-      notifier.error( 'Erreur inconnue');
+      notifier.error(l10n?.unknownError ?? 'Erreur inconnue');
     }
 
     final List<StorageItem> tokens = <StorageItem>[
@@ -96,62 +98,83 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 20),
 
-                    Text(
-                      "Content de vous revoir",
-                      style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                    ),
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Column(
+                          children: [
+                            Text(
+                              l10n?.welcomeBack ?? "Content de vous revoir",
+                              style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                            ),
 
-                    //const SizedBox(height: 20),
-                    Text(
-                      UserHelper.getRandomCallname(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xff1f1f39),
-                      ),
+                            //const SizedBox(height: 20),
+                            Text(
+                              UserHelper.getRandomCallname(),
+                              style: GoogleFonts.poppins(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xff1f1f39),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 50),
 
-                    //Login texte field
-                    IntputTexteField(
-                      controller: _emailController,
-                      hintText: "Adresse e-mail",
-                      obscureText: false,
-                      autofillHints: const [AutofillHints.email],
-                      validator: validatorService.validateEmailAddress,
-                        keyboardType:  TextInputType.emailAddress
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Column(
+                          children: [
+                            //Login texte field
+                            IntputTexteField(
+                              controller: _emailController,
+                              hintText: l10n?.emailAddress ?? "Adresse e-mail",
+                              obscureText: false,
+                              autofillHints: const [AutofillHints.email],
+                              validator: validatorService.validateEmailAddress,
+                              keyboardType: TextInputType.emailAddress
+                            ),
+
+                            const SizedBox(height: 15),
+
+                            //Password texte field
+                            IntputTexteField(
+                              controller: _passwordControler,
+                              hintText: l10n?.password ?? "Mot de passe",
+                              obscureText: true,
+                              autofillHints: const [AutofillHints.password],
+                              validator: validatorService.noValidation,
+                            ),
+
+                            const SizedBox(height: 15),
+
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    l10n?.forgotPassword ?? "Mot de passe oublié ?",
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 30),
+
+                            AuthButton(
+                              text: l10n?.login ?? "Se connecter",
+                              onTap: onPressed,
+                            ),
+                          ],
+                        );
+                      },
                     ),
-
-                    const SizedBox(height: 15),
-
-                    //Password texte field
-                    IntputTexteField(
-                      controller: _passwordControler,
-                      hintText: "Mot de passe",
-                      obscureText: true,
-                      autofillHints: const [AutofillHints.password],
-                      validator: validatorService.noValidation,
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Mot de passe oublié ?",
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    AuthButton(text: "Se connecter", onTap: onPressed),
                     const SizedBox(height: 15),
 
                     TextButton.icon(
@@ -164,11 +187,20 @@ class _LoginViewState extends State<LoginView> {
                             MaterialPageRoute(builder: (_) => const BottomNavbar()),
                           );
                         } else {
-                          notifier.error( 'Échec de l’authentification biométrique');
+                          final l10n = AppLocalizations.of(context);
+                          notifier.error(l10n?.biometricAuthFailed ?? 'Echec de l\'authentification biometrique');
                         }
                       },
                       icon: const Icon(Icons.fingerprint, color: Colors.grey),
-                      label: const Text("Connexion biométrique", style: TextStyle(color: Colors.grey)),
+                      label: Builder(
+                        builder: (context) {
+                          final l10n = AppLocalizations.of(context);
+                          return Text(
+                            l10n?.biometricAuth ?? "Connexion biométrique",
+                            style: const TextStyle(color: Colors.grey),
+                          );
+                        },
+                      ),
                     ),
 
                     const SizedBox(height: 40),
@@ -187,10 +219,10 @@ class _LoginViewState extends State<LoginView> {
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,
                             ),
-                            child: Text(
-                              'Ou',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
+                          child: const Text(
+                            'Ou', // Ce texte peut rester tel quel, c'est un séparateur
+                            style: TextStyle(color: Colors.grey),
+                          ),
                           ),
                           Expanded(
                             child: Divider(
@@ -215,24 +247,29 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 40),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Vous n'avez pas de compte ?",
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(width: 3),
-                        GestureDetector(
-                          onTap: () {
-                            redirectToRegisterPage();
-                          },
-                          child: Text(
-                            "S'inscrire",
-                            style: TextStyle(color: Colors.red[400]),
-                          ),
-                        ),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              l10n?.noAccount ?? "Vous n'avez pas de compte ?",
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                            const SizedBox(width: 3),
+                            GestureDetector(
+                              onTap: () {
+                                redirectToRegisterPage();
+                              },
+                              child: Text(
+                                l10n?.signUp ?? "S'inscrire",
+                                style: TextStyle(color: Colors.red[400]),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 20.0),

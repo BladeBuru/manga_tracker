@@ -8,6 +8,7 @@ import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Vue réactive de la bibliothèque utilisant BLoC
 class LibraryBlocView extends StatefulWidget {
@@ -42,7 +43,12 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ma Bibliothèque'),
+        title: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Text(l10n?.library ?? 'Ma Bibliothèque');
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -85,7 +91,12 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
       return _buildActionInProgress(state);
     }
     
-    return const Center(child: Text('État inconnu'));
+    return Builder(
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return Center(child: Text(l10n?.error ?? 'État inconnu'));
+      },
+    );
   }
 
   Widget _buildErrorState(LibraryError state) {
@@ -99,16 +110,26 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             color: state.isOffline ? Colors.orange : Colors.red,
           ),
           const SizedBox(height: 16),
-          Text(
-            state.isOffline 
-                ? 'Mode hors ligne - Aucune donnée en cache'
-                : 'Erreur: ${state.message}',
-            textAlign: TextAlign.center,
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return Text(
+                state.isOffline 
+                    ? (l10n?.offlineModeNoCache ?? 'Mode hors ligne - Aucune donnée en cache')
+                    : '${l10n?.error ?? "Erreur"}: ${state.message}',
+                textAlign: TextAlign.center,
+              );
+            },
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _libraryBloc.add(const LoadLibrary()),
-            child: const Text('Réessayer'),
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return ElevatedButton(
+                onPressed: () => _libraryBloc.add(const LoadLibrary()),
+                child: Text(l10n?.retry ?? 'Réessayer'),
+              );
+            },
           ),
         ],
       ),
@@ -129,17 +150,22 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
               border: Border.all(color: Colors.orange),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Row(
-              children: [
-                Icon(Icons.cloud_off, color: Colors.orange, size: 20),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Mode hors ligne - Action en queue',
-                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context);
+                return Row(
+                  children: [
+                    const Icon(Icons.cloud_off, color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n?.offlineModeActionQueued ?? 'Mode hors ligne - Action en queue',
+                        style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         
@@ -201,9 +227,17 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                 const Icon(Icons.cloud_off, color: Colors.orange, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Mode hors ligne - Données en cache${state.pendingActions > 0 ? ' (${state.pendingActions} actions en attente)' : ''}',
-                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      final offlineText = state.pendingActions > 0
+                          ? l10n?.pendingActions(state.pendingActions) ?? 'Mode hors ligne - Données en cache (${state.pendingActions} actions en attente)'
+                          : l10n?.offlineModeCached ?? 'Mode hors ligne - Données en cache';
+                      return Text(
+                        offlineText,
+                        style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -233,29 +267,43 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           final items = entry.value;
           final isExpanded = _isExpanded[status] ?? true;
 
-          return ExpansionTile(
-            title: Text(status.label),
-            initiallyExpanded: isExpanded,
-            onExpansionChanged: (value) {
-              setState(() {
-                _isExpanded[status] = value;
-              });
+          return Builder(
+            builder: (context) {
+              return ExpansionTile(
+                title: Text(status.getLabel(context)),
+                initiallyExpanded: isExpanded,
+                onExpansionChanged: (value) {
+                  setState(() {
+                    _isExpanded[status] = value;
+                  });
+                },
+                children: items.isNotEmpty
+                    ? items.map((manga) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: MangaRow(
+                            muId: manga.muId.toString(),
+                            mangaName: manga.title,
+                            mangaAuthor: manga.year,
+                            lastChapter: manga.totalChapters,
+                            readChapter: manga.readChapters,
+                            mediumImgPath: manga.mediumCoverUrl,
+                            rating: manga.rating,
+                            onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
+                          ),
+                        )).toList()
+                    : [
+                        Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context);
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(l10n?.noData ?? "Aucun manga."),
+                            );
+                          },
+                        ),
+                      ],
+              );
             },
-            children: items.isNotEmpty
-                ? items.map((manga) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: MangaRow(
-                muId: manga.muId.toString(),
-                mangaName: manga.title,
-                mangaAuthor: manga.year,
-                lastChapter: manga.totalChapters,
-                readChapter: manga.readChapters,
-                mediumImgPath: manga.mediumCoverUrl,
-                rating: manga.rating,
-                onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
-              ),
-            )).toList()
-                : [const Padding(padding: EdgeInsets.all(8.0), child: Text("Aucun manga."))],
           );
         }).toList(),
       ],

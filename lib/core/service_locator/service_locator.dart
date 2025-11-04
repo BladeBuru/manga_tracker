@@ -14,10 +14,12 @@ import '../services/connectivity_service.dart';
 import '../services/offline_cache_service.dart';
 import '../services/sync_service.dart';
 import '../services/cache_helper_service.dart';
+import '../services/language_service.dart';
 import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
 import '../../features/manga/bloc/detail_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -78,6 +80,13 @@ void setupServiceLocator() {
   getIt.registerSingletonWithDependencies<CacheHelperService>(
       () => CacheHelperService(),
       dependsOn: [ConnectivityService, OfflineCacheService]);
+  
+  // Service de langue
+  getIt.registerSingletonAsync<LanguageService>(
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        return LanguageService(prefs);
+      });
   
   // BLoCs pour la gestion d'état réactive
   getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());

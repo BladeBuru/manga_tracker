@@ -10,6 +10,7 @@ import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import '../../../core/components/filter_button.dart';
 import '../../../core/components/welcome_header.dart';
 import '../../auth/views/login.view.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Vue réactive de la page d'accueil utilisant BLoC - Design original conservé
 class HomePageBlocView extends StatefulWidget {
@@ -65,15 +66,20 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
                 _buildOfflineIndicator(state),
 
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Text(
-                      'Tendances',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.add_circle_outline),
-                  ],
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Row(
+                      children: [
+                        Text(
+                          l10n?.trending ?? 'Tendances',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.add_circle_outline),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -127,9 +133,17 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
           const Icon(Icons.cloud_off, color: Colors.orange, size: 20),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              'Mode hors ligne - Données en cache${pendingActions > 0 ? ' ($pendingActions actions en attente)' : ''}',
-              style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context);
+                final offlineText = pendingActions > 0
+                    ? l10n?.pendingActions(pendingActions) ?? 'Mode hors ligne - Données en cache ($pendingActions actions en attente)'
+                    : l10n?.offlineModeCached ?? 'Mode hors ligne - Données en cache';
+                return Text(
+                  offlineText,
+                  style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                );
+              },
             ),
           ),
         ],
@@ -185,22 +199,31 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          FilterButton(
-            label: 'Tous',
-            selected: indexButtonBar == 0,
-            onPressed: () => setState(() => indexButtonBar = 0),
-          ),
-          const SizedBox(width: 10),
-          FilterButton(
-            label: 'Populaires',
-            selected: indexButtonBar == 1,
-            onPressed: () => setState(() => indexButtonBar = 1),
-          ),
-          const SizedBox(width: 10),
-          FilterButton(
-            label: 'Nouveautés',
-            selected: indexButtonBar == 2,
-            onPressed: () => setState(() => indexButtonBar = 2),
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return Row(
+                children: [
+                  FilterButton(
+                    label: l10n?.all ?? 'Tous',
+                    selected: indexButtonBar == 0,
+                    onPressed: () => setState(() => indexButtonBar = 0),
+                  ),
+                  const SizedBox(width: 10),
+                  FilterButton(
+                    label: l10n?.popular ?? 'Populaires',
+                    selected: indexButtonBar == 1,
+                    onPressed: () => setState(() => indexButtonBar = 1),
+                  ),
+                  const SizedBox(width: 10),
+                  FilterButton(
+                    label: l10n?.newReleases ?? 'Nouveautés',
+                    selected: indexButtonBar == 2,
+                    onPressed: () => setState(() => indexButtonBar = 2),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

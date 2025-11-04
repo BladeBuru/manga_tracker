@@ -5,6 +5,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class ReaderWebView extends StatefulWidget {
   final int muId;
@@ -74,7 +75,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     final ok = await _library.saveChapterProgress(widget.muId, chapter);
     if (ok) {
       _lastCommitted = chapter;
-      _notifier.info("Chapitre $chapter enregistré");
+      final l10n = AppLocalizations.of(context);
+      _notifier.info(l10n?.chapterSaved(chapter.toString()) ?? "Chapitre $chapter enregistré");
     }
   }
 

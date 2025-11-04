@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 import '../../home/widgets/homepage_manga_list.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
@@ -22,8 +23,13 @@ class _RechercheState extends State<Search> {
   Timer? searchOnStoppedTyping;
   final Color themePage = const Color(0xffe0234f);
   int indexButtonBar = 0;
-  late Widget childWidget = const Center(
-    child: Text("Rien à afficher pour le moment !"),
+  late Widget childWidget = Builder(
+    builder: (context) {
+      final l10n = AppLocalizations.of(context);
+      return Center(
+        child: Text(l10n?.noData ?? "Rien à afficher pour le moment !"),
+      );
+    },
   );
 
   void doSearchManga() async {
@@ -75,14 +81,19 @@ class _RechercheState extends State<Search> {
                     ),
                   ),
                   Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      onChanged: _onChangeHandler,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Rechercher Mangas, Manwhas, ...',
-                        hintStyle: TextStyle(color: Color(0xffb8b8d2)),
-                      ),
+                    child: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return TextField(
+                          controller: searchController,
+                          onChanged: _onChangeHandler,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: l10n?.searchPlaceholder ?? 'Rechercher Mangas, Manwhas, ...',
+                            hintStyle: const TextStyle(color: Color(0xffb8b8d2)),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 10),
