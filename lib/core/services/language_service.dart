@@ -39,9 +39,14 @@ class LanguageService {
     return [
       const Locale('fr', ''),
       const Locale('en', ''),
+      const Locale('de', ''),
+      const Locale('ja', ''),
+      const Locale('ko', ''),
+      const Locale('pt', ''),
+      const Locale('es', ''),
     ];
   }
-  
+
   /// Récupère le nom de la langue pour l'affichage
   String getLanguageName(Locale locale, BuildContext context) {
     // Utiliser les traductions si disponibles, sinon les noms par défaut
@@ -50,6 +55,16 @@ class LanguageService {
         return 'Français';
       case 'en':
         return 'English';
+      case 'de':
+        return 'Deutsch';
+      case 'ja':
+        return '日本語';
+      case 'ko':
+        return '한국어';
+      case 'pt':
+        return 'Português';
+      case 'es':
+        return 'Español';
       default:
         return locale.languageCode;
     }

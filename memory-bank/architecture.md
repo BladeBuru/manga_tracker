@@ -172,7 +172,8 @@ Service centralisé pour toutes les requêtes HTTP :
 - **AuthService** : Authentification (login, register, refresh token)
 - **MangaService** : Récupération des données mangas (détails, recherche, recommandations)
 - **LibraryService** : Gestion de la bibliothèque (ajout, suppression, statut, progression)
-- **UserService** : Gestion du profil utilisateur (infos, changement de mot de passe, suppression)
+- **UserService** : Gestion du profil utilisateur (infos avec cache, changement de mot de passe, suppression)
+- **LanguageService** : Gestion de la langue de l'application (persistance, changement dynamique)
 
 ---
 
@@ -194,6 +195,7 @@ L'application fonctionne en mode **offline-first** :
   - Détails de manga (`cached_manga_detail_<muId>`)
   - Page d'accueil (`cached_homepage`)
   - Résultats de recherche (`cached_search_<query>`)
+  - Informations utilisateur (`cached_user_info`) - cache de 7 jours avec mise à jour en arrière-plan
 - **Queue d'actions offline** (`offline_queue`) :
   - Ajout/suppression de manga
   - Mise à jour du statut de lecture

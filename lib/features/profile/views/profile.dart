@@ -188,6 +188,21 @@ class _ProfileState extends State<Profile> {
       case 'en':
         assetPath = 'assets/images/flags/uk.png';
         break;
+      case 'de':
+        assetPath = 'assets/images/flags/de.png';
+        break;
+      case 'ja':
+        assetPath = 'assets/images/flags/jp.png';
+        break;
+      case 'ko':
+        assetPath = 'assets/images/flags/kr.png';
+        break;
+      case 'pt':
+        assetPath = 'assets/images/flags/pt.png';
+        break;
+      case 'es':
+        assetPath = 'assets/images/flags/sp.png';
+        break;
       default:
         return const SizedBox.shrink();
     }

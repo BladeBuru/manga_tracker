@@ -64,10 +64,11 @@
   - Cache automatique des images pour le mode offline
   - Base de données : `sqflite` (^2.3.3+1) - utilisée par flutter_cache_manager
 - **Services offline** :
-  - `OfflineCacheService` : Gestion du cache des données (bibliothèque, détails, recherche)
+  - `OfflineCacheService` : Gestion du cache des données (bibliothèque, détails, recherche, informations utilisateur)
   - `CacheHelperService` : Helper pour faciliter l'utilisation du cache avec fallback
   - `SyncService` : Synchronisation automatique des actions hors ligne
   - Queue d'actions offline avec retry automatique
+  - Cache des informations utilisateur (7 jours) avec mise à jour en arrière-plan
 
 ### Authentification
 - **Biométrie** : `local_auth` (^2.1.6)
@@ -131,9 +132,12 @@
   - Publication GitHub Release avec changelog
 
 ### Internationalisation
-- **i18n** : `flutter_localizations` (SDK) + `intl`
-  - Préparé pour la traduction
-  - Non activé actuellement
+- **i18n** : `flutter_localizations` (SDK) + `intl` (^0.20.2)
+  - Support complet de 7 langues : Français (FR), Anglais (EN), Allemand (DE), Japonais (JA), Coréen (KO), Portugais (PT), Espagnol (ES)
+  - Fichiers ARB dans `lib/l10n/` pour chaque langue
+  - `LanguageService` pour la gestion et la persistance de la préférence de langue
+  - Sélecteur de langue dans le profil utilisateur avec drapeaux
+  - Changement de langue dynamique sans redémarrage de l'application
 
 ### Notifications
 - **Push notifications** : `firebase_messaging` - prévu mais non implémenté actuellement
@@ -168,10 +172,11 @@
 - `AuthService` : Authentification
 - `MangaService` : Récupération des données mangas
 - `LibraryService` : Gestion de la bibliothèque utilisateur
-- `UserService` : Gestion du profil utilisateur
+- `UserService` : Gestion du profil utilisateur (avec cache des informations utilisateur)
+- `LanguageService` : Gestion de la langue de l'application et persistance
 - `AppUpdateService` : Gestion des mises à jour et changelog
 - `ConnectivityService` : Détection de la connectivité
-- `OfflineCacheService` : Cache offline
+- `OfflineCacheService` : Cache offline (bibliothèque, détails, recherche, profil)
 - `SyncService` : Synchronisation des actions offline
 - `CacheHelperService` : Helper pour le cache avec fallback
 

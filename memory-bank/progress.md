@@ -90,32 +90,34 @@
 
 ---
 
-### 🌐 Mode hors ligne (95% complété)
+### 🌐 Mode hors ligne (100% complété)
 
 | Fonctionnalité | Statut | Détails |
 |----------------|--------|---------|
-| Cache des données | ✔️ **Complété** | Bibliothèque, détails, page d'accueil, recherche |
+| Cache des données | ✔️ **Complété** | Bibliothèque, détails, page d'accueil, recherche, informations utilisateur |
 | Queue d'actions offline | ✔️ **Complété** | Toutes les actions sont mises en file d'attente |
 | Synchronisation automatique | ✔️ **Complété** | `SyncService` avec retry automatique |
 | Indicateurs visuels | ✔️ **Complété** | Badges orange avec nombre d'actions en attente |
 | Cache d'images | ✔️ **Complété** | `cached_network_image` avec `sqflite` |
+| Cache du profil utilisateur | ✔️ **Complété** | Cache de 7 jours avec mise à jour en arrière-plan |
 
 **Détails techniques** :
-- ✅ `OfflineCacheService` pour le cache des données
+- ✅ `OfflineCacheService` pour le cache des données (incluant profil utilisateur)
 - ✅ `CacheHelperService` avec fallback automatique
 - ✅ `SyncService` pour la synchronisation à la reconnexion
 - ✅ Détection du mode offline basée sur les erreurs réseau
 - ✅ Gestion des échecs avec retry automatique
 - ✅ Cache d'images avec `cached_network_image`
+- ✅ `UserService` avec cache des informations utilisateur (7 jours)
 
 ---
 
-### 🎨 Frontend et UX (80% complété)
+### 🎨 Frontend et UX (90% complété)
 
 | Fonctionnalité | Statut | Détails |
 |----------------|--------|---------|
 | Vue de connexion | ✔️ **Complété** | `LoginView` avec validation |
-| Page compte utilisateur | ✔️ **Complété** | `Profile` modernisée avec Material 3 |
+| Page compte utilisateur | ✔️ **Complété** | `Profile` modernisée avec Material 3, cache intégré |
 | Page détail manga | ✔️ **Complété** | `DetailBlocView` avec toutes les fonctionnalités |
 | Page tendances/nouveautés | ✔️ **Complété** | `HomePageBlocView` avec filtres |
 | Barre de navigation | ✔️ **Complété** | `BottomNavbar` avec PageView |
@@ -123,14 +125,16 @@
 | Recherche de mangas | ✔️ **Complété** | `Search` avec résultats |
 | Calendrier des sorties | 🔴 **À concevoir** | Backend à développer |
 | Affichage des scores LightFM | 🔴 **En attente** | Intégration modèle ML |
+| Internationalisation | ✔️ **Complété** | Support de 7 langues (FR, EN, DE, JA, KO, PT, ES) |
 
 **Détails techniques** :
 - ✅ Architecture BLoC pour toutes les pages principales
 - ✅ Composants réutilisables (ProfileOptionTile, ProfileSection, etc.)
 - ✅ Thème Material 3 partiellement implémenté
 - ✅ Storybook (Dashbook) pour la documentation des composants
+- ✅ Internationalisation complète avec `LanguageService` et sélecteur de langue
+- ✅ Tous les textes de l'application traduits avec fichiers ARB
 - 🔴 Thème sombre à activer
-- 🔴 Internationalisation à finaliser
 
 ---
 

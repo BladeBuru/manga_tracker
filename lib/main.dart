@@ -108,6 +108,11 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: const [
         Locale('fr', ''),
         Locale('en', ''),
+        Locale('de', ''),
+        Locale('ja', ''),
+        Locale('ko', ''),
+        Locale('pt', ''),
+        Locale('es', ''),
       ],
       home: const StartupPage(),
       scrollBehavior: ScrollConfiguration.of(context).copyWith(
