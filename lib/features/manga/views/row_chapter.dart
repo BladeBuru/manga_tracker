@@ -53,13 +53,20 @@ class RowChapter extends StatelessWidget {
                 child: SizedBox(
                   height: 50,
                   child: Align(
-                    alignment: Alignment.topLeft,
+                    alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 15, left: 30),
+                      padding: const EdgeInsets.only(left: 16),
                       child: Builder(
                         builder: (context) {
                           final l10n = AppLocalizations.of(context);
-                          return Text('${l10n?.chapter ?? "Chapter"} $chapter');
+                          return Text(
+                            l10n?.chapter ?? "Chapter",
+                            style: GoogleFonts.poppins(
+                              textStyle: const TextStyle(fontSize: 16),
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey[600],
+                            ),
+                          );
                         },
                       ),
                     ),
