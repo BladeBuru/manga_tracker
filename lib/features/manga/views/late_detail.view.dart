@@ -8,6 +8,7 @@ import '../dto/author.dto.dart';
 import 'row_chapter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -98,28 +99,6 @@ class _LateDetailViewState extends State<LateDetailView> {
             .toList() ??
             [];
 
-    Future<void> handleAddToLibrary(String mangaId) async {
-      // Utiliser le callback BLoC si disponible
-      if (widget.onAddToLibrary != null) {
-        widget.onAddToLibrary!();
-        setState(() {
-          _currentReadCount = 0;
-        });
-        return;
-      }
-      
-      // Sinon, fallback sur l'ancien comportement
-      bool success = await _libraryService.addMangaToLibrary(int.parse(mangaId));
-      if (success && mounted) {
-        setState(() {
-          _currentReadCount = 0;
-        });
-        _notifier.success('${widget.mangaTitle} a été ajouté à la bibliothèque !');
-      } else if (mounted) {
-        _notifier.error('Erreur lors de l\'ajout à la bibliothèque.');
-      }
-    }
-
     Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
       if (_isSaving) return;
       setState(() => _isSaving = true);
@@ -166,7 +145,8 @@ class _LateDetailViewState extends State<LateDetailView> {
 
       if (!success && mounted) {
         setState(() => _isSaving = false);
-        _notifier.error('Erreur lors de la mise à jour du chapitre.');
+        final l10n = AppLocalizations.of(context);
+        _notifier.error(l10n?.errorUpdatingChapter ?? 'Erreur lors de la mise à jour du chapitre.');
         return;
       }
 
@@ -176,11 +156,12 @@ class _LateDetailViewState extends State<LateDetailView> {
           _isSaving = false;
         });
 
+        final l10n = AppLocalizations.of(context);
         final message = newCount == 0
-            ? 'Manga retiré de la bibliothèque'
-            : 'Chapitre $chapterNumber ${_currentReadCount! >= chapterNumber
-            ? 'lu'
-            : 'non lu'}';
+            ? (l10n?.mangaRemovedFromLibrary ?? 'Manga retiré de la bibliothèque')
+            : '${l10n?.chapter ?? "Chapitre"} $chapterNumber ${_currentReadCount! >= chapterNumber
+            ? (l10n?.chapterRead ?? 'lu')
+            : (l10n?.chapterUnread ?? 'non lu')}';
 
         _notifier.info(message);
       }
@@ -191,7 +172,8 @@ class _LateDetailViewState extends State<LateDetailView> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        _notifier.error("Impossible d'ouvrir le lien : $url");
+        final l10n = AppLocalizations.of(context);
+        _notifier.error(l10n?.cannotOpenLink(url) ?? "Impossible d'ouvrir le lien : $url");
       }
     }
 
@@ -212,13 +194,18 @@ class _LateDetailViewState extends State<LateDetailView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text(
-                    '${widget.mangaTotalChapters ?? 0} Chapitres',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.chaptersCount(widget.mangaTotalChapters?.toInt() ?? 0) ?? '${widget.mangaTotalChapters ?? 0} ${l10n?.chapters ?? "Chapitres"}',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
                   Wrap(
                     children: [
@@ -244,31 +231,36 @@ class _LateDetailViewState extends State<LateDetailView> {
             ),
 
             // Statut & Année sur la même ligne
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Flexible(
-                    flex: 1,
-                    child: Text(
-                      'Statut : ${widget.isCompleted == true
-                          ? "Terminé"
-                          : "En cours"}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
+            Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: Text(
+                          '${l10n?.status ?? "Statut"} : ${widget.isCompleted == true
+                              ? (l10n?.completed ?? "Terminé")
+                              : (l10n?.reading ?? "En cours")}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Flexible(
+                        flex: 1,
+                        child: Text(
+                          '${l10n?.year ?? "Année"} : ${widget.year}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
                   ),
-                  Flexible(
-                    flex: 1,
-                    child: Text(
-                      'Année : ${widget.year}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
 
             // Auteur & Artiste sur la même ligne
@@ -288,12 +280,17 @@ class _LateDetailViewState extends State<LateDetailView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Auteur :',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final l10n = AppLocalizations.of(context);
+                                return Text(
+                                  '${l10n?.author ?? "Auteur"} :',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                             ...authors.map(
                                   (n) => Text(n, textAlign: TextAlign.center),
@@ -307,12 +304,17 @@ class _LateDetailViewState extends State<LateDetailView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Artiste :',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final l10n = AppLocalizations.of(context);
+                                return Text(
+                                  '${l10n?.artist ?? "Artiste"} :',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                             ...artists.map(
                                   (n) => Text(n, textAlign: TextAlign.center),
@@ -331,12 +333,17 @@ class _LateDetailViewState extends State<LateDetailView> {
               ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Synopsis',
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(fontSize: 18),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.synopsis ?? 'Synopsis',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(fontSize: 18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Padding(
@@ -375,7 +382,14 @@ class _LateDetailViewState extends State<LateDetailView> {
                   child: TextButton.icon(
                     onPressed: () => setState(() => _isExpanded = !_isExpanded),
                     icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-                    label: Text(_isExpanded ? 'Voir moins' : 'Voir plus'),
+                    label: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Text(_isExpanded 
+                          ? (l10n?.seeLess ?? 'Voir moins') 
+                          : (l10n?.seeMore ?? 'Voir plus'));
+                      },
+                    ),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: EdgeInsets.zero,
@@ -391,14 +405,19 @@ class _LateDetailViewState extends State<LateDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '$total chapitres',
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 10),
                   Column(

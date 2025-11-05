@@ -73,6 +73,11 @@ dependencies:
   cached_network_image: ^3.3.1
   # Base de données utilisée par flutter_cache_manager
   sqflite: ^2.3.3+1
+  
+  # Internationalisation
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 
 
@@ -98,6 +103,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -108,6 +114,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/placeholders/
+    - assets/images/flags/
     - assets/env/.env.development
     - assets/env/.env.production
 

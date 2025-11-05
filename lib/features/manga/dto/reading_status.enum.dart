@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 // On importe vos couleurs pour pouvoir les utiliser
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 enum ReadingStatus {
   reading,
@@ -14,6 +15,21 @@ enum ReadingStatus {
 extension ReadingStatusExtension on ReadingStatus {
   String get value => toString().split('.').last;
 
+  String getLabel(BuildContext? context) {
+    final l10n = context != null ? AppLocalizations.of(context) : null;
+    switch (this) {
+      case ReadingStatus.reading:
+        return l10n?.reading ?? 'En cours';
+      case ReadingStatus.readLater:
+        return l10n?.readLater ?? 'À lire plus tard';
+      case ReadingStatus.caughtUp:
+        return l10n?.upToDate ?? 'À jour';
+      case ReadingStatus.completed:
+        return l10n?.completed ?? 'Terminé';
+    }
+  }
+
+  // Méthode de compatibilité pour les anciens usages
   String get label {
     switch (this) {
       case ReadingStatus.reading:

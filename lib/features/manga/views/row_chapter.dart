@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class RowChapter extends StatelessWidget {
   final String line;
@@ -55,7 +56,12 @@ class RowChapter extends StatelessWidget {
                     alignment: Alignment.topLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 20, left: 30),
-                      child: Text('Chapter $chapter'),
+                      child: Builder(
+                        builder: (context) {
+                          final l10n = AppLocalizations.of(context);
+                          return Text('${l10n?.chapter ?? "Chapter"} $chapter');
+                        },
+                      ),
                     ),
                   ),
                 ),

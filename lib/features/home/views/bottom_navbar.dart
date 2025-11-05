@@ -7,6 +7,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
 import 'package:mangatracker/features/library/views/library_bloc_view.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class BottomNavbar extends StatefulWidget {
   const BottomNavbar({super.key});
@@ -29,6 +30,8 @@ class BottomNavbarState extends State<BottomNavbar> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: PageView(
@@ -69,28 +72,28 @@ class BottomNavbarState extends State<BottomNavbar> {
               Icons.home,
               color: currntIndex == 0 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
-            label: 'Accueil',
+            label: l10n?.home ?? 'Accueil',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.book,
               color: currntIndex == 1 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
-            label: 'Bibliothèque',
+            label: l10n?.library ?? 'Bibliothèque',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
               color: currntIndex == 2 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
-            label: 'Recherche',
+            label: l10n?.search ?? 'Recherche',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.person,
               color: currntIndex == 3 ? Theme.of(context).colorScheme.primary : unselectedColor,
             ),
-            label: 'Mon compte',
+            label: l10n?.myAccount ?? 'Mon compte',
           ),
         ],
       ),

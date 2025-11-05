@@ -19,6 +19,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import '../../auth/views/login.view.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -132,12 +133,20 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   color: Colors.orange,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.cloud_off, size: 16, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text('Hors ligne', style: TextStyle(color: Colors.white, fontSize: 12)),
+                    const Icon(Icons.cloud_off, size: 16, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Text(
+                          l10n?.offlineMode ?? 'Hors ligne',
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        );
+                      },
+                    ),
                   ],
                 ),
               );
@@ -188,16 +197,26 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       color: state.isOffline ? Colors.orange : Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      state.isOffline 
-                          ? 'Mode hors ligne - Aucune donnée en cache'
-                          : 'Erreur: ${state.message}',
-                      textAlign: TextAlign.center,
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Text(
+                          state.isOffline 
+                              ? (l10n?.offlineModeNoCache ?? 'Mode hors ligne - Aucune donnée en cache')
+                              : '${l10n?.error ?? "Erreur"}: ${state.message}',
+                          textAlign: TextAlign.center,
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context.read<DetailBloc>().add(LoadMangaDetail(widget.muId)),
-                      child: const Text('Réessayer'),
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return ElevatedButton(
+                          onPressed: () => context.read<DetailBloc>().add(LoadMangaDetail(widget.muId)),
+                          child: Text(l10n?.retry ?? 'Réessayer'),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -335,10 +354,16 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 height: double.infinity,
                 child: ElevatedButton.icon(
                   icon: Icon(ReadingStatus.readLater.icon),
-                  label: const Text('Ajouter à "À lire plus tard"'),
+                  label: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(l10n?.addToLibrary ?? 'Ajouter à "À lire plus tard"');
+                    },
+                  ),
                   onPressed: () {
+                    final l10n = AppLocalizations.of(context);
                     context.read<DetailBloc>().add(AddToLibrary(muId));
-                    widget.notifier.info("Manga ajouté à 'À lire plus tard'");
+                    widget.notifier.info(l10n?.addToLibrary ?? "Manga ajouté à 'À lire plus tard'");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
@@ -376,7 +401,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         ),
         onPressed: _addCustomLink,
         icon: const Icon(Icons.link_off),
-        label: const Text('Ajouter un lien', style: TextStyle(fontSize: 17)),
+        label: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Text(
+              l10n?.addLink ?? 'Ajouter un lien',
+              style: const TextStyle(fontSize: 17),
+            );
+          },
+        ),
       );
 
       return Container(
@@ -454,7 +487,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 icon: const Icon(Icons.more_vert, size: 20),
                 color: Theme.of(context).colorScheme.onPrimary,
                 onPressed: _showCustomLinkMenu,
-                tooltip: 'Gérer le lien',
+                tooltip: (() {
+                  final l10n = AppLocalizations.of(context);
+                  return l10n?.manageLink ?? 'Gérer le lien';
+                })(),
               ),
             ),
           ),
@@ -496,7 +532,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       width: 52,
       height: double.infinity,
       child: Tooltip(
-        message: 'Recommandations',
+        message: (() {
+          final l10n = AppLocalizations.of(context);
+          return l10n?.recommendations ?? 'Recommandations';
+        })(),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
@@ -514,14 +553,26 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                title: const Text('Mangas recommandés'),
+                title: Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Text(l10n?.recommendedMangas ?? 'Mangas recommandés');
+                  },
+                ),
                 content: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,
                   height: 200,
                   child: (_mangaRecommendationsCache?.isEmpty ?? true)
-                      ? const Center(
-                          child: Text('Aucune recommandation disponible.',
-                              textAlign: TextAlign.center),
+                      ? Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context);
+                            return Center(
+                              child: Text(
+                                l10n?.noRecommendationsAvailable ?? 'Aucune recommandation disponible.',
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
                         )
                       : ListView.builder(
                           scrollDirection: Axis.horizontal,
@@ -539,9 +590,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                         ),
                 ),
                 actions: [
-                  TextButton(
-                    child: const Text('Fermer'),
-                    onPressed: () => Navigator.of(context).pop(),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return TextButton(
+                        child: Text(l10n?.close ?? 'Fermer'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -564,76 +620,106 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               // Titre de la section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Text(
-                  'Changer le statut',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Text(
+                      l10n?.changeStatus ?? 'Changer le statut',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
               ),
               const Divider(height: 1),
               
               // En cours
               if (status != ReadingStatus.reading)
-                ListTile(
-                  leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
-                  title: Text(ReadingStatus.reading.label),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
-                    widget.notifier.info("Manga marqué comme '${ReadingStatus.reading.label}'");
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
+                      title: Text(ReadingStatus.reading.getLabel(context)),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
+                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
+                      },
+                    );
                   },
                 ),
               
               // À lire plus tard
               if (status != ReadingStatus.readLater)
-                ListTile(
-                  leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
-                  title: Text(ReadingStatus.readLater.label),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
-                    widget.notifier.info("Manga marqué comme '${ReadingStatus.readLater.label}'");
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
+                      title: Text(ReadingStatus.readLater.getLabel(context)),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
+                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
+                      },
+                    );
                   },
                 ),
               
               // À jour
               if (status != ReadingStatus.caughtUp)
-                ListTile(
-                  leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
-                  title: Text(ReadingStatus.caughtUp.label),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
-                    widget.notifier.info("Manga marqué comme '${ReadingStatus.caughtUp.label}'");
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
+                      title: Text(ReadingStatus.caughtUp.getLabel(context)),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
+                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
+                      },
+                    );
                   },
                 ),
               
               // Terminé
               if (status != ReadingStatus.completed)
-                ListTile(
-                  leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
-                  title: Text(ReadingStatus.completed.label),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
-                    widget.notifier.info("Manga marqué comme '${ReadingStatus.completed.label}'");
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
+                      title: Text(ReadingStatus.completed.getLabel(context)),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
+                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
+                      },
+                    );
                   },
                 ),
               
               const Divider(height: 1),
               
               // Retirer de la bibliothèque
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Retirer de la bibliothèque',
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  context.read<DetailBloc>().add(RemoveFromLibrary(muId));
-                  widget.notifier.info("Manga retiré de la bibliothèque");
+              Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context);
+                  return ListTile(
+                    leading: const Icon(Icons.delete_outline, color: Colors.red),
+                    title: Text(
+                      l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      context.read<DetailBloc>().add(RemoveFromLibrary(muId));
+                      widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
+                    },
+                  );
                 },
               ),
             ],
@@ -656,7 +742,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   Icons.edit,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                title: const Text("Modifier le lien"),
+                title: Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Text(l10n?.modifyLink ?? "Modifier le lien");
+                  },
+                ),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   _addCustomLink();
@@ -664,9 +755,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  "Supprimer le lien",
-                  style: TextStyle(color: Colors.red),
+                title: Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Text(
+                      l10n?.removeLink ?? "Supprimer le lien",
+                      style: const TextStyle(color: Colors.red),
+                    );
+                  },
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
@@ -685,44 +781,64 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     final link = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ajouter ou modifier un lien'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'https://exemple.com',
-          ),
+        title: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Text(l10n?.addOrModifyLink ?? 'Ajouter ou modifier un lien');
+          },
+        ),
+        content: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com',
+              ),
+            );
+          },
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: Text(
-              'Annuler',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            ),
-            onPressed: () {
-              final link = controller.text.trim();
-              final uri = Uri.tryParse(link);
-              final isValid = uri != null &&
-                  uri.hasScheme &&
-                  (uri.isAbsolute || uri.host.isNotEmpty);
-
-              if (isValid) {
-                Navigator.of(ctx).pop(link);
-              } else {
-                widget.notifier.error(
-                  "Lien invalide. Le lien doit commencer par http:// ou https://",
-                );
-              }
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return TextButton(
+                onPressed: () => Navigator.of(ctx).pop(null),
+                child: Text(
+                  l10n?.cancel ?? 'Annuler',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              );
             },
-            child: const Text('Valider'),
+          ),
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+                onPressed: () {
+                  final link = controller.text.trim();
+                  final uri = Uri.tryParse(link);
+                  final isValid = uri != null &&
+                      uri.hasScheme &&
+                      (uri.isAbsolute || uri.host.isNotEmpty);
+
+                  if (isValid) {
+                    Navigator.of(ctx).pop(link);
+                  } else {
+                    widget.notifier.error(
+                      l10n?.invalidLink ?? "Lien invalide. Le lien doit commencer par http:// ou https://",
+                    );
+                  }
+                },
+                child: Text(l10n?.validate ?? 'Valider'),
+              );
+            },
           ),
         ],
       ),
@@ -734,12 +850,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   }
 
   Future<void> _saveCustomLink(String link, BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     context.read<DetailBloc>().add(UpdateCustomLink(link));
-    widget.notifier.success("Lien enregistré !");
+    widget.notifier.success(l10n?.linkSaved ?? "Lien enregistré !");
   }
 
   Future<void> _removeCustomLink(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     context.read<DetailBloc>().add(DeleteCustomLink());
-    widget.notifier.success("Lien supprimé !");
+    widget.notifier.success(l10n?.linkRemoved ?? "Lien supprimé !");
   }
 }

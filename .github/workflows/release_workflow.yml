@@ -74,9 +74,33 @@ jobs:
           test -s assets/env/.env.production || { echo "❌ .env.production vide"; exit 1; }
           wc -c assets/env/.env.production   # taille en octets
 
+      - name: 🔐 Décode et prépare le keystore
+        if: steps.get_bump.outputs.bump == 'true'
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "🔐 Décodage du keystore..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
+            echo "✅ Keystore décodé avec succès"
+          else
+            echo "⚠️ Aucun keystore configuré, utilisation de la clé debug"
+          fi
+
       - name: 🛠 Build release APK
         if: steps.get_bump.outputs.bump == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build apk --flavor prod --release
+
+      - name: 🧹 Nettoyer le keystore (sécurité)
+        if: steps.get_bump.outputs.bump == 'true'
+        run: |
+          if [ -f android/keystore.jks ]; then
+            rm -f android/keystore.jks
+            echo "✅ Keystore nettoyé"
+          fi
 
       - name: 🚀 Push tag
         if: steps.get_bump.outputs.bump == 'true'
@@ -98,7 +122,7 @@ jobs:
         run: dart run bin/update_version_json.dart
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          APK_URL: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/app-prod-release.apk
+          APK_URL: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/MangaTracker.apk
           NOTES: ${{ steps.changelog.outputs.log }}
 
 
@@ -117,4 +141,4 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           body: ${{ steps.changelog.outputs.log }}
-          files: build/app/outputs/flutter-apk/app-prod-release.apk
+          files: build/app/outputs/flutter-apk/MangaTracker.apk

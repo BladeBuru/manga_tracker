@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
-import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 
 /// États pour DetailBloc
 abstract class DetailState extends Equatable {

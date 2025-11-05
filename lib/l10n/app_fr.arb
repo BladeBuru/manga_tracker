@@ -1,0 +1,732 @@
+{
+  "@@locale": "fr",
+  "appTitle": "MangaTracker",
+  "@appTitle": {
+    "description": "Le titre de l'application"
+  },
+  
+  "welcomeBack": "Content de vous revoir",
+  "@welcomeBack": {
+    "description": "Message de bienvenue sur la page de connexion"
+  },
+  
+  "emailAddress": "Adresse e-mail",
+  "@emailAddress": {
+    "description": "Label pour le champ email"
+  },
+  
+  "password": "Mot de passe",
+  "@password": {
+    "description": "Label pour le champ mot de passe"
+  },
+  
+  "forgotPassword": "Mot de passe oublié ?",
+  "@forgotPassword": {
+    "description": "Lien pour réinitialiser le mot de passe"
+  },
+  
+  "login": "Se connecter",
+  "@login": {
+    "description": "Bouton de connexion"
+  },
+  
+  "signUp": "S'inscrire",
+  "@signUp": {
+    "description": "Bouton d'inscription"
+  },
+  
+  "invalidCredentials": "Identifiants invalides",
+  "@invalidCredentials": {
+    "description": "Message d'erreur pour des identifiants incorrects"
+  },
+  
+  "unknownError": "Erreur inconnue",
+  "@unknownError": {
+    "description": "Message d'erreur générique"
+  },
+  
+  "trending": "Tendances",
+  "@trending": {
+    "description": "Titre de la section tendances"
+  },
+  
+  "popular": "Populaire",
+  "@popular": {
+    "description": "Label pour les mangas populaires"
+  },
+  
+  "newMangas": "Nouveau",
+  "@newMangas": {
+    "description": "Label pour les nouveaux mangas"
+  },
+  
+  "offlineMode": "Mode hors ligne",
+  "@offlineMode": {
+    "description": "Indicateur de mode hors ligne"
+  },
+  
+  "offlineModeNoCache": "Mode hors ligne - Aucune donnée en cache",
+  "@offlineModeNoCache": {
+    "description": "Message quand il n'y a pas de données en cache"
+  },
+  
+  "offlineModeActionQueued": "Mode hors ligne - Action en queue",
+  "@offlineModeActionQueued": {
+    "description": "Message quand une action est en file d'attente"
+  },
+  
+  "pendingActions": "{count} action{count, plural, =0{s} =1{} other{s}} en attente",
+  "@pendingActions": {
+    "description": "Nombre d'actions en attente",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "retry": "Réessayer",
+  "@retry": {
+    "description": "Bouton pour réessayer une action"
+  },
+  
+  "error": "Erreur",
+  "@error": {
+    "description": "Titre d'erreur générique"
+  },
+  
+  "library": "Bibliothèque",
+  "@library": {
+    "description": "Titre de la page bibliothèque"
+  },
+  
+  "search": "Recherche",
+  "@search": {
+    "description": "Titre de la page de recherche"
+  },
+  
+  "profile": "Profil",
+  "@profile": {
+    "description": "Titre de la page profil"
+  },
+  
+  "account": "Compte",
+  "@account": {
+    "description": "Section compte dans le profil"
+  },
+  
+  "settings": "Paramètres",
+  "@settings": {
+    "description": "Section paramètres dans le profil"
+  },
+  
+  "actions": "Actions",
+  "@actions": {
+    "description": "Section actions dans le profil"
+  },
+  
+  "changePassword": "Modifier le mot de passe",
+  "@changePassword": {
+    "description": "Option pour modifier le mot de passe"
+  },
+  
+  "changePasswordSubtitle": "Changez votre mot de passe de connexion",
+  "@changePasswordSubtitle": {
+    "description": "Sous-titre pour modifier le mot de passe"
+  },
+  
+  "accountInformation": "Informations du compte",
+  "@accountInformation": {
+    "description": "Option pour voir les informations du compte"
+  },
+  
+  "email": "Email",
+  "@email": {
+    "description": "Label pour l'email"
+  },
+  
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Option pour gérer les notifications"
+  },
+  
+  "manageNotifications": "Gérer les notifications",
+  "@manageNotifications": {
+    "description": "Sous-titre pour gérer les notifications"
+  },
+  
+  "theme": "Thème",
+  "@theme": {
+    "description": "Option pour gérer le thème"
+  },
+  
+  "lightMode": "Mode clair",
+  "@lightMode": {
+    "description": "Label pour le mode clair"
+  },
+  
+  "darkMode": "Mode sombre",
+  "@darkMode": {
+    "description": "Label pour le mode sombre"
+  },
+  
+  "language": "Langue",
+  "@language": {
+    "description": "Option pour choisir la langue"
+  },
+  
+  "selectLanguage": "Sélectionner la langue",
+  "@selectLanguage": {
+    "description": "Sous-titre pour sélectionner la langue"
+  },
+  
+  "french": "Français",
+  "@french": {
+    "description": "Nom de la langue française"
+  },
+  
+  "english": "Anglais",
+  "@english": {
+    "description": "Nom de la langue anglaise"
+  },
+  
+  "logout": "Se déconnecter",
+  "@logout": {
+    "description": "Option pour se déconnecter"
+  },
+  
+  "logoutSubtitle": "Déconnectez-vous de votre compte",
+  "@logoutSubtitle": {
+    "description": "Sous-titre pour se déconnecter"
+  },
+  
+  "confirmLogout": "Se déconnecter",
+  "@confirmLogout": {
+    "description": "Titre de la confirmation de déconnexion"
+  },
+  
+  "confirmLogoutMessage": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "@confirmLogoutMessage": {
+    "description": "Message de confirmation de déconnexion"
+  },
+  
+  "deleteAccount": "Supprimer le compte",
+  "@deleteAccount": {
+    "description": "Option pour supprimer le compte"
+  },
+  
+  "deleteAccountSubtitle": "Action irréversible",
+  "@deleteAccountSubtitle": {
+    "description": "Sous-titre pour supprimer le compte"
+  },
+  
+  "confirmDeleteAccount": "Supprimer le compte",
+  "@confirmDeleteAccount": {
+    "description": "Titre de la confirmation de suppression"
+  },
+  
+  "confirmDeleteAccountMessage": "Cette action est irréversible. Toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.",
+  "@confirmDeleteAccountMessage": {
+    "description": "Message de confirmation de suppression de compte"
+  },
+  
+  "cancel": "Annuler",
+  "@cancel": {
+    "description": "Bouton d'annulation"
+  },
+  
+  "save": "Enregistrer",
+  "@save": {
+    "description": "Bouton d'enregistrement"
+  },
+  
+  "delete": "Supprimer",
+  "@delete": {
+    "description": "Bouton de suppression"
+  },
+  
+  "passwordChangedSuccess": "Mot de passe modifié avec succès",
+  "@passwordChangedSuccess": {
+    "description": "Message de succès pour le changement de mot de passe"
+  },
+  
+  "passwordChangeError": "Erreur lors de la modification du mot de passe",
+  "@passwordChangeError": {
+    "description": "Message d'erreur pour le changement de mot de passe"
+  },
+  
+  "accountDeletedSuccess": "Compte supprimé avec succès",
+  "@accountDeletedSuccess": {
+    "description": "Message de succès pour la suppression de compte"
+  },
+  
+  "accountDeleteError": "Erreur lors de la suppression du compte",
+  "@accountDeleteError": {
+    "description": "Message d'erreur pour la suppression de compte"
+  },
+  
+  "userInfoLoadError": "Impossible de charger les informations utilisateur",
+  "@userInfoLoadError": {
+    "description": "Message d'erreur pour le chargement des informations utilisateur"
+  },
+  
+  "user": "Utilisateur",
+  "@user": {
+    "description": "Nom par défaut de l'utilisateur"
+  },
+  
+  "comingSoon": "Fonctionnalité à venir",
+  "@comingSoon": {
+    "description": "Message pour les fonctionnalités à venir"
+  },
+  
+  "comingSoonAvatar": "Fonctionnalité à venir : changement d'avatar",
+  "@comingSoonAvatar": {
+    "description": "Message pour le changement d'avatar"
+  },
+  
+  "whatsNew": "Quoi de neuf ?",
+  "@whatsNew": {
+    "description": "Titre du changelog"
+  },
+  
+  "version": "Version",
+  "@version": {
+    "description": "Label pour la version"
+  },
+  
+  "newFeaturesAvailable": "Nouvelles fonctionnalités disponibles",
+  "@newFeaturesAvailable": {
+    "description": "Message pour les nouvelles fonctionnalités"
+  },
+  
+  "currentVersion": "Version actuelle",
+  "@currentVersion": {
+    "description": "Label pour la version actuelle"
+  },
+  
+  "great": "Super !",
+  "@great": {
+    "description": "Bouton de confirmation"
+  },
+  
+  "authorizationRequired": "Autorisation requise",
+  "@authorizationRequired": {
+    "description": "Titre pour l'autorisation requise"
+  },
+  
+  "modifyLink": "Modifier le lien",
+  "@modifyLink": {
+    "description": "Titre pour modifier le lien"
+  },
+  
+  "removeLink": "Supprimer le lien",
+  "@removeLink": {
+    "description": "Option pour supprimer le lien"
+  },
+  
+  "chapterSkip": "Saut de chapitres",
+  "@chapterSkip": {
+    "description": "Titre pour le saut de chapitres"
+  },
+  
+  "validateReading": "Valider la lecture",
+  "@validateReading": {
+    "description": "Titre pour valider la lecture"
+  },
+  
+  "addToLibrary": "Ajouter à la bibliothèque",
+  "@addToLibrary": {
+    "description": "Action pour ajouter un manga à la bibliothèque"
+  },
+  
+  "removeFromLibrary": "Retirer de la bibliothèque",
+  "@removeFromLibrary": {
+    "description": "Action pour retirer un manga de la bibliothèque"
+  },
+  
+  "updateStatus": "Mettre à jour le statut",
+  "@updateStatus": {
+    "description": "Action pour mettre à jour le statut"
+  },
+  
+  "reading": "En cours",
+  "@reading": {
+    "description": "Statut de lecture : en cours"
+  },
+  
+  "completed": "Terminé",
+  "@completed": {
+    "description": "Statut de lecture : terminé"
+  },
+  
+  "onHold": "En pause",
+  "@onHold": {
+    "description": "Statut de lecture : en pause"
+  },
+  
+  "dropped": "Abandonné",
+  "@dropped": {
+    "description": "Statut de lecture : abandonné"
+  },
+  
+  "planToRead": "Prévu",
+  "@planToRead": {
+    "description": "Statut de lecture : prévu"
+  },
+  
+  "reReading": "Relecture",
+  "@reReading": {
+    "description": "Statut de lecture : relecture"
+  },
+  
+  "chapters": "Chapitres",
+  "@chapters": {
+    "description": "Label pour les chapitres"
+  },
+  
+  "readChapters": "Chapitres lus",
+  "@readChapters": {
+    "description": "Label pour les chapitres lus"
+  },
+  
+  "totalChapters": "Total de chapitres",
+  "@totalChapters": {
+    "description": "Label pour le total de chapitres"
+  },
+  
+  "saveProgress": "Enregistrer la progression",
+  "@saveProgress": {
+    "description": "Action pour enregistrer la progression"
+  },
+  
+  "description": "Description",
+  "@description": {
+    "description": "Label pour la description"
+  },
+  
+  "authors": "Auteurs",
+  "@authors": {
+    "description": "Label pour les auteurs"
+  },
+  
+  "genres": "Genres",
+  "@genres": {
+    "description": "Label pour les genres"
+  },
+  
+  "recommendations": "Recommandations",
+  "@recommendations": {
+    "description": "Label pour les recommandations"
+  },
+  
+  "loading": "Chargement...",
+  "@loading": {
+    "description": "Message de chargement"
+  },
+  
+  "noData": "Aucune donnée disponible",
+  "@noData": {
+    "description": "Message quand il n'y a pas de données"
+  },
+  
+  "noResults": "Aucun résultat",
+  "@noResults": {
+    "description": "Message quand il n'y a pas de résultats"
+  },
+  
+  "noAccount": "Vous n'avez pas de compte ?",
+  "@noAccount": {
+    "description": "Message pour rediriger vers l'inscription"
+  },
+  
+  "home": "Accueil",
+  "@home": {
+    "description": "Label pour la page d'accueil"
+  },
+  
+  "myAccount": "Mon compte",
+  "@myAccount": {
+    "description": "Label pour la page de profil"
+  },
+  
+  "offlineModeCached": "Mode hors ligne - Données en cache",
+  "@offlineModeCached": {
+    "description": "Message pour le mode offline avec données en cache"
+  },
+  
+  "biometricAuthFailed": "Échec de l'authentification biométrique",
+  "@biometricAuthFailed": {
+    "description": "Message d'erreur pour l'authentification biométrique"
+  },
+  
+  "biometricAuth": "Connexion biométrique",
+  "@biometricAuth": {
+    "description": "Label pour la connexion biométrique"
+  },
+  
+  "addLink": "Ajouter un lien",
+  "@addLink": {
+    "description": "Action pour ajouter un lien personnalisé"
+  },
+  
+  "addOrModifyLink": "Ajouter ou modifier un lien",
+  "@addOrModifyLink": {
+    "description": "Titre pour ajouter ou modifier un lien"
+  },
+  
+  "linkUrlPlaceholder": "https://exemple.com",
+  "@linkUrlPlaceholder": {
+    "description": "Placeholder pour l'URL du lien"
+  },
+  
+  "validate": "Valider",
+  "@validate": {
+    "description": "Bouton de validation"
+  },
+  
+  "invalidLink": "Lien invalide. Le lien doit commencer par http:// ou https://",
+  "@invalidLink": {
+    "description": "Message d'erreur pour un lien invalide"
+  },
+  
+  "linkSaved": "Lien enregistré !",
+  "@linkSaved": {
+    "description": "Message de succès pour la sauvegarde d'un lien"
+  },
+  
+  "linkRemoved": "Lien supprimé !",
+  "@linkRemoved": {
+    "description": "Message de succès pour la suppression d'un lien"
+  },
+  
+  "readOnline": "Lire en ligne",
+  "@readOnline": {
+    "description": "Action pour lire en ligne"
+  },
+  
+  "manageLink": "Gérer le lien",
+  "@manageLink": {
+    "description": "Tooltip pour gérer le lien"
+  },
+  
+  "recommendations": "Recommandations",
+  "@recommendations": {
+    "description": "Label pour les recommandations"
+  },
+  
+  "recommendedMangas": "Mangas recommandés",
+  "@recommendedMangas": {
+    "description": "Titre pour les mangas recommandés"
+  },
+  
+  "noRecommendationsAvailable": "Aucune recommandation disponible.",
+  "@noRecommendationsAvailable": {
+    "description": "Message quand il n'y a pas de recommandations"
+  },
+  
+  "close": "Fermer",
+  "@close": {
+    "description": "Bouton pour fermer"
+  },
+  
+  "changeStatus": "Changer le statut",
+  "@changeStatus": {
+    "description": "Titre pour changer le statut de lecture"
+  },
+  
+  "mangaAddedToLibrary": "Manga ajouté à la bibliothèque",
+  "@mangaAddedToLibrary": {
+    "description": "Message de succès pour l'ajout à la bibliothèque"
+  },
+  
+  "mangaMarkedAs": "Manga marqué comme",
+  "@mangaMarkedAs": {
+    "description": "Message pour le statut de lecture"
+  },
+  
+  "readLater": "À lire plus tard",
+  "@readLater": {
+    "description": "Statut de lecture : à lire plus tard"
+  },
+  
+  "upToDate": "À jour",
+  "@upToDate": {
+    "description": "Statut de lecture : à jour"
+  },
+  
+  "addToReadLater": "Ajouter à \"À lire plus tard\"",
+  "@addToReadLater": {
+    "description": "Action pour ajouter à la liste de lecture"
+  },
+  
+  "reading": "En cours",
+  "@reading": {
+    "description": "Statut de lecture : en cours"
+  },
+  
+  "completed": "Terminé",
+  "@completed": {
+    "description": "Statut de lecture : terminé"
+  },
+  
+  "removeFromLibrary": "Retirer de la bibliothèque",
+  "@removeFromLibrary": {
+    "description": "Action pour retirer de la bibliothèque"
+  },
+  
+  "mangaRemovedFromLibrary": "Manga retiré de la bibliothèque",
+  "@mangaRemovedFromLibrary": {
+    "description": "Message de succès pour le retrait de la bibliothèque"
+  },
+  
+  "searchPlaceholder": "Rechercher Mangas, Manwhas, ...",
+  "@searchPlaceholder": {
+    "description": "Placeholder pour la barre de recherche"
+  },
+  
+  "library": "Bibliothèque",
+  "@library": {
+    "description": "Label pour la bibliothèque"
+  },
+  
+  "search": "Recherche",
+  "@search": {
+    "description": "Label pour la recherche"
+  },
+  
+  "profile": "Mon compte",
+  "@profile": {
+    "description": "Label pour le profil"
+  },
+  
+  "error": "Erreur",
+  "@error": {
+    "description": "Label pour les erreurs"
+  },
+  
+  "modifyLink": "Modifier le lien",
+  "@modifyLink": {
+    "description": "Action pour modifier un lien"
+  },
+  
+  "removeLink": "Supprimer le lien",
+  "@removeLink": {
+    "description": "Action pour supprimer un lien"
+  },
+  
+  "chapters": "Chapitres",
+  "@chapters": {
+    "description": "Label pour les chapitres"
+  },
+  
+  "year": "Année",
+  "@year": {
+    "description": "Label pour l'année"
+  },
+  
+  "status": "Statut",
+  "@status": {
+    "description": "Label pour le statut"
+  },
+  
+  "author": "Auteur",
+  "@author": {
+    "description": "Label pour l'auteur"
+  },
+  
+  "artist": "Artiste",
+  "@artist": {
+    "description": "Label pour l'artiste"
+  },
+  
+  "synopsis": "Synopsis",
+  "@synopsis": {
+    "description": "Label pour le synopsis"
+  },
+  
+  "seeMore": "Voir plus",
+  "@seeMore": {
+    "description": "Bouton pour voir plus de contenu"
+  },
+  
+  "seeLess": "Voir moins",
+  "@seeLess": {
+    "description": "Bouton pour voir moins de contenu"
+  },
+  
+  "all": "Tous",
+  "@all": {
+    "description": "Filtre pour afficher tous les mangas"
+  },
+  
+  "popular": "Populaires",
+  "@popular": {
+    "description": "Filtre pour afficher les mangas populaires"
+  },
+  
+  "newReleases": "Nouveautés",
+  "@newReleases": {
+    "description": "Filtre pour afficher les nouveautés"
+  },
+  
+  "chapter": "Chapitre",
+  "@chapter": {
+    "description": "Label pour un chapitre"
+  },
+  
+  "chaptersCount": "{count, plural, =0{Aucun chapitre} =1{{count} chapitre} other{{count} chapitres}}",
+  "@chaptersCount": {
+    "description": "Nombre de chapitres avec pluralisation"
+  },
+  
+  "chapterSaved": "Chapitre {chapter} enregistré",
+  "@chapterSaved": {
+    "description": "Message de succès pour la sauvegarde d'un chapitre",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "chapterRead": "lu",
+  "@chapterRead": {
+    "description": "Statut d'un chapitre lu"
+  },
+  
+  "chapterUnread": "non lu",
+  "@chapterUnread": {
+    "description": "Statut d'un chapitre non lu"
+  },
+  
+  "mangaAddedToLibrarySuccess": "{title} a été ajouté à la bibliothèque !",
+  "@mangaAddedToLibrarySuccess": {
+    "description": "Message de succès pour l'ajout à la bibliothèque",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "errorAddingToLibrary": "Erreur lors de l'ajout à la bibliothèque.",
+  "@errorAddingToLibrary": {
+    "description": "Message d'erreur pour l'ajout à la bibliothèque"
+  },
+  
+  "errorUpdatingChapter": "Erreur lors de la mise à jour du chapitre.",
+  "@errorUpdatingChapter": {
+    "description": "Message d'erreur pour la mise à jour d'un chapitre"
+  },
+  
+  "cannotOpenLink": "Impossible d'ouvrir le lien : {url}",
+  "@cannotOpenLink": {
+    "description": "Message d'erreur pour l'ouverture d'un lien",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  }
+}

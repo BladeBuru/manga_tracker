@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// Widget réutilisable pour les options de profil
 /// Permet d'afficher une option avec icône, titre, sous-titre et action
 class ProfileOptionTile extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? leadingWidget;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
@@ -14,7 +15,8 @@ class ProfileOptionTile extends StatelessWidget {
 
   const ProfileOptionTile({
     super.key,
-    required this.icon,
+    this.icon,
+    this.leadingWidget,
     required this.title,
     this.subtitle,
     this.onTap,
@@ -22,7 +24,7 @@ class ProfileOptionTile extends StatelessWidget {
     this.backgroundColor,
     this.trailing,
     this.showArrow = true,
-  });
+  }) : assert(icon != null || leadingWidget != null, 'Either icon or leadingWidget must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +52,13 @@ class ProfileOptionTile extends StatelessWidget {
             color: effectiveBackgroundColor,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: effectiveIconColor,
-            size: 24,
-          ),
+          child: leadingWidget != null
+              ? Center(child: leadingWidget!)
+              : Icon(
+                  icon,
+                  color: effectiveIconColor,
+                  size: 24,
+                ),
         ),
         title: Text(
           title,

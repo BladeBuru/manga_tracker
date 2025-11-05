@@ -53,10 +53,17 @@ class AppUpdateService {
 
   /// Vérifie si une mise à jour est disponible en ligne.
   Future<bool> isUpdateAvailable() async {
+    // Vérifier si on est en mode dev - si oui, pas de mise à jour automatique
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentPackageName = packageInfo.packageName;
+    if (currentPackageName.contains('.dev')) {
+      return false; // Les versions dev ne peuvent pas être mises à jour depuis GitHub Releases
+    }
+    
     final data = await _fetchAndCacheData();
     if (data == null) return false;
     try {
-      final localVersion = (await PackageInfo.fromPlatform()).version;
+      final localVersion = packageInfo.version;
       final remoteVersion = data['latestVersion'];
       if (remoteVersion == null || remoteVersion is! String) return false;
       return _isVersionHigher(remoteVersion, localVersion);
@@ -132,6 +139,35 @@ class AppUpdateService {
   /// Gère le téléchargement et l'installation de la mise à jour.
   Future<void> downloadAndInstallUpdate() async {
     try {
+      // Vérifier le package name actuel pour détecter l'environnement
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentPackageName = packageInfo.packageName;
+      
+      // Si on est en mode dev, on ne peut pas installer la version prod depuis GitHub
+      if (currentPackageName.contains('.dev')) {
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text("Mise à jour non disponible"),
+              content: const Text(
+                "Vous utilisez actuellement la version de développement. "
+                "Les mises à jour automatiques ne sont disponibles que pour la version de production. "
+                "Pour mettre à jour la version de développement, veuillez la reconstruire depuis le code source."
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text("Compris"),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
       _notifier.info('Recherche de la dernière version...');
       final resp = await http.get(Uri.parse(_latestReleaseUrl), headers: {'Accept': 'application/vnd.github+json'});
       if (resp.statusCode != 200) {
@@ -140,17 +176,46 @@ class AppUpdateService {
       }
       final json = jsonDecode(resp.body);
       final assets = json['assets'] as List<dynamic>;
-      final apkAsset = assets.firstWhere((a) => (a['name'] as String).endsWith('.apk'), orElse: () => null);
+      
+      // Chercher l'APK de production (pas de dev)
+      final apkAsset = assets.firstWhere(
+        (a) {
+          final name = (a['name'] as String).toLowerCase();
+          return name.endsWith('.apk') && !name.contains('dev');
+        },
+        orElse: () => null,
+      );
+      
       if (apkAsset == null) {
-        _notifier.error('APK introuvable dans la dernière release.');
+        _notifier.error('APK de production introuvable dans la dernière release.');
         return;
       }
       final apkUrl = apkAsset['browser_download_url'] as String;
+      
+      // Vérifier que la version est vraiment supérieure avant de télécharger
+      final localVersion = packageInfo.version;
+      final remoteVersion = json['tag_name'] as String?;
+      
+      // Extraire la version du tag (ex: "v0.3.0+11" -> "0.3.0+11")
+      String? remoteVersionClean = remoteVersion?.replaceFirst(RegExp(r'^v'), '');
+      
+      if (remoteVersionClean != null) {
+        // Vérifier que la version distante est vraiment supérieure
+        if (!_isVersionHigher(remoteVersionClean, localVersion)) {
+          _notifier.warning('La version disponible n\'est pas supérieure à la version actuelle.');
+          return;
+        }
+      }
+      
       _notifier.info('Téléchargement de la mise à jour...');
       final dir = await getTemporaryDirectory();
       final path = '${dir.path}/manga_tracker_update.apk';
       await _dio.download(apkUrl, path);
 
+      // Note: Le package name devrait correspondre car on vérifie que c'est un APK prod
+      // et que l'app installée est aussi en prod. Le conflit de signature peut quand même
+      // survenir si les clés de signature diffèrent entre builds.
+      
       var status = await Permission.requestInstallPackages.status;
       if (!status.isGranted) {
         final context = navigatorKey.currentContext;
@@ -168,7 +233,48 @@ class AppUpdateService {
       }
       if (status.isGranted) {
         _notifier.info("Lancement de l'installation...");
-        await OpenFile.open(path);
+        
+        try {
+          // Sur Android, utiliser OpenFile qui gère automatiquement les FileProviders
+          // et les permissions nécessaires
+          final result = await OpenFile.open(path);
+          
+          // Vérifier le résultat de l'ouverture
+          if (result.type != ResultType.done) {
+            // Si l'installation a échoué, vérifier si c'est un conflit de signature
+            final errorMessage = result.message.toLowerCase();
+            if (errorMessage.contains('conflit') || 
+                errorMessage.contains('conflict') ||
+                (errorMessage.contains('package') && errorMessage.contains('already'))) {
+              // Afficher un message explicatif sur le conflit
+              final context = navigatorKey.currentContext;
+              if (context != null) {
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("Erreur d'installation"),
+                    content: const Text(
+                      "L'installation a échoué car l'application est déjà installée avec une signature différente. "
+                      "Cela peut arriver si l'application a été installée depuis différentes sources ou avec des clés de signature différentes.\n\n"
+                      "Pour résoudre ce problème :\n"
+                      "1. Désinstallez l'application actuelle depuis les paramètres Android\n"
+                      "2. Réessayez l'installation de la mise à jour\n\n"
+                      "Note: Si vous utilisez la version de développement, vous ne pouvez pas installer la version de production."
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text("Compris"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
+          }
+        } catch (e) {
+          _notifier.error('Erreur lors du lancement de l\'installation : ${e.toString()}');
+        }
       } else {
         _notifier.warning("L'autorisation a été refusée.");
       }

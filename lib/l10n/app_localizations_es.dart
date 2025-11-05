@@ -1,0 +1,437 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Spanish Castilian (`es`).
+class AppLocalizationsEs extends AppLocalizations {
+  AppLocalizationsEs([String locale = 'es']) : super(locale);
+
+  @override
+  String get appTitle => 'MangaTracker';
+
+  @override
+  String get welcomeBack => 'Bienvenido de nuevo';
+
+  @override
+  String get emailAddress => 'Dirección de correo electrónico';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get forgotPassword => '¿Olvidaste la contraseña?';
+
+  @override
+  String get login => 'Iniciar sesión';
+
+  @override
+  String get signUp => 'Registrarse';
+
+  @override
+  String get invalidCredentials => 'Credenciales inválidas';
+
+  @override
+  String get unknownError => 'Error desconocido';
+
+  @override
+  String get trending => 'Tendencias';
+
+  @override
+  String get popular => 'Popular';
+
+  @override
+  String get newMangas => 'Nuevo';
+
+  @override
+  String get offlineMode => 'Modo offline';
+
+  @override
+  String get offlineModeNoCache => 'Modo offline - Sin datos en caché';
+
+  @override
+  String get offlineModeActionQueued => 'Modo offline - Acción en cola';
+
+  @override
+  String pendingActions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'es',
+      one: '',
+      zero: 'es',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 's',
+      one: '',
+      zero: 's',
+    );
+    return '$count acción$_temp0 pendiente$_temp1';
+  }
+
+  @override
+  String get retry => 'Reintentar';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get library => 'Biblioteca';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get profile => 'Perfil';
+
+  @override
+  String get account => 'Cuenta';
+
+  @override
+  String get settings => 'Configuración';
+
+  @override
+  String get actions => 'Acciones';
+
+  @override
+  String get changePassword => 'Cambiar contraseña';
+
+  @override
+  String get changePasswordSubtitle =>
+      'Cambiar tu contraseña de inicio de sesión';
+
+  @override
+  String get accountInformation => 'Información de la cuenta';
+
+  @override
+  String get email => 'Correo electrónico';
+
+  @override
+  String get notifications => 'Notificaciones';
+
+  @override
+  String get manageNotifications => 'Gestionar notificaciones';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get lightMode => 'Modo claro';
+
+  @override
+  String get darkMode => 'Modo oscuro';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get selectLanguage => 'Seleccionar idioma';
+
+  @override
+  String get french => 'Francés';
+
+  @override
+  String get english => 'Inglés';
+
+  @override
+  String get logout => 'Cerrar sesión';
+
+  @override
+  String get logoutSubtitle => 'Cerrar sesión de tu cuenta';
+
+  @override
+  String get confirmLogout => 'Cerrar sesión';
+
+  @override
+  String get confirmLogoutMessage =>
+      '¿Estás seguro de que quieres cerrar sesión?';
+
+  @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountSubtitle => 'Acción irreversible';
+
+  @override
+  String get confirmDeleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get confirmDeleteAccountMessage =>
+      'Esta acción es irreversible. Todos tus datos serán eliminados permanentemente y no se podrán recuperar.';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get save => 'Guardar';
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get passwordChangedSuccess => 'Contraseña cambiada con éxito';
+
+  @override
+  String get passwordChangeError => 'Error al cambiar la contraseña';
+
+  @override
+  String get accountDeletedSuccess => 'Cuenta eliminada con éxito';
+
+  @override
+  String get accountDeleteError => 'Error al eliminar la cuenta';
+
+  @override
+  String get userInfoLoadError =>
+      'No se pudieron cargar la información del usuario';
+
+  @override
+  String get user => 'Usuario';
+
+  @override
+  String get comingSoon => 'Próximamente';
+
+  @override
+  String get comingSoonAvatar => 'Próximamente: cambiar avatar';
+
+  @override
+  String get whatsNew => '¿Qué hay de nuevo?';
+
+  @override
+  String get version => 'Versión';
+
+  @override
+  String get newFeaturesAvailable => 'Nuevas funciones disponibles';
+
+  @override
+  String get currentVersion => 'Versión actual';
+
+  @override
+  String get great => '¡Genial!';
+
+  @override
+  String get authorizationRequired => 'Autorización requerida';
+
+  @override
+  String get modifyLink => 'Modificar enlace';
+
+  @override
+  String get removeLink => 'Eliminar enlace';
+
+  @override
+  String get chapterSkip => 'Saltar capítulo';
+
+  @override
+  String get validateReading => 'Validar lectura';
+
+  @override
+  String get addToLibrary => 'Añadir a la biblioteca';
+
+  @override
+  String get removeFromLibrary => 'Eliminar de la biblioteca';
+
+  @override
+  String get updateStatus => 'Actualizar estado';
+
+  @override
+  String get reading => 'Leyendo';
+
+  @override
+  String get completed => 'Completado';
+
+  @override
+  String get onHold => 'En pausa';
+
+  @override
+  String get dropped => 'Abandonado';
+
+  @override
+  String get planToRead => 'Planificado';
+
+  @override
+  String get reReading => 'Releyendo';
+
+  @override
+  String get chapters => 'Capítulos';
+
+  @override
+  String get readChapters => 'Capítulos leídos';
+
+  @override
+  String get totalChapters => 'Total de capítulos';
+
+  @override
+  String get saveProgress => 'Guardar progreso';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get authors => 'Autores';
+
+  @override
+  String get genres => 'Géneros';
+
+  @override
+  String get recommendations => 'Recomendaciones';
+
+  @override
+  String get loading => 'Cargando...';
+
+  @override
+  String get noData => 'No hay datos disponibles';
+
+  @override
+  String get noResults => 'No hay resultados';
+
+  @override
+  String get noAccount => '¿No tienes una cuenta?';
+
+  @override
+  String get home => 'Inicio';
+
+  @override
+  String get myAccount => 'Mi cuenta';
+
+  @override
+  String get offlineModeCached => 'Modo offline - Datos en caché';
+
+  @override
+  String get biometricAuthFailed => 'Autenticación biométrica fallida';
+
+  @override
+  String get biometricAuth => 'Inicio de sesión biométrico';
+
+  @override
+  String get addLink => 'Añadir enlace';
+
+  @override
+  String get addOrModifyLink => 'Añadir o modificar enlace';
+
+  @override
+  String get linkUrlPlaceholder => 'https://ejemplo.com';
+
+  @override
+  String get validate => 'Validar';
+
+  @override
+  String get invalidLink =>
+      'Enlace inválido. El enlace debe comenzar con http:// o https://';
+
+  @override
+  String get linkSaved => '¡Enlace guardado!';
+
+  @override
+  String get linkRemoved => '¡Enlace eliminado!';
+
+  @override
+  String get readOnline => 'Leer en línea';
+
+  @override
+  String get manageLink => 'Gestionar enlace';
+
+  @override
+  String get recommendedMangas => 'Mangas recomendados';
+
+  @override
+  String get noRecommendationsAvailable =>
+      'No hay recomendaciones disponibles.';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get changeStatus => 'Cambiar estado';
+
+  @override
+  String get mangaAddedToLibrary => 'Manga añadido a la biblioteca';
+
+  @override
+  String get mangaMarkedAs => 'Manga marcado como';
+
+  @override
+  String get readLater => 'Leer más tarde';
+
+  @override
+  String get upToDate => 'Actualizado';
+
+  @override
+  String get addToReadLater => 'Añadir a \"Leer más tarde\"';
+
+  @override
+  String get mangaRemovedFromLibrary => 'Manga eliminado de la biblioteca';
+
+  @override
+  String get searchPlaceholder => 'Buscar Mangas, Manwhas...';
+
+  @override
+  String get year => 'Año';
+
+  @override
+  String get status => 'Estado';
+
+  @override
+  String get author => 'Autor';
+
+  @override
+  String get artist => 'Artista';
+
+  @override
+  String get synopsis => 'Sinopsis';
+
+  @override
+  String get seeMore => 'Ver más';
+
+  @override
+  String get seeLess => 'Ver menos';
+
+  @override
+  String get all => 'Todos';
+
+  @override
+  String get newReleases => 'Nuevos lanzamientos';
+
+  @override
+  String get chapter => 'Capítulo';
+
+  @override
+  String chaptersCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capítulos',
+      one: '$count capítulo',
+      zero: 'Sin capítulos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chapterSaved(String chapter) {
+    return 'Capítulo $chapter guardado';
+  }
+
+  @override
+  String get chapterRead => 'leído';
+
+  @override
+  String get chapterUnread => 'no leído';
+
+  @override
+  String mangaAddedToLibrarySuccess(String title) {
+    return '¡$title ha sido añadido a la biblioteca!';
+  }
+
+  @override
+  String get errorAddingToLibrary => 'Error al añadir a la biblioteca.';
+
+  @override
+  String get errorUpdatingChapter => 'Error al actualizar el capítulo.';
+
+  @override
+  String cannotOpenLink(String url) {
+    return 'No se puede abrir el enlace: $url';
+  }
+}
