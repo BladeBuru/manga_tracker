@@ -837,7 +837,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         ...reversedSections.map<Widget>((section) {
                           // Utiliser l'état chargé ou false par défaut
                           final isExpanded = _isStateLoaded 
@@ -849,7 +849,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               .length;
                           
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
+                            margin: const EdgeInsets.only(bottom: 4),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
@@ -871,7 +871,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                             ),
                             child: ExpansionTile(
                               key: ValueKey('${section.title}_${isExpanded}'),
-                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
                               ),
@@ -956,7 +956,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 16,
-                                          vertical: 3,
+                                          vertical: 0,
                                         ),
                                         child: Material(
                                           color: Colors.transparent,
@@ -966,7 +966,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                                 ? null
                                                 : () => handleSaveChapter(widget.muId, chapNum),
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 8),
+                                              padding: const EdgeInsets.symmetric(vertical: 0),
                                               child: RowChapter(
                                                 line: line,
                                                 chapter: chapNum.toString(),
@@ -1001,14 +1001,14 @@ class _LateDetailViewState extends State<LateDetailView> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
                         Column(
                           children: List.generate(total, (i) => total - i).map((chapNum) {
                             final line = chapNum.toString().padLeft(2, '0');
                             final isRead = chapNum <= _currentReadCount!;
 
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(vertical: 2),
                               child: Material(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
@@ -1020,11 +1020,14 @@ class _LateDetailViewState extends State<LateDetailView> {
                                   child: AnimatedScale(
                                     scale: _isSaving ? 1.0 : 1.0,
                                     duration: const Duration(milliseconds: 100),
-                                    child: RowChapter(
-                                      line: line,
-                                      chapter: chapNum.toString(),
-                                      read: isRead,
-                                      enabled: !_isSaving,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4),
+                                      child: RowChapter(
+                                        line: line,
+                                        chapter: chapNum.toString(),
+                                        read: isRead,
+                                        enabled: !_isSaving,
+                                      ),
                                     ),
                                   ),
                                 ),
