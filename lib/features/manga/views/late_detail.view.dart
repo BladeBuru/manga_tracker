@@ -26,6 +26,7 @@ class LateDetailView extends StatefulWidget {
   final List<AuthorDto>? authors;
   final String year;
   final num readChapters;
+  final List<String>? genres;
   final Function(num)? onReadCountChanged;
   final VoidCallback? onAddToLibrary;
   final VoidCallback? onRemoveFromLibrary;
@@ -45,6 +46,7 @@ class LateDetailView extends StatefulWidget {
     this.authors,
     required this.year,
     required this.readChapters,
+    this.genres,
     this.onReadCountChanged,
     this.onAddToLibrary,
     this.onRemoveFromLibrary,
