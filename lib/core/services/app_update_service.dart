@@ -53,10 +53,17 @@ class AppUpdateService {
 
   /// Vérifie si une mise à jour est disponible en ligne.
   Future<bool> isUpdateAvailable() async {
+    // Vérifier si on est en mode dev - si oui, pas de mise à jour automatique
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentPackageName = packageInfo.packageName;
+    if (currentPackageName.contains('.dev')) {
+      return false; // Les versions dev ne peuvent pas être mises à jour depuis GitHub Releases
+    }
+    
     final data = await _fetchAndCacheData();
     if (data == null) return false;
     try {
-      final localVersion = (await PackageInfo.fromPlatform()).version;
+      final localVersion = packageInfo.version;
       final remoteVersion = data['latestVersion'];
       if (remoteVersion == null || remoteVersion is! String) return false;
       return _isVersionHigher(remoteVersion, localVersion);
@@ -132,6 +139,35 @@ class AppUpdateService {
   /// Gère le téléchargement et l'installation de la mise à jour.
   Future<void> downloadAndInstallUpdate() async {
     try {
+      // Vérifier le package name actuel pour détecter l'environnement
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentPackageName = packageInfo.packageName;
+      
+      // Si on est en mode dev, on ne peut pas installer la version prod depuis GitHub
+      if (currentPackageName.contains('.dev')) {
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text("Mise à jour non disponible"),
+              content: const Text(
+                "Vous utilisez actuellement la version de développement. "
+                "Les mises à jour automatiques ne sont disponibles que pour la version de production. "
+                "Pour mettre à jour la version de développement, veuillez la reconstruire depuis le code source."
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text("Compris"),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
       _notifier.info('Recherche de la dernière version...');
       final resp = await http.get(Uri.parse(_latestReleaseUrl), headers: {'Accept': 'application/vnd.github+json'});
       if (resp.statusCode != 200) {
@@ -140,9 +176,18 @@ class AppUpdateService {
       }
       final json = jsonDecode(resp.body);
       final assets = json['assets'] as List<dynamic>;
-      final apkAsset = assets.firstWhere((a) => (a['name'] as String).endsWith('.apk'), orElse: () => null);
+      
+      // Chercher l'APK de production (pas de dev)
+      final apkAsset = assets.firstWhere(
+        (a) {
+          final name = (a['name'] as String).toLowerCase();
+          return name.endsWith('.apk') && !name.contains('dev');
+        },
+        orElse: () => null,
+      );
+      
       if (apkAsset == null) {
-        _notifier.error('APK introuvable dans la dernière release.');
+        _notifier.error('APK de production introuvable dans la dernière release.');
         return;
       }
       final apkUrl = apkAsset['browser_download_url'] as String;
@@ -151,6 +196,10 @@ class AppUpdateService {
       final path = '${dir.path}/manga_tracker_update.apk';
       await _dio.download(apkUrl, path);
 
+      // Vérifier que le package name correspond avant l'installation
+      // Note: Cette vérification nécessiterait d'extraire le package name de l'APK,
+      // ce qui est complexe. On fait confiance au fait que GitHub Releases ne publie que la version prod.
+      
       var status = await Permission.requestInstallPackages.status;
       if (!status.isGranted) {
         final context = navigatorKey.currentContext;
