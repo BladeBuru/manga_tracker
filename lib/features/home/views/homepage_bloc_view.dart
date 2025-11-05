@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -27,7 +28,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
   @override
   void initState() {
     super.initState();
-    print('🏠 HomePageBlocView initialisée - Utilisation du BLoC !');
+    debugPrint('🏠 HomePageBlocView initialisée - Utilisation du BLoC !');
     // Charger la page d'accueil au démarrage
     _homePageBloc.add(const LoadHomePage());
   }

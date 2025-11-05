@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'connectivity_service.dart';
@@ -46,16 +47,16 @@ class SyncService {
         return;
       }
       
-      print('🔄 Synchronisation de ${queue.length} actions hors ligne...');
+      debugPrint('🔄 Synchronisation de ${queue.length} actions hors ligne...');
       
       final List<Map<String, dynamic>> failedActions = [];
       
       for (final actionData in queue) {
         try {
           await _processOfflineAction(actionData);
-          print('✅ Action synchronisée: ${actionData['type']} pour manga ${actionData['muId']}');
+          debugPrint('✅ Action synchronisée: ${actionData['type']} pour manga ${actionData['muId']}');
         } catch (e) {
-          print('❌ Erreur lors de la synchronisation: $e');
+          debugPrint('❌ Erreur lors de la synchronisation: $e');
           failedActions.add(actionData);
         }
       }
@@ -66,15 +67,15 @@ class SyncService {
           'offline_queue',
           jsonEncode(failedActions),
         );
-        print('⚠️ ${failedActions.length} actions échouées, seront retentées plus tard');
+        debugPrint('⚠️ ${failedActions.length} actions échouées, seront retentées plus tard');
       } else {
         // Toutes les actions ont réussi, vider la queue
         await _cacheService.clearOfflineQueue();
-        print('✅ Toutes les actions ont été synchronisées');
+        debugPrint('✅ Toutes les actions ont été synchronisées');
       }
       
     } catch (e) {
-      print('❌ Erreur générale lors de la synchronisation: $e');
+      debugPrint('❌ Erreur générale lors de la synchronisation: $e');
     } finally {
       _isSyncing = false;
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -49,7 +50,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
   /// Charge la page d'accueil complète
   Future<void> _onLoadHomePage(LoadHomePage event, Emitter<HomePageState> emit) async {
-    print('🔄 HomePageBloc: Chargement de la page d\'accueil...');
+    debugPrint('🔄 HomePageBloc: Chargement de la page d\'accueil...');
     emit(const HomePageLoading());
     
     try {
@@ -73,8 +74,18 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         pendingActions: pendingActions,
       ));
     } catch (e) {
+      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
+      if (e.toString().contains('InvalidCredentialsException')) {
+        debugPrint('⚠️ HomePageBloc: Erreur d\'authentification');
+        emit(HomePageError(
+          message: 'Authentification requise',
+          isOffline: false,
+        ));
+        return;
+      }
+      
       // Erreur réseau détectée : on est offline
-      print('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
+      debugPrint('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
       
       try {
         // Récupérer les caches séparés pour chaque type de manga
@@ -88,7 +99,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
             (cachedNew != null && cachedNew.isNotEmpty) ||
             (cachedTrending != null && cachedTrending.isNotEmpty)) {
           final pendingActions = await _getPendingActionsCount();
-          print('✅ Données chargées depuis le cache (mode offline) - Popular: ${cachedPopular?.length ?? 0}, New: ${cachedNew?.length ?? 0}, Trending: ${cachedTrending?.length ?? 0}, Pending: $pendingActions');
+          debugPrint('✅ Données chargées depuis le cache (mode offline) - Popular: ${cachedPopular?.length ?? 0}, New: ${cachedNew?.length ?? 0}, Trending: ${cachedTrending?.length ?? 0}, Pending: $pendingActions');
           
           emit(HomePageLoaded(
             popularMangas: cachedPopular ?? [],

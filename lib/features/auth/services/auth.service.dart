@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -77,21 +78,36 @@ class AuthService {
   Future<bool> refreshAccessToken({String? token}) async {
     final refreshToken = token ?? await storageService.readSecureData('refreshToken');
     if (refreshToken == null || isTokenExpired(refreshToken)) {
+      debugPrint('⚠️ AuthService: Refresh token est null ou expiré');
       return false;
     }
 
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-    final res = await http.post(url, headers: {
-      HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
-    });
+    try {
+      final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
+      final res = await http.post(url, headers: {
+        HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
+      });
 
-    if (res.statusCode == HttpStatus.created) {
-      final data = jsonDecode(res.body);
-      await storageService.writeSecureData('accessToken', data['accessToken']);
-      return true;
+      if (res.statusCode == HttpStatus.created) {
+        final data = jsonDecode(res.body);
+        await storageService.writeSecureData('accessToken', data['accessToken']);
+        
+        // Si le backend renvoie un nouveau refreshToken (rotation), le sauvegarder
+        if (data.containsKey('refreshToken') && data['refreshToken'] != null) {
+          debugPrint('✅ AuthService: Nouveau refreshToken reçu, sauvegarde...');
+          await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        }
+        
+        debugPrint('✅ AuthService: Access token rafraîchi avec succès');
+        return true;
+      } else {
+        debugPrint('⚠️ AuthService: Échec du refresh - Status: ${res.statusCode}, Body: ${res.body}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('❌ AuthService: Erreur lors du refresh: $e');
+      return false;
     }
-
-    return false;
   }
 
   String _decodeBase64(String str) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,7 +98,7 @@ class _LateDetailViewState extends State<LateDetailView> {
           _associatedExpanded = data['associatedExpanded'] ?? false;
         });
       } catch (e) {
-        print('Erreur lors du chargement de l\'état: $e');
+        debugPrint('Erreur lors du chargement de l\'état: $e');
         _initializeExpandedState();
       }
     } else {
@@ -320,40 +321,180 @@ class _LateDetailViewState extends State<LateDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Titres, chapitres & note
+            // Informations principales (Chapitres, Note, Statut, Année) - Layout 2x2
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
                 children: [
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return Text(
-                        l10n?.chaptersCount(widget.mangaTotalChapters?.toInt() ?? 0) ?? '${widget.mangaTotalChapters ?? 0} ${l10n?.chapters ?? "Chapitres"}',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      );
-                    },
-                  ),
-                  Wrap(
+                  // Première ligne : Chapitres et Note
+                  Row(
                     children: [
-                      Icon(Icons.star, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .primary, size: 25),
-                      Text(
-                        widget.rating,
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(fontSize: 20),
-                          fontWeight: FontWeight.bold,
-                          color: Theme
-                              .of(context)
-                              .colorScheme
-                              .primary,
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context);
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.menu_book,
+                                    size: 18,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      l10n?.chaptersCount(widget.mangaTotalChapters?.toInt() ?? 0) ?? 
+                                      '${widget.mangaTotalChapters ?? 0} ${l10n?.chapters ?? "Chapitres"}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.star,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  widget.rating,
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Deuxième ligne : Statut et Année
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context);
+                            final statusText = widget.isCompleted == true
+                                ? (l10n?.completed ?? "Terminé")
+                                : (l10n?.reading ?? "En cours");
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: widget.isCompleted == true
+                                    ? Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.3)
+                                    : Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: widget.isCompleted == true
+                                      ? Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.2)
+                                      : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    widget.isCompleted == true ? Icons.check_circle : Icons.access_time,
+                                    size: 18,
+                                    color: widget.isCompleted == true
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(context).colorScheme.secondary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      statusText,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: widget.isCompleted == true
+                                            ? Theme.of(context).colorScheme.onTertiaryContainer
+                                            : Theme.of(context).colorScheme.onSecondaryContainer,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  widget.year,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -362,99 +503,124 @@ class _LateDetailViewState extends State<LateDetailView> {
               ),
             ),
 
-            // Statut & Année sur la même ligne
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context);
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: Text(
-                          '${l10n?.status ?? "Statut"} : ${widget.isCompleted == true
-                              ? (l10n?.completed ?? "Terminé")
-                              : (l10n?.reading ?? "En cours")}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: Text(
-                          '${l10n?.year ?? "Année"} : ${widget.year}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-
-            // Auteur & Artiste sur la même ligne
+            // Auteur & Artiste
             if (authors.isNotEmpty || artists.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (authors.isNotEmpty)
-                      Flexible(
-                        flex: 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Builder(
-                              builder: (context) {
-                                final l10n = AppLocalizations.of(context);
-                                return Text(
-                                  '${l10n?.author ?? "Auteur"} :',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (authors.isNotEmpty)
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.person,
+                                      size: 16,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Builder(
+                                      builder: (context) {
+                                        final l10n = AppLocalizations.of(context);
+                                        return Text(
+                                          l10n?.author ?? "Auteur",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                ...authors.map((name) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
                                   ),
-                                );
-                              },
+                                )),
+                              ],
                             ),
-                            ...authors.map(
-                                  (n) => Text(n, textAlign: TextAlign.center),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    if (artists.isNotEmpty)
-                      Flexible(
-                        flex: 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Builder(
-                              builder: (context) {
-                                final l10n = AppLocalizations.of(context);
-                                return Text(
-                                  '${l10n?.artist ?? "Artiste"} :',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                      if (authors.isNotEmpty && artists.isNotEmpty)
+                        const SizedBox(width: 10),
+                      if (artists.isNotEmpty)
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.palette,
+                                      size: 16,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Builder(
+                                      builder: (context) {
+                                        final l10n = AppLocalizations.of(context);
+                                        return Text(
+                                          l10n?.artist ?? "Artiste",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                ...artists.map((name) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
                                   ),
-                                );
-                              },
+                                )),
+                              ],
                             ),
-                            ...artists.map(
-                                  (n) => Text(n, textAlign: TextAlign.center),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -778,14 +944,8 @@ class _LateDetailViewState extends State<LateDetailView> {
                                             onTap: _isSaving
                                                 ? null
                                                 : () => handleSaveChapter(widget.muId, chapNum),
-                                            child: Container(
+                                            child: Padding(
                                               padding: const EdgeInsets.symmetric(vertical: 8),
-                                              decoration: BoxDecoration(
-                                                color: isRead
-                                                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2)
-                                                    : Colors.transparent,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
                                               child: RowChapter(
                                                 line: line,
                                                 chapter: chapNum.toString(),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -115,7 +116,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_libraryCacheKey, jsonEncode(json));
       await _updateLastSyncTimestamp();
     } catch (e) {
-      print('Erreur lors du cache de la bibliothèque: $e');
+      debugPrint('Erreur lors du cache de la bibliothèque: $e');
     }
   }
   
@@ -128,7 +129,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache bibliothèque: $e');
+      debugPrint('Erreur lors de la récupération du cache bibliothèque: $e');
     }
     return null;
   }
@@ -139,7 +140,7 @@ class OfflineCacheService {
       final key = '$_mangaDetailCacheKey$muId';
       await _storage.writeSecureData(key, jsonEncode(mangaDetail.toJson()));
     } catch (e) {
-      print('Erreur lors du cache des détails manga: $e');
+      debugPrint('Erreur lors du cache des détails manga: $e');
     }
   }
   
@@ -152,7 +153,7 @@ class OfflineCacheService {
         return MangaDetailDto.fromJson(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache détails manga: $e');
+      debugPrint('Erreur lors de la récupération du cache détails manga: $e');
     }
     return null;
   }
@@ -164,7 +165,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_homePageCacheKey, jsonEncode(json));
       await _updateCacheMetadata('homepage', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache de la page d\'accueil: $e');
+      debugPrint('Erreur lors du cache de la page d\'accueil: $e');
     }
   }
   
@@ -177,7 +178,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache page d\'accueil: $e');
+      debugPrint('Erreur lors de la récupération du cache page d\'accueil: $e');
     }
     return null;
   }
@@ -190,7 +191,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(key, jsonEncode(json));
       await _updateCacheMetadata('search_$query', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache des résultats de recherche: $e');
+      debugPrint('Erreur lors du cache des résultats de recherche: $e');
     }
   }
   
@@ -204,7 +205,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache recherche: $e');
+      debugPrint('Erreur lors de la récupération du cache recherche: $e');
     }
     return null;
   }
@@ -215,7 +216,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_userInfoCacheKey, jsonEncode(userInfo.toJson()));
       await _updateCacheMetadata('user_info', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache des informations utilisateur: $e');
+      debugPrint('Erreur lors du cache des informations utilisateur: $e');
     }
   }
 
@@ -227,7 +228,7 @@ class OfflineCacheService {
         return UserInformationDto.fromJson(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache informations utilisateur: $e');
+      debugPrint('Erreur lors de la récupération du cache informations utilisateur: $e');
     }
     return null;
   }
@@ -239,7 +240,7 @@ class OfflineCacheService {
       existing.add(action.toJson());
       await _storage.writeSecureData(_offlineQueueKey, jsonEncode(existing));
     } catch (e) {
-      print('Erreur lors de l\'ajout à la queue hors ligne: $e');
+      debugPrint('Erreur lors de l\'ajout à la queue hors ligne: $e');
     }
   }
   
@@ -251,7 +252,7 @@ class OfflineCacheService {
         return List<Map<String, dynamic>>.from(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération de la queue hors ligne: $e');
+      debugPrint('Erreur lors de la récupération de la queue hors ligne: $e');
     }
     return [];
   }
@@ -261,7 +262,7 @@ class OfflineCacheService {
     try {
       await _storage.deleteSecureData(_offlineQueueKey);
     } catch (e) {
-      print('Erreur lors du vidage de la queue hors ligne: $e');
+      debugPrint('Erreur lors du vidage de la queue hors ligne: $e');
     }
   }
   
@@ -278,7 +279,7 @@ class OfflineCacheService {
         return DateTime.parse(cached);
       }
     } catch (e) {
-      print('Erreur lors de la récupération du timestamp de sync: $e');
+      debugPrint('Erreur lors de la récupération du timestamp de sync: $e');
     }
     return null;
   }
@@ -301,7 +302,7 @@ class OfflineCacheService {
         // Note: On garde les détails de manga car ils changent moins souvent
       }
     } catch (e) {
-      print('Erreur lors du nettoyage du cache expiré: $e');
+      debugPrint('Erreur lors du nettoyage du cache expiré: $e');
     }
   }
   
@@ -315,7 +316,7 @@ class OfflineCacheService {
       await _storage.deleteSecureData(_lastSyncKey);
       await _storage.deleteSecureData(_cacheMetadataKey);
     } catch (e) {
-      print('Erreur lors du nettoyage complet du cache: $e');
+      debugPrint('Erreur lors du nettoyage complet du cache: $e');
     }
   }
   
@@ -326,7 +327,7 @@ class OfflineCacheService {
       existing[cacheType] = timestamp.toIso8601String();
       await _storage.writeSecureData(_cacheMetadataKey, jsonEncode(existing));
     } catch (e) {
-      print('Erreur lors de la mise à jour des métadonnées: $e');
+      debugPrint('Erreur lors de la mise à jour des métadonnées: $e');
     }
   }
   
@@ -338,7 +339,7 @@ class OfflineCacheService {
         return Map<String, String>.from(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération des métadonnées: $e');
+      debugPrint('Erreur lors de la récupération des métadonnées: $e');
     }
     return {};
   }
@@ -365,7 +366,7 @@ class OfflineCacheService {
       // Nettoyer la page d'accueil si expirée
       if (await isCacheExpiredFor('homepage', maxHours: 6)) {
         await _storage.deleteSecureData(_homePageCacheKey);
-        print('Cache page d\'accueil nettoyé (expiré)');
+        debugPrint('Cache page d\'accueil nettoyé (expiré)');
       }
       
       // Nettoyer les recherches expirées
@@ -375,11 +376,11 @@ class OfflineCacheService {
           final query = key.replaceFirst('search_', '');
           final searchKey = '$_searchCacheKey${query.toLowerCase().replaceAll(' ', '_')}';
           await _storage.deleteSecureData(searchKey);
-          print('Cache recherche "$query" nettoyé (expiré)');
+          debugPrint('Cache recherche "$query" nettoyé (expiré)');
         }
       }
     } catch (e) {
-      print('Erreur lors du nettoyage des caches expirés: $e');
+      debugPrint('Erreur lors du nettoyage des caches expirés: $e');
     }
   }
   
@@ -399,7 +400,7 @@ class OfflineCacheService {
         'cache_entries': metadata.length,
       };
     } catch (e) {
-      print('Erreur lors de la récupération des stats: $e');
+      debugPrint('Erreur lors de la récupération des stats: $e');
       return {};
     }
   }

@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,7 +61,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
     return BlocProvider(
       create: (context) {
         final bloc = DetailBloc();
-        print('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
+        debugPrint('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
         // Charger les détails immédiatement après création
         bloc.add(LoadMangaDetail(widget.muId));
         return bloc;
@@ -250,55 +251,94 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           child: Column(
             children: [
               // Header avec image et titre
-              Stack(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 340,
-                    child: ImageHelper.loadMangaImage(
-                      widget.coverPath ?? manga.mediumCoverUrl,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 340,
-                    color: Colors.black.withValues(alpha: 0.4),
-                  ),
-                  Positioned(
-                    top: 70,
-                    left: 16,
-                    right: 16,
-                    child: AutoSizeText(
-                      parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+              GestureDetector(
+                onTap: () {
+                  // Afficher l'image en plein écran
+                  showDialog(
+                    context: context,
+                    barrierColor: Colors.black87,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      insetPadding: EdgeInsets.zero,
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: InteractiveViewer(
+                              minScale: 0.5,
+                              maxScale: 3.0,
+                              child: ImageHelper.loadMangaImage(
+                                widget.coverPath ?? manga.largeCoverUrl ?? manga.mediumCoverUrl,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 40,
+                            right: 16,
+                            child: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  if (manga.genres != null)
+                  );
+                },
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 340,
+                      child: ImageHelper.loadMangaImage(
+                        widget.coverPath ?? manga.mediumCoverUrl,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 340,
+                      color: Colors.black.withValues(alpha: 0.4),
+                    ),
                     Positioned(
-                      bottom: 14,
+                      top: 70,
                       left: 16,
-                      right: 14,
-                      child: SizedBox(
-                        height: 24,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: manga.genres!
-                              .map((g) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: MangaType(type: g),
-                                  ))
-                              .toList(),
+                      right: 16,
+                      child: IgnorePointer(
+                        child: AutoSizeText(
+                          parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                ],
+                    if (manga.genres != null)
+                      Positioned(
+                        bottom: 14,
+                        left: 16,
+                        right: 14,
+                        child: IgnorePointer(
+                          child: SizedBox(
+                            height: 24,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: manga.genres!
+                                  .map((g) => Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: MangaType(type: g),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               // Détails du manga (LateDetailView)
               Expanded(
