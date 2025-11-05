@@ -27,21 +27,28 @@ Si votre PR **contient une nouvelle fonctionnalité, un correctif visible, ou un
 
 ### 2. 🧾 Rédigez un changelog dans la description de la PR :
 
+**⚠️ IMPORTANT : Le changelog est destiné aux UTILISATEURS FINAUX, pas aux développeurs !**
+
+Il doit être :
+- **Simple et compréhensible** : Pas de jargon technique
+- **Centré sur les bénéfices utilisateur** : Ce que l'utilisateur peut voir/faire de nouveau
+- **Sans détails techniques** : Pas de noms de fichiers, de services, de configurations internes
+
 Entourez les notes de publication entre les balises :
 
 ```
 <!-- CHANGELOG:START -->
 ### ✨ Ajouts
-- Nouvelle fonctionnalité X
-- Intégration de l'outil Y
+- Vous pouvez maintenant choisir la langue de l'application dans les paramètres
+- L'application charge plus rapidement les informations de profil
 
 ### 🐛 Corrections
-- Résolution du bug Z
-- Amélioration des performances de la page d’accueil
+- Correction du bug d'affichage sur la page d'accueil
+- Les mises à jour s'installent maintenant correctement
 <!-- CHANGELOG:END -->
 ```
 
-Le contenu entre ces balises sera utilisé pour la **release GitHub** et pour mettre à jour automatiquement le fichier `version.json`.
+Le contenu entre ces balises sera utilisé pour la **release GitHub** et pour mettre à jour automatiquement le fichier `version.json` qui sera affiché aux utilisateurs dans l'application.
 
 ---
 
@@ -71,12 +78,16 @@ Cette PR ajoute un système qui détecte la version actuelle et propose une mise
 
 <!-- CHANGELOG:START -->
 ### ✨ Ajouts
-- Système de vérification automatique des mises à jour
-- Boîte de dialogue avec bouton "Mettre à jour maintenant"
+- L'application vous notifie automatiquement quand une nouvelle version est disponible
+- Vous pouvez mettre à jour l'application directement depuis l'app
 
 ### 🐛 Corrections
-- Bug de redirection après splash screen corrigé
+- Correction du problème de redirection au démarrage de l'application
 <!-- CHANGELOG:END -->
+
+## 📋 Détails techniques (pour les développeurs)
+
+Cette section peut contenir des détails techniques pour les développeurs, mais ne sera PAS affichée aux utilisateurs.
 ```
 
 ---
