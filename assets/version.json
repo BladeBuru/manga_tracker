@@ -1,8 +1,18 @@
 {
-  "latestVersion": "0.4.0+12",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.4.0+12/app-prod-release.apk",
+  "latestVersion": "0.5.0+13",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.5.0+13/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.5.0+13",
+      "notes": [
+        "### ✨ Ajouts",
+        "- Vous pouvez maintenant choisir la langue de l'application (Français, Anglais, Allemand, Japonais, Coréen, Portugais, Espagnol) dans les paramètres de votre profil",
+        "- L'application se charge plus rapidement grâce à l'amélioration du cache des données",
+        "### 🐛 Corrections",
+        "- Amélioration de la gestion des mises à jour : les messages d'erreur sont maintenant plus clairs si une mise à jour échoue"
+      ]
+    },
     {
       "version": "0.4.0+12",
       "notes": [
