@@ -70,6 +70,7 @@ class _LateDetailViewState extends State<LateDetailView> {
   // État d'ouverture des sections
   Map<String, bool> _expandedSections = {};
   bool _associatedExpanded = false;
+  bool _isStateLoaded = false;
 
   @override
   void initState() {
@@ -98,6 +99,7 @@ class _LateDetailViewState extends State<LateDetailView> {
             _expandedSections[season] = true;
           }
           _associatedExpanded = data['associatedExpanded'] ?? false;
+          _isStateLoaded = true;
         });
       } catch (e) {
         debugPrint('Erreur lors du chargement de l\'état: $e');
@@ -143,7 +145,11 @@ class _LateDetailViewState extends State<LateDetailView> {
             }
           }
         }
+        _isStateLoaded = true;
       });
+    } else {
+      _initializeExpandedState();
+      _isStateLoaded = true;
     }
   }
   
@@ -833,7 +839,10 @@ class _LateDetailViewState extends State<LateDetailView> {
                         ),
                         const SizedBox(height: 12),
                         ...reversedSections.map<Widget>((section) {
-                          final isExpanded = _expandedSections[section.title] ?? false;
+                          // Utiliser l'état chargé ou false par défaut
+                          final isExpanded = _isStateLoaded 
+                              ? (_expandedSections[section.title] ?? false)
+                              : false;
                           final chapterCount = section.endChapter - section.startChapter + 1;
                           final readCount = section.chapterNumbers
                               .where((n) => n <= _currentReadCount!)
@@ -861,6 +870,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                   : null,
                             ),
                             child: ExpansionTile(
+                              key: ValueKey('${section.title}_${isExpanded}'),
                               tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(12)),
