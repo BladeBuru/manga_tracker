@@ -191,7 +191,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
                     mangaTitle: manga.title,
                     mangaAuthor: manga.year.toString(),
                     mediumImgPath: manga.mediumCoverUrl,
-                    rating: manga.rating,
+                    rating: manga.rating != 'N/A' && manga.rating.isNotEmpty ? manga.rating : null,
                   );
                 },
               ),

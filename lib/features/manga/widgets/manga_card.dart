@@ -9,7 +9,9 @@ class MangaCard extends StatelessWidget {
   final String muId;
   final String mangaAuthor;
   final String? mediumImgPath;
-  final String rating;
+  final String? rating;
+  final num? lastChapter;
+  final num? readChapter;
 
   const MangaCard({
     super.key,
@@ -17,7 +19,9 @@ class MangaCard extends StatelessWidget {
     required this.muId,
     required this.mangaAuthor,
     this.mediumImgPath,
-    required this.rating,
+    this.rating,
+    this.lastChapter,
+    this.readChapter,
   });
 
   @override
@@ -38,10 +42,10 @@ class MangaCard extends StatelessWidget {
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              height: 180,
+              height: 160,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
@@ -58,47 +62,89 @@ class MangaCard extends StatelessWidget {
                 child: ImageHelper.loadMangaImage(
                   mediumImgPath,
                   width: double.infinity,
-                  height: 180,
+                  height: 160,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Text(
-                parseFragment(mangaTitle).text!,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontSize: 12,
-                  height: 1.3,
+            const SizedBox(height: 5),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    parseFragment(mangaTitle).text!,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 11,
+                      height: 1.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
               ),
             ),
-            const SizedBox(height: 4),
+            if (lastChapter != null) ...[
+              const SizedBox(height: 3),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6.0),
+                    color: Colors.grey[200],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    child: Text(
+                      readChapter != null
+                          ? '$readChapter / ${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}'
+                          : '${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 3),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
                       mangaAuthor,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 10,
+                        fontSize: 9,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    rating.toString(),
-                    style: TextStyle(
+                  if (rating != null && rating!.isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.star,
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 10,
+                      size: 10,
                     ),
-                  ),
+                    const SizedBox(width: 2),
+                    Text(
+                      rating!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

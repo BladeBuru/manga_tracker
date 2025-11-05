@@ -12,6 +12,7 @@ import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Vue réactive de la bibliothèque utilisant BLoC
 class LibraryBlocView extends StatefulWidget {
@@ -40,6 +41,20 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     // Charger la bibliothèque au démarrage
     _libraryBloc.add(const LoadLibrary());
     _searchController.addListener(_onSearchChanged);
+    _loadViewState();
+  }
+
+  Future<void> _loadViewState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isCardView = prefs.getBool('library_view_mode') ?? false;
+    setState(() {
+      _isCardView = isCardView;
+    });
+  }
+
+  Future<void> _saveViewState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('library_view_mode', _isCardView);
   }
 
   @override
@@ -190,6 +205,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
               setState(() {
                 _isCardView = !_isCardView;
               });
+              _saveViewState();
             },
             tooltip: _isCardView ? 'Vue liste' : 'Vue carte',
           ),
@@ -588,8 +604,8 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 12.0,
-                    mainAxisSpacing: 12.0,
-                    childAspectRatio: 0.5,
+                    mainAxisSpacing: 8.0,
+                    childAspectRatio: 0.52,
                   ),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -600,6 +616,8 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                       mangaAuthor: manga.year,
                       mediumImgPath: manga.mediumCoverUrl,
                       rating: manga.rating,
+                      lastChapter: manga.totalChapters,
+                      readChapter: manga.readChapters,
                     );
                   },
                 ),
