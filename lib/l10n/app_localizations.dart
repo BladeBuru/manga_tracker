@@ -576,6 +576,18 @@ abstract class AppLocalizations {
   /// **'Total de chapitres'**
   String get totalChapters;
 
+  /// Titre pour la section des noms associés du manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Noms associés'**
+  String get associatedNames;
+
+  /// Nombre de noms associés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun nom} =1{{count} nom} other{{count} noms}}'**
+  String associatedNamesCount(num count);
+
   /// Action pour enregistrer la progression
   ///
   /// In fr, this message translates to:

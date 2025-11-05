@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/notifier/notifier.dart';
 import '../../../core/service_locator/service_locator.dart';
 import '../../library/services/library.service.dart';
 import '../dto/author.dto.dart';
+import '../dto/season_chapter.dto.dart';
+import '../helpers/chapter_section.helper.dart';
 import 'row_chapter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +28,9 @@ class LateDetailView extends StatefulWidget {
   final Function(num)? onReadCountChanged;
   final VoidCallback? onAddToLibrary;
   final VoidCallback? onRemoveFromLibrary;
+  final List<SeasonChapter>? seasonChapters;
+  final List<SeasonChapter>? bonusChapters;
+  final List<String>? associated;
 
   const LateDetailView({
     super.key,
@@ -40,6 +47,9 @@ class LateDetailView extends StatefulWidget {
     this.onReadCountChanged,
     this.onAddToLibrary,
     this.onRemoveFromLibrary,
+    this.seasonChapters,
+    this.bonusChapters,
+    this.associated,
   });
 
   @override
@@ -53,11 +63,135 @@ class _LateDetailViewState extends State<LateDetailView> {
   final LibraryService _libraryService = getIt<LibraryService>();
   final Notifier _notifier = getIt<Notifier>();
   int? _pendingChapterUpdate; // Pour tracker la mise à jour en cours
+  
+  // État d'ouverture des sections
+  Map<String, bool> _expandedSections = {};
+  bool _associatedExpanded = false;
 
   @override
   void initState() {
     super.initState();
     _currentReadCount = widget.readChapters;
+    _loadExpandedState();
+  }
+  
+  Future<void> _loadExpandedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'manga_${widget.muId}_expanded_seasons';
+    final jsonString = prefs.getString(key);
+    
+    if (jsonString != null) {
+      try {
+        final Map<String, dynamic> data = jsonDecode(jsonString);
+        final expandedList = (data['expandedSeasons'] as List?)
+            ?.map((e) => e.toString())
+            .toList() ?? [];
+        
+        setState(() {
+          // Initialiser toutes les sections comme fermées
+          _expandedSections = {};
+          // Marquer celles sauvegardées comme ouvertes
+          for (final season in expandedList) {
+            _expandedSections[season] = true;
+          }
+          _associatedExpanded = data['associatedExpanded'] ?? false;
+        });
+      } catch (e) {
+        print('Erreur lors du chargement de l\'état: $e');
+        _initializeExpandedState();
+      }
+    } else {
+      // Pas de sauvegarde, déterminer l'état initial
+      _initializeExpandedState();
+    }
+  }
+  
+  void _initializeExpandedState() {
+    final totalChapters = widget.mangaTotalChapters?.toInt() ?? 0;
+    final readChapters = widget.readChapters.toInt();
+    
+    // Calculer les sections
+    final sections = ChapterSectionHelper.calculateSections(
+      totalChapters: totalChapters,
+      seasonChapters: widget.seasonChapters,
+      bonusChapters: widget.bonusChapters,
+    );
+    
+    if (sections.isNotEmpty) {
+      // Trouver la section contenant le dernier chapitre lu
+      final currentSection = ChapterSectionHelper.findSectionForChapter(
+        readChapters > 0 ? readChapters : 1,
+        sections,
+      );
+      
+      setState(() {
+        _expandedSections = {};
+        
+        if (currentSection != null) {
+          // Ouvrir la section actuelle
+          _expandedSections[currentSection] = true;
+          
+          // Fermer les sections précédentes (si on est dans une saison supérieure)
+          final currentIndex = sections.indexWhere((s) => s.title == currentSection);
+          if (currentIndex > 0) {
+            // Fermer toutes les sections avant la section actuelle
+            for (int i = 0; i < currentIndex; i++) {
+              _expandedSections[sections[i].title] = false;
+            }
+          }
+        }
+      });
+    }
+  }
+  
+  Future<void> _saveExpandedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'manga_${widget.muId}_expanded_seasons';
+    
+    final expandedList = _expandedSections.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toList();
+    
+    final data = {
+      'expandedSeasons': expandedList,
+      'associatedExpanded': _associatedExpanded,
+    };
+    
+    await prefs.setString(key, jsonEncode(data));
+  }
+  
+  void _handleSectionExpansion(String sectionTitle, bool isExpanded) {
+    setState(() {
+      _expandedSections[sectionTitle] = isExpanded;
+      
+      // Si on ouvre une section, fermer les sections plus récentes (qui sont au-dessus dans l'affichage inversé)
+      if (isExpanded) {
+        final sections = ChapterSectionHelper.calculateSections(
+          totalChapters: widget.mangaTotalChapters?.toInt() ?? 0,
+          seasonChapters: widget.seasonChapters,
+          bonusChapters: widget.bonusChapters,
+        );
+        final reversedSections = sections.reversed.toList();
+        
+        final currentIndex = reversedSections.indexWhere((s) => s.title == sectionTitle);
+        if (currentIndex != -1 && currentIndex > 0) {
+          // Fermer toutes les sections plus récentes (au-dessus dans l'affichage)
+          for (int i = 0; i < currentIndex; i++) {
+            _expandedSections[reversedSections[i].title] = false;
+          }
+        }
+      }
+      // Si on ferme une section, on ne fait rien de spécial
+    });
+    _saveExpandedState();
+  }
+  
+  void _handleAssociatedExpansion(bool isExpanded) {
+    setState(() {
+      _associatedExpanded = isExpanded;
+    });
+    _saveExpandedState();
   }
   
   @override
@@ -178,8 +312,6 @@ class _LateDetailViewState extends State<LateDetailView> {
     }
 
     final total = widget.mangaTotalChapters?.toInt() ?? 0;
-    final chapNumbers = List<int>.generate(total, (i) => i + 1)
-      ..sort((a, b) => b.compareTo(a)); // tri décroissant
 
     return Scrollbar(
       thumbVisibility: true,
@@ -328,6 +460,97 @@ class _LateDetailViewState extends State<LateDetailView> {
 
             const SizedBox(height: 8),
 
+            // Noms associés (ExpansionTile)
+            if (widget.associated != null && widget.associated!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    collapsedShape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    leading: Icon(
+                      Icons.translate,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Text(
+                          l10n?.associatedNames ?? 'Noms associés',
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    subtitle: Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        final count = widget.associated!.length;
+                        return Text(
+                          l10n?.associatedNamesCount(count) ?? '$count ${count > 1 ? "noms" : "nom"}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        );
+                      },
+                    ),
+                    initiallyExpanded: _associatedExpanded,
+                    onExpansionChanged: _handleAssociatedExpansion,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        child: Wrap(
+                          spacing: 10.0,
+                          runSpacing: 10.0,
+                          alignment: WrapAlignment.start,
+                          children: widget.associated!.map((name) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              child: Text(
+                                name,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 8),
+
             // SYNOPSIS avec Voir plus / Voir moins
             if (widget.mangaDescription != null && widget.mangaDescription!.isNotEmpty)
               ...[
@@ -400,57 +623,238 @@ class _LateDetailViewState extends State<LateDetailView> {
               ],
             const SizedBox(height: 8),
 
+            // Sections de chapitres
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return Text(
-                        l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  Column(
-                    children: chapNumbers.map((chapNum) {
-                      final line = chapNum.toString().padLeft(2, '0');
-                      final isRead = chapNum <= _currentReadCount!;
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Material(
-                          color: Colors.white, // couleur de fond de la ligne
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: _isSaving
-                                ? null
-                                : () => handleSaveChapter(widget.muId, chapNum),
-                            child: AnimatedScale(
-                              scale: _isSaving ? 1.0 : 1.0,
-                              duration: const Duration(milliseconds: 100),
-                              child: RowChapter(
-                                line: line,
-                                chapter: chapNum.toString(),
-                                read: isRead,
-                                enabled: !_isSaving,
-                              ),
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context);
+                  
+                  // Calculer les sections
+                  final sections = ChapterSectionHelper.calculateSections(
+                    totalChapters: total,
+                    seasonChapters: widget.seasonChapters,
+                    bonusChapters: widget.bonusChapters,
+                  );
+                  
+                  // Si on a des sections, les afficher avec ExpansionTile
+                  if (sections.isNotEmpty) {
+                    // Inverser l'ordre : la plus récente en haut
+                    final reversedSections = sections.reversed.toList();
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                        const SizedBox(height: 12),
+                        ...reversedSections.map<Widget>((section) {
+                          final isExpanded = _expandedSections[section.title] ?? false;
+                          final chapterCount = section.endChapter - section.startChapter + 1;
+                          final readCount = section.chapterNumbers
+                              .where((n) => n <= _currentReadCount!)
+                              .length;
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isExpanded
+                                    ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                                    : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                                width: isExpanded ? 1.5 : 1,
+                              ),
+                              boxShadow: isExpanded
+                                  ? [
+                                      BoxShadow(
+                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: ExpansionTile(
+                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                              ),
+                              collapsedShape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                              ),
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.list_alt,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                section.title,
+                                style: GoogleFonts.poppins(
+                                  textStyle: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Icon(
+                                    Icons.numbers,
+                                    size: 14,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${section.startChapter}-${section.endChapter}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Icon(
+                                    Icons.check_circle_outline,
+                                    size: 14,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$readCount/$chapterCount',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: Icon(
+                                isExpanded ? Icons.expand_less : Icons.expand_more,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              initiallyExpanded: isExpanded,
+                              onExpansionChanged: (expanded) {
+                                _handleSectionExpansion(section.title, expanded);
+                              },
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                    borderRadius: const BorderRadius.only(
+                                      bottomLeft: Radius.circular(12),
+                                      bottomRight: Radius.circular(12),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: section.chapterNumbers.map((chapNum) {
+                                      final line = chapNum.toString().padLeft(2, '0');
+                                      final isRead = chapNum <= _currentReadCount!;
+
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 3,
+                                        ),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            borderRadius: BorderRadius.circular(8),
+                                            onTap: _isSaving
+                                                ? null
+                                                : () => handleSaveChapter(widget.muId, chapNum),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: isRead
+                                                    ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2)
+                                                    : Colors.transparent,
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: RowChapter(
+                                                line: line,
+                                                chapter: chapNum.toString(),
+                                                read: isRead,
+                                                enabled: !_isSaving,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    );
+                  }
+                  // Sinon, affichage linéaire (cas < 100 chapitres sans saisons)
+                  else {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Column(
+                          children: List.generate(total, (i) => total - i).map((chapNum) {
+                            final line = chapNum.toString().padLeft(2, '0');
+                            final isRead = chapNum <= _currentReadCount!;
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Material(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: _isSaving
+                                      ? null
+                                      : () => handleSaveChapter(widget.muId, chapNum),
+                                  child: AnimatedScale(
+                                    scale: _isSaving ? 1.0 : 1.0,
+                                    duration: const Duration(milliseconds: 100),
+                                    child: RowChapter(
+                                      line: line,
+                                      chapter: chapNum.toString(),
+                                      read: isRead,
+                                      enabled: !_isSaving,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
             ),
           ],

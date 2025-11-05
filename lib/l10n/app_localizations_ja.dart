@@ -253,6 +253,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get totalChapters => '総章数';
 
   @override
+  String get associatedNames => '関連する名前';
+
+  @override
+  String associatedNamesCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count名前',
+      one: '$count名前',
+      zero: '名前なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get saveProgress => '進捗を保存';
 
   @override

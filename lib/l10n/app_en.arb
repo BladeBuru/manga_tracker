@@ -79,6 +79,14 @@
   "chapters": "Chapters",
   "readChapters": "Read chapters",
   "totalChapters": "Total chapters",
+  "associatedNames": "Associated Names",
+  "@associatedNames": {
+    "description": "Title for the manga's associated names section"
+  },
+  "associatedNamesCount": "{count, plural, =0{No names} =1{{count} name} other{{count} names}}",
+  "@associatedNamesCount": {
+    "description": "Number of associated names"
+  },
   "saveProgress": "Save progress",
   "description": "Description",
   "authors": "Authors",

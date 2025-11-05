@@ -313,6 +313,9 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   authors: manga.authors,
                   year: manga.year,
                   readChapters: readChapters,
+                  seasonChapters: manga.seasonChapters,
+                  bonusChapters: manga.bonusChapters,
+                  associated: manga.associated,
                   onReadCountChanged: (newCount) {
                     // Dispatcher l'événement au BLoC pour mise à jour réactive
                     context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));

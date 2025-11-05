@@ -79,6 +79,8 @@
   "chapters": "Capítulos",
   "readChapters": "Capítulos lidos",
   "totalChapters": "Total de capítulos",
+  "associatedNames": "Nomes associados",
+  "associatedNamesCount": "{count, plural, =0{Nenhum nome} =1{{count} nome} other{{count} nomes}}",
   "saveProgress": "Salvar progresso",
   "description": "Descrição",
   "authors": "Autores",
