@@ -481,11 +481,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             ],
           ),
           child: ExpansionTile(
-            tilePadding: EdgeInsets.zero,
+            tilePadding: const EdgeInsets.only(left: 8.0, right: 16.0),
             title: Builder(
               builder: (context) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     status.getLabel(context),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -567,11 +567,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             ],
           ),
           child: ExpansionTile(
-            tilePadding: EdgeInsets.zero,
+            tilePadding: const EdgeInsets.only(left: 8.0, right: 16.0),
             title: Builder(
               builder: (context) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                   child: Text(
                     status.getLabel(context),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
