@@ -386,33 +386,39 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               ),
               // Détails du manga (LateDetailView)
               Expanded(
-                child: LateDetailView(
-                  muId: widget.muId.toString(),
-                  mangaTitle: manga.title,
-                  mangaDescription: manga.description,
-                  rating: manga.rating,
-                  mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
-                  mangaTotalChapters: manga.totalChapters,
-                  isCompleted: manga.isCompleted,
-                  authors: manga.authors,
-                  year: manga.year,
-                  readChapters: readChapters,
-                  genres: manga.genres,
-                  seasonChapters: manga.seasonChapters,
-                  bonusChapters: manga.bonusChapters,
-                  associated: manga.associated,
-                  onReadCountChanged: (newCount) {
-                    // Dispatcher l'événement au BLoC pour mise à jour réactive
-                    context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<DetailBloc>().add(const RefreshMangaDetail());
+                    await Future.delayed(const Duration(milliseconds: 500));
                   },
-                  onAddToLibrary: () {
-                    // Dispatcher l'événement au BLoC
-                    context.read<DetailBloc>().add(AddToLibrary(widget.muId));
-                  },
-                  onRemoveFromLibrary: () {
-                    // Dispatcher l'événement au BLoC
-                    context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
-                  },
+                  child: LateDetailView(
+                    muId: widget.muId.toString(),
+                    mangaTitle: manga.title,
+                    mangaDescription: manga.description,
+                    rating: manga.rating,
+                    mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
+                    mangaTotalChapters: manga.totalChapters,
+                    isCompleted: manga.isCompleted,
+                    authors: manga.authors,
+                    year: manga.year,
+                    readChapters: readChapters,
+                    genres: manga.genres,
+                    seasonChapters: manga.seasonChapters,
+                    bonusChapters: manga.bonusChapters,
+                    associated: manga.associated,
+                    onReadCountChanged: (newCount) {
+                      // Dispatcher l'événement au BLoC pour mise à jour réactive
+                      context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));
+                    },
+                    onAddToLibrary: () {
+                      // Dispatcher l'événement au BLoC
+                      context.read<DetailBloc>().add(AddToLibrary(widget.muId));
+                    },
+                    onRemoveFromLibrary: () {
+                      // Dispatcher l'événement au BLoC
+                      context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
+                    },
+                  ),
                 ),
               ),
               // Barre d'action en bas

@@ -35,74 +35,76 @@ class MangaCard extends StatelessWidget {
         );
       },
       child: SizedBox(
-          child: SizedBox(
-              width: 130,
-              child: Center(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black,
-                        )
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: SizedBox(
-                        width: 90,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: ImageHelper.loadMangaImage(
-                            mediumImgPath,
-                            width: 100,
-                            height: 140,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              height: 180,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            parseFragment(mangaTitle).text!,
-                            style: Theme.of(context).textTheme.titleSmall,
-                            overflow: TextOverflow.fade,
-                            maxLines: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          mangaAuthor,
-                          style:Theme.of(context).textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-
-                      //Espace
-                      const SizedBox(width: 10),
-
-                      Text(
-                        rating.toString(),
-                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                      ),
-                    ],
-                  )
                 ],
-              )))),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ImageHelper.loadMangaImage(
+                  mediumImgPath,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                parseFragment(mangaTitle).text!,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      mangaAuthor,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 10,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    rating.toString(),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
