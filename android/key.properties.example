@@ -1,0 +1,10 @@
+# Exemple de fichier key.properties
+# Copiez ce fichier vers key.properties et remplissez les valeurs
+# ⚠️ Ne commitez JAMAIS key.properties dans Git !
+
+storePassword=votre_mot_de_passe_keystore
+keyPassword=votre_mot_de_passe_cle
+keyAlias=upload
+storeFile=../path/to/upload-keystore.jks
+
+

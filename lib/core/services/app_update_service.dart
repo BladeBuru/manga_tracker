@@ -191,14 +191,30 @@ class AppUpdateService {
         return;
       }
       final apkUrl = apkAsset['browser_download_url'] as String;
+      
+      // Vérifier que la version est vraiment supérieure avant de télécharger
+      final localVersion = packageInfo.version;
+      final remoteVersion = json['tag_name'] as String?;
+      
+      // Extraire la version du tag (ex: "v0.3.0+11" -> "0.3.0+11")
+      String? remoteVersionClean = remoteVersion?.replaceFirst(RegExp(r'^v'), '');
+      
+      if (remoteVersionClean != null) {
+        // Vérifier que la version distante est vraiment supérieure
+        if (!_isVersionHigher(remoteVersionClean, localVersion)) {
+          _notifier.warning('La version disponible n\'est pas supérieure à la version actuelle.');
+          return;
+        }
+      }
+      
       _notifier.info('Téléchargement de la mise à jour...');
       final dir = await getTemporaryDirectory();
       final path = '${dir.path}/manga_tracker_update.apk';
       await _dio.download(apkUrl, path);
 
-      // Vérifier que le package name correspond avant l'installation
-      // Note: Cette vérification nécessiterait d'extraire le package name de l'APK,
-      // ce qui est complexe. On fait confiance au fait que GitHub Releases ne publie que la version prod.
+      // Note: Le package name devrait correspondre car on vérifie que c'est un APK prod
+      // et que l'app installée est aussi en prod. Le conflit de signature peut quand même
+      // survenir si les clés de signature diffèrent entre builds.
       
       var status = await Permission.requestInstallPackages.status;
       if (!status.isGranted) {
@@ -217,7 +233,48 @@ class AppUpdateService {
       }
       if (status.isGranted) {
         _notifier.info("Lancement de l'installation...");
-        await OpenFile.open(path);
+        
+        try {
+          // Sur Android, utiliser OpenFile qui gère automatiquement les FileProviders
+          // et les permissions nécessaires
+          final result = await OpenFile.open(path);
+          
+          // Vérifier le résultat de l'ouverture
+          if (result.type != ResultType.done) {
+            // Si l'installation a échoué, vérifier si c'est un conflit de signature
+            final errorMessage = result.message.toLowerCase();
+            if (errorMessage.contains('conflit') || 
+                errorMessage.contains('conflict') ||
+                (errorMessage.contains('package') && errorMessage.contains('already'))) {
+              // Afficher un message explicatif sur le conflit
+              final context = navigatorKey.currentContext;
+              if (context != null) {
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("Erreur d'installation"),
+                    content: const Text(
+                      "L'installation a échoué car l'application est déjà installée avec une signature différente. "
+                      "Cela peut arriver si l'application a été installée depuis différentes sources ou avec des clés de signature différentes.\n\n"
+                      "Pour résoudre ce problème :\n"
+                      "1. Désinstallez l'application actuelle depuis les paramètres Android\n"
+                      "2. Réessayez l'installation de la mise à jour\n\n"
+                      "Note: Si vous utilisez la version de développement, vous ne pouvez pas installer la version de production."
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text("Compris"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
+          }
+        } catch (e) {
+          _notifier.error('Erreur lors du lancement de l\'installation : ${e.toString()}');
+        }
       } else {
         _notifier.warning("L'autorisation a été refusée.");
       }

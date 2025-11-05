@@ -48,6 +48,13 @@ app.*.map.json
 /assets/env/.env.development
 /assets/env/.env.production
 
+# Clés de signature Android
+android/key.properties
+android/*.jks
+android/*.keystore
+*.jks
+*.keystore
+
 # Flutter auto-generated plugin files (à ne pas versionner)
 windows/flutter/generated_plugin_registrant.cc
 macos/Flutter/GeneratedPluginRegistrant.swift
