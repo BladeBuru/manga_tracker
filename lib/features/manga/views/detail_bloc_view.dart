@@ -264,33 +264,42 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: InteractiveViewer(
-                                minScale: 0.5,
-                                maxScale: 3.0,
-                                child: ImageHelper.loadMangaImage(
-                                  widget.coverPath ?? manga.largeCoverUrl ?? manga.mediumCoverUrl,
-                                  fit: BoxFit.contain,
+                         child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.transparent,
+                          ),
+                          child: Stack(
+                            children: [
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: InteractiveViewer(
+                                    minScale: 0.5,
+                                    maxScale: 3.0,
+                                    child: ImageHelper.loadMangaImage(
+                                      widget.coverPath ?? manga.largeCoverUrl ?? manga.mediumCoverUrl,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              top: 10,
-                              right: 10,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
-                                  onPressed: () => Navigator.of(context).pop(),
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -333,36 +342,40 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                         bottom: 14,
                         left: 16,
                         right: 16,
-                        child: IgnorePointer(
-                          child: Container(
-                            constraints: const BoxConstraints(maxHeight: 80),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Wrap(
-                                spacing: 8.0,
-                                runSpacing: 8.0,
-                                alignment: WrapAlignment.start,
-                                children: manga.genres!.map((genre) {
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      genre,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                        child: GestureDetector(
+                          onTap: () {}, // Empêcher le clic de remonter au GestureDetector parent
+                          child: SizedBox(
+                            height: 32,
+                            child: Scrollbar(
+                              thumbVisibility: true,
+                              thickness: 4,
+                              radius: const Radius.circular(2),
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: manga.genres!
+                                    .map((g) => Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(alpha: 0.9),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: Colors.white.withValues(alpha: 0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              g,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
                               ),
                             ),
                           ),
