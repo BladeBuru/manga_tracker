@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -51,11 +52,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
-    print('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
+    debugPrint('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
     emit(const LibraryLoading());
     
     try {
-      print('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
+      debugPrint('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
       final mangas = await _cacheHelper.loadLibraryData(
         networkCall: () => _libraryService.getUserSavedMangas(),
       );
@@ -63,36 +64,46 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       final pendingActions = await _getPendingActionsCount();
       
       // Si aucune erreur, on est online
-      print('✅ LibraryBloc: Données chargées depuis le réseau - ${mangas.length} mangas, $pendingActions actions en attente');
+      debugPrint('✅ LibraryBloc: Données chargées depuis le réseau - ${mangas.length} mangas, $pendingActions actions en attente');
       emit(LibraryLoaded(
         mangas: mangas,
         isOffline: false,
         pendingActions: pendingActions,
       ));
     } catch (e) {
+      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
+      if (e.toString().contains('InvalidCredentialsException')) {
+        debugPrint('⚠️ LibraryBloc: Erreur d\'authentification, redirection vers login');
+        emit(LibraryError(
+          message: 'Authentification requise',
+          isOffline: false,
+        ));
+        return;
+      }
+      
       // Erreur réseau détectée : on est offline
-      print('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
-      print('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
+      debugPrint('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
+      debugPrint('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
       try {
         final cachedMangas = await _cacheHelper.getCachedLibrary();
         if (cachedMangas != null && cachedMangas.isNotEmpty) {
           final pendingActions = await _getPendingActionsCount();
-          print('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${cachedMangas.length} mangas, $pendingActions actions en attente');
+          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${cachedMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
             mangas: cachedMangas,
             isOffline: true,
             pendingActions: pendingActions,
           ));
         } else {
-          print('❌ LibraryBloc: Aucune donnée en cache disponible');
+          debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');
           emit(LibraryError(
             message: e.toString(),
             isOffline: true,
           ));
         }
       } catch (cacheError) {
-        print('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
+        debugPrint('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
         emit(LibraryError(
           message: e.toString(),
           isOffline: true,
@@ -319,9 +330,9 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
       // Cette information sera utilisée lors du premier chargement
-      print('🔍 État initial de connectivité: ${isConnected ? "Connecté" : "Hors ligne"}');
+      debugPrint('🔍 État initial de connectivité: ${isConnected ? "Connecté" : "Hors ligne"}');
     } catch (e) {
-      print('⚠️ Erreur lors de la vérification de connectivité: $e');
+      debugPrint('⚠️ Erreur lors de la vérification de connectivité: $e');
     }
   }
 }

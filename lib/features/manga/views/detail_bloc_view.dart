@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +14,6 @@ import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/views/web_view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
-import 'package:mangatracker/features/manga/widgets/manga_type_bubble.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
@@ -60,7 +60,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
     return BlocProvider(
       create: (context) {
         final bloc = DetailBloc();
-        print('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
+        debugPrint('📖 DetailBlocView initialisée pour manga ${widget.muId} - Utilisation du BLoC !');
         // Charger les détails immédiatement après création
         bloc.add(LoadMangaDetail(widget.muId));
         return bloc;
@@ -250,55 +250,139 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           child: Column(
             children: [
               // Header avec image et titre
-              Stack(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 340,
-                    child: ImageHelper.loadMangaImage(
-                      widget.coverPath ?? manga.mediumCoverUrl,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 340,
-                    color: Colors.black.withValues(alpha: 0.4),
-                  ),
-                  Positioned(
-                    top: 70,
-                    left: 16,
-                    right: 16,
-                    child: AutoSizeText(
-                      parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+              GestureDetector(
+                onTap: () {
+                  // Afficher l'image en plein écran
+                  showDialog(
+                    context: context,
+                    barrierColor: Colors.black87,
+                    builder: (context) => Dialog(
+                      backgroundColor: Colors.transparent,
+                      insetPadding: const EdgeInsets.all(20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ),
-                  ),
-                  if (manga.genres != null)
-                    Positioned(
-                      bottom: 14,
-                      left: 16,
-                      right: 14,
-                      child: SizedBox(
-                        height: 24,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: manga.genres!
-                              .map((g) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: MangaType(type: g),
-                                  ))
-                              .toList(),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                         child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.transparent,
+                          ),
+                          child: Stack(
+                            children: [
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: InteractiveViewer(
+                                    minScale: 0.5,
+                                    maxScale: 3.0,
+                                    child: ImageHelper.loadMangaImage(
+                                      widget.coverPath ?? manga.largeCoverUrl ?? manga.mediumCoverUrl,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                ],
+                  );
+                },
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 340,
+                      child: ImageHelper.loadMangaImage(
+                        widget.coverPath ?? manga.mediumCoverUrl,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 340,
+                      color: Colors.black.withValues(alpha: 0.4),
+                    ),
+                    Positioned(
+                      top: 70,
+                      left: 16,
+                      right: 16,
+                      child: IgnorePointer(
+                        child: AutoSizeText(
+                          parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (manga.genres != null && manga.genres!.isNotEmpty)
+                      Positioned(
+                        bottom: 14,
+                        left: 16,
+                        right: 16,
+                        child: GestureDetector(
+                          onTap: () {}, // Empêcher le clic de remonter au GestureDetector parent
+                          child: SizedBox(
+                            height: 32,
+                            child: Scrollbar(
+                              thumbVisibility: true,
+                              thickness: 4,
+                              radius: const Radius.circular(2),
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: manga.genres!
+                                    .map((g) => Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(alpha: 0.9),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: Colors.white.withValues(alpha: 0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              g,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               // Détails du manga (LateDetailView)
               Expanded(
@@ -313,6 +397,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   authors: manga.authors,
                   year: manga.year,
                   readChapters: readChapters,
+                  genres: manga.genres,
+                  seasonChapters: manga.seasonChapters,
+                  bonusChapters: manga.bonusChapters,
+                  associated: manga.associated,
                   onReadCountChanged: (newCount) {
                     // Dispatcher l'événement au BLoC pour mise à jour réactive
                     context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));

@@ -1,4 +1,5 @@
 import 'package:dashbook/dashbook.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import '../../../core/theme/app_theme.dart';
@@ -35,7 +36,7 @@ void addPasswordFieldsStory(Dashbook dashbook) {
                       AuthButton(
                           text: 'Valider',
                           onTap: () { final isValid = formKey.currentState?.validate() ?? false;
-                          print("Est valide $isValid");}
+                          debugPrint("Est valide $isValid");}
 
                       ),
                     ],

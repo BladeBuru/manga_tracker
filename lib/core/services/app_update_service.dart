@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
@@ -88,7 +89,7 @@ class AppUpdateService {
 
       return ChangelogInfo(relevantNotes);
     } catch (e, st) {
-      print('getAllChangelogs error: $e\n$st');
+      debugPrint('getAllChangelogs error: $e\n$st');
       return null;
     }
   }
@@ -123,7 +124,7 @@ class AppUpdateService {
       }
       return null;
     } catch (e, st) {
-      print('getNewChangelog error: $e\n$st');
+      debugPrint('getNewChangelog error: $e\n$st');
       return null;
     }
   }

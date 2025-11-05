@@ -253,6 +253,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get totalChapters => '전체 챕터';
 
   @override
+  String get associatedNames => '관련 이름';
+
+  @override
+  String associatedNamesCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 이름',
+      one: '$count개 이름',
+      zero: '이름 없음',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get saveProgress => '진행 상황 저장';
 
   @override

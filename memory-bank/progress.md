@@ -118,7 +118,7 @@
 |----------------|--------|---------|
 | Vue de connexion | ✔️ **Complété** | `LoginView` avec validation |
 | Page compte utilisateur | ✔️ **Complété** | `Profile` modernisée avec Material 3, cache intégré |
-| Page détail manga | ✔️ **Complété** | `DetailBlocView` avec toutes les fonctionnalités |
+| Page détail manga | ✔️ **Complété** | `DetailBlocView` avec toutes les fonctionnalités, genres affichés avec chips stylisés, image plein écran avec bordures arrondies |
 | Page tendances/nouveautés | ✔️ **Complété** | `HomePageBlocView` avec filtres |
 | Barre de navigation | ✔️ **Complété** | `BottomNavbar` avec PageView |
 | Thème sombre | 🔴 **À finaliser** | Code préparé, à activer |

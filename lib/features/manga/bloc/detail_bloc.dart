@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -52,7 +53,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
   /// Charge les détails d'un manga
   Future<void> _onLoadMangaDetail(LoadMangaDetail event, Emitter<DetailState> emit) async {
-    print('🔄 DetailBloc: Chargement du manga ${event.muId}...');
+    debugPrint('🔄 DetailBloc: Chargement du manga ${event.muId}...');
     emit(const DetailLoading());
     _currentMuId = event.muId;
     
@@ -78,12 +79,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
             readingStatus: libraryStatus,
           );
-          print('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name} et ${readChaptersCount} chapitres lus');
+          debugPrint('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name} et ${readChaptersCount} chapitres lus');
         } else {
-          print('📚 DetailBloc: Manga non trouvé dans la bibliothèque');
+          debugPrint('📚 DetailBloc: Manga non trouvé dans la bibliothèque');
         }
       } catch (e) {
-        print('⚠️ DetailBloc: Erreur lors de la récupération du statut: $e');
+        debugPrint('⚠️ DetailBloc: Erreur lors de la récupération du statut: $e');
         // Continuer avec les détails de base si la récupération du statut échoue
       }
       
@@ -94,13 +95,23 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         pendingActions: pendingActions,
       ));
     } catch (e) {
+      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
+      if (e.toString().contains('InvalidCredentialsException')) {
+        debugPrint('⚠️ DetailBloc: Erreur d\'authentification');
+        emit(DetailError(
+          message: 'Authentification requise',
+          isOffline: false,
+        ));
+        return;
+      }
+      
       // Erreur réseau détectée : on est offline
-      print('⚠️ Erreur de chargement du manga, tentative de récupération depuis le cache...');
+      debugPrint('⚠️ Erreur de chargement du manga, tentative de récupération depuis le cache...');
       
       try {
         final cachedMangaDetail = await _cacheHelper.getCachedMangaDetail(event.muId);
         if (cachedMangaDetail != null) {
-          print('✅ Données du manga chargées depuis le cache (mode offline)');
+          debugPrint('✅ Données du manga chargées depuis le cache (mode offline)');
           emit(DetailLoaded(
             mangaDetail: cachedMangaDetail,
             isOffline: true,
@@ -144,12 +155,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     ));
     
     try {
-      print('📚 DetailBloc: Ajout du manga ${event.muId} à la bibliothèque...');
+      debugPrint('📚 DetailBloc: Ajout du manga ${event.muId} à la bibliothèque...');
       final success = await _libraryService.addMangaToLibrary(event.muId);
       
       if (success) {
         // Mettre à jour l'état local sans recharger
-        print('✅ DetailBloc: Manga ajouté, mise à jour locale de l\'état...');
+        debugPrint('✅ DetailBloc: Manga ajouté, mise à jour locale de l\'état...');
         final updatedMangaDetail = _copyMangaDetail(
           currentState.mangaDetail,
           inLibrary: true,
@@ -203,12 +214,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     ));
     
     try {
-      print('🗑️ DetailBloc: Retrait du manga ${event.muId} de la bibliothèque...');
+      debugPrint('🗑️ DetailBloc: Retrait du manga ${event.muId} de la bibliothèque...');
       final success = await _libraryService.removeMangaFromLibrary(event.muId);
       
       if (success) {
         // Mettre à jour l'état local sans recharger
-        print('✅ DetailBloc: Manga retiré, mise à jour locale de l\'état...');
+        debugPrint('✅ DetailBloc: Manga retiré, mise à jour locale de l\'état...');
         final updatedMangaDetail = _copyMangaDetail(
           currentState.mangaDetail,
           inLibrary: false,
@@ -262,12 +273,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     ));
     
     try {
-      print('🔄 DetailBloc: Mise à jour du statut du manga $_currentMuId vers ${event.status.name}...');
+      debugPrint('🔄 DetailBloc: Mise à jour du statut du manga $_currentMuId vers ${event.status.name}...');
       final success = await _libraryService.updateMangaStatus(_currentMuId!, event.status);
       
       if (success) {
         // Mettre à jour l'état local sans recharger
-        print('✅ DetailBloc: Statut mis à jour, mise à jour locale de l\'état...');
+        debugPrint('✅ DetailBloc: Statut mis à jour, mise à jour locale de l\'état...');
         final updatedMangaDetail = _copyMangaDetail(
           currentState.mangaDetail,
           inLibrary: true,
@@ -306,7 +317,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
   /// Sauvegarde la progression de lecture
   Future<void> _onSaveChapterProgress(SaveChapterProgress event, Emitter<DetailState> emit) async {
-    print('🔄 DetailBloc: Sauvegarde du chapitre ${event.readChapters} pour manga ${event.muId}...');
+    debugPrint('🔄 DetailBloc: Sauvegarde du chapitre ${event.readChapters} pour manga ${event.muId}...');
     if (state is! DetailLoaded) return;
     
     final currentState = state as DetailLoaded;
@@ -317,7 +328,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     try {
       // Si on décoche tous les chapitres (0 chapitres lus), retirer de la bibliothèque
       if (event.readChapters == 0 && currentState.mangaDetail.inLibrary) {
-        print('🗑️ Aucun chapitre lu, retrait automatique de la bibliothèque...');
+        debugPrint('🗑️ Aucun chapitre lu, retrait automatique de la bibliothèque...');
         final removeSuccess = await _libraryService.removeMangaFromLibrary(event.muId);
         if (removeSuccess) {
           final updatedMangaDetail = _copyMangaDetail(
@@ -334,7 +345,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             isOffline: isOffline,
             pendingActions: pendingActions,
           ));
-          print('✅ Manga retiré de la bibliothèque');
+          debugPrint('✅ Manga retiré de la bibliothèque');
         }
         return;
       }
@@ -342,7 +353,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // Si le manga n'est pas dans la bibliothèque, l'ajouter d'abord
       bool wasAddedToLibrary = false;
       if (!currentState.mangaDetail.inLibrary) {
-        print('📚 Le manga n\'est pas dans la bibliothèque, ajout automatique...');
+        debugPrint('📚 Le manga n\'est pas dans la bibliothèque, ajout automatique...');
         final addSuccess = await _libraryService.addMangaToLibrary(event.muId);
         // Si offline et addSuccess, ça veut dire que c'est en queue
         if (!addSuccess && !isOffline) {
@@ -354,15 +365,15 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           return;
         }
         wasAddedToLibrary = true;
-        print('✅ DetailBloc: Manga ajouté automatiquement à la bibliothèque');
+        debugPrint('✅ DetailBloc: Manga ajouté automatiquement à la bibliothèque');
       }
       
-      print('🔍 Sauvegarde du chapitre dans le service...');
+      debugPrint('🔍 Sauvegarde du chapitre dans le service...');
       final success = await _libraryService.saveChapterProgress(event.muId, event.readChapters);
-      print('🔍 Résultat de la sauvegarde: $success');
+      debugPrint('🔍 Résultat de la sauvegarde: $success');
       
       if (success) {
-        print('🔍 Détermination du statut de lecture...');
+        debugPrint('🔍 Détermination du statut de lecture...');
         // Déterminer le statut de lecture automatiquement
         ReadingStatus newStatus = _determineReadingStatus(
           currentReadingStatus: currentState.mangaDetail.readingStatus,
@@ -370,13 +381,13 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           totalChapters: currentState.mangaDetail.totalChapters,
           isCompleted: currentState.mangaDetail.isCompleted,
         );
-        print('🔍 Nouveau statut déterminé: ${newStatus.name}');
+        debugPrint('🔍 Nouveau statut déterminé: ${newStatus.name}');
         
         // Si le statut a changé, mettre à jour également le statut (uniquement si dans la bibliothèque)
         final isNowInLibrary = currentState.mangaDetail.inLibrary || wasAddedToLibrary;
-        print('🔍 isNowInLibrary: $isNowInLibrary, statut actuel: ${currentState.mangaDetail.readingStatus}, nouveau statut: ${newStatus.name}');
+          debugPrint('🔍 isNowInLibrary: $isNowInLibrary, statut actuel: ${currentState.mangaDetail.readingStatus}, nouveau statut: ${newStatus.name}');
         if (newStatus != currentState.mangaDetail.readingStatus && isNowInLibrary) {
-          print('🔄 Mise à jour automatique du statut vers: ${newStatus.name}');
+          debugPrint('🔄 Mise à jour automatique du statut vers: ${newStatus.name}');
           await _libraryService.updateMangaStatus(event.muId, newStatus);
         }
         
@@ -391,7 +402,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         }
         
         // Mettre à jour l'état local sans recharger
-        print('✅ DetailBloc: Chapitre sauvegardé, mise à jour locale...');
+        debugPrint('✅ DetailBloc: Chapitre sauvegardé, mise à jour locale...');
         final updatedMangaDetail = _copyMangaDetail(
           currentState.mangaDetail,
           inLibrary: isNowInLibrary,
@@ -434,27 +445,27 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     required int totalChapters,
     bool? isCompleted,
   }) {
-    print('🔍 _determineReadingStatus: readChapters=$readChapters, totalChapters=$totalChapters, isCompleted=$isCompleted');
+    debugPrint('🔍 _determineReadingStatus: readChapters=$readChapters, totalChapters=$totalChapters, isCompleted=$isCompleted');
     
     // Si tous les chapitres disponibles sont lus
     if (readChapters >= totalChapters && totalChapters > 0) {
       if (isCompleted == true) {
-        print('✅ Tous chapitres lus + manga terminé → completed');
+        debugPrint('✅ Tous chapitres lus + manga terminé → completed');
         return ReadingStatus.completed;
       } else {
-        print('✅ Tous chapitres lus + manga en cours → caughtUp');
+        debugPrint('✅ Tous chapitres lus + manga en cours → caughtUp');
         return ReadingStatus.caughtUp;
       }
     }
     
     // Si on a commencé à lire (au moins 1 chapitre)
     if (readChapters > 0) {
-      print('✅ Lecture en cours → reading');
+      debugPrint('✅ Lecture en cours → reading');
       return ReadingStatus.reading;
     }
     
     // Sinon, garder le statut actuel ou mettre "À lire plus tard" par défaut
-    print('✅ Aucun chapitre lu → readLater');
+    debugPrint('✅ Aucun chapitre lu → readLater');
     return currentReadingStatus ?? ReadingStatus.readLater;
   }
 

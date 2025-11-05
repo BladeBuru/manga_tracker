@@ -79,6 +79,8 @@
   "chapters": "챕터",
   "readChapters": "읽은 챕터",
   "totalChapters": "전체 챕터",
+  "associatedNames": "관련 이름",
+  "associatedNamesCount": "{count, plural, =0{이름 없음} =1{{count}개 이름} other{{count}개 이름}}",
   "saveProgress": "진행 상황 저장",
   "description": "설명",
   "authors": "작가",

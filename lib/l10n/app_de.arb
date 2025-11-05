@@ -79,6 +79,8 @@
   "chapters": "Kapitel",
   "readChapters": "Gelesene Kapitel",
   "totalChapters": "Gesamtkapitel",
+  "associatedNames": "Zugehörige Namen",
+  "associatedNamesCount": "{count, plural, =0{Keine Namen} =1{{count} Name} other{{count} Namen}}",
   "saveProgress": "Fortschritt speichern",
   "description": "Beschreibung",
   "authors": "Autoren",

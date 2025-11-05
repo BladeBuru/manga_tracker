@@ -263,6 +263,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get totalChapters => 'Total de capítulos';
 
   @override
+  String get associatedNames => 'Nombres asociados';
+
+  @override
+  String associatedNamesCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nombres',
+      one: '$count nombre',
+      zero: 'Sin nombres',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get saveProgress => 'Guardar progreso';
 
   @override

@@ -257,6 +257,8 @@ Le mode offline est détecté via les **erreurs réseau** plutôt que la connect
 - `MangaRow` : Ligne de manga dans une liste
 - `FilterButton` : Bouton de filtre
 - `WelcomeHeader` : En-tête de bienvenue
+- `MangaType` : Widget pour afficher les genres/tags (utilisé dans les listes)
+- **Genres dans les détails** : Affichage des genres dans `LateDetailView` avec des `Chip` Material 3 stylisés en `Wrap`, placés après les informations principales
 
 ---
 

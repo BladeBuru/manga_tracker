@@ -79,6 +79,8 @@
   "chapters": "章",
   "readChapters": "読んだ章",
   "totalChapters": "総章数",
+  "associatedNames": "関連する名前",
+  "associatedNamesCount": "{count, plural, =0{名前なし} =1{{count}名前} other{{count}名前}}",
   "saveProgress": "進捗を保存",
   "description": "説明",
   "authors": "著者",

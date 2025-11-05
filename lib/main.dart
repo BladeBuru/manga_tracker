@@ -19,11 +19,11 @@ Future<void> main() async {
   //
   if (kReleaseMode) {
     await dotenv.load(fileName: "assets/env/.env.production");
-    print('ENV loaded: ${dotenv.env}');
+    debugPrint('ENV loaded: ${dotenv.env}');
   } else {
 
     await dotenv.load(fileName: "assets/env/.env.development");
-    print('ENV loaded: ${dotenv.env}');
+    debugPrint('ENV loaded: ${dotenv.env}');
   }
 
   // Register all services

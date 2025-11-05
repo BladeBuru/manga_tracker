@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service de gestion de la connectivité réseau
 /// Permet de détecter l'état de connexion et d'écouter les changements
@@ -23,7 +24,7 @@ class ConnectivityService {
       // Écouter les changements de connectivité
       _connectivity.onConnectivityChanged.listen(_onConnectivityChanged);
     } catch (e) {
-      print('⚠️ Erreur lors de l\'initialisation du ConnectivityService: $e');
+      debugPrint('⚠️ Erreur lors de l\'initialisation du ConnectivityService: $e');
       // En cas d'erreur, supposer que l'appareil est connecté
       _isConnected = true;
       _connectivityController.add(true);
@@ -43,7 +44,7 @@ class ConnectivityService {
       
       return isConnected;
     } catch (e) {
-      print('⚠️ Erreur lors de la vérification de connectivité: $e');
+      debugPrint('⚠️ Erreur lors de la vérification de connectivité: $e');
       // En cas d'erreur, supposer que l'appareil est connecté
       return true;
     }

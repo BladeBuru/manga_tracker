@@ -395,6 +395,15 @@
     "description": "Label pour le total de chapitres"
   },
   
+  "associatedNames": "Noms associés",
+  "@associatedNames": {
+    "description": "Titre pour la section des noms associés du manga"
+  },
+  "associatedNamesCount": "{count, plural, =0{Aucun nom} =1{{count} nom} other{{count} noms}}",
+  "@associatedNamesCount": {
+    "description": "Nombre de noms associés"
+  },
+  
   "saveProgress": "Enregistrer la progression",
   "@saveProgress": {
     "description": "Action pour enregistrer la progression"

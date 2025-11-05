@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -30,7 +31,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   @override
   void initState() {
     super.initState();
-    print('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
+    debugPrint('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
     // Charger la bibliothèque au démarrage
     _libraryBloc.add(const LoadLibrary());
   }
@@ -207,7 +208,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
 
   Widget _buildLibraryContent(LibraryLoaded state) {
     // Debug : afficher l'état offline
-    print('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
+    debugPrint('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
     
     return Column(
       children: [

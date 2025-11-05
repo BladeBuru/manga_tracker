@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -47,7 +48,7 @@ class UserService {
     } catch (e) {
       // Si erreur réseau et qu'on a un cache (même expiré), l'utiliser
       if (cachedInfo != null) {
-        print('Erreur réseau, utilisation du cache utilisateur: $e');
+        debugPrint('Erreur réseau, utilisation du cache utilisateur: $e');
         return cachedInfo;
       }
       rethrow;
@@ -66,7 +67,7 @@ class UserService {
       await _cacheService.cacheUserInformation(userInfo);
     } catch (e) {
       // Erreur silencieuse en arrière-plan
-      print('Erreur lors de la mise à jour en arrière-plan des infos utilisateur: $e');
+      debugPrint('Erreur lors de la mise à jour en arrière-plan des infos utilisateur: $e');
     }
   }
 
@@ -116,7 +117,7 @@ class UserService {
     try {
       await _cacheService.storage.deleteSecureData('cached_user_info');
     } catch (e) {
-      print('Erreur lors de l\'invalidation du cache utilisateur: $e');
+      debugPrint('Erreur lors de l\'invalidation du cache utilisateur: $e');
     }
   }
 }

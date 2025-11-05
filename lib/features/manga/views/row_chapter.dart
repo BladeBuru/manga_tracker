@@ -27,7 +27,7 @@ class RowChapter extends StatelessWidget {
       opacity: enabled ? 1.0 : 0.5,
       child: Padding(
         padding: const EdgeInsets.only(
-            top: 10.0, bottom: 10.0, right: 10.0, left: 10.0),
+            top: 7.0, bottom: 7.0, right: 10.0, left: 10.0),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -36,7 +36,7 @@ class RowChapter extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                height: 60,
+                height: 50,
                 width: 80,
                 child: Align(
                   alignment: Alignment.center,
@@ -51,15 +51,22 @@ class RowChapter extends StatelessWidget {
               ),
               Expanded(
                 child: SizedBox(
-                  height: 60,
+                  height: 50,
                   child: Align(
-                    alignment: Alignment.topLeft,
+                    alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 20, left: 30),
+                      padding: const EdgeInsets.only(left: 16),
                       child: Builder(
                         builder: (context) {
                           final l10n = AppLocalizations.of(context);
-                          return Text('${l10n?.chapter ?? "Chapter"} $chapter');
+                          return Text(
+                            l10n?.chapter ?? "Chapter",
+                            style: GoogleFonts.poppins(
+                              textStyle: const TextStyle(fontSize: 16),
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey[600],
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -67,10 +74,10 @@ class RowChapter extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 60,
+                height: 50,
                 width: 50,
                 child: Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   child: read
                       ? Container(
                           height: 5,
