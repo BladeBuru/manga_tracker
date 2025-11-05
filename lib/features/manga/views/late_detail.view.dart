@@ -374,10 +374,10 @@ class _LateDetailViewState extends State<LateDetailView> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                             ),
                           ),
                           child: Row(
@@ -386,7 +386,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               Icon(
                                 Icons.star,
                                 size: 18,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Colors.red,
                               ),
                               const SizedBox(width: 6),
                               Flexible(
@@ -396,7 +396,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                     textStyle: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color: Colors.red,
                                     ),
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -419,41 +419,50 @@ class _LateDetailViewState extends State<LateDetailView> {
                             final statusText = widget.isCompleted == true
                                 ? (l10n?.completed ?? "Terminé")
                                 : (l10n?.reading ?? "En cours");
+                            final statusLabel = l10n?.status ?? "État";
                             return Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
-                                color: widget.isCompleted == true
-                                    ? Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.3)
-                                    : Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: widget.isCompleted == true
-                                      ? Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.2)
-                                      : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+                                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    widget.isCompleted == true ? Icons.check_circle : Icons.access_time,
+                                    Icons.info_outline,
                                     size: 18,
-                                    color: widget.isCompleted == true
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(context).colorScheme.secondary,
+                                    color: Colors.red,
                                   ),
                                   const SizedBox(width: 8),
                                   Flexible(
-                                    child: Text(
-                                      statusText,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: widget.isCompleted == true
-                                            ? Theme.of(context).colorScheme.onTertiaryContainer
-                                            : Theme.of(context).colorScheme.onSecondaryContainer,
-                                      ),
+                                    child: RichText(
                                       overflow: TextOverflow.ellipsis,
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: '$statusLabel : ',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: statusText,
+                                            style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
