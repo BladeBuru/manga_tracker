@@ -189,7 +189,7 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: 220,
               child: FutureBuilder<List<MangaQuickViewDto>>(
                 future: trendingMangas,
                 builder: (context, snapshot) {
@@ -198,14 +198,21 @@ class _HomePageState extends State<HomePage> {
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: mangaList.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       itemBuilder: (context, index) {
                         final manga = mangaList[index];
-                        return MangaCard(
-                          muId: manga.muId.toString(),
-                          mangaTitle: manga.title,
-                          mangaAuthor: manga.year.toString(),
-                          mediumImgPath: manga.mediumCoverUrl,
-                          rating: manga.rating != 'N/A' && manga.rating.isNotEmpty ? manga.rating : null,
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: SizedBox(
+                            width: 120,
+                            child: MangaCard(
+                              muId: manga.muId.toString(),
+                              mangaTitle: manga.title,
+                              mangaAuthor: manga.year.toString(),
+                              mediumImgPath: manga.mediumCoverUrl,
+                              rating: manga.rating != 'N/A' && manga.rating.isNotEmpty ? manga.rating : null,
+                            ),
+                          ),
                         );
                       },
                     );

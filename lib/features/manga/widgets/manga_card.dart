@@ -67,7 +67,7 @@ class MangaCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: lastChapter != null ? 5 : 6),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -76,7 +76,7 @@ class MangaCard extends StatelessWidget {
                   child: Text(
                     parseFragment(mangaTitle).text!,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 11,
+                      fontSize: lastChapter != null ? 11 : 12,
                       height: 1.2,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -112,7 +112,7 @@ class MangaCard extends StatelessWidget {
                 ),
               ),
             ],
-            const SizedBox(height: 3),
+            SizedBox(height: lastChapter != null ? 3 : 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Row(
@@ -122,7 +122,7 @@ class MangaCard extends StatelessWidget {
                     child: Text(
                       mangaAuthor,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 9,
+                        fontSize: lastChapter != null ? 9 : 10,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -133,14 +133,14 @@ class MangaCard extends StatelessWidget {
                     Icon(
                       Icons.star,
                       color: Theme.of(context).colorScheme.primary,
-                      size: 10,
+                      size: lastChapter != null ? 10 : 11,
                     ),
                     const SizedBox(width: 2),
                     Text(
                       rating!,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
-                        fontSize: 9,
+                        fontSize: lastChapter != null ? 9 : 10,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
