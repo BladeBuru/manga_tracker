@@ -489,4 +489,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Pour activer l\'authentification biométrique, veuillez vous reconnecter';
+
+  @override
+  String get or => 'Ou';
+
+  @override
+  String get startTrackingNow => 'Commencez à suivre votre lecture maintenant';
+
+  @override
+  String get username => 'Nom d\'utilisateur';
+
+  @override
+  String get confirmPassword => 'Confirmation';
+
+  @override
+  String get alreadyHaveAccount => 'Vous avez déjà un compte ?';
+
+  @override
+  String get newPassword => 'Nouveau mot de passe';
 }

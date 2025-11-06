@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
@@ -192,7 +193,8 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _getFlagIcon(String languageCode) {
+  // Méthode helper pour obtenir l'icône de drapeau (utilisée uniquement pour l'affichage dans ProfileOptionTile)
+  Widget _getFlagIconForDisplay(String languageCode) {
     String assetPath;
     switch (languageCode) {
       case 'fr':
@@ -299,106 +301,15 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> _showLanguageSelector() async {
-    final l10n = AppLocalizations.of(context)!;
-    final languageService = await getIt.getAsync<LanguageService>();
-    final currentLocale = languageService.getCurrentLocale();
-    final supportedLocales = languageService.getSupportedLocales();
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Titre
-              Text(
-                l10n.selectLanguage,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Options de langue
-              ...supportedLocales.map((locale) {
-                final isSelected = locale.languageCode == currentLocale.languageCode;
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.withValues(alpha: 0.2),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      await languageService.setLanguage(locale);
-                      if (mounted) {
-                        setState(() {
-                          _currentLocale = locale;
-                        });
-                      }
-                      Navigator.of(context).pop();
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          _getFlagIcon(locale.languageCode),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              languageService.getLanguageName(locale, context),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.primary
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 20,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-              const SizedBox(height: 8),
-              // Bouton annuler
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  l10n.cancel,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    await LanguageSelectorButton.showLanguageSelector(
+      context,
+      onLanguageChanged: (locale) {
+        if (mounted) {
+          setState(() {
+            _currentLocale = locale;
+          });
+        }
+      },
     );
   }
 
@@ -470,7 +381,7 @@ class _ProfileState extends State<Profile> {
                           final languageName = languageService.getLanguageName(currentLocale, context);
                           
                           return ProfileOptionTile(
-                            leadingWidget: _getFlagIcon(currentLocale.languageCode),
+                            leadingWidget: _getFlagIconForDisplay(currentLocale.languageCode),
                             title: l10n.language,
                             subtitle: languageName,
                             onTap: () async {

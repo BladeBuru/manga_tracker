@@ -477,4 +477,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get biometricAuthRequiresReconnect => '생체 인증을 활성화하려면 다시 로그인하세요';
+
+  @override
+  String get or => '또는';
+
+  @override
+  String get startTrackingNow => '지금 읽기를 추적하기 시작하세요';
+
+  @override
+  String get username => '사용자 이름';
+
+  @override
+  String get confirmPassword => '확인';
+
+  @override
+  String get alreadyHaveAccount => '이미 계정이 있으신가요?';
+
+  @override
+  String get newPassword => '새 비밀번호';
 }

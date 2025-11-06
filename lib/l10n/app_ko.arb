@@ -147,6 +147,12 @@
   "biometricAuthFirstTimeTitle": "생체 인증을 활성화하시겠습니까?",
   "biometricAuthFirstTimeMessage": "향후 지문 또는 Face ID를 사용하여 빠르게 로그인하시겠습니까?",
   "biometricAuthNotAvailable": "이 기기에서는 생체 인증을 사용할 수 없습니다",
-  "biometricAuthRequiresReconnect": "생체 인증을 활성화하려면 다시 로그인하세요"
+  "biometricAuthRequiresReconnect": "생체 인증을 활성화하려면 다시 로그인하세요",
+  "or": "또는",
+  "startTrackingNow": "지금 읽기를 추적하기 시작하세요",
+  "username": "사용자 이름",
+  "confirmPassword": "확인",
+  "alreadyHaveAccount": "이미 계정이 있으신가요?",
+  "newPassword": "새 비밀번호"
 }
 

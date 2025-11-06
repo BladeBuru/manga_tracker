@@ -477,4 +477,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get biometricAuthRequiresReconnect => '生体認証を有効にするには、再度サインインしてください';
+
+  @override
+  String get or => 'または';
+
+  @override
+  String get startTrackingNow => '今すぐ読書を追跡し始めましょう';
+
+  @override
+  String get username => 'ユーザー名';
+
+  @override
+  String get confirmPassword => '確認';
+
+  @override
+  String get alreadyHaveAccount => 'すでにアカウントをお持ちですか？';
+
+  @override
+  String get newPassword => '新しいパスワード';
 }

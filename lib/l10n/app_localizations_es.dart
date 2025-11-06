@@ -493,4 +493,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Para activar la autenticación biométrica, inicie sesión nuevamente';
+
+  @override
+  String get or => 'O';
+
+  @override
+  String get startTrackingNow => 'Comience a seguir su lectura ahora';
+
+  @override
+  String get username => 'Nombre de usuario';
+
+  @override
+  String get confirmPassword => 'Confirmar';
+
+  @override
+  String get alreadyHaveAccount => '¿Ya tiene una cuenta?';
+
+  @override
+  String get newPassword => 'Nueva contraseña';
 }

@@ -162,5 +162,11 @@
   "biometricAuthFirstTimeTitle": "Enable biometric authentication?",
   "biometricAuthFirstTimeMessage": "Would you like to use your fingerprint or Face ID to sign in quickly in the future?",
   "biometricAuthNotAvailable": "Biometric authentication is not available on this device",
-  "biometricAuthRequiresReconnect": "To enable biometric authentication, please sign in again"
+  "biometricAuthRequiresReconnect": "To enable biometric authentication, please sign in again",
+  "or": "Or",
+  "startTrackingNow": "Start tracking your reading now",
+  "username": "Username",
+  "confirmPassword": "Confirm",
+  "alreadyHaveAccount": "Already have an account?",
+  "newPassword": "New password"
 }

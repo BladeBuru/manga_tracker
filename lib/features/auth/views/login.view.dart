@@ -1,5 +1,6 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
+import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/profile/helpers/user.helper.dart';
 import '../../../core/notifier/notifier.dart';
@@ -23,7 +24,14 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final _formKey = GlobalKey<FormState>();
+  late final GlobalKey<FormState> _formKey;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Créer une clé unique pour chaque instance
+    _formKey = GlobalKey<FormState>();
+  }
   final _emailController = TextEditingController();
   final _passwordControler = TextEditingController();
   final authService = getIt<AuthService>();
@@ -73,9 +81,10 @@ class _LoginViewState extends State<LoginView> {
     }
 
     if (context.mounted) {
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => const BottomNavbar()));
+      // Utiliser pushReplacement pour éviter de garder LoginView dans la pile
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const BottomNavbar()),
+      );
     }
   }
 
@@ -140,14 +149,18 @@ class _LoginViewState extends State<LoginView> {
       canPop: false,
       child: Scaffold(
         backgroundColor: Colors.grey[200],
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Center(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 50),
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Center(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 50),
 
                     Image.asset('assets/images/mask_logo.png', height: 150),
 
@@ -191,7 +204,8 @@ class _LoginViewState extends State<LoginView> {
                               obscureText: false,
                               autofillHints: const [AutofillHints.email],
                               validator: validatorService.validateEmailAddress,
-                              keyboardType: TextInputType.emailAddress
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
                             ),
 
                             const SizedBox(height: 15),
@@ -203,6 +217,8 @@ class _LoginViewState extends State<LoginView> {
                               obscureText: true,
                               autofillHints: const [AutofillHints.password],
                               validator: validatorService.noValidation,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: onPressed,
                             ),
 
                             const SizedBox(height: 15),
@@ -283,9 +299,14 @@ class _LoginViewState extends State<LoginView> {
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10.0,
                             ),
-                          child: const Text(
-                            'Ou', // Ce texte peut rester tel quel, c'est un séparateur
-                            style: TextStyle(color: Colors.grey),
+                          child: Builder(
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context);
+                              return Text(
+                                l10n?.or ?? 'Ou',
+                                style: const TextStyle(color: Colors.grey),
+                              );
+                            },
                           ),
                           ),
                           Expanded(
@@ -350,13 +371,21 @@ class _LoginViewState extends State<LoginView> {
                         );
                       },
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20.0),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+              // Bouton de sélection de langue en haut à droite
+              Positioned(
+                top: 8,
+                right: 8,
+                child: const LanguageSelectorButton(),
+              ),
+            ],
           ),
         ),
       ),

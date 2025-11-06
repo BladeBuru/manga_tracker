@@ -147,6 +147,12 @@
   "biometricAuthFirstTimeTitle": "生体認証を有効にしますか？",
   "biometricAuthFirstTimeMessage": "今後、指紋またはFace IDを使用してすばやくサインインしますか？",
   "biometricAuthNotAvailable": "このデバイスでは生体認証は利用できません",
-  "biometricAuthRequiresReconnect": "生体認証を有効にするには、再度サインインしてください"
+  "biometricAuthRequiresReconnect": "生体認証を有効にするには、再度サインインしてください",
+  "or": "または",
+  "startTrackingNow": "今すぐ読書を追跡し始めましょう",
+  "username": "ユーザー名",
+  "confirmPassword": "確認",
+  "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+  "newPassword": "新しいパスワード"
 }
 

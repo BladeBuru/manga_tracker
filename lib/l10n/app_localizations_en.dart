@@ -481,4 +481,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'To enable biometric authentication, please sign in again';
+
+  @override
+  String get or => 'Or';
+
+  @override
+  String get startTrackingNow => 'Start tracking your reading now';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get confirmPassword => 'Confirm';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get newPassword => 'New password';
 }

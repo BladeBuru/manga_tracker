@@ -147,6 +147,12 @@
   "biometricAuthFirstTimeTitle": "Ativar autenticação biométrica?",
   "biometricAuthFirstTimeMessage": "Gostaria de usar sua impressão digital ou Face ID para entrar rapidamente no futuro?",
   "biometricAuthNotAvailable": "A autenticação biométrica não está disponível neste dispositivo",
-  "biometricAuthRequiresReconnect": "Para ativar a autenticação biométrica, faça login novamente"
+  "biometricAuthRequiresReconnect": "Para ativar a autenticação biométrica, faça login novamente",
+  "or": "Ou",
+  "startTrackingNow": "Comece a rastrear sua leitura agora",
+  "username": "Nome de usuário",
+  "confirmPassword": "Confirmar",
+  "alreadyHaveAccount": "Já tem uma conta?",
+  "newPassword": "Nova senha"
 }
 

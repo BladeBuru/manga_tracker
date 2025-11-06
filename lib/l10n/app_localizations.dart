@@ -977,6 +977,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Pour activer l\'authentification biométrique, veuillez vous reconnecter'**
   String get biometricAuthRequiresReconnect;
+
+  /// Séparateur entre connexion classique et OAuth
+  ///
+  /// In fr, this message translates to:
+  /// **'Ou'**
+  String get or;
+
+  /// Message d'accueil sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencez à suivre votre lecture maintenant'**
+  String get startTrackingNow;
+
+  /// Label pour le champ nom d'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur'**
+  String get username;
+
+  /// Label pour le champ de confirmation de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmation'**
+  String get confirmPassword;
+
+  /// Message pour rediriger vers la page de connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez déjà un compte ?'**
+  String get alreadyHaveAccount;
+
+  /// Label pour le champ nouveau mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get newPassword;
 }
 
 class _AppLocalizationsDelegate

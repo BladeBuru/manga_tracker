@@ -9,6 +9,9 @@ class IntputTexteField extends StatelessWidget {
   final Widget? prefixIcon;
   final void Function(String)? onChanged;
   final Iterable<String>? autofillHints;
+  final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
+  final void Function()? onSubmitted;
 
   const IntputTexteField({
     super.key,
@@ -20,6 +23,9 @@ class IntputTexteField extends StatelessWidget {
     this.prefixIcon,
     this.onChanged,
     this.autofillHints,
+    this.textInputAction,
+    this.focusNode,
+    this.onSubmitted,
   });
 
   @override
@@ -31,6 +37,9 @@ class IntputTexteField extends StatelessWidget {
         obscureText: obscureText,
         keyboardType: keyboardType,
         autofillHints: autofillHints,
+        textInputAction: textInputAction,
+        focusNode: focusNode,
+        onFieldSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey[400]),

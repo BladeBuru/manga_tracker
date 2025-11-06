@@ -802,5 +802,35 @@
   "biometricAuthRequiresReconnect": "Pour activer l'authentification biométrique, veuillez vous reconnecter",
     "@biometricAuthRequiresReconnect": {
       "description": "Message quand il faut se reconnecter pour activer la biométrie"
+    },
+  
+  "or": "Ou",
+    "@or": {
+      "description": "Séparateur entre connexion classique et OAuth"
+    },
+  
+  "startTrackingNow": "Commencez à suivre votre lecture maintenant",
+    "@startTrackingNow": {
+      "description": "Message d'accueil sur la page d'inscription"
+    },
+  
+  "username": "Nom d'utilisateur",
+    "@username": {
+      "description": "Label pour le champ nom d'utilisateur"
+    },
+  
+  "confirmPassword": "Confirmation",
+    "@confirmPassword": {
+      "description": "Label pour le champ de confirmation de mot de passe"
+    },
+  
+  "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "@alreadyHaveAccount": {
+      "description": "Message pour rediriger vers la page de connexion"
+    },
+  
+  "newPassword": "Nouveau mot de passe",
+    "@newPassword": {
+      "description": "Label pour le champ nouveau mot de passe"
     }
 }

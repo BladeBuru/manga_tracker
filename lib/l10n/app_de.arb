@@ -147,6 +147,12 @@
   "biometricAuthFirstTimeTitle": "Biometrische Authentifizierung aktivieren?",
   "biometricAuthFirstTimeMessage": "Möchten Sie in Zukunft Ihren Fingerabdruck oder Face ID für schnelles Anmelden verwenden?",
   "biometricAuthNotAvailable": "Biometrische Authentifizierung ist auf diesem Gerät nicht verfügbar",
-  "biometricAuthRequiresReconnect": "Um die biometrische Authentifizierung zu aktivieren, melden Sie sich bitte erneut an"
+  "biometricAuthRequiresReconnect": "Um die biometrische Authentifizierung zu aktivieren, melden Sie sich bitte erneut an",
+  "or": "Oder",
+  "startTrackingNow": "Beginnen Sie jetzt, Ihre Lektüre zu verfolgen",
+  "username": "Benutzername",
+  "confirmPassword": "Bestätigen",
+  "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+  "newPassword": "Neues Passwort"
 }
 
