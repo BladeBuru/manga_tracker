@@ -438,4 +438,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String cannotOpenLink(String url) {
     return 'Cannot open link: $url';
   }
+
+  @override
+  String get searchHistoryTitle => 'Search history';
+
+  @override
+  String get searchEmptyStateMessage => 'Search for a manga, manhwa or manhua';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get biometricAuthTitle => 'Biometric authentication';
+
+  @override
+  String get biometricAuthSubtitle =>
+      'Use fingerprint or Face ID to sign in quickly';
+
+  @override
+  String get enableBiometricAuth => 'Biometric authentication enabled';
+
+  @override
+  String get disableBiometricAuth => 'Biometric authentication disabled';
+
+  @override
+  String get biometricAuthEnabled => 'Enabled';
+
+  @override
+  String get biometricAuthDisabled => 'Disabled';
+
+  @override
+  String get biometricAuthFirstTimeTitle => 'Enable biometric authentication?';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      'Would you like to use your fingerprint or Face ID to sign in quickly in the future?';
+
+  @override
+  String get biometricAuthNotAvailable =>
+      'Biometric authentication is not available on this device';
+
+  @override
+  String get biometricAuthRequiresReconnect =>
+      'To enable biometric authentication, please sign in again';
 }

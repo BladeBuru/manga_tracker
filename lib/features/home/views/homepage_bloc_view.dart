@@ -55,46 +55,52 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
           }
         },
         builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.all(25.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                _buildWelcomeHeader(state),
-                
-                // Indicateur de mode hors ligne
-                _buildOfflineIndicator(state),
+          return RefreshIndicator(
+            onRefresh: () async {
+              _homePageBloc.add(const RefreshHomePage());
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(25.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  _buildWelcomeHeader(state),
+                  
+                  // Indicateur de mode hors ligne
+                  _buildOfflineIndicator(state),
 
-                const SizedBox(height: 20),
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return Row(
-                      children: [
-                        Text(
-                          l10n?.trending ?? 'Tendances',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.add_circle_outline),
-                      ],
-                    );
-                  },
-                ),
+                  const SizedBox(height: 20),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Row(
+                        children: [
+                          Text(
+                            l10n?.trending ?? 'Tendances',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.add_circle_outline),
+                        ],
+                      );
+                    },
+                  ),
 
-                const SizedBox(height: 20),
-                _buildTrendingSection(state),
+                  const SizedBox(height: 20),
+                  _buildTrendingSection(state),
 
-                const SizedBox(height: 20),
-                // Boutons filtres
-                _buildFilterButtons(),
+                  const SizedBox(height: 20),
+                  // Boutons filtres
+                  _buildFilterButtons(),
 
-                const SizedBox(height: 20),
-                Expanded(
-                  child: _buildFilteredMangaList(state),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: _buildFilteredMangaList(state),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -172,20 +178,27 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     if (state is HomePageLoaded) {
       final mangaList = state.trendingMangas;
       return SizedBox(
-        height: 200,
+        height: 220,
         child: mangaList.isEmpty
             ? const Center(child: Text('Aucun manga en tendance'))
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: mangaList.length,
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 itemBuilder: (context, index) {
                   final manga = mangaList[index];
-                  return MangaCard(
-                    muId: manga.muId.toString(),
-                    mangaTitle: manga.title,
-                    mangaAuthor: manga.year.toString(),
-                    mediumImgPath: manga.mediumCoverUrl,
-                    rating: manga.rating,
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: SizedBox(
+                      width: 120,
+                      child: MangaCard(
+                        muId: manga.muId.toString(),
+                        mangaTitle: manga.title,
+                        mangaAuthor: manga.year.toString(),
+                        mediumImgPath: manga.mediumCoverUrl,
+                        rating: manga.rating != 'N/A' && manga.rating.isNotEmpty ? manga.rating : null,
+                      ),
+                    ),
                   );
                 },
               ),

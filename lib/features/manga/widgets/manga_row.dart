@@ -51,114 +51,110 @@ class MangaRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.shade200,
-                spreadRadius: 4,
-                blurRadius: 2,
+                color: Colors.grey.shade200.withValues(alpha: 0.8),
+                spreadRadius: 1,
+                blurRadius: 8,
                 offset: const Offset(0, 2),
-              )
+              ),
+              BoxShadow(
+                color: Colors.grey.shade100.withValues(alpha: 0.5),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
             ],
           ),
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
+          child: IntrinsicHeight(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  height: 100,
-                  width: 80,
-                  child: Padding(
-                    padding: const EdgeInsets.all(7),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: ImageHelper.loadMangaImage(mediumImgPath),
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    bottomLeft: Radius.circular(12),
+                  ),
+                  child: SizedBox(
+                    width: 80,
+                    height: 100,
+                    child: ImageHelper.loadMangaImage(
+                      mediumImgPath,
+                      width: 80,
+                      height: 100,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                Flexible(
-                  child: Column(
-                    children: [
-                      Padding(
-                          padding: const EdgeInsets.only(left: 15, right: 15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      parseFragment(mangaName).text!,
-                                      overflow: TextOverflow.fade,
-                                      maxLines: 1,
-                                      softWrap: false,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Text(
-                                    mangaAuthor,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.w300),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 7),
-                              if (lastChapter != null)
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      color: Colors.grey[200],
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 1, bottom: 1, right: 5, left: 5),
-                                      child: Text(
-                                        readChapter != null
-                                            ? '$readChapter / ${lastChapter ?? 0 } ${lastChapter! > 1 ? "chapitres" : "chapitre"}'
-                                            : '${lastChapter ?? 0 } ${lastChapter! > 1 ? "chapitres" : "chapitre"}',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                          color: Colors.orange,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                ],
-                              ),
-                            ],
-
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          parseFragment(mangaName).text!,
+                          overflow: TextOverflow.fade,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
                           ),
-
-                      ),
-
-                    ],
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          mangaAuthor,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                        if (lastChapter != null) ...[
+                          const SizedBox(height: 7),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: Colors.grey[200],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              child: Text(
+                                readChapter != null
+                                    ? '$readChapter / ${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}'
+                                    : '${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}',
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-
                 ),
                 if (rating != null)
                   Padding(
                     padding: const EdgeInsets.only(right: 12.0),
-                    child: Row(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Icon(Icons.star, color:Theme.of(context).colorScheme.primary, size: 14),
-                        const SizedBox(width: 2),
-                        Text(
-                          rating!,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 14),
+                            const SizedBox(width: 2),
+                            Text(
+                              rating!,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

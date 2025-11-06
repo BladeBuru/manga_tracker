@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
 import 'biometric.service.dart';
@@ -29,7 +30,8 @@ class AuthService {
         var data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
-        await saveCredentialsWithBiometric(emailAddress, password);
+        // Ne plus sauvegarder automatiquement les identifiants biométriques
+        // La sauvegarde se fera uniquement si l'utilisateur active la biométrie
         return data;
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
@@ -129,11 +131,10 @@ class AuthService {
     return utf8.decode(base64Url.decode(output));
   }
 
-  logout() {
+  Future<void> logout() async {
     storageService.deleteSecureData('refreshToken');
     storageService.deleteSecureData('accessToken');
     // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
-
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
@@ -141,8 +142,46 @@ class AuthService {
     await storageService.writeSecureDataBiometric('secure_credentials', credentials);
   }
 
+  /// Vérifie si la biométrie est activée
+  Future<bool> isBiometricEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('biometric_auth_enabled') ?? false;
+  }
+
+  /// Vérifie si une préférence biométrique a déjà été définie
+  Future<bool> hasBiometricPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('biometric_auth_enabled');
+  }
+
+  /// Active ou désactive la biométrie
+  /// Si activation et que des identifiants sont disponibles, les sauvegarde
+  /// Si désactivation, conserve les identifiants mais ne les utilise plus
+  Future<void> setBiometricEnabled(bool enabled, {String? email, String? password}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('biometric_auth_enabled', enabled);
+    
+    if (enabled) {
+      // Si on active et qu'on a des identifiants, les sauvegarder
+      if (email != null && password != null) {
+        await saveCredentialsWithBiometric(email, password);
+      } else {
+        // Vérifier si des identifiants existent déjà
+        final hasCreds = await storageService.hasBiometricCredentials();
+        if (!hasCreds) {
+          // Pas d'identifiants disponibles, l'utilisateur devra se reconnecter
+          debugPrint('⚠️ AuthService: Activation biométrique sans identifiants disponibles');
+        }
+      }
+    }
+    // Si désactivation, on ne supprime pas les identifiants (pour réactivation future)
+  }
 
   Future<bool> tryBiometricLogin(BuildContext context) async {
+    // Vérifier d'abord si la biométrie est activée
+    final isEnabled = await isBiometricEnabled();
+    if (!isEnabled) return false;
+
     final hasCreds = await storageService.hasBiometricCredentials();
     if (!hasCreds) return false;
 

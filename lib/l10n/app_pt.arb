@@ -134,6 +134,19 @@
   "mangaAddedToLibrarySuccess": "{title} foi adicionado à biblioteca!",
   "errorAddingToLibrary": "Erro ao adicionar à biblioteca.",
   "errorUpdatingChapter": "Erro ao atualizar o capítulo.",
-  "cannotOpenLink": "Não é possível abrir o link: {url}"
+  "cannotOpenLink": "Não é possível abrir o link: {url}",
+  "searchHistoryTitle": "Histórico de pesquisa",
+  "searchEmptyStateMessage": "Pesquise por um mangá, manhwa ou manhua",
+  "clear": "Limpar",
+  "biometricAuthTitle": "Autenticação biométrica",
+  "biometricAuthSubtitle": "Usar impressão digital ou Face ID para entrar rapidamente",
+  "enableBiometricAuth": "Autenticação biométrica ativada",
+  "disableBiometricAuth": "Autenticação biométrica desativada",
+  "biometricAuthEnabled": "Ativada",
+  "biometricAuthDisabled": "Desativada",
+  "biometricAuthFirstTimeTitle": "Ativar autenticação biométrica?",
+  "biometricAuthFirstTimeMessage": "Gostaria de usar sua impressão digital ou Face ID para entrar rapidamente no futuro?",
+  "biometricAuthNotAvailable": "A autenticação biométrica não está disponível neste dispositivo",
+  "biometricAuthRequiresReconnect": "Para ativar a autenticação biométrica, faça login novamente"
 }
 

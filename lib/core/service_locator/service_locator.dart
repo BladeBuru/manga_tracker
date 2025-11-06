@@ -19,6 +19,7 @@ import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
 import '../../features/manga/bloc/detail_bloc.dart';
+import '../../features/search/services/search_history.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 GetIt getIt = GetIt.instance;
@@ -27,6 +28,8 @@ void setupServiceLocator() {
   // Services de base
   getIt.registerSingletonAsync<StorageService>(
       () async => StorageService().init());
+  // Service d'historique de recherche (sans dépendances, peut être enregistré tôt)
+  getIt.registerSingleton<SearchHistoryService>(SearchHistoryService());
   getIt.registerSingletonWithDependencies<AuthService>(() => AuthService(),
       dependsOn: [StorageService]);
   getIt.registerSingletonWithDependencies<HttpService>(() => HttpService(),

@@ -730,12 +730,77 @@
   },
   
   "cannotOpenLink": "Impossible d'ouvrir le lien : {url}",
-  "@cannotOpenLink": {
-    "description": "Message d'erreur pour l'ouverture d'un lien",
-    "placeholders": {
-      "url": {
-        "type": "String"
+    "@cannotOpenLink": {
+      "description": "Message d'erreur pour l'ouverture d'un lien",
+      "placeholders": {
+        "url": {
+          "type": "String"
+        }
       }
+    },
+  
+  "searchHistoryTitle": "Historique de recherche",
+    "@searchHistoryTitle": {
+      "description": "Titre pour l'historique de recherche"
+    },
+  
+  "searchEmptyStateMessage": "Recherchez un manga, manhwa ou manhua",
+    "@searchEmptyStateMessage": {
+      "description": "Message pour l'état vide de la recherche"
+    },
+  
+  "clear": "Effacer",
+    "@clear": {
+      "description": "Bouton pour effacer l'historique de recherche"
+    },
+  
+  "biometricAuthTitle": "Authentification biométrique",
+    "@biometricAuthTitle": {
+      "description": "Titre pour l'authentification biométrique"
+    },
+  
+  "biometricAuthSubtitle": "Utiliser l'empreinte digitale ou le Face ID pour se connecter rapidement",
+    "@biometricAuthSubtitle": {
+      "description": "Sous-titre pour l'authentification biométrique"
+    },
+  
+  "enableBiometricAuth": "Activer l'authentification biométrique",
+    "@enableBiometricAuth": {
+      "description": "Message de succès pour l'activation de la biométrie"
+    },
+  
+  "disableBiometricAuth": "Authentification biométrique désactivée",
+    "@disableBiometricAuth": {
+      "description": "Message de succès pour la désactivation de la biométrie"
+    },
+  
+  "biometricAuthEnabled": "Activée",
+    "@biometricAuthEnabled": {
+      "description": "Statut activé pour la biométrie"
+    },
+  
+  "biometricAuthDisabled": "Désactivée",
+    "@biometricAuthDisabled": {
+      "description": "Statut désactivé pour la biométrie"
+    },
+  
+  "biometricAuthFirstTimeTitle": "Activer l'authentification biométrique ?",
+    "@biometricAuthFirstTimeTitle": {
+      "description": "Titre de la dialog de première activation"
+    },
+  
+  "biometricAuthFirstTimeMessage": "Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l'avenir ?",
+    "@biometricAuthFirstTimeMessage": {
+      "description": "Message de la dialog de première activation"
+    },
+  
+  "biometricAuthNotAvailable": "L'authentification biométrique n'est pas disponible sur cet appareil",
+    "@biometricAuthNotAvailable": {
+      "description": "Message quand la biométrie n'est pas disponible"
+    },
+  
+  "biometricAuthRequiresReconnect": "Pour activer l'authentification biométrique, veuillez vous reconnecter",
+    "@biometricAuthRequiresReconnect": {
+      "description": "Message quand il faut se reconnecter pour activer la biométrie"
     }
-  }
 }

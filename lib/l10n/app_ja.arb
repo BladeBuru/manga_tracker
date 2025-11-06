@@ -134,6 +134,19 @@
   "mangaAddedToLibrarySuccess": "{title} がライブラリに追加されました！",
   "errorAddingToLibrary": "ライブラリへの追加エラー。",
   "errorUpdatingChapter": "章の更新エラー。",
-  "cannotOpenLink": "リンクを開けません：{url}"
+  "cannotOpenLink": "リンクを開けません：{url}",
+  "searchHistoryTitle": "検索履歴",
+  "searchEmptyStateMessage": "マンガ、マンファ、またはマンファを検索",
+  "clear": "クリア",
+  "biometricAuthTitle": "生体認証",
+  "biometricAuthSubtitle": "指紋またはFace IDを使用してすばやくサインイン",
+  "enableBiometricAuth": "生体認証が有効になりました",
+  "disableBiometricAuth": "生体認証が無効になりました",
+  "biometricAuthEnabled": "有効",
+  "biometricAuthDisabled": "無効",
+  "biometricAuthFirstTimeTitle": "生体認証を有効にしますか？",
+  "biometricAuthFirstTimeMessage": "今後、指紋またはFace IDを使用してすばやくサインインしますか？",
+  "biometricAuthNotAvailable": "このデバイスでは生体認証は利用できません",
+  "biometricAuthRequiresReconnect": "生体認証を有効にするには、再度サインインしてください"
 }
 
