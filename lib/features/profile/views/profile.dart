@@ -178,10 +178,12 @@ class _ProfileState extends State<Profile> {
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            onPressed: () {
-              _authService.logout();
-              Navigator.of(context).pop();
-              _redirectToLoginPage();
+            onPressed: () async {
+              await _authService.logout();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                _redirectToLoginPage();
+              }
             },
             child: Text(l10n.logout),
           ),

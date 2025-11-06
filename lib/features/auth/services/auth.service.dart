@@ -131,11 +131,10 @@ class AuthService {
     return utf8.decode(base64Url.decode(output));
   }
 
-  logout() {
+  Future<void> logout() async {
     storageService.deleteSecureData('refreshToken');
     storageService.deleteSecureData('accessToken');
     // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
-
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
