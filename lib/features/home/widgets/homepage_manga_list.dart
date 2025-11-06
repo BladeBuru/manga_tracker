@@ -22,6 +22,7 @@ class HomepageMangaList extends StatelessWidget {
               return ListView.builder(
                 itemCount: mangaList.length,
                 scrollDirection: Axis.vertical,
+                padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
                   final manga = mangaList[index];
                   return MangaRow(
