@@ -134,6 +134,9 @@
   "mangaAddedToLibrarySuccess": "{title} がライブラリに追加されました！",
   "errorAddingToLibrary": "ライブラリへの追加エラー。",
   "errorUpdatingChapter": "章の更新エラー。",
-  "cannotOpenLink": "リンクを開けません：{url}"
+  "cannotOpenLink": "リンクを開けません：{url}",
+  "searchHistoryTitle": "検索履歴",
+  "searchEmptyStateMessage": "マンガ、マンファ、またはマンファを検索",
+  "clear": "クリア"
 }
 

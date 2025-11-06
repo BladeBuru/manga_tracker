@@ -899,6 +899,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Impossible d\'ouvrir le lien : {url}'**
   String cannotOpenLink(String url);
+
+  /// Titre pour l'historique de recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique de recherche'**
+  String get searchHistoryTitle;
+
+  /// Message pour l'état vide de la recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Recherchez un manga, manhwa ou manhua'**
+  String get searchEmptyStateMessage;
+
+  /// Bouton pour effacer l'historique de recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get clear;
 }
 
 class _AppLocalizationsDelegate

@@ -134,6 +134,9 @@
   "mangaAddedToLibrarySuccess": "{title}이(가) 라이브러리에 추가되었습니다!",
   "errorAddingToLibrary": "라이브러리에 추가하는 중 오류가 발생했습니다.",
   "errorUpdatingChapter": "챕터 업데이트 중 오류가 발생했습니다.",
-  "cannotOpenLink": "링크를 열 수 없습니다: {url}"
+  "cannotOpenLink": "링크를 열 수 없습니다: {url}",
+  "searchHistoryTitle": "검색 기록",
+  "searchEmptyStateMessage": "만화, 만화 또는 만화 검색",
+  "clear": "지우기"
 }
 

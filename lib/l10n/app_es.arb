@@ -134,6 +134,9 @@
   "mangaAddedToLibrarySuccess": "¡{title} ha sido añadido a la biblioteca!",
   "errorAddingToLibrary": "Error al añadir a la biblioteca.",
   "errorUpdatingChapter": "Error al actualizar el capítulo.",
-  "cannotOpenLink": "No se puede abrir el enlace: {url}"
+  "cannotOpenLink": "No se puede abrir el enlace: {url}",
+  "searchHistoryTitle": "Historial de búsqueda",
+  "searchEmptyStateMessage": "Busque un manga, manhwa o manhua",
+  "clear": "Borrar"
 }
 

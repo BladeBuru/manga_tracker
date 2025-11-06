@@ -437,4 +437,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String cannotOpenLink(String url) {
     return 'リンクを開けません：$url';
   }
+
+  @override
+  String get searchHistoryTitle => '検索履歴';
+
+  @override
+  String get searchEmptyStateMessage => 'マンガ、マンファ、またはマンファを検索';
+
+  @override
+  String get clear => 'クリア';
 }

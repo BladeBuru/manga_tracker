@@ -730,12 +730,27 @@
   },
   
   "cannotOpenLink": "Impossible d'ouvrir le lien : {url}",
-  "@cannotOpenLink": {
-    "description": "Message d'erreur pour l'ouverture d'un lien",
-    "placeholders": {
-      "url": {
-        "type": "String"
+    "@cannotOpenLink": {
+      "description": "Message d'erreur pour l'ouverture d'un lien",
+      "placeholders": {
+        "url": {
+          "type": "String"
+        }
       }
+    },
+  
+  "searchHistoryTitle": "Historique de recherche",
+    "@searchHistoryTitle": {
+      "description": "Titre pour l'historique de recherche"
+    },
+  
+  "searchEmptyStateMessage": "Recherchez un manga, manhwa ou manhua",
+    "@searchEmptyStateMessage": {
+      "description": "Message pour l'état vide de la recherche"
+    },
+  
+  "clear": "Effacer",
+    "@clear": {
+      "description": "Bouton pour effacer l'historique de recherche"
     }
-  }
 }

@@ -449,4 +449,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String cannotOpenLink(String url) {
     return 'No se puede abrir el enlace: $url';
   }
+
+  @override
+  String get searchHistoryTitle => 'Historial de búsqueda';
+
+  @override
+  String get searchEmptyStateMessage => 'Busque un manga, manhwa o manhua';
+
+  @override
+  String get clear => 'Borrar';
 }
