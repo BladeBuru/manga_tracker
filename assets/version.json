@@ -1,8 +1,27 @@
 {
-  "latestVersion": "0.6.0+14",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.6.0+14/MangaTracker.apk",
+  "latestVersion": "0.7.0+15",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.0+15/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.7.0+15",
+      "notes": [
+        "### ✨ Ajouts",
+        "- Vous pouvez maintenant activer ou désactiver l'authentification biométrique dans les paramètres",
+        "- Lors de votre première connexion, l'application vous propose d'activer l'authentification biométrique si votre appareil le supporte",
+        "- L'historique de recherche est maintenant sauvegardé et persiste entre les sessions",
+        "- Vous pouvez supprimer des éléments de l'historique de recherche instantanément",
+        "- Les textes de l'application sont maintenant traduits dans toutes les langues supportées pour les nouvelles fonctionnalités",
+        "### 🐛 Corrections",
+        "- Correction de l'affichage de l'historique de recherche qui ne s'affichait pas au chargement de la page",
+        "- Correction de la suppression d'éléments de l'historique qui n'était pas instantanée",
+        "- Le bouton d'authentification biométrique sur la page de connexion n'apparaît maintenant que si l'option est activée",
+        "### 🔧 Améliorations",
+        "- Amélioration de l'interface de recherche avec un meilleur affichage de l'état vide",
+        "- Harmonisation des barres de recherche entre les différentes pages",
+        "- Ajout de messages informatifs pour les fonctionnalités à venir (connexion Google/Apple)"
+      ]
+    },
     {
       "version": "0.6.0+14",
       "notes": [
