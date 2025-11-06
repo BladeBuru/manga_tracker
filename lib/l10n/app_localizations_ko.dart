@@ -446,4 +446,35 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get clear => '지우기';
+
+  @override
+  String get biometricAuthTitle => '생체 인증';
+
+  @override
+  String get biometricAuthSubtitle => '지문 또는 Face ID를 사용하여 빠르게 로그인';
+
+  @override
+  String get enableBiometricAuth => '생체 인증이 활성화되었습니다';
+
+  @override
+  String get disableBiometricAuth => '생체 인증이 비활성화되었습니다';
+
+  @override
+  String get biometricAuthEnabled => '활성화됨';
+
+  @override
+  String get biometricAuthDisabled => '비활성화됨';
+
+  @override
+  String get biometricAuthFirstTimeTitle => '생체 인증을 활성화하시겠습니까?';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      '향후 지문 또는 Face ID를 사용하여 빠르게 로그인하시겠습니까?';
+
+  @override
+  String get biometricAuthNotAvailable => '이 기기에서는 생체 인증을 사용할 수 없습니다';
+
+  @override
+  String get biometricAuthRequiresReconnect => '생체 인증을 활성화하려면 다시 로그인하세요';
 }

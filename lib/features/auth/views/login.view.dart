@@ -51,6 +51,7 @@ class _LoginViewState extends State<LoginView> {
       return;
     } on Exception {
       notifier.error(l10n?.unknownError ?? 'Erreur inconnue');
+      return;
     }
 
     final List<StorageItem> tokens = <StorageItem>[
@@ -59,10 +60,64 @@ class _LoginViewState extends State<LoginView> {
     ];
     storageService.writeAllSecureData(tokens);
 
+    if (!context.mounted) return;
+
+    // Vérifier si c'est la première fois (pas de préférence) et si la biométrie est disponible
+    final hasPreference = await authService.hasBiometricPreference();
+    if (!hasPreference) {
+      final isBiometricAvailable = await authService.biometricService.hasBiometricSupport();
+      if (isBiometricAvailable && context.mounted) {
+        // Afficher la dialog de proposition
+        await _showBiometricActivationDialog(email, password, l10n);
+      }
+    }
+
     if (context.mounted) {
       Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (context) => const BottomNavbar()));
+    }
+  }
+
+  Future<void> _showBiometricActivationDialog(
+    String email,
+    String password,
+    AppLocalizations? l10n,
+  ) async {
+    if (!context.mounted) return;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            l10n?.biometricAuthFirstTimeTitle ?? 'Activer l\'authentification biométrique ?',
+          ),
+          content: Text(
+            l10n?.biometricAuthFirstTimeMessage ??
+                'Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l\'avenir ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n?.cancel ?? 'Annuler'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n?.save ?? 'Activer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      // L'utilisateur a accepté : activer la biométrie et sauvegarder les identifiants
+      await authService.setBiometricEnabled(true, email: email, password: password);
+    } else {
+      // L'utilisateur a refusé : sauvegarder la préférence comme "refusé"
+      await authService.setBiometricEnabled(false);
     }
   }
 
@@ -177,30 +232,39 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(height: 15),
 
-                    TextButton.icon(
-                      onPressed: () async {
-                        final success = await authService.tryBiometricLogin(context);
-                        if (!mounted) return;
+                    // Afficher le bouton biométrique uniquement si l'option est activée
+                    FutureBuilder<bool>(
+                      future: authService.isBiometricEnabled(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == true) {
+                          return TextButton.icon(
+                            onPressed: () async {
+                              final success = await authService.tryBiometricLogin(context);
+                              if (!mounted) return;
 
-                        if (success) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const BottomNavbar()),
+                              if (success) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (_) => const BottomNavbar()),
+                                );
+                              } else {
+                                final l10n = AppLocalizations.of(context);
+                                notifier.error(l10n?.biometricAuthFailed ?? 'Echec de l\'authentification biometrique');
+                              }
+                            },
+                            icon: const Icon(Icons.fingerprint, color: Colors.grey),
+                            label: Builder(
+                              builder: (context) {
+                                final l10n = AppLocalizations.of(context);
+                                return Text(
+                                  l10n?.biometricAuth ?? "Connexion biométrique",
+                                  style: const TextStyle(color: Colors.grey),
+                                );
+                              },
+                            ),
                           );
-                        } else {
-                          final l10n = AppLocalizations.of(context);
-                          notifier.error(l10n?.biometricAuthFailed ?? 'Echec de l\'authentification biometrique');
                         }
+                        return const SizedBox.shrink();
                       },
-                      icon: const Icon(Icons.fingerprint, color: Colors.grey),
-                      label: Builder(
-                        builder: (context) {
-                          final l10n = AppLocalizations.of(context);
-                          return Text(
-                            l10n?.biometricAuth ?? "Connexion biométrique",
-                            style: const TextStyle(color: Colors.grey),
-                          );
-                        },
-                      ),
                     ),
 
                     const SizedBox(height: 40),

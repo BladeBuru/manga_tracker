@@ -446,4 +446,35 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get clear => 'クリア';
+
+  @override
+  String get biometricAuthTitle => '生体認証';
+
+  @override
+  String get biometricAuthSubtitle => '指紋またはFace IDを使用してすばやくサインイン';
+
+  @override
+  String get enableBiometricAuth => '生体認証が有効になりました';
+
+  @override
+  String get disableBiometricAuth => '生体認証が無効になりました';
+
+  @override
+  String get biometricAuthEnabled => '有効';
+
+  @override
+  String get biometricAuthDisabled => '無効';
+
+  @override
+  String get biometricAuthFirstTimeTitle => '生体認証を有効にしますか？';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      '今後、指紋またはFace IDを使用してすばやくサインインしますか？';
+
+  @override
+  String get biometricAuthNotAvailable => 'このデバイスでは生体認証は利用できません';
+
+  @override
+  String get biometricAuthRequiresReconnect => '生体認証を有効にするには、再度サインインしてください';
 }

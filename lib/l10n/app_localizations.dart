@@ -917,6 +917,66 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Effacer'**
   String get clear;
+
+  /// Titre pour l'authentification biométrique
+  ///
+  /// In fr, this message translates to:
+  /// **'Authentification biométrique'**
+  String get biometricAuthTitle;
+
+  /// Sous-titre pour l'authentification biométrique
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser l\'empreinte digitale ou le Face ID pour se connecter rapidement'**
+  String get biometricAuthSubtitle;
+
+  /// Message de succès pour l'activation de la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer l\'authentification biométrique'**
+  String get enableBiometricAuth;
+
+  /// Message de succès pour la désactivation de la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Authentification biométrique désactivée'**
+  String get disableBiometricAuth;
+
+  /// Statut activé pour la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Activée'**
+  String get biometricAuthEnabled;
+
+  /// Statut désactivé pour la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivée'**
+  String get biometricAuthDisabled;
+
+  /// Titre de la dialog de première activation
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer l\'authentification biométrique ?'**
+  String get biometricAuthFirstTimeTitle;
+
+  /// Message de la dialog de première activation
+  ///
+  /// In fr, this message translates to:
+  /// **'Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l\'avenir ?'**
+  String get biometricAuthFirstTimeMessage;
+
+  /// Message quand la biométrie n'est pas disponible
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'authentification biométrique n\'est pas disponible sur cet appareil'**
+  String get biometricAuthNotAvailable;
+
+  /// Message quand il faut se reconnecter pour activer la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour activer l\'authentification biométrique, veuillez vous reconnecter'**
+  String get biometricAuthRequiresReconnect;
 }
 
 class _AppLocalizationsDelegate

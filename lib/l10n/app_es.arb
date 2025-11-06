@@ -137,6 +137,16 @@
   "cannotOpenLink": "No se puede abrir el enlace: {url}",
   "searchHistoryTitle": "Historial de búsqueda",
   "searchEmptyStateMessage": "Busque un manga, manhwa o manhua",
-  "clear": "Borrar"
+  "clear": "Borrar",
+  "biometricAuthTitle": "Autenticación biométrica",
+  "biometricAuthSubtitle": "Usar huella dactilar o Face ID para iniciar sesión rápidamente",
+  "enableBiometricAuth": "Autenticación biométrica activada",
+  "disableBiometricAuth": "Autenticación biométrica desactivada",
+  "biometricAuthEnabled": "Activada",
+  "biometricAuthDisabled": "Desactivada",
+  "biometricAuthFirstTimeTitle": "¿Activar la autenticación biométrica?",
+  "biometricAuthFirstTimeMessage": "¿Le gustaría usar su huella dactilar o Face ID para iniciar sesión rápidamente en el futuro?",
+  "biometricAuthNotAvailable": "La autenticación biométrica no está disponible en este dispositivo",
+  "biometricAuthRequiresReconnect": "Para activar la autenticación biométrica, inicie sesión nuevamente"
 }
 

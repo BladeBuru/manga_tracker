@@ -451,4 +451,40 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get clear => 'Löschen';
+
+  @override
+  String get biometricAuthTitle => 'Biometrische Authentifizierung';
+
+  @override
+  String get biometricAuthSubtitle =>
+      'Verwenden Sie Fingerabdruck oder Face ID für schnelles Anmelden';
+
+  @override
+  String get enableBiometricAuth => 'Biometrische Authentifizierung aktiviert';
+
+  @override
+  String get disableBiometricAuth =>
+      'Biometrische Authentifizierung deaktiviert';
+
+  @override
+  String get biometricAuthEnabled => 'Aktiviert';
+
+  @override
+  String get biometricAuthDisabled => 'Deaktiviert';
+
+  @override
+  String get biometricAuthFirstTimeTitle =>
+      'Biometrische Authentifizierung aktivieren?';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      'Möchten Sie in Zukunft Ihren Fingerabdruck oder Face ID für schnelles Anmelden verwenden?';
+
+  @override
+  String get biometricAuthNotAvailable =>
+      'Biometrische Authentifizierung ist auf diesem Gerät nicht verfügbar';
+
+  @override
+  String get biometricAuthRequiresReconnect =>
+      'Um die biometrische Authentifizierung zu aktivieren, melden Sie sich bitte erneut an';
 }

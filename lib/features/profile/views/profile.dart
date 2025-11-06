@@ -31,6 +31,7 @@ class _ProfileState extends State<Profile> {
   UserInformationDto? _userInfo;
   bool _isLoading = true;
   Locale? _currentLocale;
+  bool? _biometricEnabled;
   
   Future<void> _loadLanguageService() async {
     final languageService = await getIt.getAsync<LanguageService>();
@@ -44,6 +45,16 @@ class _ProfileState extends State<Profile> {
     super.initState();
     _loadUserInformation();
     _loadLanguageService();
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    final isEnabled = await _authService.isBiometricEnabled();
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = isEnabled;
+      });
+    }
   }
 
   Future<void> _loadUserInformation() async {
@@ -230,6 +241,59 @@ class _ProfileState extends State<Profile> {
         },
       ),
     );
+  }
+
+  Future<void> _handleBiometricToggle() async {
+    final l10n = AppLocalizations.of(context)!;
+    final currentStatus = _biometricEnabled ?? false;
+    
+    if (currentStatus) {
+      // Désactiver la biométrie
+      await _authService.setBiometricEnabled(false);
+      setState(() {
+        _biometricEnabled = false;
+      });
+      _notifier.success(l10n.disableBiometricAuth);
+    } else {
+      // Activer la biométrie
+      // Vérifier si des identifiants sont déjà sauvegardés
+      final hasCreds = await _authService.storageService.hasBiometricCredentials();
+      
+      if (!hasCreds) {
+        // Pas d'identifiants disponibles, informer l'utilisateur
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(l10n.biometricAuthTitle),
+              content: Text(
+                l10n.biometricAuthRequiresReconnect,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _handleLogout();
+                  },
+                  child: Text(l10n.logout),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        // Des identifiants existent, activer directement
+        await _authService.setBiometricEnabled(true);
+        setState(() {
+          _biometricEnabled = true;
+        });
+        _notifier.success(l10n.enableBiometricAuth);
+      }
+    }
   }
 
   Future<void> _showLanguageSelector() async {
@@ -432,6 +496,31 @@ class _ProfileState extends State<Profile> {
                           _notifier.info(l10n.comingSoon);
                         },
                         iconColor: Colors.indigo,
+                      ),
+                      FutureBuilder<bool>(
+                        future: _authService.biometricService.hasBiometricSupport(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data == true) {
+                            return ProfileOptionTile(
+                              icon: Icons.fingerprint,
+                              title: l10n.biometricAuthTitle,
+                              subtitle: _biometricEnabled == true
+                                  ? l10n.biometricAuthEnabled
+                                  : l10n.biometricAuthDisabled,
+                              onTap: () async {
+                                await _handleBiometricToggle();
+                              },
+                              iconColor: Colors.purple,
+                              trailing: Switch(
+                                value: _biometricEnabled ?? false,
+                                onChanged: (value) async {
+                                  await _handleBiometricToggle();
+                                },
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
                     ],
                   ),
