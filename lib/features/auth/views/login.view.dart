@@ -300,13 +300,28 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 40),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        SquareTile(imagePath: 'assets/images/google_logo.png'),
-                        SizedBox(width: 20),
-                        SquareTile(imagePath: 'assets/images/apple_logo.png'),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context);
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SquareTile(
+                              imagePath: 'assets/images/google_logo.png',
+                              onTap: () {
+                                notifier.info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
+                              },
+                            ),
+                            const SizedBox(width: 20),
+                            SquareTile(
+                              imagePath: 'assets/images/apple_logo.png',
+                              onTap: () {
+                                notifier.info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
+                              },
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 40),
