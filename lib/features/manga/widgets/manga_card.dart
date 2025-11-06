@@ -76,7 +76,7 @@ class MangaCard extends StatelessWidget {
                   child: Text(
                     parseFragment(mangaTitle).text!,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: lastChapter != null ? 11 : 12,
+                      fontSize: lastChapter != null ? 12 : 14,
                       height: 1.2,
                     ),
                     overflow: TextOverflow.ellipsis,
