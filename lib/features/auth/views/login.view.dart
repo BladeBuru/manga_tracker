@@ -25,6 +25,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   late final GlobalKey<FormState> _formKey;
+  bool _obscurePassword = true;
   
   @override
   void initState() {
@@ -203,7 +204,7 @@ class _LoginViewState extends State<LoginView> {
                               hintText: l10n?.emailAddress ?? "Adresse e-mail",
                               obscureText: false,
                               autofillHints: const [AutofillHints.email],
-                              validator: validatorService.validateEmailAddress,
+                              validator: (value) => validatorService.validateEmailAddress(value, context),
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                             ),
@@ -214,11 +215,22 @@ class _LoginViewState extends State<LoginView> {
                             IntputTexteField(
                               controller: _passwordControler,
                               hintText: l10n?.password ?? "Mot de passe",
-                              obscureText: true,
+                              obscureText: _obscurePassword,
                               autofillHints: const [AutofillHints.password],
                               validator: validatorService.noValidation,
                               textInputAction: TextInputAction.done,
                               onSubmitted: onPressed,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                  color: Colors.grey[600],
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
                             ),
 
                             const SizedBox(height: 15),

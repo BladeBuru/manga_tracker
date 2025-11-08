@@ -153,6 +153,13 @@
   "username": "ユーザー名",
   "confirmPassword": "確認",
   "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
-  "newPassword": "新しいパスワード"
+  "newPassword": "新しいパスワード",
+  "validationEmailRequired": "メールアドレスを入力してください",
+  "validationEmailInvalid": "有効なメールアドレスを入力してください",
+  "validationPasswordRequired": "パスワードを入力してください",
+  "validationPasswordLength": "パスワードは8文字以上64文字以下である必要があります",
+  "validationPasswordComplexity": "パスワードには、少なくとも1つの小文字、1つの大文字、1つの特殊文字が含まれている必要があります",
+  "validationConfirmPasswordRequired": "パスワードを確認してください",
+  "validationPasswordsDoNotMatch": "パスワードが一致しません"
 }
 

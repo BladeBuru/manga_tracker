@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_colors.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;
@@ -14,33 +14,45 @@ class AuthButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onTap,
-    this.padding = const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-    this.borderRadius = 30,
+    this.padding = const EdgeInsets.symmetric(horizontal: 30.0, vertical: 16),
+    this.borderRadius = 25,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+      child: Material(
         borderRadius: BorderRadius.circular(borderRadius),
-        highlightColor: AppColors.highlight,
-        splashColor: AppColors.splash,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap?.call();
-        },
-        child: Ink(
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(width: 2.5, color: AppColors.border),
-          ),
-          padding: padding,
-          child: Center(
-            child: Text(
-              text,
-              style: AppTextStyles.authButton,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadius),
+          highlightColor: Colors.grey[200],
+          splashColor: Colors.grey[300],
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap?.call();
+          },
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(borderRadius),
+              border: Border.all(
+                width: 1.5,
+                color: AppColors.primary,
+              ),
+            ),
+            padding: padding,
+            child: SizedBox(
+              width: double.infinity,
+              child: Center(
+                child: Text(
+                  text,
+                  style: AppTextStyles.authButton.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

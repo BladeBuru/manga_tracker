@@ -499,4 +499,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newPassword => 'New password';
+
+  @override
+  String get validationEmailRequired => 'Please enter your email address';
+
+  @override
+  String get validationEmailInvalid => 'Please enter a valid email address';
+
+  @override
+  String get validationPasswordRequired => 'Please enter your password';
+
+  @override
+  String get validationPasswordLength =>
+      'Your password must be between 8 and 64 characters';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Your password must contain at least one lowercase letter, one uppercase letter, and one special character';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Please confirm your password';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'Passwords do not match';
 }

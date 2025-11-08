@@ -153,6 +153,13 @@
   "username": "Nome de usuário",
   "confirmPassword": "Confirmar",
   "alreadyHaveAccount": "Já tem uma conta?",
-  "newPassword": "Nova senha"
+  "newPassword": "Nova senha",
+  "validationEmailRequired": "Por favor, insira seu endereço de e-mail",
+  "validationEmailInvalid": "Por favor, insira um endereço de e-mail válido",
+  "validationPasswordRequired": "Por favor, insira sua senha",
+  "validationPasswordLength": "Sua senha deve ter entre 8 e 64 caracteres",
+  "validationPasswordComplexity": "Sua senha deve conter pelo menos uma letra minúscula, uma letra maiúscula e um caractere especial",
+  "validationConfirmPasswordRequired": "Por favor, confirme sua senha",
+  "validationPasswordsDoNotMatch": "As senhas não coincidem"
 }
 

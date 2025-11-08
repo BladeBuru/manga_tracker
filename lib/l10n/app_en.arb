@@ -168,5 +168,12 @@
   "username": "Username",
   "confirmPassword": "Confirm",
   "alreadyHaveAccount": "Already have an account?",
-  "newPassword": "New password"
+  "newPassword": "New password",
+  "validationEmailRequired": "Please enter your email address",
+  "validationEmailInvalid": "Please enter a valid email address",
+  "validationPasswordRequired": "Please enter your password",
+  "validationPasswordLength": "Your password must be between 8 and 64 characters",
+  "validationPasswordComplexity": "Your password must contain at least one lowercase letter, one uppercase letter, and one special character",
+  "validationConfirmPasswordRequired": "Please confirm your password",
+  "validationPasswordsDoNotMatch": "Passwords do not match"
 }

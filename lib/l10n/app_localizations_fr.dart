@@ -507,4 +507,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get newPassword => 'Nouveau mot de passe';
+
+  @override
+  String get validationEmailRequired => 'Veuillez entrer votre adresse e-mail';
+
+  @override
+  String get validationEmailInvalid =>
+      'Veuillez entrer une adresse e-mail valide';
+
+  @override
+  String get validationPasswordRequired => 'Veuillez entrer votre mot de passe';
+
+  @override
+  String get validationPasswordLength =>
+      'Votre mot de passe doit comporter entre 8 et 64 caractères';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Veuillez confirmer votre mot de passe';
+
+  @override
+  String get validationPasswordsDoNotMatch =>
+      'Les mots de passe ne correspondent pas';
 }

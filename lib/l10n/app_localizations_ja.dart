@@ -495,4 +495,26 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get newPassword => '新しいパスワード';
+
+  @override
+  String get validationEmailRequired => 'メールアドレスを入力してください';
+
+  @override
+  String get validationEmailInvalid => '有効なメールアドレスを入力してください';
+
+  @override
+  String get validationPasswordRequired => 'パスワードを入力してください';
+
+  @override
+  String get validationPasswordLength => 'パスワードは8文字以上64文字以下である必要があります';
+
+  @override
+  String get validationPasswordComplexity =>
+      'パスワードには、少なくとも1つの小文字、1つの大文字、1つの特殊文字が含まれている必要があります';
+
+  @override
+  String get validationConfirmPasswordRequired => 'パスワードを確認してください';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'パスワードが一致しません';
 }

@@ -24,6 +24,8 @@ class PasswordFields extends StatefulWidget {
 
 class _PasswordFieldsState extends State<PasswordFields> {
   late final FocusNode _confirmFocusNode;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
@@ -48,9 +50,9 @@ class _PasswordFieldsState extends State<PasswordFields> {
           hintText: widget.update 
               ? (l10n?.newPassword ?? 'Nouveau mot de passe')
               : (l10n?.password ?? 'Mot de passe'),
-          obscureText: true,
+          obscureText: _obscurePassword,
           keyboardType: TextInputType.visiblePassword,
-          validator: widget.validatorService.validatePassword,
+          validator: (value) => widget.validatorService.validatePassword(value, context),
           autofillHints: widget.update 
               ? const [AutofillHints.newPassword]
               : const [AutofillHints.password],
@@ -58,6 +60,17 @@ class _PasswordFieldsState extends State<PasswordFields> {
           onSubmitted: () {
             _confirmFocusNode.requestFocus();
           },
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
         ),
 
         const SizedBox(height: 15),
@@ -65,12 +78,13 @@ class _PasswordFieldsState extends State<PasswordFields> {
         IntputTexteField(
           controller: widget.confirmPasswordControler,
           hintText: l10n?.confirmPassword ?? 'Confirmation',
-          obscureText: true,
+          obscureText: _obscureConfirmPassword,
           keyboardType: TextInputType.visiblePassword,
           validator: (value) {
             return widget.validatorService.validateConfirmPassword(
               value,
               widget.passwordControler,
+              context,
             );
           },
           autofillHints: widget.update 
@@ -78,6 +92,17 @@ class _PasswordFieldsState extends State<PasswordFields> {
               : const [AutofillHints.newPassword],
           textInputAction: TextInputAction.done,
           focusNode: _confirmFocusNode,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              setState(() {
+                _obscureConfirmPassword = !_obscureConfirmPassword;
+              });
+            },
+          ),
         ),
       ],
     );

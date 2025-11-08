@@ -832,5 +832,40 @@
   "newPassword": "Nouveau mot de passe",
     "@newPassword": {
       "description": "Label pour le champ nouveau mot de passe"
+    },
+  
+  "validationEmailRequired": "Veuillez entrer votre adresse e-mail",
+    "@validationEmailRequired": {
+      "description": "Message d'erreur quand l'email est vide"
+    },
+  
+  "validationEmailInvalid": "Veuillez entrer une adresse e-mail valide",
+    "@validationEmailInvalid": {
+      "description": "Message d'erreur quand l'email est invalide"
+    },
+  
+  "validationPasswordRequired": "Veuillez entrer votre mot de passe",
+    "@validationPasswordRequired": {
+      "description": "Message d'erreur quand le mot de passe est vide"
+    },
+  
+  "validationPasswordLength": "Votre mot de passe doit comporter entre 8 et 64 caractères",
+    "@validationPasswordLength": {
+      "description": "Message d'erreur pour la longueur du mot de passe"
+    },
+  
+  "validationPasswordComplexity": "Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial",
+    "@validationPasswordComplexity": {
+      "description": "Message d'erreur pour la complexité du mot de passe"
+    },
+  
+  "validationConfirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+    "@validationConfirmPasswordRequired": {
+      "description": "Message d'erreur quand la confirmation de mot de passe est vide"
+    },
+  
+  "validationPasswordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "@validationPasswordsDoNotMatch": {
+      "description": "Message d'erreur quand les mots de passe ne correspondent pas"
     }
 }

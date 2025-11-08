@@ -12,6 +12,7 @@ class IntputTexteField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final void Function()? onSubmitted;
+  final Widget? suffixIcon;
 
   const IntputTexteField({
     super.key,
@@ -26,6 +27,7 @@ class IntputTexteField extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.onSubmitted,
+    this.suffixIcon,
   });
 
   @override
@@ -46,14 +48,23 @@ class IntputTexteField extends StatelessWidget {
           filled: true,
           fillColor: Colors.grey[100],
           prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
           errorMaxLines: 3,
           enabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(15),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red),
+            borderRadius: BorderRadius.circular(15),
           ),
         ),
         validator: validator,

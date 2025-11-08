@@ -76,16 +76,16 @@ class _RegisterViewState extends State<RegisterView> {
             body: Stack(
               children: [
                 SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
                   child: SafeArea(
                     child: Center(
                       child: Form(
                         key: _formKey,
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             const SizedBox(height: 20),
 
-                        Image.asset('assets/images/mask_logo.png', height: 150),
+                            Image.asset('assets/images/mask_logo.png', height: 150),
 
                             const SizedBox(height: 30),
 
@@ -113,7 +113,7 @@ class _RegisterViewState extends State<RegisterView> {
                                   hintText: l10n?.emailAddress ?? "Adresse e-mail",
                                   obscureText: false,
                                   keyboardType: TextInputType.emailAddress,
-                                  validator: validatorService.validateEmailAddress,
+                                  validator: (value) => validatorService.validateEmailAddress(value, context),
                                   autofillHints: const [AutofillHints.email],
                                   textInputAction: TextInputAction.next,
                                 );
@@ -252,6 +252,17 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                       ),
                     ),
+                  ),
+                ),
+                // Bouton de retour en haut à gauche
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.grey),
+                    onPressed: () {
+                      redirectToLoginPage();
+                    },
                   ),
                 ),
                 // Bouton de sélection de langue en haut à droite

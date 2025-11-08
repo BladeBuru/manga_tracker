@@ -54,16 +54,22 @@ void addPasswordFieldsStory(Dashbook dashbook) {
 
 class FakeValidatorService extends ValidatorService {
   @override
-  String? validatePassword(String? value) {
+  String? validatePassword(String? value, BuildContext? context) {
     if (value == null || value.isEmpty) return 'Champ requis';
     if (value.length < 6) return 'Minimum 6 caractères';
     return null;
   }
 
   @override
-  String? validateConfirmPassword(String? value, TextEditingController passwordController) {
+  String? validateConfirmPassword(
+    String? value,
+    TextEditingController passwordController,
+    BuildContext? context,
+  ) {
     if (value == null || value.isEmpty) return 'Champ requis';
-    if (value != passwordController.text) return 'Les mots de passe ne correspondent pas';
+    if (value != passwordController.text) {
+      return 'Les mots de passe ne correspondent pas';
+    }
     return null;
   }
 }

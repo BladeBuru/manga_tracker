@@ -153,6 +153,13 @@
   "username": "Nombre de usuario",
   "confirmPassword": "Confirmar",
   "alreadyHaveAccount": "¿Ya tiene una cuenta?",
-  "newPassword": "Nueva contraseña"
+  "newPassword": "Nueva contraseña",
+  "validationEmailRequired": "Por favor ingrese su dirección de correo electrónico",
+  "validationEmailInvalid": "Por favor ingrese una dirección de correo electrónico válida",
+  "validationPasswordRequired": "Por favor ingrese su contraseña",
+  "validationPasswordLength": "Su contraseña debe tener entre 8 y 64 caracteres",
+  "validationPasswordComplexity": "Su contraseña debe contener al menos una letra minúscula, una letra mayúscula y un carácter especial",
+  "validationConfirmPasswordRequired": "Por favor confirme su contraseña",
+  "validationPasswordsDoNotMatch": "Las contraseñas no coinciden"
 }
 

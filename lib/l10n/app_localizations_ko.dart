@@ -495,4 +495,26 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get newPassword => '새 비밀번호';
+
+  @override
+  String get validationEmailRequired => '이메일 주소를 입력해주세요';
+
+  @override
+  String get validationEmailInvalid => '유효한 이메일 주소를 입력해주세요';
+
+  @override
+  String get validationPasswordRequired => '비밀번호를 입력해주세요';
+
+  @override
+  String get validationPasswordLength => '비밀번호는 8자 이상 64자 이하여야 합니다';
+
+  @override
+  String get validationPasswordComplexity =>
+      '비밀번호에는 최소한 하나의 소문자, 하나의 대문자 및 하나의 특수 문자가 포함되어야 합니다';
+
+  @override
+  String get validationConfirmPasswordRequired => '비밀번호를 확인해주세요';
+
+  @override
+  String get validationPasswordsDoNotMatch => '비밀번호가 일치하지 않습니다';
 }

@@ -153,6 +153,13 @@
   "username": "Benutzername",
   "confirmPassword": "Bestätigen",
   "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
-  "newPassword": "Neues Passwort"
+  "newPassword": "Neues Passwort",
+  "validationEmailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein",
+  "validationEmailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+  "validationPasswordRequired": "Bitte geben Sie Ihr Passwort ein",
+  "validationPasswordLength": "Ihr Passwort muss zwischen 8 und 64 Zeichen lang sein",
+  "validationPasswordComplexity": "Ihr Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und ein Sonderzeichen enthalten",
+  "validationConfirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+  "validationPasswordsDoNotMatch": "Die Passwörter stimmen nicht überein"
 }
 
