@@ -7,6 +7,7 @@
   "password": "Password",
   "forgotPassword": "Forgot password?",
   "login": "Sign in",
+  "back": "Back",
   "signUp": "Sign up",
   "invalidCredentials": "Invalid credentials",
   "unknownError": "Unknown error",
@@ -175,5 +176,14 @@
   "validationPasswordLength": "Your password must be between 8 and 64 characters",
   "validationPasswordComplexity": "Your password must contain at least one lowercase letter, one uppercase letter, and one special character",
   "validationConfirmPasswordRequired": "Please confirm your password",
-  "validationPasswordsDoNotMatch": "Passwords do not match"
+  "validationPasswordsDoNotMatch": "Passwords do not match",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "emailAlreadyUsed": "This email address is already registered",
+  "networkError": "Please check your internet connection",
+  "timeoutError": "The server is taking too long to respond. Please try again.",
+  "passwordStrengthLabel": "Password strength",
+  "passwordStrengthWeak": "Weak",
+  "passwordStrengthMedium": "Medium",
+  "passwordStrengthStrong": "Strong"
 }

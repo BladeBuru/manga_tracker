@@ -27,6 +27,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get login => 'Se connecter';
 
   @override
+  String get back => 'Retour';
+
+  @override
   String get signUp => 'S\'inscrire';
 
   @override
@@ -533,4 +536,32 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get validationPasswordsDoNotMatch =>
       'Les mots de passe ne correspondent pas';
+
+  @override
+  String get showPassword => 'Afficher le mot de passe';
+
+  @override
+  String get hidePassword => 'Masquer le mot de passe';
+
+  @override
+  String get emailAlreadyUsed => 'Cette adresse e-mail est déjà utilisée';
+
+  @override
+  String get networkError => 'Veuillez vérifier votre connexion internet';
+
+  @override
+  String get timeoutError =>
+      'Le serveur met trop de temps à répondre. Veuillez réessayer.';
+
+  @override
+  String get passwordStrengthLabel => 'Robustesse du mot de passe';
+
+  @override
+  String get passwordStrengthWeak => 'Faible';
+
+  @override
+  String get passwordStrengthMedium => 'Moyen';
+
+  @override
+  String get passwordStrengthStrong => 'Fort';
 }

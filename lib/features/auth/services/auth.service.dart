@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
+import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,11 +44,46 @@ class AuthService {
     }
   }
 
-  Future attemptSignUp(String username, String emailAddress, String password) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
-    var res = await http.post(url,
-        body: {'name': username, 'email': emailAddress, 'password': password});
-    return res.statusCode;
+  Future<void> attemptSignUp(
+    String username,
+    String emailAddress,
+    String password,
+  ) async {
+    final url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
+
+    try {
+      final res = await http
+          .post(
+            url,
+            body: {
+              'name': username,
+              'email': emailAddress,
+              'password': password,
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      switch (res.statusCode) {
+        case HttpStatus.created:
+        case HttpStatus.ok:
+          return;
+        case HttpStatus.conflict:
+          throw EmailAlreadyUsedException();
+        case HttpStatus.badRequest:
+        case HttpStatus.unprocessableEntity:
+          final message = _extractMessage(res.body);
+          throw AuthServerException(res.statusCode, message);
+        default:
+          throw AuthServerException(
+            res.statusCode,
+            res.body.isNotEmpty ? _extractMessage(res.body) : null,
+          );
+      }
+    } on SocketException {
+      rethrow;
+    } on TimeoutException {
+      rethrow;
+    }
   }
 
   Future<bool> isUserAuthenticated() async {
@@ -177,7 +215,7 @@ class AuthService {
     // Si désactivation, on ne supprime pas les identifiants (pour réactivation future)
   }
 
-  Future<bool> tryBiometricLogin(BuildContext context) async {
+  Future<bool> tryBiometricLogin(BuildContext context, {int maxRetries = 2}) async {
     // Vérifier d'abord si la biométrie est activée
     final isEnabled = await isBiometricEnabled();
     if (!isEnabled) return false;
@@ -188,9 +226,6 @@ class AuthService {
     final isAvailable = await biometricService.hasBiometricSupport();
     if (!isAvailable) return false;
 
-    final authenticated = await biometricService.authenticateWithBiometrics(context);
-    if (!authenticated) return false;
-
     final jsonCreds = await storageService.readSecureDataBiometric('secure_credentials');
     if (jsonCreds == null) return false;
 
@@ -198,15 +233,49 @@ class AuthService {
     final email = decoded['email'];
     final password = decoded['password'];
 
-    try {
-      final result = await attemptLogIn(email, password);
-      await storageService.writeSecureData('accessToken', result['accessToken']);
-      await storageService.writeSecureData('refreshToken', result['refreshToken']);
-      return true;
-    } catch (e) {
-      return false;
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      final authenticated = await biometricService.authenticateWithBiometrics(context);
+      if (!authenticated) {
+        if (attempt < maxRetries - 1) {
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+          continue;
+        }
+        return false;
+      }
+
+      try {
+        final result = await attemptLogIn(email, password);
+        await storageService.writeSecureData('accessToken', result['accessToken']);
+        await storageService.writeSecureData('refreshToken', result['refreshToken']);
+        return true;
+      } catch (_) {
+        if (attempt < maxRetries - 1) {
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+          continue;
+        }
+        return false;
+      }
     }
+
+    return false;
   }
 
 
+  String? _extractMessage(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['message'] is String) {
+          return decoded['message'] as String;
+        }
+        if (decoded['error'] is String) {
+          return decoded['error'] as String;
+        }
+      }
+    } catch (_) {
+      return body;
+    }
+    return null;
+  }
 }

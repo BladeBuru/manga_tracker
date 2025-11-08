@@ -13,6 +13,8 @@ class IntputTexteField extends StatelessWidget {
   final FocusNode? focusNode;
   final void Function()? onSubmitted;
   final Widget? suffixIcon;
+  final String? labelText;
+  final String? helperText;
 
   const IntputTexteField({
     super.key,
@@ -28,6 +30,8 @@ class IntputTexteField extends StatelessWidget {
     this.focusNode,
     this.onSubmitted,
     this.suffixIcon,
+    this.labelText,
+    this.helperText,
   });
 
   @override
@@ -45,6 +49,8 @@ class IntputTexteField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey[400]),
+          labelText: labelText,
+          helperText: helperText,
           filled: true,
           fillColor: Colors.grey[100],
           prefixIcon: prefixIcon,

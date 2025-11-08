@@ -7,6 +7,7 @@
   "password": "Passwort",
   "forgotPassword": "Passwort vergessen?",
   "login": "Anmelden",
+  "back": "Zurück",
   "signUp": "Registrieren",
   "invalidCredentials": "Ungültige Anmeldedaten",
   "unknownError": "Unbekannter Fehler",
@@ -160,6 +161,15 @@
   "validationPasswordLength": "Ihr Passwort muss zwischen 8 und 64 Zeichen lang sein",
   "validationPasswordComplexity": "Ihr Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und ein Sonderzeichen enthalten",
   "validationConfirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
-  "validationPasswordsDoNotMatch": "Die Passwörter stimmen nicht überein"
+  "validationPasswordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+  "showPassword": "Passwort anzeigen",
+  "hidePassword": "Passwort ausblenden",
+  "emailAlreadyUsed": "Diese E-Mail-Adresse ist bereits registriert",
+  "networkError": "Bitte überprüfen Sie Ihre Internetverbindung",
+  "timeoutError": "Der Server benötigt zu lange für die Antwort. Bitte versuchen Sie es erneut.",
+  "passwordStrengthLabel": "Passwortstärke",
+  "passwordStrengthWeak": "Schwach",
+  "passwordStrengthMedium": "Mittel",
+  "passwordStrengthStrong": "Stark"
 }
 

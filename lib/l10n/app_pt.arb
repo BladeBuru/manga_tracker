@@ -7,6 +7,7 @@
   "password": "Senha",
   "forgotPassword": "Esqueceu a senha?",
   "login": "Entrar",
+  "back": "Voltar",
   "signUp": "Cadastrar",
   "invalidCredentials": "Credenciais inválidas",
   "unknownError": "Erro desconhecido",
@@ -160,6 +161,15 @@
   "validationPasswordLength": "Sua senha deve ter entre 8 e 64 caracteres",
   "validationPasswordComplexity": "Sua senha deve conter pelo menos uma letra minúscula, uma letra maiúscula e um caractere especial",
   "validationConfirmPasswordRequired": "Por favor, confirme sua senha",
-  "validationPasswordsDoNotMatch": "As senhas não coincidem"
+  "validationPasswordsDoNotMatch": "As senhas não coincidem",
+  "showPassword": "Mostrar senha",
+  "hidePassword": "Ocultar senha",
+  "emailAlreadyUsed": "Este endereço de e-mail já está registrado",
+  "networkError": "Verifique sua conexão com a internet",
+  "timeoutError": "O servidor está demorando muito para responder. Tente novamente.",
+  "passwordStrengthLabel": "Força da senha",
+  "passwordStrengthWeak": "Fraca",
+  "passwordStrengthMedium": "Média",
+  "passwordStrengthStrong": "Forte"
 }
 

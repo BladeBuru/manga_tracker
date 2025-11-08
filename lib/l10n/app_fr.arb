@@ -29,6 +29,11 @@
   "@login": {
     "description": "Bouton de connexion"
   },
+
+  "back": "Retour",
+  "@back": {
+    "description": "Libellé pour retourner en arrière"
+  },
   
   "signUp": "S'inscrire",
   "@signUp": {
@@ -867,5 +872,27 @@
   "validationPasswordsDoNotMatch": "Les mots de passe ne correspondent pas",
     "@validationPasswordsDoNotMatch": {
       "description": "Message d'erreur quand les mots de passe ne correspondent pas"
-    }
+    },
+
+  "showPassword": "Afficher le mot de passe",
+    "@showPassword": {
+      "description": "Libellé pour afficher le mot de passe"
+    },
+
+  "hidePassword": "Masquer le mot de passe",
+    "@hidePassword": {
+      "description": "Libellé pour masquer le mot de passe"
+    },
+  "emailAlreadyUsed": "Cette adresse e-mail est déjà utilisée",
+  "networkError": "Veuillez vérifier votre connexion internet",
+  "timeoutError": "Le serveur met trop de temps à répondre. Veuillez réessayer.",
+
+  "passwordStrengthLabel": "Robustesse du mot de passe",
+    "@passwordStrengthLabel": {
+      "description": "Libellé pour indiquer la robustesse du mot de passe"
+    },
+
+  "passwordStrengthWeak": "Faible",
+  "passwordStrengthMedium": "Moyen",
+  "passwordStrengthStrong": "Fort"
 }

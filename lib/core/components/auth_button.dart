@@ -9,6 +9,7 @@ class AuthButton extends StatelessWidget {
   final Function()? onTap;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
+  final bool isLoading;
 
   const AuthButton({
     super.key,
@@ -16,6 +17,7 @@ class AuthButton extends StatelessWidget {
     required this.onTap,
     this.padding = const EdgeInsets.symmetric(horizontal: 30.0, vertical: 16),
     this.borderRadius = 25,
+    this.isLoading = false,
   });
 
   @override
@@ -28,10 +30,12 @@ class AuthButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           highlightColor: Colors.grey[200],
           splashColor: Colors.grey[300],
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onTap?.call();
-          },
+          onTap: isLoading
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onTap?.call();
+                },
           child: Ink(
             decoration: BoxDecoration(
               color: Colors.grey[100],
@@ -45,13 +49,24 @@ class AuthButton extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: Center(
-                child: Text(
-                  text,
-                  style: AppTextStyles.authButton.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        text,
+                        style: AppTextStyles.authButton.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ),

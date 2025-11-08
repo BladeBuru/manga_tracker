@@ -7,6 +7,7 @@
   "password": "Contraseña",
   "forgotPassword": "¿Olvidaste la contraseña?",
   "login": "Iniciar sesión",
+  "back": "Atrás",
   "signUp": "Registrarse",
   "invalidCredentials": "Credenciales inválidas",
   "unknownError": "Error desconocido",
@@ -160,6 +161,15 @@
   "validationPasswordLength": "Su contraseña debe tener entre 8 y 64 caracteres",
   "validationPasswordComplexity": "Su contraseña debe contener al menos una letra minúscula, una letra mayúscula y un carácter especial",
   "validationConfirmPasswordRequired": "Por favor confirme su contraseña",
-  "validationPasswordsDoNotMatch": "Las contraseñas no coinciden"
+  "validationPasswordsDoNotMatch": "Las contraseñas no coinciden",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña",
+  "emailAlreadyUsed": "Esta dirección de correo ya está registrada",
+  "networkError": "Por favor, verifica tu conexión a internet",
+  "timeoutError": "El servidor está tardando demasiado en responder. Inténtalo de nuevo.",
+  "passwordStrengthLabel": "Seguridad de la contraseña",
+  "passwordStrengthWeak": "Débil",
+  "passwordStrengthMedium": "Media",
+  "passwordStrengthStrong": "Fuerte"
 }
 

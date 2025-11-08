@@ -144,6 +144,12 @@ abstract class AppLocalizations {
   /// **'Se connecter'**
   String get login;
 
+  /// Libellé pour retourner en arrière
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get back;
+
   /// Bouton d'inscription
   ///
   /// In fr, this message translates to:
@@ -1055,6 +1061,60 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Les mots de passe ne correspondent pas'**
   String get validationPasswordsDoNotMatch;
+
+  /// Libellé pour afficher le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher le mot de passe'**
+  String get showPassword;
+
+  /// Libellé pour masquer le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Masquer le mot de passe'**
+  String get hidePassword;
+
+  /// No description provided for @emailAlreadyUsed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette adresse e-mail est déjà utilisée'**
+  String get emailAlreadyUsed;
+
+  /// No description provided for @networkError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez vérifier votre connexion internet'**
+  String get networkError;
+
+  /// No description provided for @timeoutError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur met trop de temps à répondre. Veuillez réessayer.'**
+  String get timeoutError;
+
+  /// Libellé pour indiquer la robustesse du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Robustesse du mot de passe'**
+  String get passwordStrengthLabel;
+
+  /// No description provided for @passwordStrengthWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordStrengthWeak;
+
+  /// No description provided for @passwordStrengthMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordStrengthMedium;
+
+  /// No description provided for @passwordStrengthStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fort'**
+  String get passwordStrengthStrong;
 }
 
 class _AppLocalizationsDelegate

@@ -27,6 +27,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get login => 'サインイン';
 
   @override
+  String get back => '戻る';
+
+  @override
   String get signUp => 'サインアップ';
 
   @override
@@ -517,4 +520,31 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get validationPasswordsDoNotMatch => 'パスワードが一致しません';
+
+  @override
+  String get showPassword => 'パスワードを表示';
+
+  @override
+  String get hidePassword => 'パスワードを非表示';
+
+  @override
+  String get emailAlreadyUsed => 'このメールアドレスは既に登録されています';
+
+  @override
+  String get networkError => 'インターネット接続を確認してください';
+
+  @override
+  String get timeoutError => 'サーバーの応答に時間がかかっています。もう一度お試しください。';
+
+  @override
+  String get passwordStrengthLabel => 'パスワードの強度';
+
+  @override
+  String get passwordStrengthWeak => '弱い';
+
+  @override
+  String get passwordStrengthMedium => '普通';
+
+  @override
+  String get passwordStrengthStrong => '強い';
 }

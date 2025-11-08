@@ -27,6 +27,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get login => '로그인';
 
   @override
+  String get back => '뒤로';
+
+  @override
   String get signUp => '회원가입';
 
   @override
@@ -517,4 +520,31 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get validationPasswordsDoNotMatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get showPassword => '비밀번호 표시';
+
+  @override
+  String get hidePassword => '비밀번호 숨기기';
+
+  @override
+  String get emailAlreadyUsed => '이 이메일 주소는 이미 등록되어 있습니다';
+
+  @override
+  String get networkError => '인터넷 연결을 확인하세요';
+
+  @override
+  String get timeoutError => '서버 응답이 너무 오래 걸립니다. 다시 시도해주세요.';
+
+  @override
+  String get passwordStrengthLabel => '비밀번호 강도';
+
+  @override
+  String get passwordStrengthWeak => '약함';
+
+  @override
+  String get passwordStrengthMedium => '보통';
+
+  @override
+  String get passwordStrengthStrong => '강함';
 }

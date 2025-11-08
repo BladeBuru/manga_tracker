@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Sign in';
 
   @override
+  String get back => 'Back';
+
+  @override
   String get signUp => 'Sign up';
 
   @override
@@ -523,4 +526,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationPasswordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get emailAlreadyUsed => 'This email address is already registered';
+
+  @override
+  String get networkError => 'Please check your internet connection';
+
+  @override
+  String get timeoutError =>
+      'The server is taking too long to respond. Please try again.';
+
+  @override
+  String get passwordStrengthLabel => 'Password strength';
+
+  @override
+  String get passwordStrengthWeak => 'Weak';
+
+  @override
+  String get passwordStrengthMedium => 'Medium';
+
+  @override
+  String get passwordStrengthStrong => 'Strong';
 }

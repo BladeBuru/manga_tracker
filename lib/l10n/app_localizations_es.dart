@@ -27,6 +27,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get login => 'Iniciar sesión';
 
   @override
+  String get back => 'Atrás';
+
+  @override
   String get signUp => 'Registrarse';
 
   @override
@@ -537,4 +540,32 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get validationPasswordsDoNotMatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get showPassword => 'Mostrar contraseña';
+
+  @override
+  String get hidePassword => 'Ocultar contraseña';
+
+  @override
+  String get emailAlreadyUsed => 'Esta dirección de correo ya está registrada';
+
+  @override
+  String get networkError => 'Por favor, verifica tu conexión a internet';
+
+  @override
+  String get timeoutError =>
+      'El servidor está tardando demasiado en responder. Inténtalo de nuevo.';
+
+  @override
+  String get passwordStrengthLabel => 'Seguridad de la contraseña';
+
+  @override
+  String get passwordStrengthWeak => 'Débil';
+
+  @override
+  String get passwordStrengthMedium => 'Media';
+
+  @override
+  String get passwordStrengthStrong => 'Fuerte';
 }
