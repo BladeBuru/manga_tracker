@@ -245,6 +245,7 @@ Le mode offline est détecté via les **erreurs réseau** plutôt que la connect
 - **Material 3** partiellement implémenté
 - Thème clair actif
 - Thème sombre prévu (commenté)
+- `AppRadius` centralise les rayons d'arrondi et sert de design token partagé
 - Composants réutilisables dans `core/components/`
 
 ### Composants réutilisables
