@@ -31,6 +31,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     ReadingStatus.caughtUp: true,
     ReadingStatus.completed: true,
   };
+  static bool? _cachedViewMode;
   bool _isCardView = false;
   String _searchQuery = '';
 
@@ -41,20 +42,31 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     // Charger la bibliothèque au démarrage
     _libraryBloc.add(const LoadLibrary());
     _searchController.addListener(_onSearchChanged);
+    if (_cachedViewMode != null) {
+      _isCardView = _cachedViewMode!;
+    }
     _loadViewState();
   }
 
   Future<void> _loadViewState() async {
     final prefs = await SharedPreferences.getInstance();
-    final isCardView = prefs.getBool('library_view_mode') ?? false;
-    setState(() {
-      _isCardView = isCardView;
-    });
+    final storedValue = prefs.getBool('library_view_mode');
+    if (storedValue != null) {
+      _cachedViewMode = storedValue;
+      if (mounted) {
+        setState(() {
+          _isCardView = storedValue;
+        });
+      } else {
+        _isCardView = storedValue;
+      }
+    }
   }
 
   Future<void> _saveViewState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('library_view_mode', _isCardView);
+    _cachedViewMode = _isCardView;
   }
 
   @override
@@ -204,6 +216,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             onPressed: () {
               setState(() {
                 _isCardView = !_isCardView;
+                _cachedViewMode = _isCardView;
               });
               _saveViewState();
             },
