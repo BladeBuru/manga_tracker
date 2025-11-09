@@ -8,13 +8,12 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 Future<void> _pumpPasswordFields(WidgetTester tester,
     TextEditingController passwordController,
     TextEditingController confirmController) async {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized()
-      as TestWidgetsFlutterBinding;
-  binding.window.devicePixelRatioTestValue = 1.0;
-  binding.window.physicalSizeTestValue = const Size(800, 1200);
+  final view = tester.view;
+  view.devicePixelRatio = 1.0;
+  view.physicalSize = const Size(800, 1200);
   addTearDown(() {
-    binding.window.clearPhysicalSizeTestValue();
-    binding.window.clearDevicePixelRatioTestValue();
+    view.resetPhysicalSize();
+    view.resetDevicePixelRatio();
   });
 
   await tester.pumpWidget(

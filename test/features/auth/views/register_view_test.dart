@@ -10,7 +10,6 @@ import 'package:mangatracker/features/auth/exceptions/email_already_used.excepti
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/biometric.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/auth/views/register.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/main.dart';
@@ -52,13 +51,12 @@ Future<void> _registerRegisterDependencies({
 }
 
 Future<void> _pumpRegisterView(WidgetTester tester) async {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized()
-      as TestWidgetsFlutterBinding;
-  binding.window.devicePixelRatioTestValue = 1.0;
-  binding.window.physicalSizeTestValue = const Size(1200, 2200);
+  final view = tester.view;
+  view.devicePixelRatio = 1.0;
+  view.physicalSize = const Size(1200, 2200);
   addTearDown(() {
-    binding.window.clearPhysicalSizeTestValue();
-    binding.window.clearDevicePixelRatioTestValue();
+    view.resetPhysicalSize();
+    view.resetDevicePixelRatio();
   });
 
   await tester.pumpWidget(

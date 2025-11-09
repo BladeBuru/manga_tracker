@@ -24,26 +24,30 @@ class LibraryLoaded extends LibraryState {
   final List<MangaQuickViewDto> mangas;
   final bool isOffline;
   final int pendingActions;
+  final bool isStale;
   
   const LibraryLoaded({
     required this.mangas,
     this.isOffline = false,
     this.pendingActions = 0,
-  });
+    bool? isStale,
+  }) : isStale = isStale ?? false;
   
   @override
-  List<Object> get props => [mangas, isOffline, pendingActions];
+  List<Object> get props => [mangas, isOffline, pendingActions, isStale];
   
   /// Créer une copie avec de nouveaux paramètres
   LibraryLoaded copyWith({
     List<MangaQuickViewDto>? mangas,
     bool? isOffline,
     int? pendingActions,
+    bool? isStale,
   }) {
     return LibraryLoaded(
       mangas: mangas ?? this.mangas,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
+      isStale: isStale ?? this.isStale,
     );
   }
 }

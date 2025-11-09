@@ -51,7 +51,29 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   /// Charge la page d'accueil complète
   Future<void> _onLoadHomePage(LoadHomePage event, Emitter<HomePageState> emit) async {
     debugPrint('🔄 HomePageBloc: Chargement de la page d\'accueil...');
-    emit(const HomePageLoading());
+
+    final cachedPopular = await _cacheHelper.getCachedSearchResults('popular');
+    final cachedNew = await _cacheHelper.getCachedSearchResults('new');
+    final cachedTrending = await _cacheHelper.getCachedSearchResults('trending');
+    final cachedUser = await _getCachedUserInfo();
+    final hasCachedData = (cachedPopular != null && cachedPopular.isNotEmpty) ||
+        (cachedNew != null && cachedNew.isNotEmpty) ||
+        (cachedTrending != null && cachedTrending.isNotEmpty);
+
+    if (hasCachedData) {
+      final pendingCached = await _getPendingActionsCount();
+      emit(HomePageLoaded(
+        popularMangas: cachedPopular ?? const <MangaQuickViewDto>[],
+        newMangas: cachedNew ?? const <MangaQuickViewDto>[],
+        trendingMangas: cachedTrending ?? const <MangaQuickViewDto>[],
+        user: cachedUser,
+        isOffline: false,
+        pendingActions: pendingCached,
+        isStale: true,
+      ));
+    } else {
+      emit(const HomePageLoading());
+    }
     
     try {
       // Charger toutes les données en parallèle
@@ -72,6 +94,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         user: results[3] as UserDto?,
         isOffline: false,
         pendingActions: pendingActions,
+        isStale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -88,26 +111,25 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       debugPrint('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
       
       try {
-        // Récupérer les caches séparés pour chaque type de manga
-        final cachedPopular = await _cacheHelper.getCachedSearchResults('popular');
-        final cachedNew = await _cacheHelper.getCachedSearchResults('new');
-        final cachedTrending = await _cacheHelper.getCachedSearchResults('trending');
-        final cachedUser = await _getCachedUserInfo();
-        
-        // Si au moins un cache existe, afficher les données
-        if ((cachedPopular != null && cachedPopular.isNotEmpty) ||
-            (cachedNew != null && cachedNew.isNotEmpty) ||
-            (cachedTrending != null && cachedTrending.isNotEmpty)) {
+        final fallbackPopular = cachedPopular ?? await _cacheHelper.getCachedSearchResults('popular');
+        final fallbackNew = cachedNew ?? await _cacheHelper.getCachedSearchResults('new');
+        final fallbackTrending = cachedTrending ?? await _cacheHelper.getCachedSearchResults('trending');
+        final fallbackUser = cachedUser ?? await _getCachedUserInfo();
+
+        if ((fallbackPopular != null && fallbackPopular.isNotEmpty) ||
+            (fallbackNew != null && fallbackNew.isNotEmpty) ||
+            (fallbackTrending != null && fallbackTrending.isNotEmpty)) {
           final pendingActions = await _getPendingActionsCount();
-          debugPrint('✅ Données chargées depuis le cache (mode offline) - Popular: ${cachedPopular?.length ?? 0}, New: ${cachedNew?.length ?? 0}, Trending: ${cachedTrending?.length ?? 0}, Pending: $pendingActions');
+          debugPrint('✅ Données chargées depuis le cache (mode offline) - Popular: ${fallbackPopular?.length ?? 0}, New: ${fallbackNew?.length ?? 0}, Trending: ${fallbackTrending?.length ?? 0}, Pending: $pendingActions');
           
           emit(HomePageLoaded(
-            popularMangas: cachedPopular ?? [],
-            newMangas: cachedNew ?? [],
-            trendingMangas: cachedTrending ?? [],
-            user: cachedUser,
+            popularMangas: fallbackPopular ?? const <MangaQuickViewDto>[],
+            newMangas: fallbackNew ?? const <MangaQuickViewDto>[],
+            trendingMangas: fallbackTrending ?? const <MangaQuickViewDto>[],
+            user: fallbackUser,
             isOffline: true,
             pendingActions: pendingActions,
+            isStale: true,
           ));
         } else {
           emit(HomePageError(

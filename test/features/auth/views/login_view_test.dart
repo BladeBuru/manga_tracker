@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,13 +56,12 @@ Future<void> _registerLoginDependencies({
 
 Future<void> _pumpLoginView(WidgetTester tester,
     {NavigatorObserver? observer}) async {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized()
-      as TestWidgetsFlutterBinding;
-  binding.window.devicePixelRatioTestValue = 1.0;
-  binding.window.physicalSizeTestValue = const Size(1200, 2200);
+  final view = tester.view;
+  view.devicePixelRatio = 1.0;
+  view.physicalSize = const Size(1200, 2200);
   addTearDown(() {
-    binding.window.clearPhysicalSizeTestValue();
-    binding.window.clearDevicePixelRatioTestValue();
+    view.resetPhysicalSize();
+    view.resetDevicePixelRatio();
   });
 
   await tester.pumpWidget(

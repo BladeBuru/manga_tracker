@@ -24,26 +24,30 @@ class DetailLoaded extends DetailState {
   final MangaDetailDto mangaDetail;
   final bool isOffline;
   final int pendingActions;
+  final bool isStale;
   
   const DetailLoaded({
     required this.mangaDetail,
     this.isOffline = false,
     this.pendingActions = 0,
-  });
+    bool? isStale,
+  }) : isStale = isStale ?? false;
   
   @override
-  List<Object> get props => [mangaDetail, isOffline, pendingActions];
+  List<Object> get props => [mangaDetail, isOffline, pendingActions, isStale];
   
   /// Créer une copie avec de nouveaux paramètres
   DetailLoaded copyWith({
     MangaDetailDto? mangaDetail,
     bool? isOffline,
     int? pendingActions,
+    bool? isStale,
   }) {
     return DetailLoaded(
       mangaDetail: mangaDetail ?? this.mangaDetail,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
+      isStale: isStale ?? this.isStale,
     );
   }
 }
