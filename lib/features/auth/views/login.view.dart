@@ -370,7 +370,6 @@ class _LoginViewState extends State<LoginView> {
                                       l10n?.signUp ?? "S'inscrire",
                                       style: TextStyle(
                                         color: Colors.red[400],
-                                        decoration: TextDecoration.underline,
                                       ),
                                     ),
                                   ),
