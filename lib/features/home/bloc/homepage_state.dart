@@ -37,8 +37,8 @@ class HomePageLoaded extends HomePageState {
     this.user,
     this.isOffline = false,
     this.pendingActions = 0,
-    bool? isStale,
-  }) : isStale = isStale ?? false;
+    bool? stale,
+  }) : isStale = stale ?? false;
   
   @override
   List<Object?> get props => [popularMangas, newMangas, trendingMangas, user, isOffline, pendingActions, isStale];
@@ -51,7 +51,7 @@ class HomePageLoaded extends HomePageState {
     UserDto? user,
     bool? isOffline,
     int? pendingActions,
-    bool? isStale,
+    bool? stale,
   }) {
     return HomePageLoaded(
       popularMangas: popularMangas ?? this.popularMangas,
@@ -60,7 +60,7 @@ class HomePageLoaded extends HomePageState {
       user: user ?? this.user,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
-      isStale: isStale ?? this.isStale,
+      stale: stale ?? this.isStale,
     );
   }
 }

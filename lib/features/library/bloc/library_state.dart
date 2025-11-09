@@ -30,8 +30,8 @@ class LibraryLoaded extends LibraryState {
     required this.mangas,
     this.isOffline = false,
     this.pendingActions = 0,
-    bool? isStale,
-  }) : isStale = isStale ?? false;
+    bool? stale,
+  }) : isStale = stale ?? false;
   
   @override
   List<Object> get props => [mangas, isOffline, pendingActions, isStale];
@@ -41,13 +41,13 @@ class LibraryLoaded extends LibraryState {
     List<MangaQuickViewDto>? mangas,
     bool? isOffline,
     int? pendingActions,
-    bool? isStale,
+    bool? stale,
   }) {
     return LibraryLoaded(
       mangas: mangas ?? this.mangas,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
-      isStale: isStale ?? this.isStale,
+      stale: stale ?? this.isStale,
     );
   }
 }

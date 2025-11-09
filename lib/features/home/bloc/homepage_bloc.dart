@@ -69,7 +69,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         user: cachedUser,
         isOffline: false,
         pendingActions: pendingCached,
-        isStale: true,
+        stale: true,
       ));
     } else {
       emit(const HomePageLoading());
@@ -94,7 +94,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         user: results[3] as UserDto?,
         isOffline: false,
         pendingActions: pendingActions,
-        isStale: false,
+        stale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -129,7 +129,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
             user: fallbackUser,
             isOffline: true,
             pendingActions: pendingActions,
-            isStale: true,
+            stale: true,
           ));
         } else {
           emit(HomePageError(

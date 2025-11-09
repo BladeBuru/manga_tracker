@@ -64,7 +64,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         mangas: cachedList,
         isOffline: false,
         pendingActions: pendingCached,
-        isStale: true,
+        stale: true,
       ));
     } else {
       emit(const LibraryLoading());
@@ -84,7 +84,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         mangas: mangas,
         isOffline: false,
         pendingActions: pendingActions,
-        isStale: false,
+        stale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -110,7 +110,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
             mangas: fallbackMangas,
             isOffline: true,
             pendingActions: pendingActions,
-            isStale: true,
+            stale: true,
           ));
         } else {
           debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');

@@ -66,7 +66,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         mangaDetail: enrichedCachedDetail,
         isOffline: false,
         pendingActions: pendingCached,
-        isStale: true,
+        stale: true,
       ));
     } else {
       emit(const DetailLoading());
@@ -87,7 +87,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         mangaDetail: updatedMangaDetail,
         isOffline: false,
         pendingActions: pendingActions,
-        isStale: false,
+        stale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -111,7 +111,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             mangaDetail: fallbackDetail,
             isOffline: true,
             pendingActions: await _getPendingActionsCount(),
-            isStale: true,
+            stale: true,
           ));
         } else {
           emit(DetailError(
@@ -189,7 +189,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -249,7 +249,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -308,7 +308,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -362,7 +362,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             mangaDetail: updatedMangaDetail,
             isOffline: isOffline,
             pendingActions: pendingActions,
-            isStale: currentState.isStale,
+            stale: currentState.isStale,
           ));
           debugPrint('✅ Manga retiré de la bibliothèque');
         }
@@ -433,7 +433,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: currentState.pendingActions + offlineActionCount,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         // Échec uniquement si on est online
@@ -514,7 +514,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: currentState.isOffline,
           pendingActions: currentState.pendingActions,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         emit(DetailError(
@@ -557,7 +557,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: currentState.isOffline,
           pendingActions: currentState.pendingActions,
-          isStale: currentState.isStale,
+          stale: currentState.isStale,
         ));
       } else {
         emit(DetailError(

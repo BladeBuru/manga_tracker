@@ -30,8 +30,8 @@ class DetailLoaded extends DetailState {
     required this.mangaDetail,
     this.isOffline = false,
     this.pendingActions = 0,
-    bool? isStale,
-  }) : isStale = isStale ?? false;
+    bool? stale,
+  }) : isStale = stale ?? false;
   
   @override
   List<Object> get props => [mangaDetail, isOffline, pendingActions, isStale];
@@ -47,7 +47,7 @@ class DetailLoaded extends DetailState {
       mangaDetail: mangaDetail ?? this.mangaDetail,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
-      isStale: isStale ?? this.isStale,
+      stale: isStale ?? this.isStale,
     );
   }
 }
