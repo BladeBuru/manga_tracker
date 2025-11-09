@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Widget réutilisable pour afficher un bouton de sélection de langue avec un drapeau
@@ -36,7 +37,7 @@ class LanguageSelectorButton extends StatelessWidget {
     }
     
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: AppRadius.circularXs,
       child: Image.asset(
         assetPath,
         width: 24,
@@ -47,7 +48,7 @@ class LanguageSelectorButton extends StatelessWidget {
             width: 24,
             height: 18,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.circularXs,
               color: Colors.grey.withValues(alpha: 0.3),
               border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 0.5),
             ),
@@ -77,7 +78,7 @@ class LanguageSelectorButton extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xxxl),
         ),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
@@ -101,7 +102,7 @@ class LanguageSelectorButton extends StatelessWidget {
                     color: isSelected 
                         ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.circularXl,
                     border: Border.all(
                       color: isSelected 
                           ? Theme.of(context).colorScheme.primary
@@ -117,7 +118,7 @@ class LanguageSelectorButton extends StatelessWidget {
                         onLanguageChanged?.call(locale);
                       }
                     },
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.circularXl,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       child: Row(

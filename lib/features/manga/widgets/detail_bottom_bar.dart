@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../manga/dto/reading_status.enum.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class DetailBottomBar extends StatelessWidget {
   final ReadingStatus? status;
@@ -25,7 +26,7 @@ class DetailBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(15));
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xxl));
     ButtonStyle primary() => ElevatedButton.styleFrom(
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Theme.of(context).colorScheme.onPrimary,

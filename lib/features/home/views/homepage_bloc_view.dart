@@ -12,6 +12,7 @@ import '../../../core/components/filter_button.dart';
 import '../../../core/components/welcome_header.dart';
 import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Vue réactive de la page d'accueil utilisant BLoC - Design original conservé
 class HomePageBlocView extends StatefulWidget {
@@ -133,7 +134,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       decoration: BoxDecoration(
         color: Colors.orange.withValues(alpha: 0.1),
         border: Border.all(color: Colors.orange),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.circularMd,
       ),
       child: Row(
         children: [

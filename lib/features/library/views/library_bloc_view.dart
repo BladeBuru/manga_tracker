@@ -13,6 +13,7 @@ import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Vue réactive de la bibliothèque utilisant BLoC
 class LibraryBlocView extends StatefulWidget {
@@ -325,7 +326,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             decoration: BoxDecoration(
               color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
             child: Builder(
               builder: (context) {
@@ -354,7 +355,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
               border: Border.all(color: Colors.blue),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
           child: Row(
             children: [
@@ -415,7 +416,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             decoration: BoxDecoration(
               color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
             child: Row(
               children: [
@@ -480,7 +481,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           margin: const EdgeInsets.only(bottom: 8.0),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
             border: Border.all(
               color: Colors.red.withValues(alpha: 0.3),
               width: 1.5,
@@ -515,11 +516,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                 _isExpanded[status] = value;
               });
             },
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            collapsedShape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             childrenPadding: EdgeInsets.zero,
             children: items.map((manga) => Padding(
@@ -566,7 +567,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           margin: const EdgeInsets.only(bottom: 16.0),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
             border: Border.all(
               color: Colors.red.withValues(alpha: 0.3),
               width: 1.5,
@@ -601,11 +602,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                 _isExpanded[status] = value;
               });
             },
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            collapsedShape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             childrenPadding: EdgeInsets.zero,
             children: [

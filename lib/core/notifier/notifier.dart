@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/main.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
 
 enum NotifierType { success, error, warning, info }
 
@@ -29,7 +30,7 @@ class Notifier {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding ajusté
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadius.circularJumbo,
         ),
         child: Row(
           children: [

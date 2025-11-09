@@ -16,6 +16,7 @@ import 'package:mangatracker/features/manga/views/web_view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import '../../auth/views/login.view.dart';
@@ -131,7 +132,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
                   color: Colors.orange,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.circularXl,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -260,20 +261,20 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       backgroundColor: Colors.transparent,
                       insetPadding: const EdgeInsets.all(20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(AppRadius.jumbo),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                         child: Container(
+                        borderRadius: AppRadius.circularJumbo,
+                        child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: AppRadius.circularJumbo,
                             color: Colors.transparent,
                           ),
                           child: Stack(
                             children: [
                               Center(
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: AppRadius.circularJumbo,
                                   child: InteractiveViewer(
                                     minScale: 0.5,
                                     maxScale: 3.0,
@@ -359,7 +360,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                             decoration: BoxDecoration(
                                               color: Colors.white.withValues(alpha: 0.9),
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius: AppRadius.circularXl,
                                               border: Border.all(
                                                 color: Colors.white.withValues(alpha: 0.3),
                                                 width: 1,
@@ -433,7 +434,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = widget.muId;
     final buttonShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
     );
 
     if (status == null) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/services/app_update_service.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Widget pour afficher le changelog dans le profil
 class ChangelogCard extends StatefulWidget {
@@ -127,7 +128,7 @@ class _ChangelogCardState extends State<ChangelogCard> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         side: BorderSide(
           color: hasNewChangelog
               ? theme.colorScheme.primary
@@ -144,7 +145,7 @@ class _ChangelogCardState extends State<ChangelogCard> {
             color: hasNewChangelog
                 ? theme.colorScheme.primary.withValues(alpha: 0.1)
                 : theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
           ),
           child: Icon(
             hasNewChangelog ? Icons.new_releases : Icons.info_outline,
@@ -173,7 +174,7 @@ class _ChangelogCardState extends State<ChangelogCard> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.circularXl,
                 ),
                 child: Text(
                   'Nouveau',

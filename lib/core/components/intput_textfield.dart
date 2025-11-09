@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class IntputTexteField extends StatelessWidget {
   final TextEditingController controller;
@@ -56,22 +57,22 @@ class IntputTexteField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           errorMaxLines: 3,
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.red),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.red),
-            borderRadius: BorderRadius.circular(15),
-          ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.white),
+          borderRadius: AppRadius.circularXxl,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderRadius: AppRadius.circularXxl,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: AppRadius.circularXxl,
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: AppRadius.circularXxl,
+        ),
         ),
         validator: validator,
         onChanged: onChanged,

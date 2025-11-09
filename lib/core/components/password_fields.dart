@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 import '../../features/auth/services/validator.service.dart';
 import 'intput_textfield.dart';
@@ -163,8 +164,8 @@ class _PasswordFieldsState extends State<PasswordFields> {
                 Semantics(
                   label:
                       '${l10n?.passwordStrengthLabel ?? 'Robustesse du mot de passe'} : $_passwordStrengthLabel',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
+          child: ClipRRect(
+            borderRadius: AppRadius.circularSm,
                     child: LinearProgressIndicator(
                       value: _passwordStrength,
                       minHeight: 6,

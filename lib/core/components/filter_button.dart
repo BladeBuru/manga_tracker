@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class FilterButton extends StatelessWidget {
   final String label;
@@ -20,7 +21,7 @@ class FilterButton extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: selected ? theme.colorScheme.primary : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.huge)),
       ),
       child: Text(
         label,

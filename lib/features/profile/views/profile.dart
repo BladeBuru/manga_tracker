@@ -9,6 +9,7 @@ import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 import '../../auth/services/validator.service.dart';
 import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
@@ -223,7 +224,7 @@ class _ProfileState extends State<Profile> {
     }
     
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: AppRadius.circularXs,
       child: Image.asset(
         assetPath,
         width: 32,
@@ -236,7 +237,7 @@ class _ProfileState extends State<Profile> {
             width: 32,
             height: 24,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.circularXs,
               color: Colors.grey.withValues(alpha: 0.3),
               border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 0.5),
             ),

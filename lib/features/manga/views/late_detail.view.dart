@@ -14,6 +14,7 @@ import 'row_chapter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -345,7 +346,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.circularXl,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                                 ),
@@ -383,7 +384,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.circularXl,
                             border: Border.all(
                               color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                             ),
@@ -432,7 +433,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.circularXl,
                                 border: Border.all(
                                   color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                                 ),
@@ -485,7 +486,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.circularXl,
                             border: Border.all(
                               color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                             ),
@@ -534,7 +535,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.circularXl,
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                               ),
@@ -589,7 +590,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.circularXl,
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                               ),
@@ -650,7 +651,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.circularXl,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                     ),
@@ -705,22 +706,34 @@ class _LateDetailViewState extends State<LateDetailView> {
                           runSpacing: 10.0,
                           alignment: WrapAlignment.start,
                           children: widget.associated!.map((name) {
+                            final theme = Theme.of(context);
+                            final chipColor = theme.colorScheme.primary;
+                            final textColor = theme.colorScheme.onPrimary;
+
                             return Container(
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(20),
+                                color: chipColor,
+                                borderRadius: AppRadius.circularMd,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: chipColor.withValues(alpha: 0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                                 border: Border.all(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                                  color: chipColor.withValues(alpha: 0.8),
                                   width: 1,
                                 ),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Text(
                                 name,
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                  letterSpacing: 0.1,
                                 ),
                               ),
                             );
@@ -852,7 +865,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                             margin: const EdgeInsets.only(bottom: 4),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.circularXl,
                               border: Border.all(
                                 color: isExpanded
                                     ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
@@ -872,17 +885,17 @@ class _LateDetailViewState extends State<LateDetailView> {
                             child: ExpansionTile(
                               key: ValueKey('${section.title}_${isExpanded}'),
                               tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.xl),
                               ),
-                              collapsedShape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                              collapsedShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppRadius.xl),
                               ),
                               leading: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: AppRadius.circularMd,
                                 ),
                                 child: Icon(
                                   Icons.list_alt,
@@ -943,9 +956,9 @@ class _LateDetailViewState extends State<LateDetailView> {
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                    borderRadius: const BorderRadius.only(
-                                      bottomLeft: Radius.circular(12),
-                                      bottomRight: Radius.circular(12),
+                                    borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(AppRadius.xl),
+                                      bottomRight: Radius.circular(AppRadius.xl),
                                     ),
                                   ),
                                   child: Column(
@@ -961,7 +974,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                         child: Material(
                                           color: Colors.transparent,
                                           child: InkWell(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: AppRadius.circularMd,
                                             onTap: _isSaving
                                                 ? null
                                                 : () => handleSaveChapter(widget.muId, chapNum),
@@ -1011,9 +1024,9 @@ class _LateDetailViewState extends State<LateDetailView> {
                               padding: const EdgeInsets.symmetric(vertical: 2),
                               child: Material(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.circularXl,
                                 child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: AppRadius.circularXl,
                                   onTap: _isSaving
                                       ? null
                                       : () => handleSaveChapter(widget.muId, chapNum),
