@@ -263,7 +263,6 @@ class _RegisterViewState extends State<RegisterView> {
                                             l10n?.login ?? "Se connecter",
                                             style: TextStyle(
                                               color: Colors.red[400],
-                                              decoration: TextDecoration.underline,
                                             ),
                                           ),
                                         ),
