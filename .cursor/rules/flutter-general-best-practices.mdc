@@ -2,6 +2,8 @@
 description: Applies general Flutter best practices across the entire project, focusing on architecture, design, and code quality.
 globs: lib/**/*.*
 ---
+- Avant toute contribution, relire `@memory-bank` et mettre à jour les documents pertinents si les changements impactent l'architecture, le PRD ou la progression.
+- Pour préparer une PR ou rédiger des messages de commit, consulter systématiquement `CONTRIBUTTING.md`.
 - Adapt to existing project architecture while maintaining clean code principles.
 - Use Flutter 3.x features and Material 3 design.
 - Implement clean architecture with BLoC pattern.

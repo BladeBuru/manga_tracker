@@ -8,6 +8,7 @@ import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../auth/exceptions/invalid_credentials.exception.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class LibraryView extends StatefulWidget {
   const LibraryView({super.key});
@@ -105,7 +106,7 @@ class _LibraryViewState extends State<LibraryView> {
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
                 color: Colors.orange,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.circularXl,
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -171,7 +172,7 @@ class _LibraryViewState extends State<LibraryView> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.circularMd,
                 ),
                 child: const Row(
                   children: [

@@ -27,6 +27,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get login => 'Se connecter';
 
   @override
+  String get back => 'Retour';
+
+  @override
   String get signUp => 'S\'inscrire';
 
   @override
@@ -489,4 +492,76 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Pour activer l\'authentification biométrique, veuillez vous reconnecter';
+
+  @override
+  String get or => 'Ou';
+
+  @override
+  String get startTrackingNow => 'Commencez à suivre votre lecture maintenant';
+
+  @override
+  String get username => 'Nom d\'utilisateur';
+
+  @override
+  String get confirmPassword => 'Confirmation';
+
+  @override
+  String get alreadyHaveAccount => 'Vous avez déjà un compte ?';
+
+  @override
+  String get newPassword => 'Nouveau mot de passe';
+
+  @override
+  String get validationEmailRequired => 'Veuillez entrer votre adresse e-mail';
+
+  @override
+  String get validationEmailInvalid =>
+      'Veuillez entrer une adresse e-mail valide';
+
+  @override
+  String get validationPasswordRequired => 'Veuillez entrer votre mot de passe';
+
+  @override
+  String get validationPasswordLength =>
+      'Votre mot de passe doit comporter entre 8 et 64 caractères';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Veuillez confirmer votre mot de passe';
+
+  @override
+  String get validationPasswordsDoNotMatch =>
+      'Les mots de passe ne correspondent pas';
+
+  @override
+  String get showPassword => 'Afficher le mot de passe';
+
+  @override
+  String get hidePassword => 'Masquer le mot de passe';
+
+  @override
+  String get emailAlreadyUsed => 'Cette adresse e-mail est déjà utilisée';
+
+  @override
+  String get networkError => 'Veuillez vérifier votre connexion internet';
+
+  @override
+  String get timeoutError =>
+      'Le serveur met trop de temps à répondre. Veuillez réessayer.';
+
+  @override
+  String get passwordStrengthLabel => 'Robustesse du mot de passe';
+
+  @override
+  String get passwordStrengthWeak => 'Faible';
+
+  @override
+  String get passwordStrengthMedium => 'Moyen';
+
+  @override
+  String get passwordStrengthStrong => 'Fort';
 }

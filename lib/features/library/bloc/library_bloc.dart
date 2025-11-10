@@ -53,7 +53,22 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
     debugPrint('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
-    emit(const LibraryLoading());
+
+    final cachedMangas = await _cacheHelper.getCachedLibrary();
+    final hasCachedData = cachedMangas != null && cachedMangas.isNotEmpty;
+
+    if (hasCachedData) {
+      final pendingCached = await _getPendingActionsCount();
+      final List<MangaQuickViewDto> cachedList = cachedMangas;
+      emit(LibraryLoaded(
+        mangas: cachedList,
+        isOffline: false,
+        pendingActions: pendingCached,
+        stale: true,
+      ));
+    } else {
+      emit(const LibraryLoading());
+    }
     
     try {
       debugPrint('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
@@ -69,6 +84,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         mangas: mangas,
         isOffline: false,
         pendingActions: pendingActions,
+        stale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -86,14 +102,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       debugPrint('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
       try {
-        final cachedMangas = await _cacheHelper.getCachedLibrary();
-        if (cachedMangas != null && cachedMangas.isNotEmpty) {
+        final fallbackMangas = cachedMangas ?? await _cacheHelper.getCachedLibrary();
+        if (fallbackMangas != null && fallbackMangas.isNotEmpty) {
           final pendingActions = await _getPendingActionsCount();
-          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${cachedMangas.length} mangas, $pendingActions actions en attente');
+          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${fallbackMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
-            mangas: cachedMangas,
+            mangas: fallbackMangas,
             isOffline: true,
             pendingActions: pendingActions,
+            stale: true,
           ));
         } else {
           debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');

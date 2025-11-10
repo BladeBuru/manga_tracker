@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Composant réutilisable de barre de recherche moderne avec Material Design 3
 class CustomSearchBar extends StatelessWidget {
@@ -29,7 +30,7 @@ class CustomSearchBar extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
             border: Border.all(
               color: theme.colorScheme.outline.withValues(alpha: 0.2),
               width: 1,

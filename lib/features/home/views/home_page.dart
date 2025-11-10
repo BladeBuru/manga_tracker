@@ -16,6 +16,7 @@ import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:flutter/material.dart';
 
 import '../../manga/widgets/manga_card.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -159,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.circularMd,
                 ),
                 child: const Row(
                   children: [

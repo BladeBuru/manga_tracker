@@ -54,9 +54,24 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   /// Charge les détails d'un manga
   Future<void> _onLoadMangaDetail(LoadMangaDetail event, Emitter<DetailState> emit) async {
     debugPrint('🔄 DetailBloc: Chargement du manga ${event.muId}...');
-    emit(const DetailLoading());
     _currentMuId = event.muId;
-    
+
+    final cachedDetail = await _cacheHelper.getCachedMangaDetail(event.muId);
+    MangaDetailDto? enrichedCachedDetail;
+
+    if (cachedDetail != null) {
+      enrichedCachedDetail = await _enrichWithLibraryInfo(event.muId, cachedDetail);
+      final pendingCached = await _getPendingActionsCount();
+      emit(DetailLoaded(
+        mangaDetail: enrichedCachedDetail,
+        isOffline: false,
+        pendingActions: pendingCached,
+        stale: true,
+      ));
+    } else {
+      emit(const DetailLoading());
+    }
+
     try {
       final mangaDetail = await _cacheHelper.loadMangaDetail(
         muId: event.muId,
@@ -65,34 +80,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       final pendingActions = await _getPendingActionsCount();
       
-      // Récupérer le statut de lecture et le nombre de chapitres lus depuis la bibliothèque si le manga y est
-      MangaDetailDto updatedMangaDetail = mangaDetail;
-      try {
-        final libraryStatus = await _libraryService.getReadingStatusByUid(event.muId);
-        final readChaptersCount = await _libraryService.getReadChapterByUid(event.muId);
-        
-        if (libraryStatus != null) {
-          // Le manga est dans la bibliothèque, mettre à jour le statut et le nombre de chapitres lus
-          updatedMangaDetail = _copyMangaDetail(
-            mangaDetail,
-            inLibrary: true,
-            readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
-            readingStatus: libraryStatus,
-          );
-          debugPrint('📚 DetailBloc: Manga trouvé dans la bibliothèque avec statut: ${libraryStatus.name} et ${readChaptersCount} chapitres lus');
-        } else {
-          debugPrint('📚 DetailBloc: Manga non trouvé dans la bibliothèque');
-        }
-      } catch (e) {
-        debugPrint('⚠️ DetailBloc: Erreur lors de la récupération du statut: $e');
-        // Continuer avec les détails de base si la récupération du statut échoue
-      }
+      final updatedMangaDetail = await _enrichWithLibraryInfo(event.muId, mangaDetail);
       
       // Si aucune erreur, on est online
       emit(DetailLoaded(
         mangaDetail: updatedMangaDetail,
         isOffline: false,
         pendingActions: pendingActions,
+        stale: false,
       ));
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
@@ -109,13 +104,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       debugPrint('⚠️ Erreur de chargement du manga, tentative de récupération depuis le cache...');
       
       try {
-        final cachedMangaDetail = await _cacheHelper.getCachedMangaDetail(event.muId);
-        if (cachedMangaDetail != null) {
+        final fallbackDetail = enrichedCachedDetail ?? await _cacheHelper.getCachedMangaDetail(event.muId);
+        if (fallbackDetail != null) {
           debugPrint('✅ Données du manga chargées depuis le cache (mode offline)');
           emit(DetailLoaded(
-            mangaDetail: cachedMangaDetail,
+            mangaDetail: fallbackDetail,
             isOffline: true,
             pendingActions: await _getPendingActionsCount(),
+            stale: true,
           ));
         } else {
           emit(DetailError(
@@ -130,6 +126,25 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         ));
       }
     }
+  }
+
+  Future<MangaDetailDto> _enrichWithLibraryInfo(int muId, MangaDetailDto mangaDetail) async {
+    try {
+      final libraryStatus = await _libraryService.getReadingStatusByUid(muId);
+      final readChaptersCount = await _libraryService.getReadChapterByUid(muId);
+
+      if (libraryStatus != null) {
+        return _copyMangaDetail(
+          mangaDetail,
+          inLibrary: true,
+          readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
+          readingStatus: libraryStatus,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ DetailBloc: Erreur lors de la récupération du statut: $e');
+    }
+    return mangaDetail;
   }
 
   /// Rafraîchit les détails
@@ -174,6 +189,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -233,6 +249,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -291,6 +308,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: pendingActions,
+          stale: currentState.isStale,
         ));
       } else {
         // En cas d'échec, si on est online c'est une vraie erreur, sinon c'est déjà géré
@@ -344,6 +362,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             mangaDetail: updatedMangaDetail,
             isOffline: isOffline,
             pendingActions: pendingActions,
+            stale: currentState.isStale,
           ));
           debugPrint('✅ Manga retiré de la bibliothèque');
         }
@@ -414,6 +433,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: isOffline,
           pendingActions: currentState.pendingActions + offlineActionCount,
+          stale: currentState.isStale,
         ));
       } else {
         // Échec uniquement si on est online
@@ -494,6 +514,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: currentState.isOffline,
           pendingActions: currentState.pendingActions,
+          stale: currentState.isStale,
         ));
       } else {
         emit(DetailError(
@@ -536,6 +557,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           mangaDetail: updatedMangaDetail,
           isOffline: currentState.isOffline,
           pendingActions: currentState.pendingActions,
+          stale: currentState.isStale,
         ));
       } else {
         emit(DetailError(

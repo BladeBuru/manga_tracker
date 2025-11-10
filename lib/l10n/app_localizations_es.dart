@@ -27,6 +27,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get login => 'Iniciar sesión';
 
   @override
+  String get back => 'Atrás';
+
+  @override
   String get signUp => 'Registrarse';
 
   @override
@@ -493,4 +496,76 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Para activar la autenticación biométrica, inicie sesión nuevamente';
+
+  @override
+  String get or => 'O';
+
+  @override
+  String get startTrackingNow => 'Comience a seguir su lectura ahora';
+
+  @override
+  String get username => 'Nombre de usuario';
+
+  @override
+  String get confirmPassword => 'Confirmar';
+
+  @override
+  String get alreadyHaveAccount => '¿Ya tiene una cuenta?';
+
+  @override
+  String get newPassword => 'Nueva contraseña';
+
+  @override
+  String get validationEmailRequired =>
+      'Por favor ingrese su dirección de correo electrónico';
+
+  @override
+  String get validationEmailInvalid =>
+      'Por favor ingrese una dirección de correo electrónico válida';
+
+  @override
+  String get validationPasswordRequired => 'Por favor ingrese su contraseña';
+
+  @override
+  String get validationPasswordLength =>
+      'Su contraseña debe tener entre 8 y 64 caracteres';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Su contraseña debe contener al menos una letra minúscula, una letra mayúscula y un carácter especial';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Por favor confirme su contraseña';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get showPassword => 'Mostrar contraseña';
+
+  @override
+  String get hidePassword => 'Ocultar contraseña';
+
+  @override
+  String get emailAlreadyUsed => 'Esta dirección de correo ya está registrada';
+
+  @override
+  String get networkError => 'Por favor, verifica tu conexión a internet';
+
+  @override
+  String get timeoutError =>
+      'El servidor está tardando demasiado en responder. Inténtalo de nuevo.';
+
+  @override
+  String get passwordStrengthLabel => 'Seguridad de la contraseña';
+
+  @override
+  String get passwordStrengthWeak => 'Débil';
+
+  @override
+  String get passwordStrengthMedium => 'Media';
+
+  @override
+  String get passwordStrengthStrong => 'Fuerte';
 }

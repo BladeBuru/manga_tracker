@@ -284,14 +284,10 @@ class OfflineCacheService {
     return null;
   }
   
-  /// Vérifie si le cache est expiré (plus de 24h)
+  /// Vérifie si le cache est expiré.
+  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
   Future<bool> isCacheExpired() async {
-    final lastSync = await getLastSyncTimestamp();
-    if (lastSync == null) return true;
-    
-    final now = DateTime.now();
-    final difference = now.difference(lastSync);
-    return difference.inHours > 24;
+    return false;
   }
   
   /// Nettoie le cache expiré
@@ -344,27 +340,17 @@ class OfflineCacheService {
     return {};
   }
   
-  /// Vérifie si un cache spécifique est expiré
+  /// Vérifie si un cache spécifique est expiré.
+  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
   Future<bool> isCacheExpiredFor(String cacheType, {int maxHours = 24}) async {
-    final metadata = await getCacheMetadata();
-    final timestampStr = metadata[cacheType];
-    if (timestampStr == null) return true;
-    
-    try {
-      final timestamp = DateTime.parse(timestampStr);
-      final now = DateTime.now();
-      final difference = now.difference(timestamp);
-      return difference.inHours > maxHours;
-    } catch (e) {
-      return true;
-    }
+    return false;
   }
   
   /// Nettoie les caches expirés (sauf bibliothèque et détails de manga de la bibliothèque)
   Future<void> cleanExpiredCaches() async {
     try {
       // Nettoyer la page d'accueil si expirée
-      if (await isCacheExpiredFor('homepage', maxHours: 6)) {
+      if (await isCacheExpiredFor('homepage', maxHours: 24)) {
         await _storage.deleteSecureData(_homePageCacheKey);
         debugPrint('Cache page d\'accueil nettoyé (expiré)');
       }
@@ -372,7 +358,7 @@ class OfflineCacheService {
       // Nettoyer les recherches expirées
       final metadata = await getCacheMetadata();
       for (final key in metadata.keys) {
-        if (key.startsWith('search_') && await isCacheExpiredFor(key, maxHours: 24)) {
+        if (key.startsWith('search_') && await isCacheExpiredFor(key, maxHours: 72)) {
           final query = key.replaceFirst('search_', '');
           final searchKey = '$_searchCacheKey${query.toLowerCase().replaceAll(' ', '_')}';
           await _storage.deleteSecureData(searchKey);

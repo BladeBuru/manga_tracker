@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class RowChapter extends StatelessWidget {
   final String line;
@@ -31,7 +32,7 @@ class RowChapter extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
           ),
           child: Row(
             children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Widget réutilisable pour les options de profil
 /// Permet d'afficher une option avec icône, titre, sous-titre et action
@@ -37,7 +38,7 @@ class ProfileOptionTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         side: BorderSide(
           color: theme.colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
@@ -50,7 +51,7 @@ class ProfileOptionTile extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             color: effectiveBackgroundColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
           ),
           child: leadingWidget != null
               ? Center(child: leadingWidget!)

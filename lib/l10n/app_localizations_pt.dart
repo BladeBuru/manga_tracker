@@ -27,6 +27,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get login => 'Entrar';
 
   @override
+  String get back => 'Voltar';
+
+  @override
   String get signUp => 'Cadastrar';
 
   @override
@@ -490,4 +493,76 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Para ativar a autenticação biométrica, faça login novamente';
+
+  @override
+  String get or => 'Ou';
+
+  @override
+  String get startTrackingNow => 'Comece a rastrear sua leitura agora';
+
+  @override
+  String get username => 'Nome de usuário';
+
+  @override
+  String get confirmPassword => 'Confirmar';
+
+  @override
+  String get alreadyHaveAccount => 'Já tem uma conta?';
+
+  @override
+  String get newPassword => 'Nova senha';
+
+  @override
+  String get validationEmailRequired =>
+      'Por favor, insira seu endereço de e-mail';
+
+  @override
+  String get validationEmailInvalid =>
+      'Por favor, insira um endereço de e-mail válido';
+
+  @override
+  String get validationPasswordRequired => 'Por favor, insira sua senha';
+
+  @override
+  String get validationPasswordLength =>
+      'Sua senha deve ter entre 8 e 64 caracteres';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Sua senha deve conter pelo menos uma letra minúscula, uma letra maiúscula e um caractere especial';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Por favor, confirme sua senha';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'As senhas não coincidem';
+
+  @override
+  String get showPassword => 'Mostrar senha';
+
+  @override
+  String get hidePassword => 'Ocultar senha';
+
+  @override
+  String get emailAlreadyUsed => 'Este endereço de e-mail já está registrado';
+
+  @override
+  String get networkError => 'Verifique sua conexão com a internet';
+
+  @override
+  String get timeoutError =>
+      'O servidor está demorando muito para responder. Tente novamente.';
+
+  @override
+  String get passwordStrengthLabel => 'Força da senha';
+
+  @override
+  String get passwordStrengthWeak => 'Fraca';
+
+  @override
+  String get passwordStrengthMedium => 'Média';
+
+  @override
+  String get passwordStrengthStrong => 'Forte';
 }

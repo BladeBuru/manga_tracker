@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
@@ -48,7 +49,7 @@ class MangaCard extends StatelessWidget {
               height: 160,
               width: double.infinity,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.circularXl,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.2),
@@ -58,7 +59,7 @@ class MangaCard extends StatelessWidget {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.circularXl,
                 child: ImageHelper.loadMangaImage(
                   mediumImgPath,
                   width: double.infinity,
@@ -91,7 +92,7 @@ class MangaCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6.0),
+                    borderRadius: AppRadius.circularSm,
                     color: Colors.grey[200],
                   ),
                   child: Padding(

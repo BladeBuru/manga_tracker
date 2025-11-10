@@ -28,6 +28,7 @@ class HomePageLoaded extends HomePageState {
   final UserDto? user;
   final bool isOffline;
   final int pendingActions;
+  final bool isStale;
   
   const HomePageLoaded({
     required this.popularMangas,
@@ -36,10 +37,11 @@ class HomePageLoaded extends HomePageState {
     this.user,
     this.isOffline = false,
     this.pendingActions = 0,
-  });
+    bool? stale,
+  }) : isStale = stale ?? false;
   
   @override
-  List<Object?> get props => [popularMangas, newMangas, trendingMangas, user, isOffline, pendingActions];
+  List<Object?> get props => [popularMangas, newMangas, trendingMangas, user, isOffline, pendingActions, isStale];
   
   /// Créer une copie avec de nouveaux paramètres
   HomePageLoaded copyWith({
@@ -49,6 +51,7 @@ class HomePageLoaded extends HomePageState {
     UserDto? user,
     bool? isOffline,
     int? pendingActions,
+    bool? stale,
   }) {
     return HomePageLoaded(
       popularMangas: popularMangas ?? this.popularMangas,
@@ -57,6 +60,7 @@ class HomePageLoaded extends HomePageState {
       user: user ?? this.user,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
+      stale: stale ?? this.isStale,
     );
   }
 }

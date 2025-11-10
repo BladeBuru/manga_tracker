@@ -7,7 +7,7 @@
 ## 🎯 Vue d'ensemble
 
 **Version actuelle** : `0.3.0+11`  
-**Dernière mise à jour** : 2024
+**Dernière mise à jour** : 2025
 
 ---
 
@@ -288,6 +288,7 @@
 - ✅ Modernisation de la page Profile avec composants réutilisables
 - ✅ Intégration du changelog dans le profil
 - ✅ Optimisation du cache avec `cached_network_image`
+- ✅ Harmonisation des rayons d'arrondi via `AppRadius` et adoption dans les vues principales
 
 ---
 
@@ -323,5 +324,5 @@
 
 ---
 
-**Dernière mise à jour** : 04/11/2025
+**Dernière mise à jour** : 09/11/2025
 

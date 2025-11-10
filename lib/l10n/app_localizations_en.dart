@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Sign in';
 
   @override
+  String get back => 'Back';
+
+  @override
   String get signUp => 'Sign up';
 
   @override
@@ -481,4 +484,74 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'To enable biometric authentication, please sign in again';
+
+  @override
+  String get or => 'Or';
+
+  @override
+  String get startTrackingNow => 'Start tracking your reading now';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get confirmPassword => 'Confirm';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get validationEmailRequired => 'Please enter your email address';
+
+  @override
+  String get validationEmailInvalid => 'Please enter a valid email address';
+
+  @override
+  String get validationPasswordRequired => 'Please enter your password';
+
+  @override
+  String get validationPasswordLength =>
+      'Your password must be between 8 and 64 characters';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Your password must contain at least one lowercase letter, one uppercase letter, and one special character';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Please confirm your password';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get emailAlreadyUsed => 'This email address is already registered';
+
+  @override
+  String get networkError => 'Please check your internet connection';
+
+  @override
+  String get timeoutError =>
+      'The server is taking too long to respond. Please try again.';
+
+  @override
+  String get passwordStrengthLabel => 'Password strength';
+
+  @override
+  String get passwordStrengthWeak => 'Weak';
+
+  @override
+  String get passwordStrengthMedium => 'Medium';
+
+  @override
+  String get passwordStrengthStrong => 'Strong';
 }

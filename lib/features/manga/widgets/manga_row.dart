@@ -2,6 +2,7 @@ import 'package:html/parser.dart';
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -48,7 +49,7 @@ class MangaRow extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.circularXl,
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.shade200.withValues(alpha: 0.8),
@@ -69,9 +70,9 @@ class MangaRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(AppRadius.xl),
+                    bottomLeft: Radius.circular(AppRadius.xl),
                   ),
                   child: SizedBox(
                     width: 80,
@@ -114,7 +115,7 @@ class MangaRow extends StatelessWidget {
                           const SizedBox(height: 7),
                           Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
+                              borderRadius: AppRadius.circularLg,
                               color: Colors.grey[200],
                             ),
                             child: Padding(

@@ -144,6 +144,12 @@ abstract class AppLocalizations {
   /// **'Se connecter'**
   String get login;
 
+  /// Libellé pour retourner en arrière
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get back;
+
   /// Bouton d'inscription
   ///
   /// In fr, this message translates to:
@@ -977,6 +983,138 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Pour activer l\'authentification biométrique, veuillez vous reconnecter'**
   String get biometricAuthRequiresReconnect;
+
+  /// Séparateur entre connexion classique et OAuth
+  ///
+  /// In fr, this message translates to:
+  /// **'Ou'**
+  String get or;
+
+  /// Message d'accueil sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencez à suivre votre lecture maintenant'**
+  String get startTrackingNow;
+
+  /// Label pour le champ nom d'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur'**
+  String get username;
+
+  /// Label pour le champ de confirmation de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmation'**
+  String get confirmPassword;
+
+  /// Message pour rediriger vers la page de connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez déjà un compte ?'**
+  String get alreadyHaveAccount;
+
+  /// Label pour le champ nouveau mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get newPassword;
+
+  /// Message d'erreur quand l'email est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer votre adresse e-mail'**
+  String get validationEmailRequired;
+
+  /// Message d'erreur quand l'email est invalide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer une adresse e-mail valide'**
+  String get validationEmailInvalid;
+
+  /// Message d'erreur quand le mot de passe est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer votre mot de passe'**
+  String get validationPasswordRequired;
+
+  /// Message d'erreur pour la longueur du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre mot de passe doit comporter entre 8 et 64 caractères'**
+  String get validationPasswordLength;
+
+  /// Message d'erreur pour la complexité du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial'**
+  String get validationPasswordComplexity;
+
+  /// Message d'erreur quand la confirmation de mot de passe est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez confirmer votre mot de passe'**
+  String get validationConfirmPasswordRequired;
+
+  /// Message d'erreur quand les mots de passe ne correspondent pas
+  ///
+  /// In fr, this message translates to:
+  /// **'Les mots de passe ne correspondent pas'**
+  String get validationPasswordsDoNotMatch;
+
+  /// Libellé pour afficher le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher le mot de passe'**
+  String get showPassword;
+
+  /// Libellé pour masquer le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Masquer le mot de passe'**
+  String get hidePassword;
+
+  /// No description provided for @emailAlreadyUsed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette adresse e-mail est déjà utilisée'**
+  String get emailAlreadyUsed;
+
+  /// No description provided for @networkError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez vérifier votre connexion internet'**
+  String get networkError;
+
+  /// No description provided for @timeoutError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur met trop de temps à répondre. Veuillez réessayer.'**
+  String get timeoutError;
+
+  /// Libellé pour indiquer la robustesse du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Robustesse du mot de passe'**
+  String get passwordStrengthLabel;
+
+  /// No description provided for @passwordStrengthWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordStrengthWeak;
+
+  /// No description provided for @passwordStrengthMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordStrengthMedium;
+
+  /// No description provided for @passwordStrengthStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fort'**
+  String get passwordStrengthStrong;
 }
 
 class _AppLocalizationsDelegate

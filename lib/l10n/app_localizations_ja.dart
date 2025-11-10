@@ -27,6 +27,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get login => 'サインイン';
 
   @override
+  String get back => '戻る';
+
+  @override
   String get signUp => 'サインアップ';
 
   @override
@@ -477,4 +480,71 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get biometricAuthRequiresReconnect => '生体認証を有効にするには、再度サインインしてください';
+
+  @override
+  String get or => 'または';
+
+  @override
+  String get startTrackingNow => '今すぐ読書を追跡し始めましょう';
+
+  @override
+  String get username => 'ユーザー名';
+
+  @override
+  String get confirmPassword => '確認';
+
+  @override
+  String get alreadyHaveAccount => 'すでにアカウントをお持ちですか？';
+
+  @override
+  String get newPassword => '新しいパスワード';
+
+  @override
+  String get validationEmailRequired => 'メールアドレスを入力してください';
+
+  @override
+  String get validationEmailInvalid => '有効なメールアドレスを入力してください';
+
+  @override
+  String get validationPasswordRequired => 'パスワードを入力してください';
+
+  @override
+  String get validationPasswordLength => 'パスワードは8文字以上64文字以下である必要があります';
+
+  @override
+  String get validationPasswordComplexity =>
+      'パスワードには、少なくとも1つの小文字、1つの大文字、1つの特殊文字が含まれている必要があります';
+
+  @override
+  String get validationConfirmPasswordRequired => 'パスワードを確認してください';
+
+  @override
+  String get validationPasswordsDoNotMatch => 'パスワードが一致しません';
+
+  @override
+  String get showPassword => 'パスワードを表示';
+
+  @override
+  String get hidePassword => 'パスワードを非表示';
+
+  @override
+  String get emailAlreadyUsed => 'このメールアドレスは既に登録されています';
+
+  @override
+  String get networkError => 'インターネット接続を確認してください';
+
+  @override
+  String get timeoutError => 'サーバーの応答に時間がかかっています。もう一度お試しください。';
+
+  @override
+  String get passwordStrengthLabel => 'パスワードの強度';
+
+  @override
+  String get passwordStrengthWeak => '弱い';
+
+  @override
+  String get passwordStrengthMedium => '普通';
+
+  @override
+  String get passwordStrengthStrong => '強い';
 }

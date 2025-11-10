@@ -27,6 +27,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get login => 'Anmelden';
 
   @override
+  String get back => 'Zurück';
+
+  @override
   String get signUp => 'Registrieren';
 
   @override
@@ -487,4 +490,78 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get biometricAuthRequiresReconnect =>
       'Um die biometrische Authentifizierung zu aktivieren, melden Sie sich bitte erneut an';
+
+  @override
+  String get or => 'Oder';
+
+  @override
+  String get startTrackingNow =>
+      'Beginnen Sie jetzt, Ihre Lektüre zu verfolgen';
+
+  @override
+  String get username => 'Benutzername';
+
+  @override
+  String get confirmPassword => 'Bestätigen';
+
+  @override
+  String get alreadyHaveAccount => 'Haben Sie bereits ein Konto?';
+
+  @override
+  String get newPassword => 'Neues Passwort';
+
+  @override
+  String get validationEmailRequired =>
+      'Bitte geben Sie Ihre E-Mail-Adresse ein';
+
+  @override
+  String get validationEmailInvalid =>
+      'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+
+  @override
+  String get validationPasswordRequired => 'Bitte geben Sie Ihr Passwort ein';
+
+  @override
+  String get validationPasswordLength =>
+      'Ihr Passwort muss zwischen 8 und 64 Zeichen lang sein';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Ihr Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und ein Sonderzeichen enthalten';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Bitte bestätigen Sie Ihr Passwort';
+
+  @override
+  String get validationPasswordsDoNotMatch =>
+      'Die Passwörter stimmen nicht überein';
+
+  @override
+  String get showPassword => 'Passwort anzeigen';
+
+  @override
+  String get hidePassword => 'Passwort ausblenden';
+
+  @override
+  String get emailAlreadyUsed => 'Diese E-Mail-Adresse ist bereits registriert';
+
+  @override
+  String get networkError => 'Bitte überprüfen Sie Ihre Internetverbindung';
+
+  @override
+  String get timeoutError =>
+      'Der Server benötigt zu lange für die Antwort. Bitte versuchen Sie es erneut.';
+
+  @override
+  String get passwordStrengthLabel => 'Passwortstärke';
+
+  @override
+  String get passwordStrengthWeak => 'Schwach';
+
+  @override
+  String get passwordStrengthMedium => 'Mittel';
+
+  @override
+  String get passwordStrengthStrong => 'Stark';
 }

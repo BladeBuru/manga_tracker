@@ -27,6 +27,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get login => '로그인';
 
   @override
+  String get back => '뒤로';
+
+  @override
   String get signUp => '회원가입';
 
   @override
@@ -477,4 +480,71 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get biometricAuthRequiresReconnect => '생체 인증을 활성화하려면 다시 로그인하세요';
+
+  @override
+  String get or => '또는';
+
+  @override
+  String get startTrackingNow => '지금 읽기를 추적하기 시작하세요';
+
+  @override
+  String get username => '사용자 이름';
+
+  @override
+  String get confirmPassword => '확인';
+
+  @override
+  String get alreadyHaveAccount => '이미 계정이 있으신가요?';
+
+  @override
+  String get newPassword => '새 비밀번호';
+
+  @override
+  String get validationEmailRequired => '이메일 주소를 입력해주세요';
+
+  @override
+  String get validationEmailInvalid => '유효한 이메일 주소를 입력해주세요';
+
+  @override
+  String get validationPasswordRequired => '비밀번호를 입력해주세요';
+
+  @override
+  String get validationPasswordLength => '비밀번호는 8자 이상 64자 이하여야 합니다';
+
+  @override
+  String get validationPasswordComplexity =>
+      '비밀번호에는 최소한 하나의 소문자, 하나의 대문자 및 하나의 특수 문자가 포함되어야 합니다';
+
+  @override
+  String get validationConfirmPasswordRequired => '비밀번호를 확인해주세요';
+
+  @override
+  String get validationPasswordsDoNotMatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get showPassword => '비밀번호 표시';
+
+  @override
+  String get hidePassword => '비밀번호 숨기기';
+
+  @override
+  String get emailAlreadyUsed => '이 이메일 주소는 이미 등록되어 있습니다';
+
+  @override
+  String get networkError => '인터넷 연결을 확인하세요';
+
+  @override
+  String get timeoutError => '서버 응답이 너무 오래 걸립니다. 다시 시도해주세요.';
+
+  @override
+  String get passwordStrengthLabel => '비밀번호 강도';
+
+  @override
+  String get passwordStrengthWeak => '약함';
+
+  @override
+  String get passwordStrengthMedium => '보통';
+
+  @override
+  String get passwordStrengthStrong => '강함';
 }
