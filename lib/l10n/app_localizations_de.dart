@@ -564,4 +564,99 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => 'Stark';
+
+  @override
+  String get yes => 'Ja';
+
+  @override
+  String get no => 'Nein';
+
+  @override
+  String get yesValidate => 'Ja, bestätigen';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return 'Sie springen von Kapitel $prev zu $next.\n$prev als gelesen markieren?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return 'Haben Sie Kapitel $chapter beendet?';
+  }
+
+  @override
+  String get validateReadingHint =>
+      'Ihr Fortschritt wird automatisch gespeichert.';
+
+  @override
+  String get adBlockerTitle => 'Werbeblocker';
+
+  @override
+  String get adBlockerDescription =>
+      'Der Werbeblocker blockiert automatisch Werbung auf Leseseiten.\n\nWenn Sie Links hinzufügen oder Verbesserungen für die Werbeblockierung vorschlagen möchten, treten Sie unserem Discord-Server bei!';
+
+  @override
+  String get adBlockerTooltip => 'Informationen zum Werbeblocker';
+
+  @override
+  String get joinDiscord => 'Discord beitreten';
+
+  @override
+  String get joinDiscordSubtitle =>
+      'Teilen Sie Ihre Vorschläge und melden Sie Probleme';
+
+  @override
+  String get contactUs => 'Kontaktieren Sie uns';
+
+  @override
+  String get discordLinkError => 'Discord-Link kann nicht geöffnet werden';
+
+  @override
+  String get urlCopied => 'URL in Zwischenablage kopiert';
+
+  @override
+  String get urlCopyError => 'Fehler beim Kopieren der URL';
+
+  @override
+  String get copyUrl => 'URL kopieren';
+
+  @override
+  String get progressUpdated => 'Fortschritt aktualisiert';
+
+  @override
+  String get invalidUrl => 'Ungültige URL';
+
+  @override
+  String get webModeProgressTracking => 'Web-Modus - Fortschrittsverfolgung';
+
+  @override
+  String get webModeProgressDescription =>
+      'Um Ihren Fortschritt zu verfolgen, fügen Sie die URL des Kapitels ein, das Sie gerade lesen.';
+
+  @override
+  String get chapterUrlLabel => 'Kapitel-URL';
+
+  @override
+  String get updateProgress => 'Fortschritt aktualisieren';
+
+  @override
+  String get openInNewTab => 'In neuem Tab öffnen';
+
+  @override
+  String get linkUrlLabel => 'Scan-Site-URL';
+
+  @override
+  String get linkFormatInfo => 'Kapitelformat erforderlich';
+
+  @override
+  String get linkFormatDescription =>
+      'Fügen Sie die Kapitelnummer in die URL ein, um das automatische Speichern des Fortschritts zu ermöglichen.\n\nAkzeptierte Formate:\n• /kapitel-23/ oder /chapter-23/\n• /c23/ oder /ch23/\n• /ep-23/ oder /episode-23/\n• ?chapter=23 oder ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      'Kein Kapitelformat erkannt. Der Link leitet zur Manga-Seite weiter (nicht zu einem bestimmten Kapitel).';
+
+  @override
+  String get linkFormatDetected =>
+      'Kapitelformat erkannt! Der Fortschritt wird automatisch gespeichert.';
 }

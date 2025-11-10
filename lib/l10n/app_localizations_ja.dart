@@ -547,4 +547,96 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => '強い';
+
+  @override
+  String get yes => 'はい';
+
+  @override
+  String get no => 'いいえ';
+
+  @override
+  String get yesValidate => 'はい、確認する';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return '章 $prev から $next にジャンプします。\n$prev を読了としてマークしますか？';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return '章 $chapter を読み終えましたか？';
+  }
+
+  @override
+  String get validateReadingHint => '進行状況は自動的に保存されます。';
+
+  @override
+  String get adBlockerTitle => '広告ブロッカー';
+
+  @override
+  String get adBlockerDescription =>
+      '広告ブロッカーは、読書サイトの広告を自動的にブロックします。\n\nリンクを追加したり、広告ブロッキングの改善を提案したい場合は、Discordサーバーに参加してください！';
+
+  @override
+  String get adBlockerTooltip => '広告ブロッカー情報';
+
+  @override
+  String get joinDiscord => 'Discordに参加';
+
+  @override
+  String get joinDiscordSubtitle => '提案を共有し、問題を報告する';
+
+  @override
+  String get contactUs => 'お問い合わせ';
+
+  @override
+  String get discordLinkError => 'Discordリンクを開けません';
+
+  @override
+  String get urlCopied => 'URLがクリップボードにコピーされました';
+
+  @override
+  String get urlCopyError => 'URLのコピーエラー';
+
+  @override
+  String get copyUrl => 'URLをコピー';
+
+  @override
+  String get progressUpdated => '進行状況が更新されました';
+
+  @override
+  String get invalidUrl => '無効なURL';
+
+  @override
+  String get webModeProgressTracking => 'Webモード - 進行状況の追跡';
+
+  @override
+  String get webModeProgressDescription =>
+      '進行状況を追跡するには、現在読んでいる章のURLを貼り付けてください。';
+
+  @override
+  String get chapterUrlLabel => '章のURL';
+
+  @override
+  String get updateProgress => '進行状況を更新';
+
+  @override
+  String get openInNewTab => '新しいタブで開く';
+
+  @override
+  String get linkUrlLabel => 'スキャンサイトのURL';
+
+  @override
+  String get linkFormatInfo => '章の形式が必要';
+
+  @override
+  String get linkFormatDescription =>
+      '自動進行状況保存を有効にするには、URLに章番号を含めてください。\n\n受け入れられる形式:\n• /章-23/ または /chapter-23/\n• /c23/ または /ch23/\n• /ep-23/ または /episode-23/\n• ?chapter=23 または ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      '章の形式が検出されませんでした。リンクはマンガページにリダイレクトされます（特定の章ではありません）。';
+
+  @override
+  String get linkFormatDetected => '章の形式が検出されました！進行状況は自動的に保存されます。';
 }

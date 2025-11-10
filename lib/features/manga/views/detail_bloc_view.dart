@@ -873,70 +873,189 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   Future<void> _addCustomLink() async {
     final controller = TextEditingController(text: customLink);
+    bool hasChapterFormat = false;
+    
     final link = await showDialog<String?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Builder(
-          builder: (context) {
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
             final l10n = AppLocalizations.of(context);
-            return Text(l10n?.addOrModifyLink ?? 'Ajouter ou modifier un lien');
-          },
-        ),
-        content: Builder(
-          builder: (context) {
-            final l10n = AppLocalizations.of(context);
-            return TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com',
+            
+            // Vérifier si l'URL contient un format de chapitre
+            void checkChapterFormat() {
+              final text = controller.text.trim();
+              if (text.isEmpty) {
+                setState(() => hasChapterFormat = false);
+                return;
+              }
+              
+              // Utiliser ChapterLinkResolver pour détecter le format
+              final detectedChapter = ChapterLinkResolver.extractChapter(text);
+              setState(() => hasChapterFormat = detectedChapter != null);
+            }
+            
+            // Vérifier au chargement initial
+            if (controller.text.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                checkChapterFormat();
+              });
+            }
+            
+            return AlertDialog(
+              title: Row(
+                children: [
+                  const Icon(Icons.link, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(l10n?.addOrModifyLink ?? 'Ajouter ou modifier un lien'),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
-        actions: [
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return TextButton(
-                onPressed: () => Navigator.of(ctx).pop(null),
-                child: Text(
-                  l10n?.cancel ?? 'Annuler',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        labelText: l10n?.linkUrlLabel ?? 'URL du site de scan',
+                        hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com/manga/chapitre-23',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.language),
+                      ),
+                      onChanged: (_) => checkChapterFormat(),
+                    ),
+                    const SizedBox(height: 16),
+                    // Message d'aide
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  l10n?.linkFormatInfo ?? 'Format de chapitre requis',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n?.linkFormatDescription ?? 
+                            'Incluez le numéro de chapitre dans l\'URL pour permettre la sauvegarde automatique de progression.\n\n'
+                            'Formats acceptés :\n'
+                            '• /chapitre-23/ ou /chapter-23/\n'
+                            '• /c23/ ou /ch23/\n'
+                            '• /ep-23/ ou /episode-23/\n'
+                            '• ?chapter=23 ou ?num=24',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Avertissement si pas de format détecté
+                    if (!hasChapterFormat && controller.text.trim().isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n?.linkFormatWarning ?? 
+                                'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Confirmation si format détecté
+                    if (hasChapterFormat)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n?.linkFormatDetected ?? 
+                                'Format de chapitre détecté ! La progression sera sauvegardée automatiquement.',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(null),
+                  child: Text(
+                    l10n?.cancel ?? 'Annuler',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
-                onPressed: () {
-                  final link = controller.text.trim();
-                  final uri = Uri.tryParse(link);
-                  final isValid = uri != null &&
-                      uri.hasScheme &&
-                      (uri.isAbsolute || uri.host.isNotEmpty);
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: () {
+                    final link = controller.text.trim();
+                    final uri = Uri.tryParse(link);
+                    final isValid = uri != null &&
+                        uri.hasScheme &&
+                        (uri.isAbsolute || uri.host.isNotEmpty);
 
-                  if (isValid) {
-                    Navigator.of(ctx).pop(link);
-                  } else {
-                    widget.notifier.error(
-                      l10n?.invalidLink ?? "Lien invalide. Le lien doit commencer par http:// ou https://",
-                    );
-                  }
-                },
-                child: Text(l10n?.validate ?? 'Valider'),
-              );
-            },
-          ),
-        ],
-      ),
+                    if (isValid) {
+                      Navigator.of(ctx).pop(link);
+                    } else {
+                      widget.notifier.error(
+                        l10n?.invalidLink ?? "Lien invalide. Le lien doit commencer par http:// ou https://",
+                      );
+                    }
+                  },
+                  child: Text(l10n?.validate ?? 'Valider'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
 
     if (link != null) {

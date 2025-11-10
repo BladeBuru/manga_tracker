@@ -1115,6 +1115,174 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Fort'**
   String get passwordStrengthStrong;
+
+  /// Bouton de confirmation positive
+  ///
+  /// In fr, this message translates to:
+  /// **'Oui'**
+  String get yes;
+
+  /// Bouton de confirmation négative
+  ///
+  /// In fr, this message translates to:
+  /// **'Non'**
+  String get no;
+
+  /// Bouton pour valider la lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Oui, valider'**
+  String get yesValidate;
+
+  /// Message pour le saut de chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous passez du chapitre {prev} au {next}.\nMarquer {prev} comme lu ?'**
+  String chapterSkipMessage(String prev, String next);
+
+  /// Message pour valider la lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Avez-vous fini le chapitre {chapter} ?'**
+  String validateReadingMessage(String chapter);
+
+  /// Indice pour la validation de lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre progression sera sauvegardée automatiquement.'**
+  String get validateReadingHint;
+
+  /// Titre de la popup du bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités'**
+  String get adBlockerTitle;
+
+  /// Description du bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\nSi vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, rejoignez notre serveur Discord !'**
+  String get adBlockerDescription;
+
+  /// Tooltip pour l'icône d'info du bloqueur
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations sur le bloqueur de pub'**
+  String get adBlockerTooltip;
+
+  /// Bouton pour rejoindre Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre Discord'**
+  String get joinDiscord;
+
+  /// Sous-titre pour rejoindre Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Partagez vos suggestions et signalez des problèmes'**
+  String get joinDiscordSubtitle;
+
+  /// Section nous contacter
+  ///
+  /// In fr, this message translates to:
+  /// **'Nous contacter'**
+  String get contactUs;
+
+  /// Erreur lors de l'ouverture du lien Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir le lien Discord'**
+  String get discordLinkError;
+
+  /// Message de succès pour la copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'URL copiée dans le presse-papiers'**
+  String get urlCopied;
+
+  /// Message d'erreur pour la copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur lors de la copie de l\'URL'**
+  String get urlCopyError;
+
+  /// Tooltip pour le bouton de copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier l\'URL'**
+  String get copyUrl;
+
+  /// Message de succès pour la mise à jour de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression mise à jour'**
+  String get progressUpdated;
+
+  /// Message d'erreur pour une URL invalide
+  ///
+  /// In fr, this message translates to:
+  /// **'URL invalide'**
+  String get invalidUrl;
+
+  /// Titre pour le mode web de suivi de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode Web - Suivi de progression'**
+  String get webModeProgressTracking;
+
+  /// Description pour le mode web de suivi de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour suivre votre progression, collez l\'URL du chapitre que vous êtes en train de lire.'**
+  String get webModeProgressDescription;
+
+  /// Label pour le champ URL du chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'URL du chapitre'**
+  String get chapterUrlLabel;
+
+  /// Bouton pour mettre à jour la progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettre à jour la progression'**
+  String get updateProgress;
+
+  /// Bouton pour ouvrir dans un nouvel onglet
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans un nouvel onglet'**
+  String get openInNewTab;
+
+  /// Label pour le champ URL du lien
+  ///
+  /// In fr, this message translates to:
+  /// **'URL du site de scan'**
+  String get linkUrlLabel;
+
+  /// Titre pour l'information sur le format de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Format de chapitre requis'**
+  String get linkFormatInfo;
+
+  /// Description des formats de chapitre acceptés
+  ///
+  /// In fr, this message translates to:
+  /// **'Incluez le numéro de chapitre dans l\'URL pour permettre la sauvegarde automatique de progression.\n\nFormats acceptés :\n• /chapitre-23/ ou /chapter-23/\n• /c23/ ou /ch23/\n• /ep-23/ ou /episode-23/\n• ?chapter=23 ou ?num=24'**
+  String get linkFormatDescription;
+
+  /// Avertissement quand aucun format de chapitre n'est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).'**
+  String get linkFormatWarning;
+
+  /// Message de confirmation quand un format de chapitre est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Format de chapitre détecté ! La progression sera sauvegardée automatiquement.'**
+  String get linkFormatDetected;
 }
 
 class _AppLocalizationsDelegate

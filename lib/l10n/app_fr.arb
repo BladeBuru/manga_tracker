@@ -894,5 +894,158 @@
 
   "passwordStrengthWeak": "Faible",
   "passwordStrengthMedium": "Moyen",
-  "passwordStrengthStrong": "Fort"
+  "passwordStrengthStrong": "Fort",
+  
+  "yes": "Oui",
+  "@yes": {
+    "description": "Bouton de confirmation positive"
+  },
+  
+  "no": "Non",
+  "@no": {
+    "description": "Bouton de confirmation négative"
+  },
+  
+  "yesValidate": "Oui, valider",
+  "@yesValidate": {
+    "description": "Bouton pour valider la lecture"
+  },
+  
+  "chapterSkipMessage": "Vous passez du chapitre {prev} au {next}.\nMarquer {prev} comme lu ?",
+  "@chapterSkipMessage": {
+    "description": "Message pour le saut de chapitres",
+    "placeholders": {
+      "prev": {
+        "type": "String"
+      },
+      "next": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "validateReadingMessage": "Avez-vous fini le chapitre {chapter} ?",
+  "@validateReadingMessage": {
+    "description": "Message pour valider la lecture",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "validateReadingHint": "Votre progression sera sauvegardée automatiquement.",
+  "@validateReadingHint": {
+    "description": "Indice pour la validation de lecture"
+  },
+  
+  "adBlockerTitle": "Bloqueur de publicités",
+  "@adBlockerTitle": {
+    "description": "Titre de la popup du bloqueur de pub"
+  },
+  
+  "adBlockerDescription": "Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\nSi vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, rejoignez notre serveur Discord !",
+  "@adBlockerDescription": {
+    "description": "Description du bloqueur de pub"
+  },
+  
+  "adBlockerTooltip": "Informations sur le bloqueur de pub",
+  "@adBlockerTooltip": {
+    "description": "Tooltip pour l'icône d'info du bloqueur"
+  },
+  
+  "joinDiscord": "Rejoindre Discord",
+  "@joinDiscord": {
+    "description": "Bouton pour rejoindre Discord"
+  },
+  
+  "joinDiscordSubtitle": "Partagez vos suggestions et signalez des problèmes",
+  "@joinDiscordSubtitle": {
+    "description": "Sous-titre pour rejoindre Discord"
+  },
+  
+  "contactUs": "Nous contacter",
+  "@contactUs": {
+    "description": "Section nous contacter"
+  },
+  
+  "discordLinkError": "Impossible d'ouvrir le lien Discord",
+  "@discordLinkError": {
+    "description": "Erreur lors de l'ouverture du lien Discord"
+  },
+  
+  "urlCopied": "URL copiée dans le presse-papiers",
+  "@urlCopied": {
+    "description": "Message de succès pour la copie d'URL"
+  },
+  
+  "urlCopyError": "Erreur lors de la copie de l'URL",
+  "@urlCopyError": {
+    "description": "Message d'erreur pour la copie d'URL"
+  },
+  
+  "copyUrl": "Copier l'URL",
+  "@copyUrl": {
+    "description": "Tooltip pour le bouton de copie d'URL"
+  },
+  
+  "progressUpdated": "Progression mise à jour",
+  "@progressUpdated": {
+    "description": "Message de succès pour la mise à jour de progression"
+  },
+  
+  "invalidUrl": "URL invalide",
+  "@invalidUrl": {
+    "description": "Message d'erreur pour une URL invalide"
+  },
+  
+  "webModeProgressTracking": "Mode Web - Suivi de progression",
+  "@webModeProgressTracking": {
+    "description": "Titre pour le mode web de suivi de progression"
+  },
+  
+  "webModeProgressDescription": "Pour suivre votre progression, collez l'URL du chapitre que vous êtes en train de lire.",
+  "@webModeProgressDescription": {
+    "description": "Description pour le mode web de suivi de progression"
+  },
+  
+  "chapterUrlLabel": "URL du chapitre",
+  "@chapterUrlLabel": {
+    "description": "Label pour le champ URL du chapitre"
+  },
+  
+  "updateProgress": "Mettre à jour la progression",
+  "@updateProgress": {
+    "description": "Bouton pour mettre à jour la progression"
+  },
+  
+  "openInNewTab": "Ouvrir dans un nouvel onglet",
+  "@openInNewTab": {
+    "description": "Bouton pour ouvrir dans un nouvel onglet"
+  },
+  
+  "linkUrlLabel": "URL du site de scan",
+  "@linkUrlLabel": {
+    "description": "Label pour le champ URL du lien"
+  },
+  
+  "linkFormatInfo": "Format de chapitre requis",
+  "@linkFormatInfo": {
+    "description": "Titre pour l'information sur le format de chapitre"
+  },
+  
+  "linkFormatDescription": "Incluez le numéro de chapitre dans l'URL pour permettre la sauvegarde automatique de progression.\n\nFormats acceptés :\n• /chapitre-23/ ou /chapter-23/\n• /c23/ ou /ch23/\n• /ep-23/ ou /episode-23/\n• ?chapter=23 ou ?num=24",
+  "@linkFormatDescription": {
+    "description": "Description des formats de chapitre acceptés"
+  },
+  
+  "linkFormatWarning": "Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).",
+  "@linkFormatWarning": {
+    "description": "Avertissement quand aucun format de chapitre n'est détecté"
+  },
+  
+  "linkFormatDetected": "Format de chapitre détecté ! La progression sera sauvegardée automatiquement.",
+  "@linkFormatDetected": {
+    "description": "Message de confirmation quand un format de chapitre est détecté"
+  }
 }

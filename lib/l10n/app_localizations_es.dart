@@ -568,4 +568,98 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => 'Fuerte';
+
+  @override
+  String get yes => 'Sí';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get yesValidate => 'Sí, validar';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return 'Estás saltando del capítulo $prev al $next.\n¿Marcar $prev como leído?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return '¿Has terminado el capítulo $chapter?';
+  }
+
+  @override
+  String get validateReadingHint => 'Tu progreso se guardará automáticamente.';
+
+  @override
+  String get adBlockerTitle => 'Bloqueador de anuncios';
+
+  @override
+  String get adBlockerDescription =>
+      'El bloqueador de anuncios bloquea automáticamente los anuncios en los sitios de lectura.\n\nSi deseas agregar enlaces o sugerir mejoras para el bloqueo de anuncios, ¡únete a nuestro servidor de Discord!';
+
+  @override
+  String get adBlockerTooltip => 'Información sobre el bloqueador de anuncios';
+
+  @override
+  String get joinDiscord => 'Unirse a Discord';
+
+  @override
+  String get joinDiscordSubtitle =>
+      'Comparte tus sugerencias e informa problemas';
+
+  @override
+  String get contactUs => 'Contáctanos';
+
+  @override
+  String get discordLinkError => 'No se puede abrir el enlace de Discord';
+
+  @override
+  String get urlCopied => 'URL copiada al portapapeles';
+
+  @override
+  String get urlCopyError => 'Error al copiar la URL';
+
+  @override
+  String get copyUrl => 'Copiar URL';
+
+  @override
+  String get progressUpdated => 'Progreso actualizado';
+
+  @override
+  String get invalidUrl => 'URL inválida';
+
+  @override
+  String get webModeProgressTracking => 'Modo Web - Seguimiento de progreso';
+
+  @override
+  String get webModeProgressDescription =>
+      'Para rastrear tu progreso, pega la URL del capítulo que estás leyendo actualmente.';
+
+  @override
+  String get chapterUrlLabel => 'URL del capítulo';
+
+  @override
+  String get updateProgress => 'Actualizar progreso';
+
+  @override
+  String get openInNewTab => 'Abrir en nueva pestaña';
+
+  @override
+  String get linkUrlLabel => 'URL del sitio de escaneo';
+
+  @override
+  String get linkFormatInfo => 'Formato de capítulo requerido';
+
+  @override
+  String get linkFormatDescription =>
+      'Incluya el número de capítulo en la URL para permitir el guardado automático del progreso.\n\nFormatos aceptados:\n• /capítulo-23/ o /chapter-23/\n• /c23/ o /ch23/\n• /ep-23/ o /episode-23/\n• ?chapter=23 o ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      'No se detectó formato de capítulo. El enlace redirigirá a la página del manga (no a un capítulo específico).';
+
+  @override
+  String get linkFormatDetected =>
+      '¡Formato de capítulo detectado! El progreso se guardará automáticamente.';
 }

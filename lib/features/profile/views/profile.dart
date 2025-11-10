@@ -469,18 +469,18 @@ class _ProfileState extends State<Profile> {
                 // Section Nous contacter
                 SliverToBoxAdapter(
                   child: ProfileSection(
-                    title: 'Nous contacter',
+                    title: l10n.contactUs,
                     children: [
                       ProfileOptionTile(
                         icon: Icons.chat,
-                        title: 'Rejoindre Discord',
-                        subtitle: 'Partagez vos suggestions et signalez des problèmes',
+                        title: l10n.joinDiscord,
+                        subtitle: l10n.joinDiscordSubtitle,
                         onTap: () async {
                           final uri = Uri.parse('https://discord.gg/X6sBgFY7');
                           if (await canLaunchUrl(uri)) {
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           } else {
-                            _notifier.error('Impossible d\'ouvrir le lien Discord');
+                            _notifier.error(l10n.discordLinkError);
                           }
                         },
                         iconColor: Colors.indigo,

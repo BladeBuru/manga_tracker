@@ -547,4 +547,96 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => '강함';
+
+  @override
+  String get yes => '예';
+
+  @override
+  String get no => '아니오';
+
+  @override
+  String get yesValidate => '예, 확인';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return '챕터 $prev에서 $next로 건너뜁니다.\n$prev을(를) 읽음으로 표시하시겠습니까?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return '챕터 $chapter을(를) 읽으셨나요?';
+  }
+
+  @override
+  String get validateReadingHint => '진행 상황이 자동으로 저장됩니다.';
+
+  @override
+  String get adBlockerTitle => '광고 차단기';
+
+  @override
+  String get adBlockerDescription =>
+      '광고 차단기는 읽기 사이트의 광고를 자동으로 차단합니다.\n\n링크를 추가하거나 광고 차단 개선 사항을 제안하려면 Discord 서버에 참여하세요!';
+
+  @override
+  String get adBlockerTooltip => '광고 차단기 정보';
+
+  @override
+  String get joinDiscord => 'Discord 참여';
+
+  @override
+  String get joinDiscordSubtitle => '제안을 공유하고 문제를 보고하세요';
+
+  @override
+  String get contactUs => '문의하기';
+
+  @override
+  String get discordLinkError => 'Discord 링크를 열 수 없습니다';
+
+  @override
+  String get urlCopied => 'URL이 클립보드에 복사되었습니다';
+
+  @override
+  String get urlCopyError => 'URL 복사 오류';
+
+  @override
+  String get copyUrl => 'URL 복사';
+
+  @override
+  String get progressUpdated => '진행 상황이 업데이트되었습니다';
+
+  @override
+  String get invalidUrl => '잘못된 URL';
+
+  @override
+  String get webModeProgressTracking => '웹 모드 - 진행 상황 추적';
+
+  @override
+  String get webModeProgressDescription =>
+      '진행 상황을 추적하려면 현재 읽고 있는 챕터의 URL을 붙여넣으세요.';
+
+  @override
+  String get chapterUrlLabel => '챕터 URL';
+
+  @override
+  String get updateProgress => '진행 상황 업데이트';
+
+  @override
+  String get openInNewTab => '새 탭에서 열기';
+
+  @override
+  String get linkUrlLabel => '스캔 사이트 URL';
+
+  @override
+  String get linkFormatInfo => '챕터 형식 필요';
+
+  @override
+  String get linkFormatDescription =>
+      '자동 진행 상황 저장을 활성화하려면 URL에 챕터 번호를 포함하세요.\n\n허용되는 형식:\n• /챕터-23/ 또는 /chapter-23/\n• /c23/ 또는 /ch23/\n• /ep-23/ 또는 /episode-23/\n• ?chapter=23 또는 ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      '챕터 형식이 감지되지 않았습니다. 링크는 만화 페이지로 리디렉션됩니다(특정 챕터가 아님).';
+
+  @override
+  String get linkFormatDetected => '챕터 형식이 감지되었습니다! 진행 상황이 자동으로 저장됩니다.';
 }

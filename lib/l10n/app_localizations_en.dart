@@ -554,4 +554,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => 'Strong';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get yesValidate => 'Yes, validate';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return 'You are jumping from chapter $prev to $next.\nMark $prev as read?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return 'Have you finished chapter $chapter?';
+  }
+
+  @override
+  String get validateReadingHint =>
+      'Your progress will be saved automatically.';
+
+  @override
+  String get adBlockerTitle => 'Ad Blocker';
+
+  @override
+  String get adBlockerDescription =>
+      'The ad blocker automatically blocks ads on reading sites.\n\nIf you want to add links or suggest improvements for ad blocking, join our Discord server!';
+
+  @override
+  String get adBlockerTooltip => 'Ad blocker information';
+
+  @override
+  String get joinDiscord => 'Join Discord';
+
+  @override
+  String get joinDiscordSubtitle => 'Share your suggestions and report issues';
+
+  @override
+  String get contactUs => 'Contact Us';
+
+  @override
+  String get discordLinkError => 'Unable to open Discord link';
+
+  @override
+  String get urlCopied => 'URL copied to clipboard';
+
+  @override
+  String get urlCopyError => 'Error copying URL';
+
+  @override
+  String get copyUrl => 'Copy URL';
+
+  @override
+  String get progressUpdated => 'Progress updated';
+
+  @override
+  String get invalidUrl => 'Invalid URL';
+
+  @override
+  String get webModeProgressTracking => 'Web Mode - Progress Tracking';
+
+  @override
+  String get webModeProgressDescription =>
+      'To track your progress, paste the URL of the chapter you are currently reading.';
+
+  @override
+  String get chapterUrlLabel => 'Chapter URL';
+
+  @override
+  String get updateProgress => 'Update progress';
+
+  @override
+  String get openInNewTab => 'Open in new tab';
+
+  @override
+  String get linkUrlLabel => 'Scan site URL';
+
+  @override
+  String get linkFormatInfo => 'Chapter format required';
+
+  @override
+  String get linkFormatDescription =>
+      'Include the chapter number in the URL to enable automatic progress saving.\n\nAccepted formats:\n• /chapter-23/ or /chapitre-23/\n• /c23/ or /ch23/\n• /ep-23/ or /episode-23/\n• ?chapter=23 or ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      'No chapter format detected. The link will redirect to the manga page (not a specific chapter).';
+
+  @override
+  String get linkFormatDetected =>
+      'Chapter format detected! Progress will be saved automatically.';
 }

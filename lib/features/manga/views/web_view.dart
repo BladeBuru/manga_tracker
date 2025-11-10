@@ -512,10 +512,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       final url = await _controller?.getUrl();
       if (url != null) {
         await Clipboard.setData(ClipboardData(text: url.toString()));
-        _notifier.info("URL copiée dans le presse-papiers");
+        final l10n = AppLocalizations.of(context);
+        _notifier.info(l10n?.urlCopied ?? "URL copiée dans le presse-papiers");
       }
     } catch (e) {
-      _notifier.error("Erreur lors de la copie de l'URL");
+      final l10n = AppLocalizations.of(context);
+      _notifier.error(l10n?.urlCopyError ?? "Erreur lors de la copie de l'URL");
     }
   }
 
@@ -523,24 +525,23 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     try {
       final uri = Uri.parse(url);
       _handleDetected(uri);
-      _notifier.info("Progression mise à jour");
+      final l10n = AppLocalizations.of(context);
+      _notifier.info(l10n?.progressUpdated ?? "Progression mise à jour");
     } catch (e) {
-      _notifier.error("URL invalide");
+      final l10n = AppLocalizations.of(context);
+      _notifier.error(l10n?.invalidUrl ?? "URL invalide");
     }
   }
 
   Future<void> _showAdBlockerInfo() async {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Bloqueur de publicités'),
-          ],
-        ),
-        content: const Text(
+        icon: const Icon(Icons.block, color: Colors.red, size: 48),
+        title: Text(l10n?.adBlockerTitle ?? 'Bloqueur de publicités'),
+        content: Text(
+          l10n?.adBlockerDescription ?? 
           'Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\n'
           'Si vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, '
           'rejoignez notre serveur Discord !',
@@ -548,7 +549,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Fermer'),
+            child: Text(l10n?.close ?? 'Fermer'),
           ),
           FilledButton.icon(
             onPressed: () async {
@@ -559,7 +560,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               }
             },
             icon: const Icon(Icons.chat, size: 18),
-            label: const Text('Rejoindre Discord'),
+            label: Text(l10n?.joinDiscord ?? 'Rejoindre Discord'),
           ),
         ],
       ),
@@ -642,14 +643,25 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Future<bool?> _promptJumpConfirm({required int prev, required int next}) {
+    final l10n = AppLocalizations.of(context);
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Saut de chapitres"),
-        content: Text("Vous passez du chapitre $prev au $next.\nMarquer $prev comme lu ?"),
+        icon: const Icon(Icons.skip_next, color: Colors.orange, size: 48),
+        title: Text(l10n?.chapterSkip ?? "Saut de chapitres"),
+        content: Text(
+          l10n?.chapterSkipMessage(prev.toString(), next.toString()) ?? 
+          "Vous passez du chapitre $prev au $next.\nMarquer $prev comme lu ?"
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Non")),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Oui")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n?.no ?? "Non"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n?.yes ?? "Oui"),
+          ),
         ],
       ),
     );
@@ -660,14 +672,54 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     // on demande si l'utilisateur a fini le chapitre C.
     final c = _currentChapter;
     if (c != null && _lastCommitted < c) {
+      final l10n = AppLocalizations.of(context);
       final yes = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text("Valider la lecture"),
-          content: Text("Avez-vous fini le chapitre $c ?"),
+          icon: const Icon(Icons.check_circle_outline, color: Colors.green, size: 48),
+          title: Text(l10n?.validateReading ?? "Valider la lecture"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n?.validateReadingMessage(c.toString()) ?? 
+                "Avez-vous fini le chapitre $c ?",
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n?.validateReadingHint ?? 
+                        "Votre progression sera sauvegardée automatiquement.",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Non")),
-            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Oui, valider")),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n?.no ?? "Non"),
+            ),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(ctx, true),
+              icon: const Icon(Icons.check, size: 18),
+              label: Text(l10n?.yesValidate ?? "Oui, valider"),
+            ),
           ],
         ),
       );
@@ -693,15 +745,16 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Widget _buildWebFallback() {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lire en ligne'),
+        title: Text(l10n?.readOnline ?? 'Lire en ligne'),
         actions: [
           IconButton(
             icon: const Icon(Icons.copy),
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: widget.initialUrl));
-              _notifier.info("URL copiée");
+              _notifier.info(l10n?.urlCopied ?? "URL copiée");
             },
           ),
         ],
@@ -717,21 +770,22 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Mode Web - Suivi de progression',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      l10n?.webModeProgressTracking ?? 'Mode Web - Suivi de progression',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
+                      l10n?.webModeProgressDescription ?? 
                       'Pour suivre votre progression, collez l\'URL du chapitre que vous êtes en train de lire.',
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _urlTextController,
-                      decoration: const InputDecoration(
-                        labelText: 'URL du chapitre',
+                      decoration: InputDecoration(
+                        labelText: l10n?.chapterUrlLabel ?? 'URL du chapitre',
                         hintText: 'https://...',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -741,7 +795,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                           _updateProgressFromUrl(_urlTextController.text);
                         }
                       },
-                      child: const Text('Mettre à jour la progression'),
+                      child: Text(l10n?.updateProgress ?? 'Mettre à jour la progression'),
                     ),
                   ],
                 ),
@@ -751,7 +805,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             ElevatedButton.icon(
               onPressed: _openInExternalBrowser,
               icon: const Icon(Icons.open_in_new),
-              label: const Text('Ouvrir dans un nouvel onglet'),
+              label: Text(l10n?.openInNewTab ?? 'Ouvrir dans un nouvel onglet'),
             ),
           ],
         ),
@@ -773,13 +827,13 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Lire en ligne'),
+          title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
           actions: [
             // Bouton pour copier l'URL
             IconButton(
               icon: const Icon(Icons.copy),
               onPressed: _copyCurrentUrl,
-              tooltip: 'Copier l\'URL',
+              tooltip: AppLocalizations.of(context)?.copyUrl ?? 'Copier l\'URL',
             ),
             // Toggle pour activer/désactiver le bloqueur de pub avec icône
             Row(
@@ -789,7 +843,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 IconButton(
                   icon: const Icon(Icons.info_outline, size: 20),
                   onPressed: _showAdBlockerInfo,
-                  tooltip: 'Informations sur le bloqueur de pub',
+                  tooltip: AppLocalizations.of(context)?.adBlockerTooltip ?? 'Informations sur le bloqueur de pub',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
