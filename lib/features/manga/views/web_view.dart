@@ -90,6 +90,13 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     'sync.kueezrtb.com',
     'monetixads.com',
     'static.cdn.monetixads.com',
+    // Nouveaux domaines détectés
+    'crcdn.org',
+    'adexchangeclear.com',
+    'aqle3.com',
+    'pubadx.one',
+    'imp9.pubadx.one',
+    'madurird.com',
   };
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
@@ -100,7 +107,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       // Blocage de domaines de publicités connus
       ContentBlocker(
         trigger: ContentBlockerTrigger(
-          urlFilter: r".*(doubleclick\.net|googlesyndication\.com|adservice\.google\..*|google-analytics\.com|taboola\.com|outbrain\.com|criteo\.com|scorecardresearch\.com|adsafeprotected\.com|advertising\.com|amazon-adsystem\.com|adnxs\.com|adform\.net|adtechus\.com|adzerk\.net|casalemedia\.com|contextweb\.com|googletagmanager\.com|moatads\.com|openx\.net|pubmatic\.com|rubiconproject\.com|serving-sys\.com|smartadserver\.com|yieldlab\.net|zemanta\.com|onclckmn\.com|onclckbn\.net|bid\.onclckbn\.net|adxbid\.info|pemsrv\.com|media\.pubfuture\.com|pubfuture\.com|bobapsoabauns\.com|kueezrtb\.com|monetixads\.com).*",
+          urlFilter: r".*(doubleclick\.net|googlesyndication\.com|adservice\.google\..*|google-analytics\.com|taboola\.com|outbrain\.com|criteo\.com|scorecardresearch\.com|adsafeprotected\.com|advertising\.com|amazon-adsystem\.com|adnxs\.com|adform\.net|adtechus\.com|adzerk\.net|casalemedia\.com|contextweb\.com|googletagmanager\.com|moatads\.com|openx\.net|pubmatic\.com|rubiconproject\.com|serving-sys\.com|smartadserver\.com|yieldlab\.net|zemanta\.com|onclckmn\.com|onclckbn\.net|bid\.onclckbn\.net|adxbid\.info|pemsrv\.com|media\.pubfuture\.com|pubfuture\.com|bobapsoabauns\.com|kueezrtb\.com|monetixads\.com|crcdn\.org|adexchangeclear\.com|aqle3\.com|pubadx\.one|madurird\.com).*",
         ),
         action: ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
       ),
@@ -170,6 +177,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             iframe[style*='position: fixed'],
             iframe[style*='z-index'],
             iframe[sandbox],
+            iframe[data-asg-handled],
             div[id*='google_ads'],
             div[class*='google-ad'],
             div[id*='ad-'],
@@ -180,8 +188,20 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             div[class*='pf-config'],
             div[class*='pf-wrapper'],
             div[class*='gfpl-'],
-            div[data-unit],
-            div[data-banner-id],
+            div[id*='asg-'],
+            div[class*='ammc8brnmqe2aahjvxvkti9jx6p1df1o'],
+            div[id*='bg-ssp-'],
+            div[class*='bg-ssp-'],
+            div[id*='note-'],
+            div[id*='dl-banner-'],
+            in-page-message,
+            [data-unit],
+            [data-banner-id],
+            [data-funnel],
+            [data-bg],
+            [data-icon],
+            [data-title*='Bloquez'],
+            [data-description*='Naviguez'],
             ins[class*='adsbygoogle'],
             script[src*='ads'],
             script[src*='advertising'],
@@ -219,13 +239,19 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         'iframe[src*="pemsrv"]', 'iframe[src*="pubfuture"]',
         'iframe[src*="adxbid"]', 'iframe[src*="kueezrtb"]',
         'iframe[src*="monetixads"]', 'iframe[data-cbi]',
-        'iframe[sandbox]',
+        'iframe[sandbox]', 'iframe[data-asg-handled]',
         'ins.adsbygoogle', '[data-ad-slot]', '[data-ad-client]',
         '.PUBFUTURE', '[class*="pf-"]', '[id*="pf-"]',
         '[class*="pf-config"]', '[class*="pf-wrapper"]',
         '[class*="gfpl-"]', '[data-unit]', '[data-banner-id]',
+        '[id*="asg-"]', '[class*="ammc8brnmqe2aahjvxvkti9jx6p1df1o"]',
+        '[id*="bg-ssp-"]', '[class*="bg-ssp-"]',
+        '[id*="note-"]', '[id*="dl-banner-"]',
+        'in-page-message', '[data-funnel]', '[data-bg]',
+        '[data-icon]', '[data-title*="Bloquez"]',
         'script[src*="onclck"]', 'script[src*="pemsrv"]',
         'script[src*="pubfuture"]', 'script[src*="adxbid"]',
+        'script[src*="aqle3"]', 'script[src*="pubadx"]',
         'script[id*="popmagic"]', '.pf-banner-default'
       ];
       
@@ -252,6 +278,55 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 src.includes('pubfuture') || src.includes('adxbid') ||
                 content.includes('pubfuturetag') || content.includes('popMagic') ||
                 content.includes('window.pubfuturetag') || content.includes('popmagic')) {
+              const isChapterScript = script.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+              if (!isChapterScript) {
+                script.remove();
+              }
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les iframes cachées (position: absolute avec top/left négatifs)
+        try {
+          document.querySelectorAll('iframe[style*="top: -"], iframe[style*="left: -"]').forEach(iframe => {
+            const style = iframe.getAttribute('style') || '';
+            if (style.includes('top: -') || style.includes('left: -') || 
+                style.includes('visibility: hidden') || iframe.hasAttribute('data-asg-handled')) {
+              const isChapterIframe = iframe.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+              if (!isChapterIframe) {
+                iframe.remove();
+              }
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les éléments in-page-message (publicités pour bloqueurs de pub)
+        try {
+          document.querySelectorAll('in-page-message, [id*="note-"], [data-icon], [data-title*="Bloquez"], [data-description*="Naviguez"]').forEach(el => {
+            const isChapterElement = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+            if (!isChapterElement) {
+              el.remove();
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les éléments ASG et bg-ssp
+        try {
+          document.querySelectorAll('[id*="asg-"], [class*="ammc8brnmqe2aahjvxvkti9jx6p1df1o"], [id*="bg-ssp-"], [class*="bg-ssp-"], [id*="dl-banner-"]').forEach(el => {
+            const isChapterElement = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+            if (!isChapterElement) {
+              el.remove();
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les scripts de publicités supplémentaires
+        try {
+          document.querySelectorAll('script').forEach(script => {
+            const src = script.src || '';
+            const content = script.textContent || script.innerHTML || '';
+            if (src.includes('aqle3') || src.includes('pubadx') || src.includes('adexchangeclear') ||
+                content.includes('bg-ssp') || content.includes('asg-') || content.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o')) {
               const isChapterScript = script.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
               if (!isChapterScript) {
                 script.remove();
@@ -323,15 +398,22 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               const element = node;
               // Vérifier si c'est une publicité
               const isAd = 
-                (element.id && (element.id.includes('ad') || element.id.includes('pf-'))) ||
+                (element.id && (element.id.includes('ad') || element.id.includes('pf-') || 
+                 element.id.includes('asg-') || element.id.includes('bg-ssp-') || 
+                 element.id.includes('note-') || element.id.includes('dl-banner-'))) ||
                 (element.className && typeof element.className === 'string' && 
                  (element.className.includes('ad') || element.className.includes('PUBFUTURE') || 
-                  element.className.includes('pf-') || element.className.includes('gfpl-'))) ||
+                  element.className.includes('pf-') || element.className.includes('gfpl-') ||
+                  element.className.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o') ||
+                  element.className.includes('bg-ssp-'))) ||
                 (element.tagName === 'SCRIPT' && (
                   (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') || 
-                   element.src.includes('pubfuture') || element.src.includes('adxbid'))) ||
+                   element.src.includes('pubfuture') || element.src.includes('adxbid') ||
+                   element.src.includes('aqle3') || element.src.includes('pubadx') ||
+                   element.src.includes('adexchangeclear'))) ||
                   (element.textContent && (element.textContent.includes('pubfuturetag') || 
-                   element.textContent.includes('popMagic')))
+                   element.textContent.includes('popMagic') || element.textContent.includes('bg-ssp') ||
+                   element.textContent.includes('asg-') || element.textContent.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o')))
                 )) ||
                 (element.tagName === 'IFRAME' && (
                   (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') ||
@@ -340,9 +422,15 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                   (element.hasAttribute('sandbox') && (element.getAttribute('style')?.includes('width:0') || 
                    element.getAttribute('width') === '0')) ||
                   (element.getAttribute('style')?.includes('position: fixed') && 
-                   parseInt(element.getAttribute('style')?.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 1000)
+                   parseInt(element.getAttribute('style')?.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 1000) ||
+                  element.hasAttribute('data-asg-handled')
                 )) ||
-                element.hasAttribute('data-unit') || element.hasAttribute('data-banner-id');
+                element.tagName === 'IN-PAGE-MESSAGE' ||
+                element.hasAttribute('data-unit') || element.hasAttribute('data-banner-id') ||
+                element.hasAttribute('data-asg-handled') || element.hasAttribute('data-funnel') ||
+                element.hasAttribute('data-icon') || element.hasAttribute('data-bg') ||
+                (element.hasAttribute('data-title') && element.getAttribute('data-title')?.includes('Bloquez')) ||
+                (element.hasAttribute('data-description') && element.getAttribute('data-description')?.includes('Naviguez'));
               
               if (isAd) {
                 const isChapterImage = element.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
@@ -360,8 +448,37 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         subtree: true
       });
       
-      // Nettoyer périodiquement (toutes les 2 secondes)
-      setInterval(removeAds, 2000);
+      // Nettoyer périodiquement (toutes les 3 secondes au lieu de 2 pour réduire les appels)
+      let cleanupInterval = null;
+      function startPeriodicCleanup() {
+        if (cleanupInterval) return; // Déjà démarré
+        cleanupInterval = setInterval(function() {
+          try {
+            // Vérifier que le document est toujours valide
+            if (document.body && document.body.parentNode) {
+              removeAds();
+            } else {
+              // Arrêter le nettoyage si le document est détruit
+              if (cleanupInterval) {
+                clearInterval(cleanupInterval);
+                cleanupInterval = null;
+              }
+            }
+          } catch(e) {
+            // Ignorer les erreurs silencieusement
+          }
+        }, 3000);
+      }
+      
+      startPeriodicCleanup();
+      
+      // Arrêter le nettoyage si la page est déchargée
+      window.addEventListener('beforeunload', function() {
+        if (cleanupInterval) {
+          clearInterval(cleanupInterval);
+          cleanupInterval = null;
+        }
+      });
     })();
   """;
 
@@ -705,7 +822,16 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           // 4) Injection JavaScript après chargement pour nettoyer les publicités
           onLoadStop: (controller, url) async {
             if (_adBlockerEnabled && url != null) {
-              await controller.evaluateJavascript(source: _adBlockScript);
+              try {
+                // Vérifier que la WebView est toujours valide avant d'injecter le script
+                final currentUrl = await controller.getUrl();
+                if (currentUrl != null && mounted) {
+                  await controller.evaluateJavascript(source: _adBlockScript);
+                }
+              } catch (e) {
+                // Ignorer silencieusement si la WebView est détruite ou en cours de changement
+                // C'est normal quand le site essaie d'ouvrir de nouvelles pages qui sont bloquées
+              }
             }
           },
 
