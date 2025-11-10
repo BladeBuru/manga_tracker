@@ -1283,6 +1283,384 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Format de chapitre détecté ! La progression sera sauvegardée automatiquement.'**
   String get linkFormatDetected;
+
+  /// Lien pour ajouter un pattern personnalisé
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un pattern personnalisé pour ce format'**
+  String get linkAddCustomPattern;
+
+  /// Titre pour la section des sélecteurs personnalisés
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs personnalisés'**
+  String get customSelectors;
+
+  /// Option pour gérer les sélecteurs personnalisés
+  ///
+  /// In fr, this message translates to:
+  /// **'Gérer les sélecteurs'**
+  String get manageCustomSelectors;
+
+  /// Sous-titre pour gérer les sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu'**
+  String get manageCustomSelectorsSubtitle;
+
+  /// Titre pour ajouter un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un sélecteur'**
+  String get addCustomSelector;
+
+  /// Label pour le champ domaine
+  ///
+  /// In fr, this message translates to:
+  /// **'Domaine (ex: exemple.com)'**
+  String get selectorDomainLabel;
+
+  /// Label pour le champ sélecteur CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur CSS'**
+  String get selectorCssLabel;
+
+  /// Label pour le type de sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de sélecteur'**
+  String get selectorTypeLabel;
+
+  /// Type de sélecteur : pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Pattern d\'URL'**
+  String get selectorTypeUrlPattern;
+
+  /// Label pour le champ pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Pattern d\'URL (regex)'**
+  String get selectorUrlPatternLabel;
+
+  /// Hint pour le champ pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22'**
+  String get selectorUrlPatternHint;
+
+  /// Titre pour les exemples de patterns d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples de patterns d\'URL :'**
+  String get selectorExamplesUrlPattern;
+
+  /// Titre de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple : /chapter-22'**
+  String get selectorExampleUrlPattern;
+
+  /// Explication de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :'**
+  String get selectorExampleUrlPatternExplanation;
+
+  /// Description détaillée de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22'**
+  String get selectorUrlPatternExampleDesc;
+
+  /// Message expliquant que le pattern est global
+  ///
+  /// In fr, this message translates to:
+  /// **'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.'**
+  String get selectorUrlPatternGlobal;
+
+  /// Type de sélecteur : bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités'**
+  String get selectorTypeAdBlocker;
+
+  /// Type de sélecteur : contenu du chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Contenu du chapitre'**
+  String get selectorTypeChapterContent;
+
+  /// Label pour la description du sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Description (optionnel)'**
+  String get selectorDescriptionLabel;
+
+  /// Placeholder pour la description
+  ///
+  /// In fr, this message translates to:
+  /// **'Description du sélecteur'**
+  String get selectorDescriptionHint;
+
+  /// Message d'erreur pour les champs requis
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les champs sont requis'**
+  String get selectorRequiredFields;
+
+  /// Message de succès pour l'ajout d'un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur ajouté'**
+  String get selectorAdded;
+
+  /// Titre pour supprimer un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le sélecteur'**
+  String get deleteSelector;
+
+  /// Message de confirmation pour supprimer un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Êtes-vous sûr de vouloir supprimer ce sélecteur ?'**
+  String get deleteSelectorConfirm;
+
+  /// Message de succès pour la suppression d'un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur supprimé'**
+  String get selectorDeleted;
+
+  /// Message de succès pour l'export des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs exportés dans le presse-papiers'**
+  String get selectorsExported;
+
+  /// Titre pour importer des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer des sélecteurs'**
+  String get importSelectors;
+
+  /// Label pour le champ JSON
+  ///
+  /// In fr, this message translates to:
+  /// **'JSON des sélecteurs'**
+  String get selectorsJsonLabel;
+
+  /// Bouton pour importer
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer'**
+  String get import;
+
+  /// Message de succès pour l'import des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} sélecteur(s) importé(s)'**
+  String selectorsImported(String count);
+
+  /// Message pour le partage des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.'**
+  String get selectorsReadyToShare;
+
+  /// Bouton pour exporter
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter'**
+  String get exportSelectors;
+
+  /// Bouton pour partager
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get shareSelectors;
+
+  /// Message quand il n'y a pas de sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun sélecteur personnalisé'**
+  String get noCustomSelectors;
+
+  /// Message pour ajouter le premier sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre premier sélecteur pour commencer'**
+  String get addFirstSelector;
+
+  /// Titre pour la section d'exemples
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples'**
+  String get selectorExamples;
+
+  /// Titre pour les exemples de bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples pour bloquer des publicités :'**
+  String get selectorExamplesAdBlocker;
+
+  /// Exemple 1 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bannière publicitaire'**
+  String get selectorExampleAd1;
+
+  /// Exemple 2 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Publicité par ID'**
+  String get selectorExampleAd2;
+
+  /// Exemple 3 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Iframe publicitaire'**
+  String get selectorExampleAd3;
+
+  /// Exemple 4 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Script publicitaire'**
+  String get selectorExampleAd4;
+
+  /// Titre pour les exemples de contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples pour identifier le contenu du chapitre :'**
+  String get selectorExamplesChapter;
+
+  /// Exemple 1 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Conteneur de chapitre'**
+  String get selectorExampleChapter1;
+
+  /// Exemple 2 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecteur de manga'**
+  String get selectorExampleChapter2;
+
+  /// Exemple 3 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Images du chapitre'**
+  String get selectorExampleChapter3;
+
+  /// Exemple 4 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Contenu de lecture'**
+  String get selectorExampleChapter4;
+
+  /// Exemple 5 pour contenu de chapitre avec format manga/chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Format manga/chapitre-22'**
+  String get selectorExampleChapter5;
+
+  /// Explication de l'exemple manga/chapitre-22
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"'**
+  String get selectorExampleChapter5Explanation;
+
+  /// Message expliquant que le format URL est déjà détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.'**
+  String get selectorUrlFormatDetected;
+
+  /// Titre pour expliquer quand ajouter un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Quand ajouter un sélecteur CSS ?'**
+  String get selectorWhenNeeded;
+
+  /// Titre pour l'exemple pratique
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple pratique :'**
+  String get selectorPracticalExample;
+
+  /// Scénario d'exemple avec format non détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"'**
+  String get selectorExampleScenario;
+
+  /// Étape 1 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez la page du chapitre dans votre navigateur'**
+  String get selectorStep1;
+
+  /// Étape 2 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Appuyez sur F12 pour ouvrir les outils de développement'**
+  String get selectorStep2;
+
+  /// Étape 3 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)'**
+  String get selectorStep3;
+
+  /// Étape 4 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Cliquez sur le conteneur qui contient les images du chapitre'**
+  String get selectorStep4;
+
+  /// Étape 5 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans le code HTML, trouvez la classe ou l\'ID du conteneur'**
+  String get selectorStep5;
+
+  /// Titre pour remplir le formulaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Remplissez le formulaire :'**
+  String get selectorFillForm;
+
+  /// Description expliquant quand ajouter un sélecteur CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)'**
+  String get selectorCssWhenNeededDesc;
+
+  /// No description provided for @selectorDomainExampleDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)'**
+  String get selectorDomainExampleDesc;
+
+  /// Titre pour les autres exemples
+  ///
+  /// In fr, this message translates to:
+  /// **'Autres exemples courants :'**
+  String get selectorOtherExamples;
+
+  /// Description détaillée de l'exemple manga/chapitre-22
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.'**
+  String get selectorExampleChapter5Desc;
+
+  /// Astuce pour trouver les sélecteurs CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.'**
+  String get selectorExamplesHint;
 }
 
 class _AppLocalizationsDelegate

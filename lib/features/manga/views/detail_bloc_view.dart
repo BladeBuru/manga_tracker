@@ -21,6 +21,8 @@ import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import '../services/custom_selectors.service.dart';
+import '../../profile/views/custom_selectors_page.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -551,7 +553,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               onPressed: () async {
                 final lastRead = lastReadChapters;
                 final baseLink = customLink ?? '';
-                final targetUrl = ChapterLinkResolver.buildUrlForChapter(
+                final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
                         baseLink, lastRead + 1) ?? baseLink;
 
                 await Navigator.of(context).push(
@@ -874,6 +876,8 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   Future<void> _addCustomLink() async {
     final controller = TextEditingController(text: customLink);
     bool hasChapterFormat = false;
+    bool isCheckingCustomPatterns = false;
+    final selectorsService = CustomSelectorsService();
     
     final link = await showDialog<String?>(
       context: context,
@@ -883,16 +887,42 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             final l10n = AppLocalizations.of(context);
             
             // Vérifier si l'URL contient un format de chapitre
-            void checkChapterFormat() {
+            Future<void> checkChapterFormat() async {
               final text = controller.text.trim();
               if (text.isEmpty) {
-                setState(() => hasChapterFormat = false);
+                setState(() {
+                  hasChapterFormat = false;
+                  isCheckingCustomPatterns = false;
+                });
                 return;
               }
               
-              // Utiliser ChapterLinkResolver pour détecter le format
-              final detectedChapter = ChapterLinkResolver.extractChapter(text);
-              setState(() => hasChapterFormat = detectedChapter != null);
+              // Vérifier d'abord les patterns par défaut
+              final detectedChapter = ChapterLinkResolver.extractChapterSync(text);
+              if (detectedChapter != null) {
+                setState(() {
+                  hasChapterFormat = true;
+                  isCheckingCustomPatterns = false;
+                });
+                return;
+              }
+              
+              // Si aucun pattern par défaut ne correspond, vérifier les patterns personnalisés
+              setState(() => isCheckingCustomPatterns = true);
+              try {
+                // Initialiser le service pour vérifier les patterns personnalisés
+                ChapterLinkResolver.init(selectorsService);
+                final customDetectedChapter = await ChapterLinkResolver.extractChapter(text);
+                setState(() {
+                  hasChapterFormat = customDetectedChapter != null;
+                  isCheckingCustomPatterns = false;
+                });
+              } catch (e) {
+                setState(() {
+                  hasChapterFormat = false;
+                  isCheckingCustomPatterns = false;
+                });
+              }
             }
             
             // Vérifier au chargement initial
@@ -924,6 +954,16 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                         hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com/manga/chapitre-23',
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.language),
+                        suffixIcon: isCheckingCustomPatterns
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : null,
                       ),
                       onChanged: (_) => checkChapterFormat(),
                     ),
@@ -932,9 +972,9 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -970,37 +1010,78 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     ),
                     const SizedBox(height: 12),
                     // Avertissement si pas de format détecté
-                    if (!hasChapterFormat && controller.text.trim().isNotEmpty)
+                    if (!hasChapterFormat && controller.text.trim().isNotEmpty && !isCheckingCustomPatterns)
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                         ),
-                        child: Row(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                l10n?.linkFormatWarning ?? 
-                                'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).',
-                                style: const TextStyle(fontSize: 12),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    l10n?.linkFormatWarning ?? 
+                                    'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const CustomSelectorsPage(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.add_circle_outline, color: Colors.orange, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        l10n?.linkAddCustomPattern ?? 
+                                        'Ajouter un pattern personnalisé pour ce format',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.orange,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(Icons.arrow_forward, color: Colors.orange, size: 16),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     // Confirmation si format détecté
-                    if (hasChapterFormat)
+                    if (hasChapterFormat && !isCheckingCustomPatterns)
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [

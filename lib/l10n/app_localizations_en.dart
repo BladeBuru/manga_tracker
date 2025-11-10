@@ -648,4 +648,212 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get linkFormatDetected =>
       'Chapter format detected! Progress will be saved automatically.';
+
+  @override
+  String get linkAddCustomPattern => 'Add a custom pattern for this format';
+
+  @override
+  String get customSelectors => 'Custom Selectors';
+
+  @override
+  String get manageCustomSelectors => 'Manage Selectors';
+
+  @override
+  String get manageCustomSelectorsSubtitle =>
+      'Add custom CSS selectors to block ads or identify content';
+
+  @override
+  String get addCustomSelector => 'Add Selector';
+
+  @override
+  String get selectorDomainLabel => 'Domain (e.g., example.com)';
+
+  @override
+  String get selectorCssLabel => 'CSS Selector';
+
+  @override
+  String get selectorTypeLabel => 'Selector Type';
+
+  @override
+  String get selectorTypeUrlPattern => 'URL Pattern';
+
+  @override
+  String get selectorUrlPatternLabel => 'URL Pattern (regex)';
+
+  @override
+  String get selectorUrlPatternHint =>
+      'Example: /chapter-(\\d+)/ to detect /chapter-22';
+
+  @override
+  String get selectorExamplesUrlPattern => 'URL Pattern Examples:';
+
+  @override
+  String get selectorExampleUrlPattern => 'Example: /chapter-22';
+
+  @override
+  String get selectorExampleUrlPatternExplanation =>
+      'If your site uses \"/chapter-22\" in the URL and the system doesn\'t detect it automatically:';
+
+  @override
+  String get selectorUrlPatternExampleDesc =>
+      'Use a regular expression (regex) with (\\d+) to capture the chapter number.\n\nThis pattern will be applied to ALL sites.\n\nPattern examples:\n• /chapter-(\\d+)/ → detects /chapter-22\n• /chapppter-(\\d+)/ → detects /chapppter-22 (with 3 p\'s)\n• /manga/chapter-(\\d+)/ → detects /manga/chapter-22\n• /episode-(\\d+)/ → detects /episode-22';
+
+  @override
+  String get selectorUrlPatternGlobal =>
+      'ℹ️ The pattern will be applied to ALL sites. No need to specify a domain.';
+
+  @override
+  String get selectorTypeAdBlocker => 'Ad Blocker';
+
+  @override
+  String get selectorTypeChapterContent => 'Chapter Content';
+
+  @override
+  String get selectorDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get selectorDescriptionHint => 'Selector description';
+
+  @override
+  String get selectorRequiredFields => 'All fields are required';
+
+  @override
+  String get selectorAdded => 'Selector added';
+
+  @override
+  String get deleteSelector => 'Delete Selector';
+
+  @override
+  String get deleteSelectorConfirm =>
+      'Are you sure you want to delete this selector?';
+
+  @override
+  String get selectorDeleted => 'Selector deleted';
+
+  @override
+  String get selectorsExported => 'Selectors exported to clipboard';
+
+  @override
+  String get importSelectors => 'Import Selectors';
+
+  @override
+  String get selectorsJsonLabel => 'Selectors JSON';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String selectorsImported(String count) {
+    return '$count selector(s) imported';
+  }
+
+  @override
+  String get selectorsReadyToShare =>
+      'Selectors ready to share! Paste the JSON in Discord.';
+
+  @override
+  String get exportSelectors => 'Export';
+
+  @override
+  String get shareSelectors => 'Share';
+
+  @override
+  String get noCustomSelectors => 'No custom selectors';
+
+  @override
+  String get addFirstSelector => 'Add your first selector to get started';
+
+  @override
+  String get selectorExamples => 'Examples';
+
+  @override
+  String get selectorExamplesAdBlocker => 'Examples for blocking ads:';
+
+  @override
+  String get selectorExampleAd1 => 'Ad Banner';
+
+  @override
+  String get selectorExampleAd2 => 'Ad by ID';
+
+  @override
+  String get selectorExampleAd3 => 'Ad Iframe';
+
+  @override
+  String get selectorExampleAd4 => 'Ad Script';
+
+  @override
+  String get selectorExamplesChapter =>
+      'Examples for identifying chapter content:';
+
+  @override
+  String get selectorExampleChapter1 => 'Chapter Container';
+
+  @override
+  String get selectorExampleChapter2 => 'Manga Reader';
+
+  @override
+  String get selectorExampleChapter3 => 'Chapter Images';
+
+  @override
+  String get selectorExampleChapter4 => 'Reading Content';
+
+  @override
+  String get selectorExampleChapter5 => 'Format manga/chapter-22';
+
+  @override
+  String get selectorExampleChapter5Explanation =>
+      'Concrete example: If your URL is \"mysite.com/manga/chapter-22\"';
+
+  @override
+  String get selectorUrlFormatDetected =>
+      '✅ GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.';
+
+  @override
+  String get selectorWhenNeeded => 'When to add a CSS selector?';
+
+  @override
+  String get selectorPracticalExample => 'Practical example:';
+
+  @override
+  String get selectorExampleScenario =>
+      'Case: Your site uses \"/chapppter-22\" (with 3 p\'s) instead of \"/chapter-22\"';
+
+  @override
+  String get selectorStep1 => 'Open the chapter page in your browser';
+
+  @override
+  String get selectorStep2 => 'Press F12 to open developer tools';
+
+  @override
+  String get selectorStep3 => 'Click on the \"Inspect\" icon (or Ctrl+Shift+C)';
+
+  @override
+  String get selectorStep4 =>
+      'Click on the container that contains the chapter images';
+
+  @override
+  String get selectorStep5 =>
+      'In the HTML code, find the container\'s class or ID';
+
+  @override
+  String get selectorFillForm => 'Fill in the form:';
+
+  @override
+  String get selectorCssWhenNeededDesc =>
+      '⚠️ ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)';
+
+  @override
+  String get selectorDomainExampleDesc =>
+      'Enter only the domain name (without http://, without www, without the path /manga/chapter-22)';
+
+  @override
+  String get selectorOtherExamples => 'Other common examples:';
+
+  @override
+  String get selectorExampleChapter5Desc =>
+      'For sites using the manga/chapter-22 format in their URLs. Example: if your URL is \"site.com/manga/chapter-22\", use these selectors to identify the content.';
+
+  @override
+  String get selectorExamplesHint =>
+      'Tip: Use your browser\'s developer tools (F12) to inspect elements and find appropriate CSS selectors.';
 }

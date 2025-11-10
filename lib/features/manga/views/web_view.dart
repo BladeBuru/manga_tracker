@@ -10,6 +10,7 @@ import '../../reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/custom_selectors.service.dart';
 
 class ReaderWebView extends StatefulWidget {
   final int muId;
@@ -485,6 +486,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   @override
   void initState() {
     super.initState();
+    // Initialiser le service de patterns d'URL personnalisés
+    ChapterLinkResolver.init(CustomSelectorsService());
     _lastCommitted = widget.initialLastRead;
     _originHost = Uri.parse(widget.initialUrl).host;
     _loadAdBlockerPreference();
@@ -578,21 +581,21 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Future<void> _updateNextLinkFrom(String currentUrl, {int? currentChapter}) async {
-    final next = ChapterLinkResolver.buildNextUrl(currentUrl, currentChapter: currentChapter)
-        ?? ChapterLinkResolver.buildNextUrl(widget.baseUserLink, currentChapter: currentChapter);
+    final next = await ChapterLinkResolver.buildNextUrl(currentUrl, currentChapter: currentChapter)
+        ?? await ChapterLinkResolver.buildNextUrl(widget.baseUserLink, currentChapter: currentChapter);
     if (next != null) {
       await _library.updateCustomLink(widget.muId, next);
     }
   }
 
-  void _handleDetected(Uri uri) {
+  void _handleDetected(Uri uri) async {
     // Filtrage domaines : on ne réagit pas aux pubs/trackers
     final host = uri.host;
     if (_denyHosts.contains(host)) return;
     // On reste sur le même provider (ou sous-domaines)
     if (!_sameProvider(host, _originHost)) return;
 
-    final newCh = ChapterLinkResolver.extractChapter(uri.toString());
+    final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
     if (newCh == null) return;
 
     if (_currentChapter == null) {

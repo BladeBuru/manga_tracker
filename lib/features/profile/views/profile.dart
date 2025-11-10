@@ -17,6 +17,7 @@ import '../widgets/profile_header.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/profile_section.dart';
 import '../widgets/changelog_card.dart';
+import 'custom_selectors_page.dart';
 
 /// Page de profil moderne avec Material 3 et composants réutilisables
 class Profile extends StatefulWidget {
@@ -484,6 +485,28 @@ class _ProfileState extends State<Profile> {
                           }
                         },
                         iconColor: Colors.indigo,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Sélecteurs personnalisés
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.customSelectors,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.code,
+                        title: l10n.manageCustomSelectors,
+                        subtitle: l10n.manageCustomSelectorsSubtitle,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const CustomSelectorsPage(),
+                            ),
+                          );
+                        },
+                        iconColor: Colors.purple,
                       ),
                     ],
                   ),
