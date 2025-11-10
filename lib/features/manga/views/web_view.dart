@@ -1,11 +1,15 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReaderWebView extends StatefulWidget {
   final int muId;
@@ -30,11 +34,16 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   final _library = getIt<LibraryService>();
 
   InAppWebViewController? _controller;
+  final TextEditingController _urlTextController = TextEditingController();
 
   // État lecteur
   late int _lastCommitted;      // dernier chapitre confirmé en base
   int? _currentChapter;         // chapitre actuellement affiché (détecté)
   late String _originHost;      // domaine d'origine (pour filtrer)
+  bool _adBlockerEnabled = true;
+  bool _corsBlocked = false;
+
+  // Liste étendue de domaines de publicités
   final Set<String> _denyHosts = {
     'google-analytics.com',
     'www.google-analytics.com',
@@ -46,28 +55,361 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     'outbrain.com',
     'criteo.com',
     'scorecardresearch.com',
+    'adsafeprotected.com',
+    'advertising.com',
+    'amazon-adsystem.com',
+    'adnxs.com',
+    'adform.net',
+    'adtechus.com',
+    'adzerk.net',
+    'casalemedia.com',
+    'contextweb.com',
+    'facebook.com/tr',
+    'googletagmanager.com',
+    'moatads.com',
+    'openx.net',
+    'pubmatic.com',
+    'rubiconproject.com',
+    'serving-sys.com',
+    'smartadserver.com',
+    'yieldlab.net',
+    'zemanta.com',
+    // Nouveaux domaines détectés
+    'onclckmn.com',
+    'onclckbn.net',
+    'bid.onclckbn.net',
+    'adxbid.info',
+    'a.pemsrv.com',
+    's.pemsrv.com',
+    'pemsrv.com',
+    'media.pubfuture.com',
+    'pubfuture.com',
+    'bobapsoabauns.com',
+    // Domaines de synchronisation et overlay
+    'kueezrtb.com',
+    'sync.kueezrtb.com',
+    'monetixads.com',
+    'static.cdn.monetixads.com',
   };
 
-  // Ad-blocker minimal (appliqué via contentBlockers CSS + blocage de domaines connus)
-  List<ContentBlocker> get _blockers => [
-    ContentBlocker(
-      trigger:  ContentBlockerTrigger(urlFilter: r".*(doubleclick\.net|googlesyndication\.com|adservice\.google\..*|google-analytics\.com|taboola\.com|outbrain\.com|criteo\.com|scorecardresearch\.com).*"),
-      action:  ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
-    ),
-    ContentBlocker(
-      trigger:  ContentBlockerTrigger(urlFilter: r".*"),
-      action:  ContentBlockerAction(
-        type: ContentBlockerActionType.CSS_DISPLAY_NONE,
-        selector: ".ad, .ads, #ads, [id^='ad-'], [class*='ad-'], iframe[src*='ads']",
+  // Ad-blocker amélioré avec sélecteurs CSS plus précis
+  List<ContentBlocker> get _blockers {
+    if (!_adBlockerEnabled) return [];
+    
+    return [
+      // Blocage de domaines de publicités connus
+      ContentBlocker(
+        trigger: ContentBlockerTrigger(
+          urlFilter: r".*(doubleclick\.net|googlesyndication\.com|adservice\.google\..*|google-analytics\.com|taboola\.com|outbrain\.com|criteo\.com|scorecardresearch\.com|adsafeprotected\.com|advertising\.com|amazon-adsystem\.com|adnxs\.com|adform\.net|adtechus\.com|adzerk\.net|casalemedia\.com|contextweb\.com|googletagmanager\.com|moatads\.com|openx\.net|pubmatic\.com|rubiconproject\.com|serving-sys\.com|smartadserver\.com|yieldlab\.net|zemanta\.com|onclckmn\.com|onclckbn\.net|bid\.onclckbn\.net|adxbid\.info|pemsrv\.com|media\.pubfuture\.com|pubfuture\.com|bobapsoabauns\.com|kueezrtb\.com|monetixads\.com).*",
+        ),
+        action: ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
       ),
-    ),
-  ];
+      // Sélecteurs CSS plus spécifiques pour éviter de bloquer les images du chapitre
+      ContentBlocker(
+        trigger: ContentBlockerTrigger(urlFilter: r".*"),
+        action: ContentBlockerAction(
+          type: ContentBlockerActionType.CSS_DISPLAY_NONE,
+          selector: """
+            .advertisement,
+            .ad-banner,
+            .ad-container,
+            .ad-wrapper,
+            .ad-box,
+            .ad-unit,
+            .ad-slot,
+            .ad-placeholder,
+            .ad-content,
+            .ad-frame,
+            .ad-holder,
+            .ad-area,
+            .ad-section,
+            .ad-block,
+            .ad-widget,
+            .ad-panel,
+            .ad-sidebar,
+            .ad-header,
+            .ad-footer,
+            .ad-top,
+            .ad-bottom,
+            .ad-left,
+            .ad-right,
+            .ad-center,
+            #advertisement,
+            #ad-banner,
+            #ad-container,
+            #ad-wrapper,
+            #ad-box,
+            #ad-unit,
+            #ad-slot,
+            #ad-content,
+            #ad-frame,
+            #ad-area,
+            #ad-section,
+            #ad-block,
+            #ad-widget,
+            #ad-panel,
+            #ad-sidebar,
+            #ad-header,
+            #ad-footer,
+            iframe[src*='doubleclick'],
+            iframe[src*='googlesyndication'],
+            iframe[src*='adservice'],
+            iframe[src*='advertising'],
+            iframe[src*='ads'],
+            iframe[src*='onclck'],
+            iframe[src*='onclckbn'],
+            iframe[src*='onclckmn'],
+            iframe[src*='pemsrv'],
+            iframe[src*='pubfuture'],
+            iframe[src*='adxbid'],
+            iframe[src*='kueezrtb'],
+            iframe[src*='monetixads'],
+            iframe[id*='ad'],
+            iframe[class*='ad'],
+            iframe[data-cbi],
+            iframe[style*='position: fixed'],
+            iframe[style*='z-index'],
+            iframe[sandbox],
+            div[id*='google_ads'],
+            div[class*='google-ad'],
+            div[id*='ad-'],
+            div[class*='ad-'],
+            div[id*='pf-'],
+            div[class*='pf-'],
+            div[class*='PUBFUTURE'],
+            div[class*='pf-config'],
+            div[class*='pf-wrapper'],
+            div[class*='gfpl-'],
+            div[data-unit],
+            div[data-banner-id],
+            ins[class*='adsbygoogle'],
+            script[src*='ads'],
+            script[src*='advertising'],
+            script[src*='onclck'],
+            script[src*='pemsrv'],
+            script[src*='pubfuture'],
+            script[src*='adxbid'],
+            script[id*='popmagic'],
+            [data-ad-slot],
+            [data-ad-client],
+            [data-ad-format],
+            [data-unit],
+            [data-banner-id],
+            .PUBFUTURE,
+            [class*="pf-config"],
+            [class*="pf-wrapper"],
+            [class*="gfpl-"]
+          """,
+        ),
+      ),
+    ];
+  }
+
+  // Script JavaScript pour nettoyer le DOM des publicités
+  String get _adBlockScript => """
+    (function() {
+      // Supprimer les éléments publicitaires spécifiques
+      const adSelectors = [
+        '.advertisement', '.ad-banner', '.ad-container', '.ad-wrapper',
+        '.ad-box', '.ad-unit', '.ad-slot', '.ad-content', '.ad-frame',
+        '#advertisement', '#ad-banner', '#ad-container', '#ad-wrapper',
+        'iframe[src*="doubleclick"]', 'iframe[src*="googlesyndication"]',
+        'iframe[src*="adservice"]', 'iframe[src*="onclck"]',
+        'iframe[src*="onclckbn"]', 'iframe[src*="onclckmn"]',
+        'iframe[src*="pemsrv"]', 'iframe[src*="pubfuture"]',
+        'iframe[src*="adxbid"]', 'iframe[src*="kueezrtb"]',
+        'iframe[src*="monetixads"]', 'iframe[data-cbi]',
+        'iframe[sandbox]',
+        'ins.adsbygoogle', '[data-ad-slot]', '[data-ad-client]',
+        '.PUBFUTURE', '[class*="pf-"]', '[id*="pf-"]',
+        '[class*="pf-config"]', '[class*="pf-wrapper"]',
+        '[class*="gfpl-"]', '[data-unit]', '[data-banner-id]',
+        'script[src*="onclck"]', 'script[src*="pemsrv"]',
+        'script[src*="pubfuture"]', 'script[src*="adxbid"]',
+        'script[id*="popmagic"]', '.pf-banner-default'
+      ];
+      
+      // Fonction pour supprimer les éléments publicitaires
+      function removeAds() {
+        adSelectors.forEach(selector => {
+          try {
+            document.querySelectorAll(selector).forEach(el => {
+              // Vérifier que ce n'est pas une image du chapitre
+              const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
+              if (!isChapterImage) {
+                el.remove();
+              }
+            });
+          } catch(e) {}
+        });
+        
+        // Supprimer les scripts de publicités spécifiques
+        try {
+          document.querySelectorAll('script').forEach(script => {
+            const src = script.src || '';
+            const content = script.textContent || script.innerHTML || '';
+            if (src.includes('onclck') || src.includes('pemsrv') || 
+                src.includes('pubfuture') || src.includes('adxbid') ||
+                content.includes('pubfuturetag') || content.includes('popMagic') ||
+                content.includes('window.pubfuturetag') || content.includes('popmagic')) {
+              const isChapterScript = script.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+              if (!isChapterScript) {
+                script.remove();
+              }
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les iframes en overlay (qui couvrent toute la page)
+        try {
+          document.querySelectorAll('iframe').forEach(iframe => {
+            const style = iframe.getAttribute('style') || '';
+            const computedStyle = window.getComputedStyle(iframe);
+            const zIndex = parseInt(computedStyle.zIndex || style.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0');
+            const position = computedStyle.position || style.match(/position[\\s:]*([^;]+)/)?.[1]?.trim();
+            const width = computedStyle.width || iframe.getAttribute('width') || '';
+            const height = computedStyle.height || iframe.getAttribute('height') || '';
+            
+            // Détecter les iframes qui couvrent toute la page
+            const isFullScreenOverlay = 
+              (position === 'fixed' && zIndex > 1000) ||
+              (style.includes('position: fixed') && zIndex > 1000) ||
+              (style.includes('width: 100%') && style.includes('height: 100%') && zIndex > 1000) ||
+              (style.includes('inset: 0px') && zIndex > 1000) ||
+              (width === '100%' && height === '100%' && zIndex > 1000);
+            
+            // Détecter les iframes de synchronisation cachées
+            const isSyncIframe = 
+              iframe.hasAttribute('sandbox') && 
+              (width === '0' || height === '0' || style.includes('width:0') || style.includes('height:0') ||
+               iframe.src.includes('sync') || iframe.src.includes('kueezrtb') || iframe.src.includes('monetixads'));
+            
+            if (isFullScreenOverlay || isSyncIframe) {
+              const isChapterIframe = iframe.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
+              if (!isChapterIframe) {
+                iframe.remove();
+              }
+            }
+          });
+        } catch(e) {}
+        
+        // Supprimer les éléments avec des styles de popup/publicité
+        try {
+          document.querySelectorAll('div[style*="position: absolute"], div[style*="position: fixed"]').forEach(el => {
+            const style = el.getAttribute('style') || '';
+            const text = el.textContent || '';
+            // Détecter les popups de publicité
+            if ((style.includes('z-index') && parseInt(style.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 100) ||
+                text.includes('Validation requise') || text.includes('Veuillez compléter') ||
+                text.includes('Continuer') && text.includes('Fermer') ||
+                el.querySelector('[style*="background"][style*="border-radius"][style*="box-shadow"]')) {
+              const isChapterPopup = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
+              if (!isChapterPopup) {
+                el.remove();
+              }
+            }
+          });
+        } catch(e) {}
+      }
+      
+      // Exécuter immédiatement
+      removeAds();
+      
+      // Observer pour les publicités chargées dynamiquement
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) {
+              const element = node;
+              // Vérifier si c'est une publicité
+              const isAd = 
+                (element.id && (element.id.includes('ad') || element.id.includes('pf-'))) ||
+                (element.className && typeof element.className === 'string' && 
+                 (element.className.includes('ad') || element.className.includes('PUBFUTURE') || 
+                  element.className.includes('pf-') || element.className.includes('gfpl-'))) ||
+                (element.tagName === 'SCRIPT' && (
+                  (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') || 
+                   element.src.includes('pubfuture') || element.src.includes('adxbid'))) ||
+                  (element.textContent && (element.textContent.includes('pubfuturetag') || 
+                   element.textContent.includes('popMagic')))
+                )) ||
+                (element.tagName === 'IFRAME' && (
+                  (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') ||
+                   element.src.includes('pubfuture') || element.src.includes('adxbid') ||
+                   element.src.includes('kueezrtb') || element.src.includes('monetixads'))) ||
+                  (element.hasAttribute('sandbox') && (element.getAttribute('style')?.includes('width:0') || 
+                   element.getAttribute('width') === '0')) ||
+                  (element.getAttribute('style')?.includes('position: fixed') && 
+                   parseInt(element.getAttribute('style')?.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 1000)
+                )) ||
+                element.hasAttribute('data-unit') || element.hasAttribute('data-banner-id');
+              
+              if (isAd) {
+                const isChapterImage = element.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
+                if (!isChapterImage) {
+                  element.remove();
+                }
+              }
+            }
+          });
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      // Nettoyer périodiquement (toutes les 2 secondes)
+      setInterval(removeAds, 2000);
+    })();
+  """;
 
   @override
   void initState() {
     super.initState();
     _lastCommitted = widget.initialLastRead;
     _originHost = Uri.parse(widget.initialUrl).host;
+    _loadAdBlockerPreference();
+  }
+
+  Future<void> _loadAdBlockerPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _adBlockerEnabled = prefs.getBool('ad_blocker_enabled') ?? true;
+    });
+  }
+
+  Future<void> _toggleAdBlocker(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('ad_blocker_enabled', enabled);
+    setState(() {
+      _adBlockerEnabled = enabled;
+    });
+    // Recharger la page pour appliquer les changements
+    await _controller?.reload();
+  }
+
+  Future<void> _copyCurrentUrl() async {
+    try {
+      final url = await _controller?.getUrl();
+      if (url != null) {
+        await Clipboard.setData(ClipboardData(text: url.toString()));
+        _notifier.info("URL copiée dans le presse-papiers");
+      }
+    } catch (e) {
+      _notifier.error("Erreur lors de la copie de l'URL");
+    }
+  }
+
+  Future<void> _updateProgressFromUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      _handleDetected(uri);
+      _notifier.info("Progression mise à jour");
+    } catch (e) {
+      _notifier.error("URL invalide");
+    }
   }
 
   Future<void> _commitIfNeeded(int chapter) async {
@@ -138,6 +480,13 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     return root(a) == root(b);
   }
 
+  bool _isAllowedDomain(String host) {
+    // Vérifier si c'est un domaine de publicité
+    if (_denyHosts.contains(host)) return false;
+    // Vérifier si c'est le même provider
+    return _sameProvider(host, _originHost);
+  }
+
   Future<bool?> _promptJumpConfirm({required int prev, required int next}) {
     return showDialog<bool>(
       context: context,
@@ -181,46 +530,205 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
 
+  Future<void> _openInExternalBrowser() async {
+    final url = widget.initialUrl;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Widget _buildWebFallback() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lire en ligne'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: widget.initialUrl));
+              _notifier.info("URL copiée");
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Mode Web - Suivi de progression',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pour suivre votre progression, collez l\'URL du chapitre que vous êtes en train de lire.',
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _urlTextController,
+                      decoration: const InputDecoration(
+                        labelText: 'URL du chapitre',
+                        hintText: 'https://...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_urlTextController.text.isNotEmpty) {
+                          _updateProgressFromUrl(_urlTextController.text);
+                        }
+                      },
+                      child: const Text('Mettre à jour la progression'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _openInExternalBrowser,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Ouvrir dans un nouvel onglet'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Si CORS bloque en mode web, afficher l'interface de fallback
+    if (kIsWeb && _corsBlocked) {
+      return WillPopScope(
+        onWillPop: _onWillPop,
+        child: _buildWebFallback(),
+      );
+    }
+
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Lire en ligne')),
+        appBar: AppBar(
+          title: const Text('Lire en ligne'),
+          actions: [
+            // Bouton pour copier l'URL
+            IconButton(
+              icon: const Icon(Icons.copy),
+              onPressed: _copyCurrentUrl,
+              tooltip: 'Copier l\'URL',
+            ),
+            // Toggle pour activer/désactiver le bloqueur de pub
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Bloquer pub', style: TextStyle(fontSize: 12)),
+                Switch(
+                  value: _adBlockerEnabled,
+                  onChanged: _toggleAdBlocker,
+                ),
+              ],
+            ),
+          ],
+        ),
         body: InAppWebView(
           initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
             mediaPlaybackRequiresUserGesture: true,
             contentBlockers: _blockers,
+            allowsInlineMediaPlayback: true,
+            iframeAllow: "camera; microphone",
+            iframeAllowFullscreen: true,
           ),
           onWebViewCreated: (c) => _controller = c,
 
-          // 1) Nouvelle navigation principale
+          // 1) Nouvelle navigation principale - Blocage strict des redirections
           shouldOverrideUrlLoading: (controller, action) async {
-            if (action.isForMainFrame && action.request.url != null) {
-              _handleDetected(action.request.url!);
+            if (action.request.url == null) {
+              return NavigationActionPolicy.ALLOW;
             }
-            // Ad-block Android (interception basique côté requêtes)
-            final url = action.request.url?.toString() ?? '';
+
+            final url = action.request.url!.toString();
+            final uri = action.request.url!;
+            final host = uri.host;
+
+            // Bloquer les domaines de publicités
             if (_denyHosts.any((h) => url.contains(h))) {
               return NavigationActionPolicy.CANCEL;
             }
+
+            // Pour les frames principales, vérifier le domaine
+            if (action.isForMainFrame) {
+              // Si ce n'est pas le même domaine, bloquer
+              if (!_isAllowedDomain(host)) {
+                return NavigationActionPolicy.CANCEL;
+              }
+              _handleDetected(uri);
+            }
+
             return NavigationActionPolicy.ALLOW;
           },
 
-          // 2) Début de chargement
+          // 2) Début de chargement - Vérification supplémentaire
           onLoadStart: (controller, url) {
-            if (url != null) _handleDetected(url);
+            if (url != null) {
+              final uri = url;
+              final host = uri.host;
+              // Vérifier que c'est un domaine autorisé
+              if (_isAllowedDomain(host)) {
+                _handleDetected(uri);
+              }
+            }
           },
 
           // 3) SPA / pushState
           onUpdateVisitedHistory: (controller, url, _) {
-            if (url != null) _handleDetected(url);
+            if (url != null) {
+              final uri = url;
+              final host = uri.host;
+              if (_isAllowedDomain(host)) {
+                _handleDetected(uri);
+              }
+            }
           },
 
-          // 4) Android: blocage réseau supplémentaire (images/scripts pubs)
+          // 4) Injection JavaScript après chargement pour nettoyer les publicités
+          onLoadStop: (controller, url) async {
+            if (_adBlockerEnabled && url != null) {
+              await controller.evaluateJavascript(source: _adBlockScript);
+            }
+          },
+
+          // 5) Gestion des erreurs CORS en mode web
+          onReceivedError: (controller, request, error) {
+            if (kIsWeb && error.description.contains('CORS')) {
+              setState(() {
+                _corsBlocked = true;
+              });
+            }
+          },
+
+          onConsoleMessage: (controller, consoleMessage) {
+            if (kIsWeb && consoleMessage.message.contains('CORS')) {
+              setState(() {
+                _corsBlocked = true;
+              });
+            }
+          },
+
+          // 6) Android: blocage réseau supplémentaire (images/scripts pubs)
           androidShouldInterceptRequest: (controller, req) async {
+            if (!_adBlockerEnabled) return null;
             final u = req.url.toString();
             if (_denyHosts.any((h) => u.contains(h))) {
               return WebResourceResponse(
@@ -235,5 +743,11 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _urlTextController.dispose();
+    super.dispose();
   }
 }
