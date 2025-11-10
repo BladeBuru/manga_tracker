@@ -1,8 +1,19 @@
 {
-  "latestVersion": "0.7.0+15",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.0+15/MangaTracker.apk",
+  "latestVersion": "0.7.1+16",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.1+16/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.7.1+16",
+      "notes": [
+        "### ✨ Nouveautés",
+        "- Vous pouvez choisir la langue de l’application directement depuis les paramètres.",
+        "- Les formulaires de connexion et d’inscription affichent des messages d’erreur plus clairs et traduits.",
+        "### 🔧 Améliorations",
+        "- Les liens “Connexion” et “Créer un compte” sont plus lisibles, sans soulignement superflu.",
+        "- La bibliothèque mémorise votre vue préférée (liste ou grille) et se recharge plus vite."
+      ]
+    },
     {
       "version": "0.7.0+15",
       "notes": [
