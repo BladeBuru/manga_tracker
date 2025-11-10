@@ -529,6 +529,43 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     }
   }
 
+  Future<void> _showAdBlockerInfo() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('Bloqueur de publicités'),
+          ],
+        ),
+        content: const Text(
+          'Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\n'
+          'Si vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, '
+          'rejoignez notre serveur Discord !',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Fermer'),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final uri = Uri.parse('https://discord.gg/X6sBgFY7');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            icon: const Icon(Icons.chat, size: 18),
+            label: const Text('Rejoindre Discord'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _commitIfNeeded(int chapter) async {
     if (chapter <= _lastCommitted) return;
     final ok = await _library.saveChapterProgress(widget.muId, chapter);
@@ -744,11 +781,27 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               onPressed: _copyCurrentUrl,
               tooltip: 'Copier l\'URL',
             ),
-            // Toggle pour activer/désactiver le bloqueur de pub
+            // Toggle pour activer/désactiver le bloqueur de pub avec icône
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Bloquer pub', style: TextStyle(fontSize: 12)),
+                // Icône d'information
+                IconButton(
+                  icon: const Icon(Icons.info_outline, size: 20),
+                  onPressed: _showAdBlockerInfo,
+                  tooltip: 'Informations sur le bloqueur de pub',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 4),
+                // Icône de blocage au lieu du texte
+                Icon(
+                  _adBlockerEnabled ? Icons.block : Icons.block_outlined,
+                  size: 20,
+                  color: _adBlockerEnabled ? Colors.red : Colors.grey,
+                ),
+                const SizedBox(width: 4),
+                // Switch
                 Switch(
                   value: _adBlockerEnabled,
                   onChanged: _toggleAdBlocker,

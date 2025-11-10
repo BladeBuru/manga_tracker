@@ -10,6 +10,7 @@ import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../auth/services/validator.service.dart';
 import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
@@ -460,6 +461,29 @@ class _ProfileState extends State<Profile> {
                         onTap: _showConfirmDeleteAccount,
                         iconColor: Colors.red,
                         backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Nous contacter
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: 'Nous contacter',
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.chat,
+                        title: 'Rejoindre Discord',
+                        subtitle: 'Partagez vos suggestions et signalez des problèmes',
+                        onTap: () async {
+                          final uri = Uri.parse('https://discord.gg/X6sBgFY7');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            _notifier.error('Impossible d\'ouvrir le lien Discord');
+                          }
+                        },
+                        iconColor: Colors.indigo,
                       ),
                     ],
                   ),
