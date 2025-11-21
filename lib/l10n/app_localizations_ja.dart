@@ -108,6 +108,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notifications => '通知';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => '通知を管理';
 
   @override
@@ -588,6 +597,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get contactUs => 'お問い合わせ';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
 
   @override
   String get discordLinkError => 'Discordリンクを開けません';

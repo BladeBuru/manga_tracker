@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/http_service.dart';
@@ -8,11 +9,13 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 import '../../manga/dto/reading_status.enum.dart';
 
 class LibraryService {
   final HttpService _http = getIt<HttpService>();
+  MangaService get _mangaService => getIt<MangaService>();
   late final ConnectivityService _connectivityService;
   late final OfflineCacheService _cacheService;
   
@@ -224,6 +227,25 @@ class LibraryService {
   Future<ReadingStatus?> getReadingStatusByUid(int muId) async {
     final manga = await getLibraryEntry(muId);
     return  manga?.readingStatus;
+  }
+
+  /// Récupère le customLink d'un manga, ou null si absent
+  Future<String?> getCustomLink(int muId) async {
+    final isOnline = _connectivityService.isConnected;
+    
+    if (isOnline) {
+      try {
+        // Récupérer les détails du manga depuis MangaService
+        final mangaDetail = await _mangaService.getMangaDetail(muId.toString());
+        return mangaDetail.customLink;
+      } catch (e) {
+        debugPrint('⚠️ LibraryService: Erreur lors de la récupération du customLink: $e');
+        return null;
+      }
+    } else {
+      // En mode offline, on ne peut pas récupérer le customLink
+      return null;
+    }
   }
 
   Future<List<MangaQuickViewDto>> _fetchMangaList(Uri url) async {

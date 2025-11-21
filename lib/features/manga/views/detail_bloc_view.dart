@@ -23,6 +23,7 @@ import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import '../services/custom_selectors.service.dart';
 import '../../profile/views/custom_selectors_page.dart';
+import 'chapter_download_dialog.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -555,11 +556,21 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 final baseLink = customLink ?? '';
                 final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
                         baseLink, lastRead + 1) ?? baseLink;
+                
+                // Récupérer le titre du manga depuis le state
+                final currentState = context.read<DetailBloc>().state;
+                String? mangaTitle;
+                if (currentState is DetailLoaded) {
+                  mangaTitle = currentState.mangaDetail.title;
+                } else {
+                  mangaTitle = widget.mangaTitle;
+                }
 
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => ReaderWebView(
                       muId: muId,
+                      mangaTitle: mangaTitle,
                       initialLastRead: lastRead,
                       initialUrl: targetUrl,
                       baseUserLink: baseLink,
@@ -708,118 +719,122 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   void _showManageLibrarySheet(ReadingStatus status) {
     final muId = widget.muId;
+    final detailBloc = context.read<DetailBloc>();
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              // Titre de la section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return Text(
-                      l10n?.changeStatus ?? 'Changer le statut',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const Divider(height: 1),
-              
-              // En cours
-              if (status != ReadingStatus.reading)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
-                      title: Text(ReadingStatus.reading.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // À lire plus tard
-              if (status != ReadingStatus.readLater)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
-                      title: Text(ReadingStatus.readLater.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // À jour
-              if (status != ReadingStatus.caughtUp)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
-                      title: Text(ReadingStatus.caughtUp.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // Terminé
-              if (status != ReadingStatus.completed)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
-                      title: Text(ReadingStatus.completed.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              const Divider(height: 1),
-              
-              // Retirer de la bibliothèque
-              Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context);
-                  return ListTile(
-                    leading: const Icon(Icons.delete_outline, color: Colors.red),
-                    title: Text(
-                      l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      context.read<DetailBloc>().add(RemoveFromLibrary(muId));
-                      widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
+        return BlocProvider.value(
+          value: detailBloc,
+          child: SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                // Titre de la section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.changeStatus ?? 'Changer le statut',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
                     },
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+                const Divider(height: 1),
+                
+                // En cours
+                if (status != ReadingStatus.reading)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
+                        title: Text(ReadingStatus.reading.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // À lire plus tard
+                if (status != ReadingStatus.readLater)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
+                        title: Text(ReadingStatus.readLater.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // À jour
+                if (status != ReadingStatus.caughtUp)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
+                        title: Text(ReadingStatus.caughtUp.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // Terminé
+                if (status != ReadingStatus.completed)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
+                        title: Text(ReadingStatus.completed.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                const Divider(height: 1),
+                
+                // Retirer de la bibliothèque
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: const Icon(Icons.delete_outline, color: Colors.red),
+                      title: Text(
+                        l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(RemoveFromLibrary(muId));
+                        widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -848,6 +863,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 onTap: () {
                   Navigator.of(ctx).pop();
                   _addCustomLink();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.download, color: Colors.blue),
+                title: const Text('Télécharger des chapitres'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showDownloadDialog(ctx);
                 },
               ),
               ListTile(
@@ -1154,5 +1177,27 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     final l10n = AppLocalizations.of(context);
     context.read<DetailBloc>().add(DeleteCustomLink());
     widget.notifier.success(l10n?.linkRemoved ?? "Lien supprimé !");
+  }
+
+  void _showDownloadDialog(BuildContext context) {
+    final state = this.context.read<DetailBloc>().state;
+    if (state is! DetailLoaded) return;
+
+    final manga = state.mangaDetail;
+    if (manga.customLink == null || manga.customLink!.isEmpty) {
+      widget.notifier.warning('Veuillez d\'abord ajouter un lien personnalisé');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => ChapterDownloadDialog(
+        muId: widget.muId,
+        mangaTitle: manga.title,
+        baseUrl: manga.customLink!,
+        totalChapters: manga.totalChapters,
+        readChapters: manga.readChaptersCount,
+      ),
+    );
   }
 }

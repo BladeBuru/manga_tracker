@@ -3,6 +3,10 @@ import '../helpers/image.helper.dart';
 import '../views/detail.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -13,6 +17,9 @@ class MangaRow extends StatelessWidget {
   final String? mediumImgPath;
   final String? rating;
   final VoidCallback? onDetailReturn;
+  final bool hasNewChapters;
+  final int? newChaptersCount;
+  final bool showDownloadedOnly; // Nouveau paramètre
 
   const MangaRow({
     super.key,
@@ -24,12 +31,55 @@ class MangaRow extends StatelessWidget {
     this.rating,
     this.mediumImgPath,
     this.onDetailReturn,
+    this.hasNewChapters = false,
+    this.newChaptersCount,
+    this.showDownloadedOnly = false, // Par défaut false
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
+        if (showDownloadedOnly) {
+          final downloadManager = DownloadManagerService();
+          final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
+          
+          if (downloadedChapters.isNotEmpty && context.mounted) {
+            // Ouvrir directement le premier chapitre téléchargé
+            final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
+            final firstChapter = sortedChapters.first;
+            
+            // Récupérer le titre du manga
+            final mangaService = getIt<MangaService>();
+            String mangaTitle = mangaName;
+            try {
+              final mangaDetail = await mangaService.getMangaDetail(muId);
+              mangaTitle = mangaDetail.title;
+            } catch (e) {
+              // Utiliser le nom fourni si erreur
+            }
+            
+            if (context.mounted) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OfflineReaderView(
+                    muId: int.parse(muId),
+                    chapterNumber: firstChapter.chapterNumber,
+                    mangaTitle: mangaTitle,
+                  ),
+                ),
+              );
+              if (onDetailReturn != null) {
+                onDetailReturn!();
+              }
+              return;
+            }
+          }
+        }
+        
+        // Sinon, aller sur le détail normal
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -74,15 +124,60 @@ class MangaRow extends StatelessWidget {
                     topLeft: Radius.circular(AppRadius.xl),
                     bottomLeft: Radius.circular(AppRadius.xl),
                   ),
-                  child: SizedBox(
-                    width: 80,
-                    height: 100,
-                    child: ImageHelper.loadMangaImage(
-                      mediumImgPath,
-                      width: 80,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 80,
+                        height: 100,
+                        child: ImageHelper.loadMangaImage(
+                          mediumImgPath,
+                          width: 80,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // Badge pour nouveaux chapitres
+                      if (hasNewChapters)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.fiber_new,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                if (newChaptersCount != null && newChaptersCount! > 0) ...[
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    newChaptersCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Expanded(

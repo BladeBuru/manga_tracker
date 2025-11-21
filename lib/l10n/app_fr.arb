@@ -155,6 +155,21 @@
     "description": "Option pour gérer les notifications"
   },
   
+  "newChapterNotifications": "Notifications nouveaux chapitres",
+  "@newChapterNotifications": {
+    "description": "Titre pour les notifications de nouveaux chapitres"
+  },
+  
+  "newChapterNotificationsEnabled": "Activées",
+  "@newChapterNotificationsEnabled": {
+    "description": "Texte indiquant que les notifications sont activées"
+  },
+  
+  "newChapterNotificationsDisabled": "Désactivées",
+  "@newChapterNotificationsDisabled": {
+    "description": "Texte indiquant que les notifications sont désactivées"
+  },
+  
   "manageNotifications": "Gérer les notifications",
   "@manageNotifications": {
     "description": "Sous-titre pour gérer les notifications"
@@ -967,6 +982,21 @@
   "contactUs": "Nous contacter",
   "@contactUs": {
     "description": "Section nous contacter"
+  },
+  
+  "downloads": "Téléchargements",
+  "@downloads": {
+    "description": "Titre de la section téléchargements"
+  },
+  
+  "manageDownloads": "Gérer les téléchargements",
+  "@manageDownloads": {
+    "description": "Titre pour gérer les téléchargements"
+  },
+  
+  "manageDownloadsSubtitle": "Voir et supprimer les chapitres téléchargés",
+  "@manageDownloadsSubtitle": {
+    "description": "Sous-titre pour gérer les téléchargements"
   },
   
   "discordLinkError": "Impossible d'ouvrir le lien Discord",

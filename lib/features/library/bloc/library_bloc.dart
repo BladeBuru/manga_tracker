@@ -6,6 +6,7 @@ import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'library_event.dart';
 import 'library_state.dart';
 
@@ -14,6 +15,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   final LibraryService _libraryService = getIt<LibraryService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
+  final NewChapterService _newChapterService = NewChapterService();
   
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
@@ -60,8 +62,10 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     if (hasCachedData) {
       final pendingCached = await _getPendingActionsCount();
       final List<MangaQuickViewDto> cachedList = cachedMangas;
+      // Enrichir les mangas avec les informations sur les nouveaux chapitres
+      final enrichedCachedList = await _enrichWithNewChapters(cachedList);
       emit(LibraryLoaded(
-        mangas: cachedList,
+        mangas: enrichedCachedList,
         isOffline: false,
         pendingActions: pendingCached,
         stale: true,
@@ -78,10 +82,13 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       
       final pendingActions = await _getPendingActionsCount();
       
+      // Enrichir les mangas avec les informations sur les nouveaux chapitres
+      final enrichedMangas = await _enrichWithNewChapters(mangas);
+      
       // Si aucune erreur, on est online
-      debugPrint('✅ LibraryBloc: Données chargées depuis le réseau - ${mangas.length} mangas, $pendingActions actions en attente');
+      debugPrint('✅ LibraryBloc: Données chargées depuis le réseau - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
       emit(LibraryLoaded(
-        mangas: mangas,
+        mangas: enrichedMangas,
         isOffline: false,
         pendingActions: pendingActions,
         stale: false,
@@ -105,9 +112,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         final fallbackMangas = cachedMangas ?? await _cacheHelper.getCachedLibrary();
         if (fallbackMangas != null && fallbackMangas.isNotEmpty) {
           final pendingActions = await _getPendingActionsCount();
-          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${fallbackMangas.length} mangas, $pendingActions actions en attente');
+          // Enrichir les mangas avec les informations sur les nouveaux chapitres
+          final enrichedMangas = await _enrichWithNewChapters(fallbackMangas);
+          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
-            mangas: fallbackMangas,
+            mangas: enrichedMangas,
             isOffline: true,
             pendingActions: pendingActions,
             stale: true,
@@ -340,6 +349,28 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     } catch (e) {
       return 0;
     }
+  }
+
+  /// Enrichit les mangas avec les informations sur les nouveaux chapitres
+  Future<List<MangaQuickViewDto>> _enrichWithNewChapters(List<MangaQuickViewDto> mangas) async {
+    return await Future.wait(
+      mangas.map((manga) async {
+        final hasNew = await _newChapterService.hasNewChapters(manga.muId.toInt());
+        return MangaQuickViewDto(
+          muId: manga.muId,
+          title: manga.title,
+          year: manga.year,
+          smallCoverUrl: manga.smallCoverUrl,
+          mediumCoverUrl: manga.mediumCoverUrl,
+          rating: manga.rating,
+          readingStatus: manga.readingStatus,
+          readChapters: manga.readChapters,
+          totalChapters: manga.totalChapters,
+          associated: manga.associated,
+          hasNewChapters: hasNew,
+        );
+      }),
+    );
   }
 
   /// Vérifie l'état initial de la connectivité

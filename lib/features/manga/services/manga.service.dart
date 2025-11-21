@@ -14,7 +14,7 @@ import '../dto/manga_recommendation_view.dto.dart';
 
 class MangaService {
   HttpService httpService = getIt<HttpService>();
-  LibraryService libraryService = LibraryService();
+  LibraryService get libraryService => getIt<LibraryService>();
 
   var offsetTop = 1;
   var offsetLatest = 1;

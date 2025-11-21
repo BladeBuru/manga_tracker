@@ -16,6 +16,8 @@ import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/profile_section.dart';
+import 'package:mangatracker/features/download/views/downloads_page.dart';
+import 'notifications_settings_page.dart';
 import '../widgets/changelog_card.dart';
 import 'custom_selectors_page.dart';
 
@@ -400,7 +402,11 @@ class _ProfileState extends State<Profile> {
                         title: l10n.notifications,
                         subtitle: l10n.manageNotifications,
                         onTap: () {
-                          _notifier.info(l10n.comingSoon);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsSettingsPage(),
+                            ),
+                          );
                         },
                         iconColor: Colors.blue,
                       ),
@@ -485,6 +491,28 @@ class _ProfileState extends State<Profile> {
                           }
                         },
                         iconColor: Colors.indigo,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Téléchargements
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.downloads,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.download,
+                        title: l10n.manageDownloads,
+                        subtitle: l10n.manageDownloadsSubtitle,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const DownloadsPage(),
+                            ),
+                          );
+                        },
+                        iconColor: Colors.blue,
                       ),
                     ],
                   ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
@@ -13,6 +17,7 @@ class MangaCard extends StatelessWidget {
   final String? rating;
   final num? lastChapter;
   final num? readChapter;
+  final bool showDownloadedOnly; // Nouveau paramètre
 
   const MangaCard({
     super.key,
@@ -23,12 +28,50 @@ class MangaCard extends StatelessWidget {
     this.rating,
     this.lastChapter,
     this.readChapter,
+    this.showDownloadedOnly = false, // Par défaut false
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
+        if (showDownloadedOnly) {
+          final downloadManager = DownloadManagerService();
+          final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
+          
+          if (downloadedChapters.isNotEmpty && context.mounted) {
+            // Ouvrir directement le premier chapitre téléchargé
+            final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
+            final firstChapter = sortedChapters.first;
+            
+            // Récupérer le titre du manga
+            final mangaService = getIt<MangaService>();
+            String finalMangaTitle = mangaTitle;
+            try {
+              final mangaDetail = await mangaService.getMangaDetail(muId);
+              finalMangaTitle = mangaDetail.title;
+            } catch (e) {
+              // Utiliser le titre fourni si erreur
+            }
+            
+            if (context.mounted) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OfflineReaderView(
+                    muId: int.parse(muId),
+                    chapterNumber: firstChapter.chapterNumber,
+                    mangaTitle: finalMangaTitle,
+                  ),
+                ),
+              );
+              return;
+            }
+          }
+        }
+        
+        // Sinon, aller sur le détail normal
         Navigator.push(
           context,
           MaterialPageRoute(

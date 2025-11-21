@@ -288,6 +288,24 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notifications;
 
+  /// Titre pour les notifications de nouveaux chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Notifications nouveaux chapitres'**
+  String get newChapterNotifications;
+
+  /// Texte indiquant que les notifications sont activées
+  ///
+  /// In fr, this message translates to:
+  /// **'Activées'**
+  String get newChapterNotificationsEnabled;
+
+  /// Texte indiquant que les notifications sont désactivées
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivées'**
+  String get newChapterNotificationsDisabled;
+
   /// Sous-titre pour gérer les notifications
   ///
   /// In fr, this message translates to:
@@ -1187,6 +1205,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Nous contacter'**
   String get contactUs;
+
+  /// Titre de la section téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléchargements'**
+  String get downloads;
+
+  /// Titre pour gérer les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Gérer les téléchargements'**
+  String get manageDownloads;
+
+  /// Sous-titre pour gérer les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir et supprimer les chapitres téléchargés'**
+  String get manageDownloadsSubtitle;
 
   /// Erreur lors de l'ouverture du lien Discord
   ///

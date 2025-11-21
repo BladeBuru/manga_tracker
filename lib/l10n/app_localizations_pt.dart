@@ -115,6 +115,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get notifications => 'Notificações';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => 'Gerenciar notificações';
 
   @override
@@ -607,6 +616,16 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get contactUs => 'Entre em contato';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
 
   @override
   String get discordLinkError => 'Não é possível abrir o link do Discord';

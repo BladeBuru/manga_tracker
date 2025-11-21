@@ -123,15 +123,15 @@ class _LateDetailViewState extends State<LateDetailView> {
       bonusChapters: widget.bonusChapters,
     );
     
-    if (sections.isNotEmpty) {
-      // Trouver la section contenant le dernier chapitre lu
-      final currentSection = ChapterSectionHelper.findSectionForChapter(
-        readChapters > 0 ? readChapters : 1,
-        sections,
-      );
+    setState(() {
+      _expandedSections = {};
       
-      setState(() {
-        _expandedSections = {};
+      if (sections.isNotEmpty) {
+        // Trouver la section contenant le dernier chapitre lu
+        final currentSection = ChapterSectionHelper.findSectionForChapter(
+          readChapters > 0 ? readChapters : 1,
+          sections,
+        );
         
         if (currentSection != null) {
           // Ouvrir la section actuelle
@@ -146,12 +146,10 @@ class _LateDetailViewState extends State<LateDetailView> {
             }
           }
         }
-        _isStateLoaded = true;
-      });
-    } else {
-      _initializeExpandedState();
+      }
+      
       _isStateLoaded = true;
-    }
+    });
   }
   
   Future<void> _saveExpandedState() async {

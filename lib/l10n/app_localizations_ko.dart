@@ -108,6 +108,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notifications => '알림';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => '알림 관리';
 
   @override
@@ -588,6 +597,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get contactUs => '문의하기';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
 
   @override
   String get discordLinkError => 'Discord 링크를 열 수 없습니다';
