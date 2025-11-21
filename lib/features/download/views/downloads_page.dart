@@ -141,6 +141,42 @@ class _DownloadsPageState extends State<DownloadsPage> {
     }
   }
 
+  Future<void> _deleteAllDownloads() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Supprimer tous les téléchargements'),
+        content: const Text('Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Supprimer tout', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _downloadManager.removeAllDownloads();
+      await _loadDownloads();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tous les téléchargements supprimés'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,6 +192,12 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
+            ),
+          if (_downloadedChapters.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep, color: Colors.red),
+              onPressed: _deleteAllDownloads,
+              tooltip: 'Supprimer tous les téléchargements',
             ),
         ],
       ),

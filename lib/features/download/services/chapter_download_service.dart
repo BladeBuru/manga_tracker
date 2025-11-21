@@ -91,7 +91,6 @@ class ChapterDownloadService {
         cookieString = prefs.getString('cookies_$domain');
         if (cookieString != null && cookieString.isNotEmpty) {
           debugPrint('🍪 ChapterDownloadService: Utilisation des cookies sauvegardés pour $domain');
-          debugPrint('   Cookies: ${cookieString.substring(0, cookieString.length > 300 ? 300 : cookieString.length)}...');
         } else {
           debugPrint('⚠️ ChapterDownloadService: Aucun cookie sauvegardé pour $domain');
           debugPrint('   💡 Astuce: Ouvrez d\'abord le chapitre dans le lecteur en ligne pour résoudre le captcha.');
@@ -222,7 +221,10 @@ class ChapterDownloadService {
                 await imageFile.writeAsBytes(imageResponse.bodyBytes);
                 debugPrint('✅ Image téléchargée: $imageFileName');
               } else {
-                debugPrint('⚠️ Échec du téléchargement de l\'image: $absoluteSrc (${imageResponse.statusCode})');
+                // Log seulement si ce n'est pas une erreur 403 (normale pour certaines images)
+                if (imageResponse.statusCode != 403) {
+                  debugPrint('⚠️ Échec du téléchargement de l\'image: ${imageResponse.statusCode}');
+                }
                 continue;
               }
             }

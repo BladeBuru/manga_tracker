@@ -125,7 +125,7 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
             );
 
             // Attendre que le téléchargement soit terminé
-            // Si la webview se ferme sans téléchargement, vérifier quand même
+            // Le callback est appelé AVANT la fermeture de la WebView, donc on devrait recevoir le résultat
             try {
               downloadSuccess = await completer.future.timeout(
                 const Duration(minutes: 5), // Timeout de 5 minutes par chapitre
@@ -142,6 +142,7 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
             // Si le completer n'a pas été complété mais que la webview s'est fermée,
             // vérifier si le téléchargement a réussi en vérifiant les fichiers
             if (!downloadCompleted) {
+              await Future.delayed(const Duration(milliseconds: 500)); // Attendre un peu pour que le téléchargement se termine
               final downloaded = await _downloadManager.getDownloadedChapters(widget.muId);
               downloadSuccess = downloaded.any((c) => c.chapterNumber == chapterNumber);
             }
@@ -149,9 +150,11 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
             // Si le téléchargement a réussi, les cookies sont maintenant disponibles pour les suivants
             if (downloadSuccess) {
               useWebView = false; // Utiliser le service automatique pour les suivants
+              debugPrint('✅ Chapitre $chapterNumber téléchargé avec succès, passage au mode automatique pour les suivants');
             }
           } else {
-            // Utiliser le service de téléchargement automatique avec les cookies
+            // Utiliser le service de téléchargement automatique avec les cookies sauvegardés
+            debugPrint('📥 Téléchargement automatique du chapitre $chapterNumber...');
             try {
               await _downloadService.downloadChapter(
                 muId: widget.muId,
@@ -165,17 +168,73 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                 },
               );
               downloadSuccess = true;
+              debugPrint('✅ Chapitre $chapterNumber téléchargé automatiquement avec succès');
             } catch (e) {
               debugPrint('❌ Erreur lors du téléchargement automatique du chapitre $chapterNumber: $e');
               
-              // Si c'est une erreur 403, revenir à la webview pour ce chapitre
-              if (e.toString().contains('403') || e.toString().contains('Échec du téléchargement')) {
-                debugPrint('⚠️ Erreur 403 pour le chapitre $chapterNumber, retour à la webview');
-                useWebView = true; // Revenir à la webview pour ce chapitre
-                index--; // Réessayer ce chapitre avec la webview
-                continue;
+              // Si c'est une erreur 403 ou autre erreur de téléchargement, revenir à la webview pour ce chapitre
+              if (e.toString().contains('403') || 
+                  e.toString().contains('Échec du téléchargement') ||
+                  e.toString().contains('Exception')) {
+                debugPrint('⚠️ Erreur pour le chapitre $chapterNumber, retour à la webview');
+                
+                // Ouvrir directement la WebView pour ce chapitre
+                final completer = Completer<bool>();
+                bool downloadCompleted = false;
+                
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ReaderWebView(
+                      muId: widget.muId,
+                      mangaTitle: widget.mangaTitle,
+                      initialLastRead: chapterNumber - 1,
+                      initialUrl: chapterUrl,
+                      baseUserLink: widget.baseUrl,
+                      autoDownload: true, // Mode téléchargement automatique
+                      onDownloadComplete: (success) {
+                        downloadCompleted = success;
+                        if (!completer.isCompleted) {
+                          completer.complete(success);
+                        }
+                      },
+                    ),
+                  ),
+                );
+
+                // Attendre que le téléchargement soit terminé
+                try {
+                  downloadSuccess = await completer.future.timeout(
+                    const Duration(minutes: 5),
+                    onTimeout: () {
+                      debugPrint('⚠️ Timeout pour le chapitre $chapterNumber');
+                      return false;
+                    },
+                  );
+                } catch (e) {
+                  debugPrint('⚠️ Erreur lors de l\'attente du téléchargement: $e');
+                  downloadSuccess = false;
+                }
+
+                // Si le completer n'a pas été complété mais que la webview s'est fermée,
+                // vérifier si le téléchargement a réussi en vérifiant les fichiers
+                if (!downloadCompleted) {
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  final downloaded = await _downloadManager.getDownloadedChapters(widget.muId);
+                  downloadSuccess = downloaded.any((c) => c.chapterNumber == chapterNumber);
+                }
+                
+                // Si le téléchargement a réussi, continuer en mode automatique
+                // Sinon, rester en mode WebView pour les suivants
+                if (!downloadSuccess) {
+                  useWebView = true;
+                }
+                
+                // Sortir du bloc try-catch pour traiter le résultat
+                // On continue avec le code après le bloc else
+              } else {
+                downloadSuccess = false;
+                useWebView = true; // Revenir à la webview en cas d'autre erreur
               }
-              downloadSuccess = false;
             }
           }
 

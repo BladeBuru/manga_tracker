@@ -109,10 +109,14 @@ class DownloadManagerService {
       final mangaChapters = allChapters[muId] ?? [];
       
       // Trouver le chapitre à supprimer pour récupérer son chemin
-      final chapterToDelete = mangaChapters.firstWhere(
-        (c) => c.chapterNumber == chapterNumber,
-        orElse: () => throw Exception('Chapitre non trouvé'),
-      );
+      DownloadedChapter? chapterToDelete;
+      try {
+        chapterToDelete = mangaChapters.firstWhere(
+          (c) => c.chapterNumber == chapterNumber,
+        );
+      } catch (e) {
+        debugPrint('⚠️ DownloadManagerService: Chapitre non trouvé dans la liste: $muId/$chapterNumber');
+      }
 
       mangaChapters.removeWhere((c) => c.chapterNumber == chapterNumber);
 
@@ -125,12 +129,14 @@ class DownloadManagerService {
       await _saveAllChapters(allChapters);
 
       // Supprimer les fichiers du disque en utilisant le chemin du chapitre
-      final chapterPath = chapterToDelete.folderPath;
-      if (chapterPath.isNotEmpty) {
-        final dir = Directory(chapterPath);
-        if (await dir.exists()) {
-          await dir.delete(recursive: true);
-          debugPrint('✅ DownloadManagerService: Dossier supprimé: $chapterPath');
+      if (chapterToDelete != null) {
+        final chapterPath = chapterToDelete.folderPath;
+        if (chapterPath.isNotEmpty) {
+          final dir = Directory(chapterPath);
+          if (await dir.exists()) {
+            await dir.delete(recursive: true);
+            debugPrint('✅ DownloadManagerService: Dossier supprimé: $chapterPath');
+          }
         }
       }
 
@@ -146,6 +152,25 @@ class DownloadManagerService {
         // Ignorer les erreurs pour les anciens chemins
       }
 
+      // Essayer aussi de supprimer tous les dossiers possibles dans le dossier de base
+      try {
+        final basePath = await getDownloadsBasePath();
+        final baseDir = Directory(basePath);
+        if (await baseDir.exists()) {
+          await for (final entity in baseDir.list()) {
+            if (entity is Directory) {
+              final mangaDir = Directory(path.join(entity.path, chapterNumber.toString()));
+              if (await mangaDir.exists()) {
+                await mangaDir.delete(recursive: true);
+                debugPrint('✅ DownloadManagerService: Dossier alternatif supprimé: ${mangaDir.path}');
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Ignorer les erreurs
+      }
+
       debugPrint('✅ DownloadManagerService: Chapitre supprimé: $muId/$chapterNumber');
     } catch (e) {
       debugPrint('❌ DownloadManagerService: Erreur removeDownloadedChapter: $e');
@@ -156,13 +181,57 @@ class DownloadManagerService {
   Future<void> removeAllDownloadedChapters(int muId) async {
     try {
       final allChapters = await getAllDownloadedChapters();
+      final mangaChapters = allChapters[muId] ?? [];
 
-      // Supprimer les fichiers du disque
-      // Note: On utilise muId.toString() car on n'a pas le mangaTitle ici
-      final mangaPath = await getMangaDownloadPath(muId.toString());
-      final dir = Directory(mangaPath);
-      if (await dir.exists()) {
-        await dir.delete(recursive: true);
+      // Supprimer tous les dossiers de chapitres pour ce manga
+      for (final chapter in mangaChapters) {
+        final chapterPath = chapter.folderPath;
+        if (chapterPath.isNotEmpty) {
+          final dir = Directory(chapterPath);
+          if (await dir.exists()) {
+            await dir.delete(recursive: true);
+            debugPrint('✅ DownloadManagerService: Dossier chapitre supprimé: $chapterPath');
+          }
+        }
+      }
+
+      // Supprimer aussi le dossier manga complet (avec muId.toString() pour compatibilité)
+      try {
+        final mangaPath = await getMangaDownloadPath(muId.toString());
+        final dir = Directory(mangaPath);
+        if (await dir.exists()) {
+          await dir.delete(recursive: true);
+          debugPrint('✅ DownloadManagerService: Dossier manga supprimé: $mangaPath');
+        }
+      } catch (e) {
+        // Ignorer les erreurs
+      }
+
+      // Supprimer aussi tous les dossiers possibles dans le dossier de base
+      try {
+        final basePath = await getDownloadsBasePath();
+        final baseDir = Directory(basePath);
+        if (await baseDir.exists()) {
+          await for (final entity in baseDir.list()) {
+            if (entity is Directory) {
+              // Vérifier si ce dossier contient des chapitres de ce manga
+              try {
+                await for (final subEntity in entity.list()) {
+                  if (subEntity is Directory) {
+                    final chapterNum = int.tryParse(path.basename(subEntity.path));
+                    if (chapterNum != null && mangaChapters.any((c) => c.chapterNumber == chapterNum)) {
+                      await subEntity.delete(recursive: true);
+                    }
+                  }
+                }
+              } catch (e) {
+                // Ignorer les erreurs
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Ignorer les erreurs
       }
 
       allChapters.remove(muId);
@@ -171,6 +240,26 @@ class DownloadManagerService {
       debugPrint('✅ DownloadManagerService: Tous les chapitres supprimés pour: $muId');
     } catch (e) {
       debugPrint('❌ DownloadManagerService: Erreur removeAllDownloadedChapters: $e');
+    }
+  }
+
+  /// Supprime tous les téléchargements (tous les mangas)
+  Future<void> removeAllDownloads() async {
+    try {
+      // Supprimer tous les dossiers
+      final basePath = await getDownloadsBasePath();
+      final baseDir = Directory(basePath);
+      if (await baseDir.exists()) {
+        await baseDir.delete(recursive: true);
+        debugPrint('✅ DownloadManagerService: Dossier de base supprimé: $basePath');
+      }
+
+      // Vider la liste des chapitres
+      await _saveAllChapters({});
+
+      debugPrint('✅ DownloadManagerService: Tous les téléchargements supprimés');
+    } catch (e) {
+      debugPrint('❌ DownloadManagerService: Erreur removeAllDownloads: $e');
     }
   }
 
