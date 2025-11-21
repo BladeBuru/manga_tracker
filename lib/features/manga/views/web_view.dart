@@ -60,6 +60,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   bool _adBlockerEnabled = true;
   bool _corsBlocked = false;
   bool _interactiveAdBlockMode = false; // Mode interactif pour détecter les pubs
+  bool _captchaDetected = false; // Indique si un captcha est détecté
+  bool _adBlockerWasEnabled = true; // Mémorise l'état du bloqueur avant désactivation pour captcha
 
   // Liste étendue de domaines de publicités
   final Set<String> _denyHosts = {
@@ -119,7 +121,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
-    if (!_adBlockerEnabled) return [];
+    if (!_adBlockerEnabled || _captchaDetected) return [];
     
     final blockers = <ContentBlocker>[
       // Blocage de domaines de publicités connus
@@ -785,9 +787,107 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     await prefs.setBool('ad_blocker_enabled', enabled);
     setState(() {
       _adBlockerEnabled = enabled;
+      // Si on réactive le bloqueur et qu'un captcha était détecté, réinitialiser
+      if (enabled && _captchaDetected) {
+        _captchaDetected = false;
+      }
     });
+    // Recharger les blockers
+    await _reloadBlockers();
     // Recharger la page pour appliquer les changements
     await _controller?.reload();
+  }
+
+  /// Recharge les blockers en mettant à jour le cache
+  Future<void> _reloadBlockers() async {
+    _cachedBlockers = await _getBlockers();
+    if (mounted) {
+      setState(() {
+        // Forcer la mise à jour pour recharger les blockers
+      });
+    }
+  }
+
+  /// Détecte la présence d'un captcha et désactive temporairement le bloqueur de pub
+  Future<void> _detectAndHandleCaptcha(InAppWebViewController controller, WebUri url) async {
+    try {
+      // Script pour détecter les captchas (Cloudflare, reCAPTCHA, etc.)
+      final captchaDetectionScript = """
+        (function() {
+          // Détecter les iframes Cloudflare
+          const cloudflareIframes = document.querySelectorAll('iframe[src*="challenges.cloudflare.com"], iframe[src*="challenge-platform.cloudflare.com"]');
+          if (cloudflareIframes.length > 0) {
+            return 'cloudflare';
+          }
+          
+          // Détecter les éléments Cloudflare
+          const cfElements = document.querySelectorAll('[id*="cf-"], [class*="cf-"], [id*="challenge"], [class*="challenge"], [id*="cf_challenge"], [class*="cf_challenge"]');
+          if (cfElements.length > 0) {
+            return 'cloudflare';
+          }
+          
+          // Détecter reCAPTCHA
+          const recaptchaElements = document.querySelectorAll('[id*="recaptcha"], [class*="recaptcha"], iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"]');
+          if (recaptchaElements.length > 0) {
+            return 'recaptcha';
+          }
+          
+          // Détecter hCaptcha
+          const hcaptchaElements = document.querySelectorAll('[id*="hcaptcha"], [class*="hcaptcha"], iframe[src*="hcaptcha"]');
+          if (hcaptchaElements.length > 0) {
+            return 'hcaptcha';
+          }
+          
+          // Détecter dans l'URL
+          if (window.location.href.includes('challenge') || window.location.href.includes('cf_challenge')) {
+            return 'url';
+          }
+          
+          return 'none';
+        })();
+      """;
+      
+      final result = await controller.evaluateJavascript(source: captchaDetectionScript);
+      final captchaType = result?.toString().replaceAll('"', '') ?? 'none';
+      
+      if (captchaType != 'none' && _adBlockerEnabled) {
+        // Captcha détecté, désactiver temporairement le bloqueur
+        if (!_captchaDetected) {
+          debugPrint('🔒 Captcha détecté ($captchaType), désactivation temporaire du bloqueur de pub');
+          setState(() {
+            _adBlockerWasEnabled = _adBlockerEnabled;
+            _adBlockerEnabled = false;
+            _captchaDetected = true;
+          });
+          
+          // Recharger les blockers pour désactiver le blocage
+          await _reloadBlockers();
+          
+          _notifier.info("Captcha détecté - Le bloqueur de pub a été temporairement désactivé");
+        }
+      } else if (captchaType == 'none' && _captchaDetected) {
+        // Vérifier si le captcha est résolu (présence de cookies cf_clearance)
+        final cookieManager = CookieManager.instance();
+        final cookies = await cookieManager.getCookies(url: url);
+        final hasClearanceCookie = cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'));
+        
+        if (hasClearanceCookie) {
+          // Captcha résolu, réactiver le bloqueur
+          debugPrint('✅ Captcha résolu, réactivation du bloqueur de pub');
+          setState(() {
+            _adBlockerEnabled = _adBlockerWasEnabled;
+            _captchaDetected = false;
+          });
+          
+          // Recharger les blockers pour réactiver le blocage
+          await _reloadBlockers();
+          
+          _notifier.success("Captcha résolu - Le bloqueur de pub a été réactivé");
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Erreur lors de la détection du captcha: $e');
+    }
   }
 
   Future<void> _copyCurrentUrl() async {
@@ -1177,10 +1277,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       final domain = url.host;
       await prefs.setString('cookies_$domain', cookieString);
       
-      // Debug: afficher les noms des cookies sauvegardés
-      final cookieNames = cookies.map((c) => c.name).toList();
-      debugPrint('✅ ReaderWebView: Cookies sauvegardés pour $domain (${cookies.length} cookies): ${cookieNames.join(", ")}');
-      debugPrint('   Cookie string: ${cookieString.substring(0, cookieString.length > 200 ? 200 : cookieString.length)}...');
+      debugPrint('✅ ReaderWebView: Cookies sauvegardés pour $domain (${cookies.length} cookies)');
     } catch (e) {
       debugPrint('⚠️ ReaderWebView: Erreur lors de la sauvegarde des cookies: $e');
     }
@@ -1276,9 +1373,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         return false;
       }
       
-      debugPrint('📸 Résultat du script: ${htmlResult.runtimeType}');
-      debugPrint('📸 Résultat: $htmlResult');
-      
       // Vérifier si le résultat est vide ou invalide
       if (htmlResult.toString().isEmpty || htmlResult.toString() == '{}' || htmlResult.toString() == 'null') {
         debugPrint('⚠️ Le résultat est vide, tentative de récupération directe du HTML...');
@@ -1286,7 +1380,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         final directHtmlScript = "document.documentElement.outerHTML;";
         final directResult = await _controller?.evaluateJavascript(source: directHtmlScript);
         if (directResult != null && directResult.toString().isNotEmpty && directResult.toString() != '{}') {
-          debugPrint('✅ HTML récupéré directement, longueur: ${directResult.toString().length}');
           htmlResult = directResult;
         } else {
           _notifier.error("Impossible de récupérer le HTML de la page");
@@ -1303,8 +1396,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       }
       // Décoder les échappements JSON
       cleanHtml = cleanHtml.replaceAll('\\"', '"').replaceAll('\\n', '\n').replaceAll('\\/', '/').replaceAll('\\\\', '\\');
-      
-      debugPrint('📸 HTML nettoyé, longueur: ${cleanHtml.length}');
       
       // Vérifier que le HTML contient bien des images
       if (!cleanHtml.contains('<img') && !cleanHtml.contains('reading-content')) {
@@ -1361,16 +1452,22 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       
       debugPrint('✅ ReaderWebView: Chapitre $chapterNumber téléchargé depuis le WebView');
       
-      // Appeler le callback si fourni
-      if (widget.onDownloadComplete != null) {
-        widget.onDownloadComplete!(true);
-      }
-      
       // Si autoDownload est activé, fermer automatiquement la webview après un court délai
+      // MAIS appeler le callback AVANT de fermer pour que le dialog puisse continuer
       if (widget.autoDownload && mounted) {
-        await Future.delayed(const Duration(milliseconds: 500));
+        // Appeler le callback AVANT de fermer
+        if (widget.onDownloadComplete != null) {
+          widget.onDownloadComplete!(true);
+        }
+        // Attendre un peu pour que le callback soit traité
+        await Future.delayed(const Duration(milliseconds: 300));
         if (mounted) {
           Navigator.of(context).pop();
+        }
+      } else {
+        // Si pas en mode autoDownload, appeler le callback normalement
+        if (widget.onDownloadComplete != null) {
+          widget.onDownloadComplete!(true);
         }
       }
       
@@ -1849,7 +1946,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
           // 4) Injection JavaScript après chargement pour nettoyer les publicités
           onLoadStop: (controller, url) async {
-            if (_adBlockerEnabled && url != null) {
+            // Détecter la présence d'un captcha
+            if (url != null && mounted) {
+              await _detectAndHandleCaptcha(controller, url);
+            }
+            
+            if (_adBlockerEnabled && url != null && !_captchaDetected) {
               try {
                 // Vérifier que la WebView est toujours valide avant d'injecter le script
                 final currentUrl = await controller.getUrl();
@@ -1868,12 +1970,22 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               await _saveCookiesForDomain(url);
             }
             
-            // Si autoDownload est activé, afficher un message pour guider l'utilisateur
+            // Si autoDownload est activé, lancer automatiquement le téléchargement après un délai
             if (widget.autoDownload && url != null && mounted) {
-              // Attendre un peu pour que la page soit complètement chargée
-              await Future.delayed(const Duration(seconds: 1));
+              // Attendre un peu pour que la page soit complètement chargée et que le captcha soit résolu si nécessaire
+              await Future.delayed(const Duration(seconds: 2));
               if (mounted) {
-                _notifier.info("Résolvez le captcha si nécessaire, puis cliquez sur le bouton de téléchargement");
+                // Vérifier si les cookies sont déjà présents (captcha déjà résolu)
+                final cookieManager = CookieManager.instance();
+                final cookies = await cookieManager.getCookies(url: url);
+                if (cookies.isNotEmpty && cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'))) {
+                  // Les cookies sont présents, lancer automatiquement le téléchargement
+                  debugPrint('✅ Cookies détectés, lancement automatique du téléchargement...');
+                  _downloadCurrentPage();
+                } else {
+                  // Pas de cookies, afficher un message pour guider l'utilisateur
+                  _notifier.info("Résolvez le captcha si nécessaire, puis cliquez sur le bouton de téléchargement.");
+                }
               }
             }
           },
@@ -1897,7 +2009,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
           // 6) Android: blocage réseau supplémentaire (images/scripts pubs)
           androidShouldInterceptRequest: (controller, req) async {
-            if (!_adBlockerEnabled) return null;
+            if (!_adBlockerEnabled || _captchaDetected) return null;
             final u = req.url.toString();
             if (_denyHosts.any((h) => u.contains(h))) {
               return WebResourceResponse(
