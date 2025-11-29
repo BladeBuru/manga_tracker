@@ -6,8 +6,8 @@ import 'package:mangatracker/features/home/views/bottom_navbar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-
 import '../../../core/services/app_update_service.dart';
+import '../../../core/services/connectivity_service.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -20,34 +20,80 @@ class _StartupPageState extends State<StartupPage> {
   // On utilise le bon nom de service pour plus de clarté
   final AuthService authService = getIt<AuthService>();
   final AppUpdateService appUpdateService = getIt<AppUpdateService>();
+  ConnectivityService? _connectivityService;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _attemptAutoLogin();
+      _initializeAndAttemptLogin();
     });
   }
 
+  Future<void> _initializeAndAttemptLogin() async {
+    // Initialiser le service de connectivité si disponible
+    try {
+      _connectivityService = getIt<ConnectivityService>();
+    } catch (e) {
+      debugPrint('⚠️ StartupPage: ConnectivityService non disponible: $e');
+    }
+    
+    await _attemptAutoLogin();
+  }
+
   Future<void> _attemptAutoLogin() async {
-    // La logique d'authentification reste la même
+    // 1. Vérifier si l'access token est valide
     final accessToken = await authService.storageService.readSecureData('accessToken');
     if (accessToken != null && !authService.isTokenExpired(accessToken)) {
-      _onLoginSuccess();
-      return;
-    }
-    final refreshed = await authService.refreshAccessToken();
-    if (refreshed) {
+      debugPrint('✅ StartupPage: Access token valide, connexion automatique');
       _onLoginSuccess();
       return;
     }
 
+    // 2. Vérifier si le refresh token est valide
+    final refreshToken = await authService.storageService.readSecureData('refreshToken');
+    final isRefreshTokenValid = refreshToken != null && !authService.isTokenExpired(refreshToken);
+    
+    // 3. Vérifier la connectivité
+    final isConnected = _connectivityService?.isConnected ?? true; // Par défaut, supposer connecté
+    
+    if (isRefreshTokenValid) {
+      if (isConnected) {
+        // Tentative de refresh si connecté
+        debugPrint('🔄 StartupPage: Tentative de refresh du token...');
+        final refreshed = await authService.refreshAccessToken();
+        if (refreshed) {
+          debugPrint('✅ StartupPage: Token rafraîchi avec succès');
+          _onLoginSuccess();
+          return;
+        } else {
+          // Le refresh a échoué mais le refreshToken est toujours valide
+          // Permettre l'accès en mode hors ligne (le token sera rafraîchi plus tard)
+          debugPrint('⚠️ StartupPage: Échec du refresh mais refreshToken valide, accès autorisé en mode hors ligne');
+          debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
+          _onLoginSuccess();
+          return;
+        }
+      } else {
+        // Mode hors ligne avec refreshToken valide : permettre l'accès
+        debugPrint('📱 StartupPage: Mode hors ligne avec refreshToken valide, accès autorisé');
+        debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
+        _onLoginSuccess();
+        return;
+      }
+    }
+
+    // 4. Tentative de connexion biométrique
     final biometricSuccess = await authService.tryBiometricLogin(context);
     if (!mounted) return;
     if (biometricSuccess) {
+      debugPrint('✅ StartupPage: Connexion biométrique réussie');
       _onLoginSuccess();
       return;
     }
+    
+    // 5. Aucune méthode d'authentification disponible
+    debugPrint('⚠️ StartupPage: Aucune méthode d\'authentification disponible');
     _goToLogin();
   }
 

@@ -28,6 +28,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   
   StreamSubscription<bool>? _connectivitySubscription;
   int? _currentMuId;
+  Timer? _chapterCheckTimer; // Timer pour la vérification différée des chapitres
 
   DetailBloc() : super(const DetailInitial()) {
     on<LoadMangaDetail>(_onLoadMangaDetail);
@@ -45,6 +46,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   @override
   Future<void> close() {
     _connectivitySubscription?.cancel();
+    _chapterCheckTimer?.cancel();
     return super.close();
   }
 
@@ -90,18 +92,31 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       final updatedMangaDetail = await _enrichWithLibraryInfo(event.muId, mangaDetail);
       
-      // Vérifier les nouveaux chapitres si le manga a un customLink
-      if (updatedMangaDetail.customLink != null && updatedMangaDetail.customLink!.isNotEmpty) {
-        await _checkForNewChapters(event.muId, updatedMangaDetail);
-      }
-      
-      // Si aucune erreur, on est online
+      // Si aucune erreur, on est online - émettre l'état immédiatement
       emit(DetailLoaded(
         mangaDetail: updatedMangaDetail,
         isOffline: false,
         pendingActions: pendingActions,
         stale: false,
       ));
+      
+      // Vérifier les nouveaux chapitres en arrière-plan (non-bloquant)
+      // pour éviter de ralentir le chargement de la page
+      // Attendre 3 secondes pour laisser la page se charger complètement avant de vérifier
+      if (updatedMangaDetail.customLink != null && updatedMangaDetail.customLink!.isNotEmpty) {
+        // Annuler toute vérification précédente en cours
+        _chapterCheckTimer?.cancel();
+        
+        // Exécuter en arrière-plan avec un délai pour ne pas bloquer le chargement initial
+        _chapterCheckTimer = Timer(const Duration(seconds: 3), () {
+          // Vérifier que le muId n'a pas changé (l'utilisateur n'a pas changé de manga)
+          if (_currentMuId == event.muId) {
+            _checkForNewChapters(event.muId, updatedMangaDetail).catchError((e) {
+              debugPrint('⚠️ DetailBloc: Erreur lors de la vérification en arrière-plan: $e');
+            });
+          }
+        });
+      }
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
       if (e.toString().contains('InvalidCredentialsException')) {

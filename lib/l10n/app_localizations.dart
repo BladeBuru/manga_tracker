@@ -1697,6 +1697,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.'**
   String get selectorExamplesHint;
+
+  /// Message quand un captcha est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Captcha détecté - Le bloqueur de pub a été temporairement désactivé'**
+  String get captchaDetected;
+
+  /// Message quand un captcha est résolu
+  ///
+  /// In fr, this message translates to:
+  /// **'Captcha résolu - Le bloqueur de pub a été réactivé'**
+  String get captchaResolved;
+
+  /// Message de confirmation pour la sauvegarde de la position de scroll
+  ///
+  /// In fr, this message translates to:
+  /// **'Position de scroll sauvegardée'**
+  String get scrollPositionSaved;
+
+  /// Message de confirmation pour la sauvegarde de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression du chapitre sauvegardée'**
+  String get chapterProgressSaved;
+
+  /// Titre pour la lecture hors ligne
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture hors ligne'**
+  String get readingOffline;
+
+  /// Message indiquant qu'un chapitre est téléchargé
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre téléchargé'**
+  String get chapterDownloaded;
+
+  /// Description du mode lecture hors ligne
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode lecture hors ligne'**
+  String get offlineReadingMode;
 }
 
 class _AppLocalizationsDelegate

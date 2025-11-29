@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
         _setupLanguageListener();
       });
     }
-  }
+}
 
   Future<void> _loadLocale() async {
     try {

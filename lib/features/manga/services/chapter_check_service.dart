@@ -36,7 +36,7 @@ class ChapterCheckService {
       // Essayer d'abord avec HEAD
       try {
         final headResponse = await http.head(uri).timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 5), // Réduit de 10 à 5 secondes pour éviter les longs délais
           onTimeout: () {
             throw TimeoutException('Timeout lors de la vérification HEAD');
           },
@@ -78,7 +78,7 @@ class ChapterCheckService {
   Future<bool> _checkWithGet(Uri uri, String originalUrl, int chapterNumber) async {
     try {
       final getResponse = await http.get(uri).timeout(
-        const Duration(seconds: 15),
+        const Duration(seconds: 8), // Réduit de 15 à 8 secondes pour éviter les longs délais
         onTimeout: () {
           throw TimeoutException('Timeout lors de la vérification GET');
         },

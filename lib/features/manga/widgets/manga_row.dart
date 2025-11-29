@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
-import 'package:mangatracker/core/service_locator/service_locator.dart';
-import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -46,28 +44,55 @@ class MangaRow extends StatelessWidget {
           final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
           
           if (downloadedChapters.isNotEmpty && context.mounted) {
-            // Ouvrir directement le premier chapitre téléchargé
+            // Trier les chapitres téléchargés par numéro
             final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
-            final firstChapter = sortedChapters.first;
             
-            // Récupérer le titre du manga
-            final mangaService = getIt<MangaService>();
-            String mangaTitle = mangaName;
-            try {
-              final mangaDetail = await mangaService.getMangaDetail(muId);
-              mangaTitle = mangaDetail.title;
-            } catch (e) {
-              // Utiliser le nom fourni si erreur
+            // Déterminer le chapitre à ouvrir : priorité au prochain chapitre non lu ou reprise de lecture
+            int targetChapterNumber;
+            if (readChapter != null && readChapter! > 0) {
+              final lastReadChapterNum = readChapter!.toInt();
+              
+              // Vérifier d'abord si le dernier chapitre lu est téléchargé et a une position de scroll sauvegardée
+              final lastReadChapter = sortedChapters.where(
+                (ch) => ch.chapterNumber == lastReadChapterNum && ch.scrollPosition != null && ch.scrollPosition! > 0,
+              ).firstOrNull;
+              
+              if (lastReadChapter != null) {
+                // Reprendre la lecture du dernier chapitre lu là où on s'est arrêté
+                targetChapterNumber = lastReadChapterNum;
+              } else {
+                // Chercher le prochain chapitre non lu (dernier lu + 1)
+                final nextChapter = lastReadChapterNum + 1;
+                final nextChapterDownloaded = sortedChapters.where(
+                  (ch) => ch.chapterNumber == nextChapter,
+                ).firstOrNull;
+                
+                if (nextChapterDownloaded != null) {
+                  // Le prochain chapitre est téléchargé, l'utiliser
+                  targetChapterNumber = nextChapter;
+                } else {
+                  // Sinon, chercher le chapitre téléchargé le plus proche après le dernier lu
+                  final nextAvailable = sortedChapters.where(
+                    (ch) => ch.chapterNumber > lastReadChapterNum,
+                  ).firstOrNull;
+                  targetChapterNumber = nextAvailable?.chapterNumber ?? sortedChapters.first.chapterNumber;
+                }
+              }
+            } else {
+              // Aucun chapitre lu, ouvrir le premier téléchargé
+              targetChapterNumber = sortedChapters.first.chapterNumber;
             }
             
+            // En mode téléchargé uniquement, utiliser directement le titre fourni
+            // pour éviter toute requête réseau qui pourrait ralentir ou échouer
             if (context.mounted) {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => OfflineReaderView(
                     muId: int.parse(muId),
-                    chapterNumber: firstChapter.chapterNumber,
-                    mangaTitle: mangaTitle,
+                    chapterNumber: targetChapterNumber,
+                    mangaTitle: mangaName, // Utiliser directement le titre fourni
                   ),
                 ),
               );

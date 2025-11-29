@@ -872,4 +872,25 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get selectorExamplesHint =>
       'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected => '캡차가 감지되었습니다 - 광고 차단기가 일시적으로 비활성화되었습니다';
+
+  @override
+  String get captchaResolved => '캡차가 해결되었습니다 - 광고 차단기가 다시 활성화되었습니다';
+
+  @override
+  String get scrollPositionSaved => '스크롤 위치가 저장되었습니다';
+
+  @override
+  String get chapterProgressSaved => '챕터 진행 상황이 저장되었습니다';
+
+  @override
+  String get readingOffline => '오프라인으로 읽기';
+
+  @override
+  String get chapterDownloaded => '챕터가 다운로드되었습니다';
+
+  @override
+  String get offlineReadingMode => '오프라인 읽기 모드';
 }

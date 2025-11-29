@@ -875,4 +875,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get selectorExamplesHint =>
       'Tip: Use your browser\'s developer tools (F12) to inspect elements and find appropriate CSS selectors.';
+
+  @override
+  String get captchaDetected =>
+      'Captcha detected - Ad blocker has been temporarily disabled';
+
+  @override
+  String get captchaResolved =>
+      'Captcha resolved - Ad blocker has been re-enabled';
+
+  @override
+  String get scrollPositionSaved => 'Scroll position saved';
+
+  @override
+  String get chapterProgressSaved => 'Chapter progress saved';
+
+  @override
+  String get readingOffline => 'Reading offline';
+
+  @override
+  String get chapterDownloaded => 'Chapter downloaded';
+
+  @override
+  String get offlineReadingMode => 'Offline reading mode';
 }

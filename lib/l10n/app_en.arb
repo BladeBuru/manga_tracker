@@ -277,5 +277,40 @@
   "selectorDomainExampleDesc": "Enter only the domain name (without http://, without www, without the path /manga/chapter-22)",
   "selectorOtherExamples": "Other common examples:",
   "selectorExampleChapter5Desc": "For sites using the manga/chapter-22 format in their URLs. Example: if your URL is \"site.com/manga/chapter-22\", use these selectors to identify the content.",
-  "selectorExamplesHint": "Tip: Use your browser's developer tools (F12) to inspect elements and find appropriate CSS selectors."
+  "selectorExamplesHint": "Tip: Use your browser's developer tools (F12) to inspect elements and find appropriate CSS selectors.",
+  
+  "captchaDetected": "Captcha detected - Ad blocker has been temporarily disabled",
+  "@captchaDetected": {
+    "description": "Message when a captcha is detected"
+  },
+  
+  "captchaResolved": "Captcha resolved - Ad blocker has been re-enabled",
+  "@captchaResolved": {
+    "description": "Message when a captcha is resolved"
+  },
+  
+  "scrollPositionSaved": "Scroll position saved",
+  "@scrollPositionSaved": {
+    "description": "Confirmation message for saving scroll position"
+  },
+  
+  "chapterProgressSaved": "Chapter progress saved",
+  "@chapterProgressSaved": {
+    "description": "Confirmation message for saving progress"
+  },
+  
+  "readingOffline": "Reading offline",
+  "@readingOffline": {
+    "description": "Title for offline reading"
+  },
+  
+  "chapterDownloaded": "Chapter downloaded",
+  "@chapterDownloaded": {
+    "description": "Message indicating that a chapter is downloaded"
+  },
+  
+  "offlineReadingMode": "Offline reading mode",
+  "@offlineReadingMode": {
+    "description": "Description of offline reading mode"
+  }
 }

@@ -872,4 +872,25 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get selectorExamplesHint =>
       'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected => 'CAPTCHAが検出されました - 広告ブロッカーが一時的に無効になりました';
+
+  @override
+  String get captchaResolved => 'CAPTCHAが解決されました - 広告ブロッカーが再有効化されました';
+
+  @override
+  String get scrollPositionSaved => 'スクロール位置が保存されました';
+
+  @override
+  String get chapterProgressSaved => '章の進行状況が保存されました';
+
+  @override
+  String get readingOffline => 'オフラインで読む';
+
+  @override
+  String get chapterDownloaded => '章がダウンロードされました';
+
+  @override
+  String get offlineReadingMode => 'オフライン読書モード';
 }

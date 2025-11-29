@@ -18,6 +18,8 @@ class DownloadedChapter {
   final String? htmlPath; // Chemin vers le fichier HTML téléchargé
   final DownloadStatus status;
   final String? errorMessage;
+  final double? scrollPosition; // Position de scroll sauvegardée (en pixels)
+  final double? zoomLevel; // Niveau de zoom préféré (par défaut ~1.28)
 
   const DownloadedChapter({
     required this.muId,
@@ -28,6 +30,8 @@ class DownloadedChapter {
     this.htmlPath,
     this.status = DownloadStatus.completed,
     this.errorMessage,
+    this.scrollPosition,
+    this.zoomLevel,
   });
 
   /// Chemin du dossier contenant les images du chapitre
@@ -53,6 +57,8 @@ class DownloadedChapter {
       'htmlPath': htmlPath,
       'status': status.name,
       'errorMessage': errorMessage,
+      'scrollPosition': scrollPosition,
+      'zoomLevel': zoomLevel,
     };
   }
 
@@ -69,6 +75,8 @@ class DownloadedChapter {
         orElse: () => DownloadStatus.completed,
       ),
       errorMessage: json['errorMessage'] as String?,
+      scrollPosition: json['scrollPosition'] as double?,
+      zoomLevel: json['zoomLevel'] as double?,
     );
   }
 
@@ -81,6 +89,8 @@ class DownloadedChapter {
     String? htmlPath,
     DownloadStatus? status,
     String? errorMessage,
+    double? scrollPosition,
+    double? zoomLevel,
   }) {
     return DownloadedChapter(
       muId: muId ?? this.muId,
@@ -91,6 +101,8 @@ class DownloadedChapter {
       htmlPath: htmlPath ?? this.htmlPath,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
+      scrollPosition: scrollPosition ?? this.scrollPosition,
+      zoomLevel: zoomLevel ?? this.zoomLevel,
     );
   }
 }

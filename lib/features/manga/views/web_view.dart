@@ -17,6 +17,9 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/custom_selectors.service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
+import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart';
+import 'dart:async';
 
 final _customSelectorsService = CustomSelectorsService();
 
@@ -52,6 +55,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   InAppWebViewController? _controller;
   final TextEditingController _urlTextController = TextEditingController();
   List<ContentBlocker> _cachedBlockers = []; // Cache pour les blockers
+  Timer? _scrollSaveTimer; // Timer pour sauvegarder périodiquement la position de scroll
+  bool _hasRestoredScroll = false; // Indique si la position de scroll a été restaurée
 
   // État lecteur
   late int _lastCommitted;      // dernier chapitre confirmé en base
@@ -118,6 +123,28 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     'imp9.pubadx.one',
     'madurird.com',
   };
+
+  /// Vérifie si l'URL contient des indices de captcha
+  bool _urlContainsCaptcha(String url) {
+    final urlLower = url.toLowerCase();
+    return urlLower.contains('challenge') ||
+           urlLower.contains('cf_challenge') ||
+           urlLower.contains('challenges.cloudflare.com') ||
+           urlLower.contains('challenge-platform.cloudflare.com') ||
+           urlLower.contains('recaptcha') ||
+           urlLower.contains('hcaptcha');
+  }
+
+  /// Vérifie si un domaine est lié à un captcha (à ne pas bloquer)
+  bool _isCaptchaDomain(String host) {
+    final hostLower = host.toLowerCase();
+    return hostLower.contains('cloudflare.com') ||
+           hostLower.contains('challenges.cloudflare.com') ||
+           hostLower.contains('challenge-platform.cloudflare.com') ||
+           hostLower.contains('google.com') && hostLower.contains('recaptcha') ||
+           hostLower.contains('hcaptcha.com') ||
+           hostLower.contains('recaptcha.net');
+  }
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
@@ -764,6 +791,35 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     _loadAdBlockerPreference();
     // Charger les blockers de manière asynchrone
     _loadBlockers();
+    // Vérifier si le chapitre est téléchargé et rediriger si nécessaire
+    _checkAndRedirectToOffline();
+  }
+
+  /// Vérifie si le chapitre suivant est téléchargé et redirige vers OfflineReaderView si c'est le cas
+  Future<void> _checkAndRedirectToOffline() async {
+    try {
+      final nextChapterNumber = widget.initialLastRead + 1;
+      final isDownloaded = await _downloadManager.isChapterDownloaded(widget.muId, nextChapterNumber);
+      
+      if (isDownloaded && widget.mangaTitle != null && mounted) {
+        // Attendre un peu pour que le widget soit complètement monté
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => OfflineReaderView(
+                muId: widget.muId,
+                chapterNumber: nextChapterNumber,
+                mangaTitle: widget.mangaTitle!,
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ ReaderWebView: Erreur lors de la vérification du chapitre téléchargé: $e');
+    }
   }
 
   Future<void> _loadBlockers() async {
@@ -863,7 +919,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           // Recharger les blockers pour désactiver le blocage
           await _reloadBlockers();
           
-          _notifier.info("Captcha détecté - Le bloqueur de pub a été temporairement désactivé");
+          final l10n = AppLocalizations.of(context);
+          _notifier.info(l10n?.captchaDetected ?? "Captcha détecté - Le bloqueur de pub a été temporairement désactivé");
         }
       } else if (captchaType == 'none' && _captchaDetected) {
         // Vérifier si le captcha est résolu (présence de cookies cf_clearance)
@@ -882,7 +939,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           // Recharger les blockers pour réactiver le blocage
           await _reloadBlockers();
           
-          _notifier.success("Captcha résolu - Le bloqueur de pub a été réactivé");
+          final l10n = AppLocalizations.of(context);
+          _notifier.success(l10n?.captchaResolved ?? "Captcha résolu - Le bloqueur de pub a été réactivé");
         }
       }
     } catch (e) {
@@ -1532,12 +1590,19 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Future<void> _commitIfNeeded(int chapter) async {
-    if (chapter <= _lastCommitted) return;
+    if (chapter <= _lastCommitted) {
+      debugPrint('📝 Chapitre $chapter déjà sauvegardé (dernier: $_lastCommitted), skip');
+      return;
+    }
+    debugPrint('💾 Sauvegarde du chapitre $chapter...');
     final ok = await _library.saveChapterProgress(widget.muId, chapter);
     if (ok) {
       _lastCommitted = chapter;
+      debugPrint('✅ Chapitre $chapter sauvegardé avec succès');
       final l10n = AppLocalizations.of(context);
       _notifier.info(l10n?.chapterSaved(chapter.toString()) ?? "Chapitre $chapter enregistré");
+    } else {
+      debugPrint('❌ Échec de la sauvegarde du chapitre $chapter');
     }
   }
 
@@ -1562,31 +1627,48 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     if (_currentChapter == null) {
       _currentChapter = newCh; // premier chap détecté
       _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
+      // Réinitialiser le flag de restauration pour le nouveau chapitre
+      _hasRestoredScroll = false;
       return;
     }
 
     if (newCh == _currentChapter! + 1) {
-      // Passage naturel au suivant => on valide le précédent
+      // Passage naturel au suivant => on valide le précédent ET le nouveau
       final prev = _currentChapter!;
+      // Sauvegarder la position de scroll du chapitre précédent avant de changer
+      await _saveScrollPosition();
       _currentChapter = newCh;
-      _commitIfNeeded(prev);
+      // Sauvegarder le chapitre précédent comme lu
+      await _commitIfNeeded(prev);
+      // Sauvegarder aussi le nouveau chapitre comme lu (car on est dessus)
+      await _commitIfNeeded(newCh);
       _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
+      // Réinitialiser le flag de restauration pour le nouveau chapitre
+      _hasRestoredScroll = false;
       return;
     }
 
     if (newCh > _currentChapter! + 1) {
       // Saut de chapitres => on propose de valider le précédent
+      // Sauvegarder la position de scroll du chapitre actuel avant de changer
+      await _saveScrollPosition();
       _promptJumpConfirm(prev: _currentChapter!, next: newCh).then((yes) {
         _currentChapter = newCh;
         if (yes == true) _commitIfNeeded(newCh - 1); // on valide au moins le précédent
         _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
+        // Réinitialiser le flag de restauration pour le nouveau chapitre
+        _hasRestoredScroll = false;
       });
       return;
     }
 
     if (newCh < _currentChapter!) {
       // Retour en arrière => pas de commit
+      // Sauvegarder la position de scroll du chapitre actuel avant de changer
+      await _saveScrollPosition();
       _currentChapter = newCh;
+      // Réinitialiser le flag de restauration pour le nouveau chapitre
+      _hasRestoredScroll = false;
       return;
     }
   }
@@ -1632,6 +1714,9 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Future<bool> _onWillPop() async {
+    // Sauvegarder la position de scroll avant de fermer
+    await _saveScrollPosition();
+    
     // Si autoDownload est activé et que le callback existe, l'appeler avec false si on ferme sans télécharger
     if (widget.autoDownload && widget.onDownloadComplete != null) {
       // Vérifier si le chapitre a été téléchargé avant de fermer
@@ -1651,9 +1736,20 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     }
     
     // Si on est sur le chap C et que le dernier validé est < C,
-    // on demande si l'utilisateur a fini le chapitre C.
+    // on demande si l'utilisateur a fini le chapitre C UNIQUEMENT s'il est proche de la fin.
     final c = _currentChapter;
     if (c != null && _lastCommitted < c) {
+      // Vérifier si l'utilisateur est proche de la fin du chapitre
+      final isNearEnd = await ReadingProgressHelper.isNearEndOfChapter(_controller);
+      
+      // Ne demander la validation que si l'utilisateur est proche de la fin
+      if (!isNearEnd) {
+        debugPrint('📖 Utilisateur au milieu du chapitre, fermeture sans marquer comme terminé');
+        // NE PAS marquer le chapitre comme lu si l'utilisateur n'est pas proche de la fin
+        // La position de scroll est déjà sauvegardée par _saveScrollPosition()
+        return true; // Fermer sans demander
+      }
+      
       final l10n = AppLocalizations.of(context);
       final yes = await showDialog<bool>(
         context: context,
@@ -1921,11 +2017,28 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             return NavigationActionPolicy.ALLOW;
           },
 
-          // 2) Début de chargement - Vérification supplémentaire
-          onLoadStart: (controller, url) {
+          // 2) Début de chargement - Vérification supplémentaire et détection précoce de captcha
+          onLoadStart: (controller, url) async {
             if (url != null) {
               final uri = url;
               final host = uri.host;
+              final urlString = url.toString();
+              
+              // Détecter le captcha dès le début du chargement via l'URL
+              if (_urlContainsCaptcha(urlString) || _isCaptchaDomain(host)) {
+                if (!_captchaDetected && _adBlockerEnabled) {
+                  debugPrint('🔒 Captcha détecté dans l\'URL, désactivation précoce du bloqueur de pub');
+                  setState(() {
+                    _adBlockerWasEnabled = _adBlockerEnabled;
+                    _adBlockerEnabled = false;
+                    _captchaDetected = true;
+                  });
+                  await _reloadBlockers();
+                  final l10n = AppLocalizations.of(context);
+          _notifier.info(l10n?.captchaDetected ?? "Captcha détecté - Le bloqueur de pub a été temporairement désactivé");
+                }
+              }
+              
               // Vérifier que c'est un domaine autorisé
               if (_isAllowedDomain(host)) {
                 _handleDetected(uri);
@@ -1970,23 +2083,41 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               await _saveCookiesForDomain(url);
             }
             
+            // Restaurer la position de scroll si disponible (en arrière-plan pour ne pas bloquer)
+            if (_currentChapter != null && mounted) {
+              // Réinitialiser le flag de restauration pour le nouveau chapitre
+              _hasRestoredScroll = false;
+              // Restaurer en arrière-plan pour ne pas bloquer le chargement
+              _restoreScrollPosition().catchError((e) {
+                debugPrint('⚠️ Erreur lors de la restauration en arrière-plan: $e');
+              });
+              // Démarrer le timer de sauvegarde périodique
+              _startScrollSaveTimer();
+            }
+            
             // Si autoDownload est activé, lancer automatiquement le téléchargement après un délai
+            // Exécuter en arrière-plan pour ne pas bloquer le chargement de la page
             if (widget.autoDownload && url != null && mounted) {
-              // Attendre un peu pour que la page soit complètement chargée et que le captcha soit résolu si nécessaire
-              await Future.delayed(const Duration(seconds: 2));
-              if (mounted) {
-                // Vérifier si les cookies sont déjà présents (captcha déjà résolu)
-                final cookieManager = CookieManager.instance();
-                final cookies = await cookieManager.getCookies(url: url);
-                if (cookies.isNotEmpty && cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'))) {
-                  // Les cookies sont présents, lancer automatiquement le téléchargement
-                  debugPrint('✅ Cookies détectés, lancement automatique du téléchargement...');
-                  _downloadCurrentPage();
-                } else {
-                  // Pas de cookies, afficher un message pour guider l'utilisateur
-                  _notifier.info("Résolvez le captcha si nécessaire, puis cliquez sur le bouton de téléchargement.");
+              // Exécuter en arrière-plan pour ne pas bloquer le chargement
+              Future.delayed(const Duration(seconds: 2), () async {
+                if (mounted && _controller != null) {
+                  try {
+                    // Vérifier si les cookies sont déjà présents (captcha déjà résolu)
+                    final cookieManager = CookieManager.instance();
+                    final cookies = await cookieManager.getCookies(url: url);
+                    if (cookies.isNotEmpty && cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'))) {
+                      // Les cookies sont présents, lancer automatiquement le téléchargement
+                      debugPrint('✅ Cookies détectés, lancement automatique du téléchargement...');
+                      _downloadCurrentPage();
+                    } else {
+                      // Pas de cookies, afficher un message pour guider l'utilisateur
+                      _notifier.info("Résolvez le captcha si nécessaire, puis cliquez sur le bouton de téléchargement.");
+                    }
+                  } catch (e) {
+                    debugPrint('⚠️ Erreur lors de la vérification des cookies en arrière-plan: $e');
+                  }
                 }
-              }
+              });
             }
           },
 
@@ -2011,6 +2142,13 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           androidShouldInterceptRequest: (controller, req) async {
             if (!_adBlockerEnabled || _captchaDetected) return null;
             final u = req.url.toString();
+            final host = req.url.host;
+            
+            // Ne pas bloquer les domaines de captcha
+            if (_isCaptchaDomain(host) || _urlContainsCaptcha(u)) {
+              return null;
+            }
+            
             if (_denyHosts.any((h) => u.contains(h))) {
               return WebResourceResponse(
                 contentType: 'text/plain',
@@ -2026,8 +2164,100 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     );
   }
 
+  /// Vérifie si l'utilisateur est proche de la fin du chapitre (dans les 15% de la fin)
+
+  /// Sauvegarde la position de scroll actuelle dans SharedPreferences
+  Future<void> _saveScrollPosition() async {
+    if (_controller == null || _currentChapter == null) return;
+    
+    try {
+      final scrollScript = """
+        (function() {
+          return window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        })();
+      """;
+      
+      final scrollResult = await _controller?.evaluateJavascript(source: scrollScript);
+      final scrollPosition = scrollResult != null ? double.tryParse(scrollResult.toString()) : null;
+      
+      if (scrollPosition != null && scrollPosition > 0) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'scroll_position_${widget.muId}_${_currentChapter}';
+        await prefs.setDouble(key, scrollPosition);
+        debugPrint('✅ Position de scroll sauvegardée pour chapitre ${_currentChapter}: $scrollPosition');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Erreur lors de la sauvegarde de la position de scroll: $e');
+    }
+  }
+
+  /// Restaure la position de scroll sauvegardée depuis SharedPreferences
+  Future<void> _restoreScrollPosition() async {
+    if (_controller == null || _currentChapter == null || _hasRestoredScroll) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'scroll_position_${widget.muId}_${_currentChapter}';
+      final savedPosition = prefs.getDouble(key);
+      
+      if (savedPosition != null && savedPosition > 0) {
+        // Attendre que la page soit prête, mais de manière non-bloquante
+        // Utiliser un délai plus court et vérifier que le DOM est chargé
+        await Future.delayed(const Duration(milliseconds: 300));
+        
+        // Vérifier que le document est prêt avant de restaurer
+        final readyScript = """
+          (function() {
+            return document.readyState === 'complete' || document.readyState === 'interactive';
+          })();
+        """;
+        
+        final isReady = await _controller?.evaluateJavascript(source: readyScript);
+        if (isReady == true || isReady == 'true') {
+          final scrollScript = 'window.scrollTo(0, $savedPosition);';
+          await _controller?.evaluateJavascript(source: scrollScript);
+          _hasRestoredScroll = true;
+          debugPrint('✅ Position de scroll restaurée pour chapitre ${_currentChapter}: $savedPosition');
+        } else {
+          // Si pas prêt, réessayer après un court délai
+          Future.delayed(const Duration(milliseconds: 200), () async {
+            if (_controller != null && !_hasRestoredScroll && mounted) {
+              final scrollScript = 'window.scrollTo(0, $savedPosition);';
+              await _controller?.evaluateJavascript(source: scrollScript);
+              _hasRestoredScroll = true;
+              debugPrint('✅ Position de scroll restaurée (retry) pour chapitre ${_currentChapter}: $savedPosition');
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Erreur lors de la restauration de la position de scroll: $e');
+    }
+  }
+
+  /// Démarre le timer de sauvegarde périodique de la position de scroll
+  void _startScrollSaveTimer() {
+    _scrollSaveTimer?.cancel();
+    _scrollSaveTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      _saveScrollPosition();
+    });
+  }
+
   @override
   void dispose() {
+    _scrollSaveTimer?.cancel();
+    // Sauvegarder la position de scroll avant de fermer
+    _saveScrollPosition();
+    
+    // NE PAS sauvegarder automatiquement le chapitre dans dispose()
+    // La sauvegarde doit être gérée par _onWillPop() qui vérifie si l'utilisateur est proche de la fin
+    // Si dispose() est appelé directement (par exemple lors d'un crash), on ne veut pas marquer
+    // le chapitre comme lu si l'utilisateur n'était pas à la fin
+    
     _urlTextController.dispose();
     super.dispose();
   }

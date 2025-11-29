@@ -24,6 +24,8 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import '../services/custom_selectors.service.dart';
 import '../../profile/views/custom_selectors_page.dart';
 import 'chapter_download_dialog.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -553,9 +555,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               ),
               onPressed: () async {
                 final lastRead = lastReadChapters;
+                final nextChapterNumber = lastRead + 1;
                 final baseLink = customLink ?? '';
                 final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
-                        baseLink, lastRead + 1) ?? baseLink;
+                        baseLink, nextChapterNumber) ?? baseLink;
                 
                 // Récupérer le titre du manga depuis le state
                 final currentState = context.read<DetailBloc>().state;
@@ -566,17 +569,35 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   mangaTitle = widget.mangaTitle;
                 }
 
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ReaderWebView(
-                      muId: muId,
-                      mangaTitle: mangaTitle,
-                      initialLastRead: lastRead,
-                      initialUrl: targetUrl,
-                      baseUserLink: baseLink,
+                // Vérifier si le chapitre est téléchargé
+                final downloadManager = DownloadManagerService();
+                final isDownloaded = await downloadManager.isChapterDownloaded(muId, nextChapterNumber);
+                
+                if (isDownloaded && mangaTitle != null) {
+                  // Utiliser la version hors ligne
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => OfflineReaderView(
+                        muId: muId,
+                        chapterNumber: nextChapterNumber,
+                        mangaTitle: mangaTitle!,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  // Utiliser la version en ligne
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ReaderWebView(
+                        muId: muId,
+                        mangaTitle: mangaTitle,
+                        initialLastRead: lastRead,
+                        initialUrl: targetUrl,
+                        baseUserLink: baseLink,
+                      ),
+                    ),
+                  );
+                }
                 if (mounted) widget.onRefreshLibraryState(context);
               },
               icon: const Icon(Icons.link),

@@ -892,4 +892,27 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get selectorExamplesHint =>
       'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected =>
+      'Captcha erkannt - Werbeblocker wurde vorübergehend deaktiviert';
+
+  @override
+  String get captchaResolved =>
+      'Captcha gelöst - Werbeblocker wurde wieder aktiviert';
+
+  @override
+  String get scrollPositionSaved => 'Scroll-Position gespeichert';
+
+  @override
+  String get chapterProgressSaved => 'Kapitelfortschritt gespeichert';
+
+  @override
+  String get readingOffline => 'Offline lesen';
+
+  @override
+  String get chapterDownloaded => 'Kapitel heruntergeladen';
+
+  @override
+  String get offlineReadingMode => 'Offline-Lesemodus';
 }

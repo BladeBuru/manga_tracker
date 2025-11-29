@@ -199,6 +199,41 @@
   "linkFormatInfo": "章の形式が必要",
   "linkFormatDescription": "自動進行状況保存を有効にするには、URLに章番号を含めてください。\n\n受け入れられる形式:\n• /章-23/ または /chapter-23/\n• /c23/ または /ch23/\n• /ep-23/ または /episode-23/\n• ?chapter=23 または ?num=24",
   "linkFormatWarning": "章の形式が検出されませんでした。リンクはマンガページにリダイレクトされます（特定の章ではありません）。",
-  "linkFormatDetected": "章の形式が検出されました！進行状況は自動的に保存されます。"
+  "linkFormatDetected": "章の形式が検出されました！進行状況は自動的に保存されます。",
+  
+  "captchaDetected": "CAPTCHAが検出されました - 広告ブロッカーが一時的に無効になりました",
+  "@captchaDetected": {
+    "description": "CAPTCHAが検出されたときのメッセージ"
+  },
+  
+  "captchaResolved": "CAPTCHAが解決されました - 広告ブロッカーが再有効化されました",
+  "@captchaResolved": {
+    "description": "CAPTCHAが解決されたときのメッセージ"
+  },
+  
+  "scrollPositionSaved": "スクロール位置が保存されました",
+  "@scrollPositionSaved": {
+    "description": "スクロール位置の保存確認メッセージ"
+  },
+  
+  "chapterProgressSaved": "章の進行状況が保存されました",
+  "@chapterProgressSaved": {
+    "description": "進行状況の保存確認メッセージ"
+  },
+  
+  "readingOffline": "オフラインで読む",
+  "@readingOffline": {
+    "description": "オフライン読書のタイトル"
+  },
+  
+  "chapterDownloaded": "章がダウンロードされました",
+  "@chapterDownloaded": {
+    "description": "章がダウンロードされたことを示すメッセージ"
+  },
+  
+  "offlineReadingMode": "オフライン読書モード",
+  "@offlineReadingMode": {
+    "description": "オフライン読書モードの説明"
+  }
 }
 

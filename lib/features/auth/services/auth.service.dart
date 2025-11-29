@@ -13,11 +13,16 @@ import 'package:mangatracker/features/auth/exceptions/invalid_credentials.except
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
+import '../../../core/services/connectivity_service.dart';
 import 'biometric.service.dart';
 
 class AuthService {
   StorageService storageService = getIt<StorageService>();
   BiometricService biometricService = getIt<BiometricService>();
+  
+  // Verrou pour éviter les race conditions lors du refresh
+  bool _isRefreshing = false;
+  Completer<bool>? _refreshCompleter;
 
   Future<AuthService> init() async {
     return this;
@@ -115,18 +120,50 @@ class AuthService {
     return payloadMap;
   }
 
+  /// Rafraîchit le token d'accès en utilisant le refresh token
+  /// Gère les race conditions et vérifie la connectivité
   Future<bool> refreshAccessToken({String? token}) async {
+    // Si un refresh est déjà en cours, attendre son résultat
+    if (_isRefreshing && _refreshCompleter != null) {
+      debugPrint('🔄 AuthService: Refresh déjà en cours, attente du résultat...');
+      return await _refreshCompleter!.future;
+    }
+
     final refreshToken = token ?? await storageService.readSecureData('refreshToken');
     if (refreshToken == null || isTokenExpired(refreshToken)) {
       debugPrint('⚠️ AuthService: Refresh token est null ou expiré');
       return false;
     }
 
+    // Vérifier la connectivité avant de tenter le refresh
+    try {
+      final connectivityService = getIt<ConnectivityService>();
+      if (!connectivityService.isConnected) {
+        debugPrint('⚠️ AuthService: Pas de connexion réseau, impossible de rafraîchir le token');
+        return false; // Ne pas considérer comme une erreur d'authentification
+      }
+    } catch (e) {
+      debugPrint('⚠️ AuthService: Erreur lors de la vérification de connectivité: $e');
+      // Continuer même si on ne peut pas vérifier la connectivité
+    }
+
+    // Créer un completer pour partager le résultat avec les autres appels simultanés
+    _isRefreshing = true;
+    _refreshCompleter = Completer<bool>();
+
     try {
       final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-      final res = await http.post(url, headers: {
-        HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
-      });
+      final res = await http.post(
+        url,
+        headers: {
+          HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Refresh token timeout');
+        },
+      );
 
       if (res.statusCode == HttpStatus.created) {
         final data = jsonDecode(res.body);
@@ -139,14 +176,28 @@ class AuthService {
         }
         
         debugPrint('✅ AuthService: Access token rafraîchi avec succès');
+        _refreshCompleter!.complete(true);
         return true;
       } else {
         debugPrint('⚠️ AuthService: Échec du refresh - Status: ${res.statusCode}, Body: ${res.body}');
+        _refreshCompleter!.complete(false);
         return false;
       }
+    } on SocketException catch (e) {
+      debugPrint('⚠️ AuthService: Erreur réseau lors du refresh: $e');
+      _refreshCompleter!.complete(false);
+      return false; // Erreur réseau, pas d'authentification
+    } on TimeoutException catch (e) {
+      debugPrint('⚠️ AuthService: Timeout lors du refresh: $e');
+      _refreshCompleter!.complete(false);
+      return false; // Timeout, pas d'authentification
     } catch (e) {
       debugPrint('❌ AuthService: Erreur lors du refresh: $e');
+      _refreshCompleter!.complete(false);
       return false;
+    } finally {
+      _isRefreshing = false;
+      _refreshCompleter = null;
     }
   }
 

@@ -199,6 +199,41 @@
   "linkFormatInfo": "Formato de capítulo requerido",
   "linkFormatDescription": "Incluya el número de capítulo en la URL para permitir el guardado automático del progreso.\n\nFormatos aceptados:\n• /capítulo-23/ o /chapter-23/\n• /c23/ o /ch23/\n• /ep-23/ o /episode-23/\n• ?chapter=23 o ?num=24",
   "linkFormatWarning": "No se detectó formato de capítulo. El enlace redirigirá a la página del manga (no a un capítulo específico).",
-  "linkFormatDetected": "¡Formato de capítulo detectado! El progreso se guardará automáticamente."
+  "linkFormatDetected": "¡Formato de capítulo detectado! El progreso se guardará automáticamente.",
+  
+  "captchaDetected": "Captcha detectado - El bloqueador de anuncios ha sido desactivado temporalmente",
+  "@captchaDetected": {
+    "description": "Mensaje cuando se detecta un captcha"
+  },
+  
+  "captchaResolved": "Captcha resuelto - El bloqueador de anuncios ha sido reactivado",
+  "@captchaResolved": {
+    "description": "Mensaje cuando se resuelve un captcha"
+  },
+  
+  "scrollPositionSaved": "Posición de desplazamiento guardada",
+  "@scrollPositionSaved": {
+    "description": "Mensaje de confirmación para guardar la posición de desplazamiento"
+  },
+  
+  "chapterProgressSaved": "Progreso del capítulo guardado",
+  "@chapterProgressSaved": {
+    "description": "Mensaje de confirmación para guardar el progreso"
+  },
+  
+  "readingOffline": "Leyendo sin conexión",
+  "@readingOffline": {
+    "description": "Título para lectura sin conexión"
+  },
+  
+  "chapterDownloaded": "Capítulo descargado",
+  "@chapterDownloaded": {
+    "description": "Mensaje que indica que un capítulo está descargado"
+  },
+  
+  "offlineReadingMode": "Modo de lectura sin conexión",
+  "@offlineReadingMode": {
+    "description": "Descripción del modo de lectura sin conexión"
+  }
 }
 

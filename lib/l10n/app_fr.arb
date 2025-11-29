@@ -1394,5 +1394,40 @@
   "selectorExamplesHint": "Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.",
   "@selectorExamplesHint": {
     "description": "Astuce pour trouver les sélecteurs CSS"
+  },
+  
+  "captchaDetected": "Captcha détecté - Le bloqueur de pub a été temporairement désactivé",
+  "@captchaDetected": {
+    "description": "Message quand un captcha est détecté"
+  },
+  
+  "captchaResolved": "Captcha résolu - Le bloqueur de pub a été réactivé",
+  "@captchaResolved": {
+    "description": "Message quand un captcha est résolu"
+  },
+  
+  "scrollPositionSaved": "Position de scroll sauvegardée",
+  "@scrollPositionSaved": {
+    "description": "Message de confirmation pour la sauvegarde de la position de scroll"
+  },
+  
+  "chapterProgressSaved": "Progression du chapitre sauvegardée",
+  "@chapterProgressSaved": {
+    "description": "Message de confirmation pour la sauvegarde de progression"
+  },
+  
+  "readingOffline": "Lecture hors ligne",
+  "@readingOffline": {
+    "description": "Titre pour la lecture hors ligne"
+  },
+  
+  "chapterDownloaded": "Chapitre téléchargé",
+  "@chapterDownloaded": {
+    "description": "Message indiquant qu'un chapitre est téléchargé"
+  },
+  
+  "offlineReadingMode": "Mode lecture hors ligne",
+  "@offlineReadingMode": {
+    "description": "Description du mode lecture hors ligne"
   }
 }
