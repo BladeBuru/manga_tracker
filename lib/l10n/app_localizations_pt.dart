@@ -915,4 +915,62 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get offlineReadingMode => 'Modo de leitura offline';
+
+  @override
+  String get deleteChapterTitle => 'Excluir capítulo';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return 'Você realmente deseja excluir o capítulo $chapterNumber?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => 'Excluir todos os capítulos';
+
+  @override
+  String get deleteAllChaptersMessage =>
+      'Você realmente deseja excluir todos os capítulos baixados deste mangá?';
+
+  @override
+  String get deleteAllDownloadsTitle => 'Excluir todos os downloads';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      'Você realmente deseja excluir TODOS os downloads? Esta ação é irreversível.';
+
+  @override
+  String get deleteAll => 'Excluir tudo';
+
+  @override
+  String get chapterDeleted => 'Capítulo excluído';
+
+  @override
+  String get allChaptersDeleted => 'Todos os capítulos excluídos';
+
+  @override
+  String get allDownloadsDeleted => 'Todos os downloads excluídos';
+
+  @override
+  String get noChaptersDownloaded => 'Nenhum capítulo baixado';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capítulos baixados',
+      one: '1 capítulo baixado',
+      zero: 'Nenhum capítulo baixado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => 'Ler';
+
+  @override
+  String get deleteAllChaptersAction => 'Excluir todos os capítulos';
+
+  @override
+  String get deleteAllDownloadsTooltip => 'Excluir todos os downloads';
 }

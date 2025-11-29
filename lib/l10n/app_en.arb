@@ -312,5 +312,100 @@
   "offlineReadingMode": "Offline reading mode",
   "@offlineReadingMode": {
     "description": "Description of offline reading mode"
+  },
+  
+  "deleteChapterTitle": "Delete chapter",
+  "@deleteChapterTitle": {
+    "description": "Dialog title for deleting a chapter"
+  },
+  
+  "deleteChapterMessage": "Do you really want to delete chapter {chapterNumber}?",
+  "@deleteChapterMessage": {
+    "description": "Confirmation message for deleting a chapter",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Delete all chapters",
+  "@deleteAllChaptersTitle": {
+    "description": "Dialog title for deleting all chapters of a manga"
+  },
+  
+  "deleteAllChaptersMessage": "Do you really want to delete all downloaded chapters for this manga?",
+  "@deleteAllChaptersMessage": {
+    "description": "Confirmation message for deleting all chapters of a manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Delete all downloads",
+  "@deleteAllDownloadsTitle": {
+    "description": "Dialog title for deleting all downloads"
+  },
+  
+  "deleteAllDownloadsMessage": "Do you really want to delete ALL downloads? This action is irreversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Confirmation message for deleting all downloads"
+  },
+  
+  "delete": "Delete",
+  "@delete": {
+    "description": "Button to delete"
+  },
+  
+  "deleteAll": "Delete all",
+  "@deleteAll": {
+    "description": "Button to delete all"
+  },
+  
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button to cancel"
+  },
+  
+  "chapterDeleted": "Chapter deleted",
+  "@chapterDeleted": {
+    "description": "Success message after deleting a chapter"
+  },
+  
+  "allChaptersDeleted": "All chapters deleted",
+  "@allChaptersDeleted": {
+    "description": "Success message after deleting all chapters of a manga"
+  },
+  
+  "allDownloadsDeleted": "All downloads deleted",
+  "@allDownloadsDeleted": {
+    "description": "Success message after deleting all downloads"
+  },
+  
+  "noChaptersDownloaded": "No chapters downloaded",
+  "@noChaptersDownloaded": {
+    "description": "Message displayed when no chapters are downloaded"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{No chapters downloaded} =1{1 chapter downloaded} other{{count} chapters downloaded}}",
+  "@chaptersDownloadedCount": {
+    "description": "Number of downloaded chapters",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Read",
+  "@readChapter": {
+    "description": "Button to read a chapter"
+  },
+  
+  "deleteAllChaptersAction": "Delete all chapters",
+  "@deleteAllChaptersAction": {
+    "description": "Action to delete all chapters of a manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Delete all downloads",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip for the delete all downloads button"
   }
 }

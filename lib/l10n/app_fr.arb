@@ -1429,5 +1429,100 @@
   "offlineReadingMode": "Mode lecture hors ligne",
   "@offlineReadingMode": {
     "description": "Description du mode lecture hors ligne"
+  },
+  
+  "deleteChapterTitle": "Supprimer le chapitre",
+  "@deleteChapterTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer un chapitre"
+  },
+  
+  "deleteChapterMessage": "Voulez-vous vraiment supprimer le chapitre {chapterNumber} ?",
+  "@deleteChapterMessage": {
+    "description": "Message de confirmation pour supprimer un chapitre",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Supprimer tous les chapitres",
+  "@deleteAllChaptersTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllChaptersMessage": "Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?",
+  "@deleteAllChaptersMessage": {
+    "description": "Message de confirmation pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Supprimer tous les téléchargements",
+  "@deleteAllDownloadsTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer tous les téléchargements"
+  },
+  
+  "deleteAllDownloadsMessage": "Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Message de confirmation pour supprimer tous les téléchargements"
+  },
+  
+  "delete": "Supprimer",
+  "@delete": {
+    "description": "Bouton pour supprimer"
+  },
+  
+  "deleteAll": "Supprimer tout",
+  "@deleteAll": {
+    "description": "Bouton pour tout supprimer"
+  },
+  
+  "cancel": "Annuler",
+  "@cancel": {
+    "description": "Bouton pour annuler"
+  },
+  
+  "chapterDeleted": "Chapitre supprimé",
+  "@chapterDeleted": {
+    "description": "Message de succès après suppression d'un chapitre"
+  },
+  
+  "allChaptersDeleted": "Tous les chapitres supprimés",
+  "@allChaptersDeleted": {
+    "description": "Message de succès après suppression de tous les chapitres d'un manga"
+  },
+  
+  "allDownloadsDeleted": "Tous les téléchargements supprimés",
+  "@allDownloadsDeleted": {
+    "description": "Message de succès après suppression de tous les téléchargements"
+  },
+  
+  "noChaptersDownloaded": "Aucun chapitre téléchargé",
+  "@noChaptersDownloaded": {
+    "description": "Message affiché quand aucun chapitre n'est téléchargé"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{Aucun chapitre téléchargé} =1{1 chapitre téléchargé} other{{count} chapitres téléchargés}}",
+  "@chaptersDownloadedCount": {
+    "description": "Nombre de chapitres téléchargés",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Lire",
+  "@readChapter": {
+    "description": "Bouton pour lire un chapitre"
+  },
+  
+  "deleteAllChaptersAction": "Supprimer tous les chapitres",
+  "@deleteAllChaptersAction": {
+    "description": "Action pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Supprimer tous les téléchargements",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip pour le bouton de suppression de tous les téléchargements"
   }
 }

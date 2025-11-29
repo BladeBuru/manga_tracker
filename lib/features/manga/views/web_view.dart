@@ -1591,18 +1591,13 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   Future<void> _commitIfNeeded(int chapter) async {
     if (chapter <= _lastCommitted) {
-      debugPrint('📝 Chapitre $chapter déjà sauvegardé (dernier: $_lastCommitted), skip');
       return;
     }
-    debugPrint('💾 Sauvegarde du chapitre $chapter...');
     final ok = await _library.saveChapterProgress(widget.muId, chapter);
     if (ok) {
       _lastCommitted = chapter;
-      debugPrint('✅ Chapitre $chapter sauvegardé avec succès');
       final l10n = AppLocalizations.of(context);
       _notifier.info(l10n?.chapterSaved(chapter.toString()) ?? "Chapitre $chapter enregistré");
-    } else {
-      debugPrint('❌ Échec de la sauvegarde du chapitre $chapter');
     }
   }
 
@@ -1744,7 +1739,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       
       // Ne demander la validation que si l'utilisateur est proche de la fin
       if (!isNearEnd) {
-        debugPrint('📖 Utilisateur au milieu du chapitre, fermeture sans marquer comme terminé');
         // NE PAS marquer le chapitre comme lu si l'utilisateur n'est pas proche de la fin
         // La position de scroll est déjà sauvegardée par _saveScrollPosition()
         return true; // Fermer sans demander
@@ -2184,7 +2178,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         final prefs = await SharedPreferences.getInstance();
         final key = 'scroll_position_${widget.muId}_${_currentChapter}';
         await prefs.setDouble(key, scrollPosition);
-        debugPrint('✅ Position de scroll sauvegardée pour chapitre ${_currentChapter}: $scrollPosition');
       }
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la position de scroll: $e');
@@ -2217,7 +2210,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           final scrollScript = 'window.scrollTo(0, $savedPosition);';
           await _controller?.evaluateJavascript(source: scrollScript);
           _hasRestoredScroll = true;
-          debugPrint('✅ Position de scroll restaurée pour chapitre ${_currentChapter}: $savedPosition');
         } else {
           // Si pas prêt, réessayer après un court délai
           Future.delayed(const Duration(milliseconds: 200), () async {
@@ -2225,7 +2217,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               final scrollScript = 'window.scrollTo(0, $savedPosition);';
               await _controller?.evaluateJavascript(source: scrollScript);
               _hasRestoredScroll = true;
-              debugPrint('✅ Position de scroll restaurée (retry) pour chapitre ${_currentChapter}: $savedPosition');
             }
           });
         }

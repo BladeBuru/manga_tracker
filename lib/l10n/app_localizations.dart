@@ -402,7 +402,7 @@ abstract class AppLocalizations {
   /// **'Cette action est irréversible. Toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.'**
   String get confirmDeleteAccountMessage;
 
-  /// Bouton d'annulation
+  /// Bouton pour annuler
   ///
   /// In fr, this message translates to:
   /// **'Annuler'**
@@ -414,7 +414,7 @@ abstract class AppLocalizations {
   /// **'Enregistrer'**
   String get save;
 
-  /// Bouton de suppression
+  /// Bouton pour supprimer
   ///
   /// In fr, this message translates to:
   /// **'Supprimer'**
@@ -1739,6 +1739,96 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Mode lecture hors ligne'**
   String get offlineReadingMode;
+
+  /// Titre de la boîte de dialogue pour supprimer un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le chapitre'**
+  String get deleteChapterTitle;
+
+  /// Message de confirmation pour supprimer un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer le chapitre {chapterNumber} ?'**
+  String deleteChapterMessage(int chapterNumber);
+
+  /// Titre de la boîte de dialogue pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les chapitres'**
+  String get deleteAllChaptersTitle;
+
+  /// Message de confirmation pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'**
+  String get deleteAllChaptersMessage;
+
+  /// Titre de la boîte de dialogue pour supprimer tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les téléchargements'**
+  String get deleteAllDownloadsTitle;
+
+  /// Message de confirmation pour supprimer tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'**
+  String get deleteAllDownloadsMessage;
+
+  /// Bouton pour tout supprimer
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tout'**
+  String get deleteAll;
+
+  /// Message de succès après suppression d'un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre supprimé'**
+  String get chapterDeleted;
+
+  /// Message de succès après suppression de tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les chapitres supprimés'**
+  String get allChaptersDeleted;
+
+  /// Message de succès après suppression de tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les téléchargements supprimés'**
+  String get allDownloadsDeleted;
+
+  /// Message affiché quand aucun chapitre n'est téléchargé
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun chapitre téléchargé'**
+  String get noChaptersDownloaded;
+
+  /// Nombre de chapitres téléchargés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun chapitre téléchargé} =1{1 chapitre téléchargé} other{{count} chapitres téléchargés}}'**
+  String chaptersDownloadedCount(int count);
+
+  /// Bouton pour lire un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire'**
+  String get readChapter;
+
+  /// Action pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les chapitres'**
+  String get deleteAllChaptersAction;
+
+  /// Tooltip pour le bouton de suppression de tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les téléchargements'**
+  String get deleteAllDownloadsTooltip;
 }
 
 class _AppLocalizationsDelegate

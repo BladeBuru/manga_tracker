@@ -234,6 +234,101 @@
   "offlineReadingMode": "Modo de lectura sin conexión",
   "@offlineReadingMode": {
     "description": "Descripción del modo de lectura sin conexión"
+  },
+  
+  "deleteChapterTitle": "Eliminar capítulo",
+  "@deleteChapterTitle": {
+    "description": "Título del diálogo para eliminar un capítulo"
+  },
+  
+  "deleteChapterMessage": "¿Realmente desea eliminar el capítulo {chapterNumber}?",
+  "@deleteChapterMessage": {
+    "description": "Mensaje de confirmación para eliminar un capítulo",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Eliminar todos los capítulos",
+  "@deleteAllChaptersTitle": {
+    "description": "Título del diálogo para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllChaptersMessage": "¿Realmente desea eliminar todos los capítulos descargados de este manga?",
+  "@deleteAllChaptersMessage": {
+    "description": "Mensaje de confirmación para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Eliminar todos los descargos",
+  "@deleteAllDownloadsTitle": {
+    "description": "Título del diálogo para eliminar todos los descargos"
+  },
+  
+  "deleteAllDownloadsMessage": "¿Realmente desea eliminar TODOS los descargos? Esta acción es irreversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Mensaje de confirmación para eliminar todos los descargos"
+  },
+  
+  "delete": "Eliminar",
+  "@delete": {
+    "description": "Botón para eliminar"
+  },
+  
+  "deleteAll": "Eliminar todo",
+  "@deleteAll": {
+    "description": "Botón para eliminar todo"
+  },
+  
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Botón para cancelar"
+  },
+  
+  "chapterDeleted": "Capítulo eliminado",
+  "@chapterDeleted": {
+    "description": "Mensaje de éxito después de eliminar un capítulo"
+  },
+  
+  "allChaptersDeleted": "Todos los capítulos eliminados",
+  "@allChaptersDeleted": {
+    "description": "Mensaje de éxito después de eliminar todos los capítulos de un manga"
+  },
+  
+  "allDownloadsDeleted": "Todos los descargos eliminados",
+  "@allDownloadsDeleted": {
+    "description": "Mensaje de éxito después de eliminar todos los descargos"
+  },
+  
+  "noChaptersDownloaded": "Ningún capítulo descargado",
+  "@noChaptersDownloaded": {
+    "description": "Mensaje mostrado cuando no hay capítulos descargados"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{Ningún capítulo descargado} =1{1 capítulo descargado} other{{count} capítulos descargados}}",
+  "@chaptersDownloadedCount": {
+    "description": "Número de capítulos descargados",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Leer",
+  "@readChapter": {
+    "description": "Botón para leer un capítulo"
+  },
+  
+  "deleteAllChaptersAction": "Eliminar todos los capítulos",
+  "@deleteAllChaptersAction": {
+    "description": "Acción para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Eliminar todos los descargos",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip para el botón de eliminar todos los descargos"
   }
 }
 

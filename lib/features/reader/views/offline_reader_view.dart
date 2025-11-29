@@ -131,18 +131,14 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         html = html.substring(0, headEnd + 1) + 
                '\n<meta name="viewport" content="width=device-width, initial-scale=1">' +
                html.substring(headEnd + 1);
-        debugPrint('🧹 HTML nettoyé: meta viewport ajoutée');
       }
     } else {
       // La meta viewport existe - la REMPLACER par une version simple
       final viewportEnd = html.indexOf('>', viewportIndex);
       if (viewportEnd != -1) {
-        final oldViewport = html.substring(viewportIndex, viewportEnd + 1);
-        debugPrint('🔍 Meta viewport originale trouvée: $oldViewport');
         html = html.substring(0, viewportIndex) +
                '<meta name="viewport" content="width=device-width, initial-scale=1">' +
                html.substring(viewportEnd + 1);
-        debugPrint('🧹 HTML nettoyé: meta viewport remplacée');
       }
     }
     
@@ -169,10 +165,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
 </style>
 ''';
       html = html.substring(0, styleIndex) + responsiveStyle + html.substring(styleIndex);
-      debugPrint('🧹 HTML nettoyé: CSS responsive ajouté');
     }
-    
-    debugPrint('🧹 HTML nettoyé: références externes supprimées');
     return html;
   }
 
@@ -190,9 +183,6 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         // Sauvegarder le chapitre actuel comme lu seulement si proche de la fin
         await _libraryService.saveChapterProgress(widget.muId, widget.chapterNumber);
         _hasSavedProgress = true;
-        debugPrint('✅ Progression sauvegardée: chapitre ${widget.chapterNumber} (proche de la fin)');
-      } else {
-        debugPrint('📖 Utilisateur au milieu du chapitre, progression non sauvegardée');
       }
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la progression: $e');
@@ -213,7 +203,6 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         setState(() {
           _chapter = updatedChapter;
         });
-        debugPrint('✅ Position de scroll sauvegardée: $scrollPosition');
       }
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la position de scroll: $e');
@@ -322,7 +311,6 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
             final isNearEnd = await ReadingProgressHelper.isNearEndOfChapter(_webViewController);
             
             if (!isNearEnd) {
-              debugPrint('📖 Utilisateur au milieu du chapitre, fermeture sans marquer comme terminé');
               // Sauvegarder quand même la position de scroll pour la prochaine fois
               // mais ne pas marquer le chapitre comme terminé
               if (mounted) {
@@ -358,29 +346,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
           body: Builder(
             builder: (context) {
               final originalHtml = htmlFile.readAsStringSync();
-              // Log pour voir la meta viewport originale AVANT nettoyage
-              final viewportIndex = originalHtml.indexOf('<meta name="viewport"');
-              if (viewportIndex != -1) {
-                final viewportEnd = originalHtml.indexOf('>', viewportIndex);
-                if (viewportEnd != -1) {
-                  final viewportTag = originalHtml.substring(viewportIndex, viewportEnd + 1);
-                  debugPrint('🔍 Meta viewport originale: $viewportTag');
-                }
-              } else {
-                debugPrint('🔍 Aucune meta viewport trouvée dans le HTML original');
-              }
-              
               final cleanedHtml = _cleanHtmlForOffline(originalHtml);
-              
-              // Log pour voir la meta viewport APRÈS nettoyage
-              final cleanedViewportIndex = cleanedHtml.indexOf('<meta name="viewport"');
-              if (cleanedViewportIndex != -1) {
-                final cleanedViewportEnd = cleanedHtml.indexOf('>', cleanedViewportIndex);
-                if (cleanedViewportEnd != -1) {
-                  final cleanedViewportTag = cleanedHtml.substring(cleanedViewportIndex, cleanedViewportEnd + 1);
-                  debugPrint('🔍 Meta viewport après nettoyage: $cleanedViewportTag');
-                }
-              }
               
               return InAppWebView(
                 initialData: InAppWebViewInitialData(
@@ -437,7 +403,6 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
                 return NavigationActionPolicy.ALLOW;
               }
               // Bloquer toutes les autres requêtes (http://, https://)
-              debugPrint('🚫 Blocage de la requête réseau en mode hors ligne: $url');
               return NavigationActionPolicy.CANCEL;
                 },
                 // Bloquer les requêtes de ressources (images, CSS, JS) depuis Internet (Android)
@@ -449,7 +414,6 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
               }
               // Bloquer TOUTES les requêtes réseau, même si elles sont dans le cache
               // Cela empêche les scripts de pub et autres ressources externes de se charger
-              debugPrint('🚫 Blocage de la ressource réseau en mode hors ligne (Android): $url');
               return WebResourceResponse(
                 data: Uint8List(0),
                 statusCode: 403,
@@ -464,8 +428,8 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
               );
             },
           ),
-        ),
-          );
+          ),
+        );
       }
     }
 

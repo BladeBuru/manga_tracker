@@ -893,4 +893,60 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get offlineReadingMode => 'オフライン読書モード';
+
+  @override
+  String get deleteChapterTitle => '章を削除';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return '本当に章 $chapterNumber を削除しますか？';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => 'すべての章を削除';
+
+  @override
+  String get deleteAllChaptersMessage => 'この漫画のすべてのダウンロード済み章を本当に削除しますか？';
+
+  @override
+  String get deleteAllDownloadsTitle => 'すべてのダウンロードを削除';
+
+  @override
+  String get deleteAllDownloadsMessage => '本当にすべてのダウンロードを削除しますか？この操作は元に戻せません。';
+
+  @override
+  String get deleteAll => 'すべて削除';
+
+  @override
+  String get chapterDeleted => '章が削除されました';
+
+  @override
+  String get allChaptersDeleted => 'すべての章が削除されました';
+
+  @override
+  String get allDownloadsDeleted => 'すべてのダウンロードが削除されました';
+
+  @override
+  String get noChaptersDownloaded => 'ダウンロードされた章はありません';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count章がダウンロードされました',
+      one: '1章がダウンロードされました',
+      zero: 'ダウンロードされた章はありません',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => '読む';
+
+  @override
+  String get deleteAllChaptersAction => 'すべての章を削除';
+
+  @override
+  String get deleteAllDownloadsTooltip => 'すべてのダウンロードを削除';
 }

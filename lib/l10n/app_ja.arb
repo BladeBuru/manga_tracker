@@ -234,6 +234,101 @@
   "offlineReadingMode": "オフライン読書モード",
   "@offlineReadingMode": {
     "description": "オフライン読書モードの説明"
+  },
+  
+  "deleteChapterTitle": "章を削除",
+  "@deleteChapterTitle": {
+    "description": "章を削除するダイアログのタイトル"
+  },
+  
+  "deleteChapterMessage": "本当に章 {chapterNumber} を削除しますか？",
+  "@deleteChapterMessage": {
+    "description": "章を削除する確認メッセージ",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "すべての章を削除",
+  "@deleteAllChaptersTitle": {
+    "description": "漫画のすべての章を削除するダイアログのタイトル"
+  },
+  
+  "deleteAllChaptersMessage": "この漫画のすべてのダウンロード済み章を本当に削除しますか？",
+  "@deleteAllChaptersMessage": {
+    "description": "漫画のすべての章を削除する確認メッセージ"
+  },
+  
+  "deleteAllDownloadsTitle": "すべてのダウンロードを削除",
+  "@deleteAllDownloadsTitle": {
+    "description": "すべてのダウンロードを削除するダイアログのタイトル"
+  },
+  
+  "deleteAllDownloadsMessage": "本当にすべてのダウンロードを削除しますか？この操作は元に戻せません。",
+  "@deleteAllDownloadsMessage": {
+    "description": "すべてのダウンロードを削除する確認メッセージ"
+  },
+  
+  "delete": "削除",
+  "@delete": {
+    "description": "削除ボタン"
+  },
+  
+  "deleteAll": "すべて削除",
+  "@deleteAll": {
+    "description": "すべて削除ボタン"
+  },
+  
+  "cancel": "キャンセル",
+  "@cancel": {
+    "description": "キャンセルボタン"
+  },
+  
+  "chapterDeleted": "章が削除されました",
+  "@chapterDeleted": {
+    "description": "章を削除した後の成功メッセージ"
+  },
+  
+  "allChaptersDeleted": "すべての章が削除されました",
+  "@allChaptersDeleted": {
+    "description": "漫画のすべての章を削除した後の成功メッセージ"
+  },
+  
+  "allDownloadsDeleted": "すべてのダウンロードが削除されました",
+  "@allDownloadsDeleted": {
+    "description": "すべてのダウンロードを削除した後の成功メッセージ"
+  },
+  
+  "noChaptersDownloaded": "ダウンロードされた章はありません",
+  "@noChaptersDownloaded": {
+    "description": "章がダウンロードされていないときに表示されるメッセージ"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{ダウンロードされた章はありません} =1{1章がダウンロードされました} other{{count}章がダウンロードされました}}",
+  "@chaptersDownloadedCount": {
+    "description": "ダウンロードされた章の数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "読む",
+  "@readChapter": {
+    "description": "章を読むボタン"
+  },
+  
+  "deleteAllChaptersAction": "すべての章を削除",
+  "@deleteAllChaptersAction": {
+    "description": "漫画のすべての章を削除するアクション"
+  },
+  
+  "deleteAllDownloadsTooltip": "すべてのダウンロードを削除",
+  "@deleteAllDownloadsTooltip": {
+    "description": "すべてのダウンロードを削除するボタンのツールチップ"
   }
 }
 

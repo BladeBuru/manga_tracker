@@ -893,4 +893,61 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get offlineReadingMode => '오프라인 읽기 모드';
+
+  @override
+  String get deleteChapterTitle => '챕터 삭제';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return '정말 챕터 $chapterNumber을(를) 삭제하시겠습니까?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => '모든 챕터 삭제';
+
+  @override
+  String get deleteAllChaptersMessage => '이 만화의 모든 다운로드된 챕터를 정말 삭제하시겠습니까?';
+
+  @override
+  String get deleteAllDownloadsTitle => '모든 다운로드 삭제';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      '정말 모든 다운로드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get deleteAll => '모두 삭제';
+
+  @override
+  String get chapterDeleted => '챕터가 삭제되었습니다';
+
+  @override
+  String get allChaptersDeleted => '모든 챕터가 삭제되었습니다';
+
+  @override
+  String get allDownloadsDeleted => '모든 다운로드가 삭제되었습니다';
+
+  @override
+  String get noChaptersDownloaded => '다운로드된 챕터가 없습니다';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 챕터가 다운로드되었습니다',
+      one: '1개 챕터가 다운로드되었습니다',
+      zero: '다운로드된 챕터가 없습니다',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => '읽기';
+
+  @override
+  String get deleteAllChaptersAction => '모든 챕터 삭제';
+
+  @override
+  String get deleteAllDownloadsTooltip => '모든 다운로드 삭제';
 }

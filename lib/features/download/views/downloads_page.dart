@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 /// Page de gestion des téléchargements
@@ -17,6 +19,7 @@ class DownloadsPage extends StatefulWidget {
 class _DownloadsPageState extends State<DownloadsPage> {
   final DownloadManagerService _downloadManager = DownloadManagerService();
   final MangaService _mangaService = getIt<MangaService>();
+  final Notifier _notifier = getIt<Notifier>();
   Map<int, List<DownloadedChapter>> _downloadedChapters = {};
   Map<int, String> _mangaTitles = {}; // Cache pour les titres de manga
   bool _isLoading = true;
@@ -70,22 +73,23 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Future<void> _deleteChapter(int muId, int chapterNumber) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer le chapitre'),
-        content: Text('Voulez-vous vraiment supprimer le chapitre $chapterNumber ?'),
+        title: Text(l10n?.deleteChapterTitle ?? 'Supprimer le chapitre'),
+        content: Text(l10n?.deleteChapterMessage(chapterNumber) ?? 'Voulez-vous vraiment supprimer le chapitre $chapterNumber ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Annuler'),
+            child: Text(l10n?.cancel ?? 'Annuler'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+            child: Text(l10n?.delete ?? 'Supprimer', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -94,34 +98,28 @@ class _DownloadsPageState extends State<DownloadsPage> {
     if (confirmed == true) {
       await _downloadManager.removeDownloadedChapter(muId, chapterNumber);
       await _loadDownloads();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Chapitre supprimé'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      _notifier.success(l10n?.chapterDeleted ?? 'Chapitre supprimé');
     }
   }
 
   Future<void> _deleteAllChapters(int muId) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer tous les chapitres'),
-        content: const Text('Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'),
+        title: Text(l10n?.deleteAllChaptersTitle ?? 'Supprimer tous les chapitres'),
+        content: Text(l10n?.deleteAllChaptersMessage ?? 'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Annuler'),
+            child: Text(l10n?.cancel ?? 'Annuler'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+            child: Text(l10n?.delete ?? 'Supprimer', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -130,34 +128,28 @@ class _DownloadsPageState extends State<DownloadsPage> {
     if (confirmed == true) {
       await _downloadManager.removeAllDownloadedChapters(muId);
       await _loadDownloads();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tous les chapitres supprimés'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      _notifier.success(l10n?.allChaptersDeleted ?? 'Tous les chapitres supprimés');
     }
   }
 
   Future<void> _deleteAllDownloads() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer tous les téléchargements'),
-        content: const Text('Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'),
+        title: Text(l10n?.deleteAllDownloadsTitle ?? 'Supprimer tous les téléchargements'),
+        content: Text(l10n?.deleteAllDownloadsMessage ?? 'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Annuler'),
+            child: Text(l10n?.cancel ?? 'Annuler'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Supprimer tout', style: TextStyle(color: Colors.white)),
+            child: Text(l10n?.deleteAll ?? 'Supprimer tout', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -166,22 +158,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
     if (confirmed == true) {
       await _downloadManager.removeAllDownloads();
       await _loadDownloads();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tous les téléchargements supprimés'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      _notifier.success(l10n?.allDownloadsDeleted ?? 'Tous les téléchargements supprimés');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Téléchargements'),
+        title: Text(l10n?.downloads ?? 'Téléchargements'),
         actions: [
           if (_totalSize > 0)
             Padding(
@@ -197,7 +183,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
             IconButton(
               icon: const Icon(Icons.delete_sweep, color: Colors.red),
               onPressed: _deleteAllDownloads,
-              tooltip: 'Supprimer tous les téléchargements',
+              tooltip: l10n?.deleteAllDownloadsTooltip ?? 'Supprimer tous les téléchargements',
             ),
         ],
       ),
@@ -215,7 +201,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Aucun chapitre téléchargé',
+                        l10n?.noChaptersDownloaded ?? 'Aucun chapitre téléchargé',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -240,13 +226,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
                         child: ExpansionTile(
                           leading: const Icon(Icons.book),
                           title: Text(mangaTitle),
-                          subtitle: Text('${chapters.length} chapitre(s) téléchargé(s)'),
+                          subtitle: Text(l10n?.chaptersDownloadedCount(chapters.length) ?? '${chapters.length} chapitre(s) téléchargé(s)'),
                           onExpansionChanged: (expanded) {
                             // Quand on ouvre, ouvrir directement le premier chapitre si c'est depuis la library
                           },
                           children: [
                             ...sortedChapters.map((chapter) => ListTile(
-                                  title: Text('Chapitre ${chapter.chapterNumber}'),
+                                  title: Text('${l10n?.chapter ?? 'Chapitre'} ${chapter.chapterNumber}'),
                                   subtitle: Text(
                                     DateFormat('dd/MM/yyyy').format(chapter.downloadDate),
                                   ),
@@ -266,12 +252,12 @@ class _DownloadsPageState extends State<DownloadsPage> {
                                             ),
                                           );
                                         },
-                                        tooltip: 'Lire',
+                                        tooltip: l10n?.readChapter ?? 'Lire',
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete, color: Colors.red),
                                         onPressed: () => _deleteChapter(muId, chapter.chapterNumber),
-                                        tooltip: 'Supprimer',
+                                        tooltip: l10n?.delete ?? 'Supprimer',
                                       ),
                                     ],
                                   ),
@@ -290,9 +276,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                                 )),
                             ListTile(
                               leading: const Icon(Icons.delete_sweep, color: Colors.red),
-                              title: const Text(
-                                'Supprimer tous les chapitres',
-                                style: TextStyle(color: Colors.red),
+                              title: Text(
+                                l10n?.deleteAllChaptersAction ?? 'Supprimer tous les chapitres',
+                                style: const TextStyle(color: Colors.red),
                               ),
                               onTap: () => _deleteAllChapters(muId),
                             ),

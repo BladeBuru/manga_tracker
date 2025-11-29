@@ -915,4 +915,62 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get offlineReadingMode => 'Mode lecture hors ligne';
+
+  @override
+  String get deleteChapterTitle => 'Supprimer le chapitre';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return 'Voulez-vous vraiment supprimer le chapitre $chapterNumber ?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => 'Supprimer tous les chapitres';
+
+  @override
+  String get deleteAllChaptersMessage =>
+      'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?';
+
+  @override
+  String get deleteAllDownloadsTitle => 'Supprimer tous les téléchargements';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.';
+
+  @override
+  String get deleteAll => 'Supprimer tout';
+
+  @override
+  String get chapterDeleted => 'Chapitre supprimé';
+
+  @override
+  String get allChaptersDeleted => 'Tous les chapitres supprimés';
+
+  @override
+  String get allDownloadsDeleted => 'Tous les téléchargements supprimés';
+
+  @override
+  String get noChaptersDownloaded => 'Aucun chapitre téléchargé';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count chapitres téléchargés',
+      one: '1 chapitre téléchargé',
+      zero: 'Aucun chapitre téléchargé',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => 'Lire';
+
+  @override
+  String get deleteAllChaptersAction => 'Supprimer tous les chapitres';
+
+  @override
+  String get deleteAllDownloadsTooltip => 'Supprimer tous les téléchargements';
 }
