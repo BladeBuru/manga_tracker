@@ -4,10 +4,10 @@ import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/home/views/bottom_navbar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../core/services/app_update_service.dart';
 import '../../../core/services/connectivity_service.dart';
+import '../../../core/components/changelog_dialog.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -128,40 +128,10 @@ class _StartupPageState extends State<StartupPage> {
 
   /// Construit et affiche la boîte de dialogue des notes de version.
   Future<void> _showChangelogDialog(ChangelogInfo changelogInfo) {
-    return showDialog(
-      context: context,
-      barrierDismissible: false, // L'utilisateur doit interagir
-      builder: (ctx) => AlertDialog(
-        title: const Text("Quoi de neuf ?"),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: changelogInfo.newVersions.map((changes) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Version ${cleanVersion(changes.version)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    ...changes.notes.map((note) => MarkdownBody(
-                      data: RegExp(r'^[#\-\*]').hasMatch("$note") ? "$note" : "- $note",
-                      styleSheet: MarkdownStyleSheet(p: const TextStyle(fontSize: 14)),
-                    )),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Super !"),
-          )
-        ],
-      ),
+    return ChangelogDialog.show(
+      context,
+      changelogInfo,
+      barrierDismissible: false,
     );
   }
 
@@ -190,9 +160,6 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   // --- Fonctions de navigation ---
-  String cleanVersion(String v) =>
-      v.replaceFirst(RegExp(r'^[vV]'), '').replaceFirst(RegExp(r'\+.*$'), '');
-
   void _navigateToHome() {
     if (mounted) {
       Navigator.of(context).pushReplacement(

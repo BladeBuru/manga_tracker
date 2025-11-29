@@ -15,6 +15,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/services/translation_service.dart';
+import 'package:mangatracker/core/services/language_service.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -66,18 +68,86 @@ class _LateDetailViewState extends State<LateDetailView> {
   bool _isSaving = false;
   final LibraryService _libraryService = getIt<LibraryService>();
   final Notifier _notifier = getIt<Notifier>();
+  final TranslationService _translationService = getIt<TranslationService>();
   int? _pendingChapterUpdate; // Pour tracker la mise à jour en cours
   
   // État d'ouverture des sections
   Map<String, bool> _expandedSections = {};
   bool _associatedExpanded = false;
   bool _isStateLoaded = false;
+  
+  // Description traduite - initialiser avec la description originale
+  String? _translatedDescription;
 
   @override
   void initState() {
     super.initState();
     _currentReadCount = widget.readChapters;
+    // Initialiser avec la description originale pour l'afficher immédiatement
+    _translatedDescription = widget.mangaDescription;
+    
+    debugPrint('📖 LateDetailView initState:');
+    debugPrint('  - mangaDescription=${widget.mangaDescription != null ? "présente (${widget.mangaDescription!.length} caractères)" : "null"}');
+    debugPrint('  - _translatedDescription=${_translatedDescription != null ? "présente (${_translatedDescription!.length} caractères)" : "null"}');
+    
     _loadExpandedState();
+    // Traduire en arrière-plan sans bloquer l'affichage
+    _translateDescription();
+  }
+  
+  /// Traduit la description si nécessaire (en arrière-plan)
+  Future<void> _translateDescription() async {
+    debugPrint('🔍 Traduction description: début');
+    
+    if (widget.mangaDescription == null || widget.mangaDescription!.isEmpty) {
+      debugPrint('⚠️ Traduction description: description vide ou null');
+      return;
+    }
+    
+    debugPrint('📝 Traduction description: longueur=${widget.mangaDescription!.length}');
+    
+    try {
+      // Obtenir la langue actuelle de l'application
+      final languageService = await getIt.getAsync<LanguageService>();
+      final currentLocale = languageService.getCurrentLocale();
+      final targetLanguage = currentLocale.languageCode;
+      
+      debugPrint('🌐 Traduction description: langue cible=$targetLanguage');
+      
+      // Toujours essayer de traduire (pas de détection de langue)
+      debugPrint('🔄 Traduction description: début de la traduction vers $targetLanguage');
+      
+      final translated = await _translationService.translateText(
+        widget.mangaDescription!,
+        targetLanguage,
+      );
+      
+      debugPrint('✅ Traduction description: traduction terminée');
+      
+      // Vérifier si la traduction est différente de l'original
+      if (translated != null && translated != widget.mangaDescription) {
+        // Vérifier que le début n'est pas identique (signe que la traduction n'a pas fonctionné)
+        final originalStart = widget.mangaDescription!.substring(0, widget.mangaDescription!.length > 50 ? 50 : widget.mangaDescription!.length).trim();
+        final translatedStart = translated.substring(0, translated.length > 50 ? 50 : translated.length).trim();
+        
+        if (originalStart.toLowerCase() != translatedStart.toLowerCase()) {
+          debugPrint('✅ Traduction description: traduction différente, mise à jour de l\'affichage');
+          if (mounted) {
+            setState(() {
+              _translatedDescription = translated;
+            });
+          }
+        } else {
+          debugPrint('⚠️ Traduction description: début identique, traduction probablement échouée, garder l\'original');
+        }
+      } else {
+        debugPrint('⚠️ Traduction description: traduction identique à l\'original ou null');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ Erreur lors de la traduction de la description: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      // En cas d'erreur, garder la description originale
+    }
   }
   
   Future<void> _loadExpandedState() async {
@@ -750,17 +820,47 @@ class _LateDetailViewState extends State<LateDetailView> {
               ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return Text(
-                        l10n?.synopsis ?? 'Synopsis',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(fontSize: 18),
-                          fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final l10n = AppLocalizations.of(context);
+                            return Text(
+                              l10n?.synopsis ?? 'Synopsis',
+                              style: GoogleFonts.poppins(
+                                textStyle: const TextStyle(fontSize: 18),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      // Bouton pour forcer la retraduction
+                      IconButton(
+                        icon: const Icon(Icons.refresh, size: 20),
+                        tooltip: 'Retraduire la description',
+                        onPressed: () async {
+                          // Vider le cache et retraduire
+                          if (widget.mangaDescription != null) {
+                            final languageService = await getIt.getAsync<LanguageService>();
+                            final currentLocale = languageService.getCurrentLocale();
+                            final targetLanguage = currentLocale.languageCode;
+                            
+                            await _translationService.clearCachedTranslation(
+                              widget.mangaDescription!,
+                              targetLanguage,
+                            );
+                            
+                            // Retraduire
+                            await _translateDescription();
+                          }
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
                 ),
                 Padding(
@@ -772,24 +872,38 @@ class _LateDetailViewState extends State<LateDetailView> {
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
 
-                    child: SingleChildScrollView(
-
-                      physics: const NeverScrollableScrollPhysics(),
-                      child: MarkdownBody(
-                        data: widget.mangaDescription!,
-                        onTapLink: (text, href, title) {
-                          if (href != null) handleLinkTap(href);
-                        },
-                        styleSheet: MarkdownStyleSheet(
-                          p: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
+                    child: Builder(
+                      builder: (context) {
+                        final displayText = _translatedDescription ?? widget.mangaDescription ?? '';
+                        debugPrint('📖 LateDetailView build: affichage description');
+                        debugPrint('  - widget.mangaDescription=${widget.mangaDescription != null ? "présente (${widget.mangaDescription!.length} caractères)" : "null"}');
+                        debugPrint('  - _translatedDescription=${_translatedDescription != null ? "présente (${_translatedDescription!.length} caractères)" : "null"}');
+                        debugPrint('  - displayText=${displayText.isNotEmpty ? "présente (${displayText.length} caractères)" : "vide"}');
+                        
+                        if (displayText.isEmpty) {
+                          debugPrint('⚠️ LateDetailView build: description vide!');
+                          return const SizedBox.shrink();
+                        }
+                        
+                        return SingleChildScrollView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: MarkdownBody(
+                            data: displayText,
+                            onTapLink: (text, href, title) {
+                              if (href != null) handleLinkTap(href);
+                            },
+                            styleSheet: MarkdownStyleSheet(
+                              p: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                              strong: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          strong: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
