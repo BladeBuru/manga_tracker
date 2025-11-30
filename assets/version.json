@@ -1,8 +1,23 @@
 {
-  "latestVersion": "0.7.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.1/MangaTracker.apk",
+  "latestVersion": "0.8.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.8.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.8.0",
+      "notes": [
+        "### Ajouts",
+        "- Vous pouvez maintenant télécharger des chapitres pour les lire hors ligne",
+        "- Les chapitres téléchargés sont accessibles depuis une page dédiée dans les téléchargements",
+        "- Un bloqueur de publicités intégré bloque automatiquement les publicités pendant la lecture",
+        "- Vous pouvez bloquer manuellement des éléments indésirables pendant la lecture",
+        "- Les descriptions de mangas sont automatiquement traduites dans votre langue préférée",
+        "- Les notes de mise à jour sont traduites automatiquement dans votre langue",
+        "- L'application sauvegarde automatiquement votre position de lecture dans chaque chapitre pour reprendre où vous vous êtes arrêté",
+        "- Vous pouvez personnaliser les sélecteurs de chapitres selon vos préférences",
+        "- Des liens vers notre serveur Discord ont été ajoutés dans les paramètres"
+      ]
+    },
     {
       "version": "0.7.1",
       "notes": [
