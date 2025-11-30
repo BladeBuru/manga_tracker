@@ -67,28 +67,59 @@ Cela est **normal et souhaité** dans les cas suivants :
 
 ## 📌 Exemple de bonne PR prête pour release
 
-**Titre :** Ajout du système de mises à jour automatiques
+**Titre :** Nouvelles fonctionnalités de téléchargement et de traduction
 
 **Labels :** `minor`
 
 **Description de la PR :**
 
 ```
-Cette PR ajoute un système qui détecte la version actuelle et propose une mise à jour si une nouvelle version est disponible.
+Cette PR ajoute plusieurs fonctionnalités importantes pour améliorer votre expérience de lecture.
 
 <!-- CHANGELOG:START -->
-### ✨ Ajouts
-- L'application vous notifie automatiquement quand une nouvelle version est disponible
-- Vous pouvez mettre à jour l'application directement depuis l'app
-
-### 🐛 Corrections
-- Correction du problème de redirection au démarrage de l'application
+### Ajouts
+- Vous pouvez maintenant télécharger des chapitres pour les lire hors ligne
+- Les chapitres téléchargés sont accessibles depuis une page dédiée dans les téléchargements
+- Un bloqueur de publicités intégré bloque automatiquement les publicités pendant la lecture
+- Vous pouvez bloquer manuellement des éléments indésirables pendant la lecture
+- Les descriptions de mangas sont automatiquement traduites dans votre langue préférée
+- Les notes de mise à jour sont traduites automatiquement dans votre langue
+- L'application sauvegarde automatiquement votre position de lecture dans chaque chapitre pour reprendre où vous vous êtes arrêté
+- Vous pouvez personnaliser les sélecteurs de chapitres selon vos préférences
+- Des liens vers notre serveur Discord ont été ajoutés dans les paramètres
 <!-- CHANGELOG:END -->
 
-## 📋 Détails techniques (pour les développeurs)
+## Détails techniques (pour les développeurs)
 
-Cette section peut contenir des détails techniques pour les développeurs, mais ne sera PAS affichée aux utilisateurs.
+Cette section contient des détails techniques pour les développeurs et ne sera pas affichée aux utilisateurs.
+
+### Traduction automatique
+- Implémentation d'un service de traduction avec support de Google Translate, LibreTranslate et MyMemory
+- Cache par version pour les changelogs afin d'éviter les retraductions inutiles
+- Détection automatique de la langue source
+- Traduction progressive des changelogs avec mise à jour en temps réel
+
+### Suivi de progression
+- Sauvegarde automatique de la position de scroll dans SharedPreferences
+- Restauration automatique de la position lors de la réouverture d'un chapitre
+- Détection intelligente de la fin de chapitre (dans les 15% de la fin)
+- Helper partagé (`ReadingProgressHelper`) pour éviter la duplication de code
+
+### Mode hors ligne
+- Blocage complet des requêtes réseau non-file:// dans `OfflineReaderView`
+- Nettoyage HTML pour supprimer les références externes avant chargement
+- Gestion correcte du meta viewport pour éviter les problèmes de zoom
+- CSS responsive injecté pour un meilleur affichage
 ```
+
+### ⚠️ Règles importantes pour le changelog
+
+1. **Pas d'emojis** : Utilisez uniquement `### Ajouts`, `### Améliorations`, `### Corrections`
+2. **Pas de numéros de build** : Les versions sont automatiquement gérées (ex: `0.7.1` et non `0.7.1+16`)
+3. **Centré utilisateur** : Décrivez ce que l'utilisateur peut faire ou voir, pas comment c'est implémenté
+4. **Langage simple** : Évitez le jargon technique, les noms de fichiers, de services ou de configurations
+5. **Format cohérent** : Utilisez des phrases courtes commençant par un verbe à l'infinitif ou "Vous pouvez..."
+6. **Pas de corrections internes** : Ne mentionnez que les corrections visibles par l'utilisateur final
 
 ---
 

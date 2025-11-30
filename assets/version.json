@@ -1,129 +1,123 @@
 {
-  "latestVersion": "0.7.1+16",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.1+16/MangaTracker.apk",
+  "latestVersion": "0.7.1",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.7.1/MangaTracker.apk",
   "inherit": true,
   "changelog": [
     {
-      "version": "0.7.1+16",
+      "version": "0.7.1",
       "notes": [
-        "### ✨ Nouveautés",
-        "- Vous pouvez choisir la langue de l’application directement depuis les paramètres.",
-        "- Les formulaires de connexion et d’inscription affichent des messages d’erreur plus clairs et traduits.",
-        "### 🔧 Améliorations",
-        "- Les liens “Connexion” et “Créer un compte” sont plus lisibles, sans soulignement superflu.",
-        "- La bibliothèque mémorise votre vue préférée (liste ou grille) et se recharge plus vite."
+        "### Ajouts",
+        "- Vous pouvez choisir la langue de l'application directement depuis les paramètres",
+        "- Les formulaires de connexion et d'inscription affichent des messages d'erreur plus clairs et traduits",
+        "### Améliorations",
+        "- Les liens de connexion sont plus lisibles",
+        "- La bibliothèque mémorise votre vue préférée et se recharge plus vite"
       ]
     },
     {
-      "version": "0.7.0+15",
+      "version": "0.7.0",
       "notes": [
-        "### ✨ Ajouts",
-        "- Vous pouvez maintenant activer ou désactiver l'authentification biométrique dans les paramètres",
-        "- Lors de votre première connexion, l'application vous propose d'activer l'authentification biométrique si votre appareil le supporte",
-        "- L'historique de recherche est maintenant sauvegardé et persiste entre les sessions",
-        "- Vous pouvez supprimer des éléments de l'historique de recherche instantanément",
-        "- Les textes de l'application sont maintenant traduits dans toutes les langues supportées pour les nouvelles fonctionnalités",
-        "### 🐛 Corrections",
-        "- Correction de l'affichage de l'historique de recherche qui ne s'affichait pas au chargement de la page",
-        "- Correction de la suppression d'éléments de l'historique qui n'était pas instantanée",
-        "- Le bouton d'authentification biométrique sur la page de connexion n'apparaît maintenant que si l'option est activée",
-        "### 🔧 Améliorations",
-        "- Amélioration de l'interface de recherche avec un meilleur affichage de l'état vide",
-        "- Harmonisation des barres de recherche entre les différentes pages",
-        "- Ajout de messages informatifs pour les fonctionnalités à venir (connexion Google/Apple)"
+        "### Ajouts",
+        "- Vous pouvez activer ou désactiver l'authentification biométrique dans les paramètres",
+        "- L'application vous propose d'activer l'authentification biométrique lors de votre première connexion si votre appareil le supporte",
+        "- L'historique de recherche est sauvegardé et persiste entre les sessions",
+        "- Vous pouvez supprimer des éléments de l'historique de recherche",
+        "- Les textes de l'application sont traduits dans toutes les langues supportées",
+        "### Améliorations",
+        "- Amélioration de l'interface de recherche",
+        "- Harmonisation des barres de recherche entre les différentes pages"
       ]
     },
     {
-      "version": "0.6.0+14",
+      "version": "0.6.0",
       "notes": [
-        "### ✨ Ajouts",
+        "### Ajouts",
         "- Organisation des chapitres par saisons avec sections repliables",
-        "- Affichage des noms associés du manga (titres alternatifs)",
+        "- Affichage des titres alternatifs des mangas",
         "- Image de couverture agrandissable au clic avec zoom",
-        "- Design modernisé : informations principales en badges, affichage auteur/artiste amélioré",
-        "### 🐛 Corrections",
-        "- Correction de l'affichage des chapitres dans les sections déjà ouvertes",
+        "- Design modernisé avec informations principales en badges",
+        "### Améliorations",
         "- Interface plus compacte et lisible"
       ]
     },
     {
-      "version": "0.5.0+13",
+      "version": "0.5.0",
       "notes": [
-        "### ✨ Ajouts",
-        "- Vous pouvez maintenant choisir la langue de l'application (Français, Anglais, Allemand, Japonais, Coréen, Portugais, Espagnol) dans les paramètres de votre profil",
-        "- L'application se charge plus rapidement grâce à l'amélioration du cache des données",
-        "### 🐛 Corrections",
-        "- Amélioration de la gestion des mises à jour : les messages d'erreur sont maintenant plus clairs si une mise à jour échoue"
+        "### Ajouts",
+        "- Vous pouvez choisir la langue de l'application dans les paramètres de votre profil",
+        "- L'application se charge plus rapidement grâce à l'amélioration du cache",
+        "### Améliorations",
+        "- Les messages d'erreur sont plus clairs lors des mises à jour"
       ]
     },
     {
-      "version": "0.4.0+12",
+      "version": "0.4.0",
       "notes": [
-        "### ✨ Améliorations",
-        "- **Nouvelle page de profil** : Interface moderne et intuitive avec vos informations, organisée par sections (Compte, Paramètres, Actions)",
-        "- **Nouveautés de l'app** : Affichage automatique des nouvelles fonctionnalités avec un badge \\\"Nouveau\\\" et possibilité de consulter toutes les améliorations précédentes",
-        "- **Meilleure sécurité** : Confirmations claires pour les actions importantes comme la suppression de compte ou la déconnexion",
-        "### 🐛 Corrections",
+        "### Ajouts",
+        "- Nouvelle page de profil avec interface moderne et intuitive",
+        "- Affichage automatique des nouvelles fonctionnalités avec possibilité de consulter toutes les améliorations précédentes",
+        "- Confirmations claires pour les actions importantes",
+        "### Améliorations",
         "- Amélioration de l'affichage des informations de votre compte",
-        "- Correction de l'expérience lors de la modification du mot de passe"
+        "- Amélioration de l'expérience lors de la modification du mot de passe"
       ]
     },
     {
-      "version": "0.3.0+11",
+      "version": "0.3.0",
       "notes": [
-        "### ✨ Améliorations",
-        "- **Mode hors ligne amélioré** : Indicateurs visuels clairs sur toutes les pages avec le nombre d'actions en attente",
-        "- **Images hors ligne** : Les couvertures de mangas s'affichent maintenant même sans connexion internet grâce au cache",
-        "- **Actions instantanées** : Plus de rechargement de page ! Toutes les actions (ajout/suppression de manga, changement de statut, progression de lecture) sont maintenant instantanées avec une mise à jour fluide de l'interface",
-        "- **Détection automatique** : L'application détecte automatiquement quand vous êtes hors ligne et adapte son comportement",
-        "### 🐛 Corrections",
-        "- Correction de l'affichage des indicateurs de mode hors ligne dans la bibliothèque",
-        "- Correction de l'affichage des données en cache sur la page d'accueil",
+        "### Ajouts",
+        "- Mode hors ligne amélioré avec indicateurs visuels sur toutes les pages",
+        "- Les couvertures de mangas s'affichent même sans connexion internet",
+        "- Toutes les actions sont instantanées sans rechargement de page",
+        "- L'application détecte automatiquement quand vous êtes hors ligne",
+        "### Améliorations",
         "- Amélioration de la fiabilité de la détection du mode hors ligne"
       ]
     },
     {
-      "version": "0.2.4+10",
+      "version": "0.2.4",
       "notes": [
-        "### ✨ Ajouts",
-        "- Lecture en ligne via WebView (mobile) avec ad-block léger",
-        "- Suivi automatique des chapitres (détection navigation) et MAJ du lien vers le chapitre suivant",
-        "- Fallback Web : ouverture dans un nouvel onglet + validation rapide du dernier chapitre lu au retour",
-        "### 🐛 Corrections",
-        "- Refresh automatique de la page Détail après retour du lecteur et après ajout/modif/suppression du lien",
-        "- Null-safety pour éviter les TypeError/NoSuchMethod en cas de lien/URL manquants"
+        "### Ajouts",
+        "- Lecture en ligne avec bloqueur de publicités",
+        "- Suivi automatique des chapitres avec mise à jour du lien vers le chapitre suivant",
+        "- Ouverture dans un nouvel onglet avec validation rapide du dernier chapitre lu",
+        "### Améliorations",
+        "- Actualisation automatique de la page de détail après la lecture"
       ]
     },
     {
-      "version": "0.1.3+5",
+      "version": "0.1.3",
       "notes": [
-        "### 🐛 Corrections",
-        "- Harmonisation des URL d'images en lien avec l'API",
-        "- Prise en considération des nouveaux champs renvoyés par l'API, à savoir pour les genres, le type et les recommandations associées pour un manga donné"
+        "### Améliorations",
+        "- Amélioration de l'affichage des images",
+        "- Amélioration de l'affichage des genres, types et recommandations"
       ]
     },
     {
       "version": "0.1.2",
       "notes": [
-        "**Gestion de bibliothèque améliorée !** Le nouveau bouton de statut sur la page de détail vous permet de gérer vos mangas plus facilement.",
-        "**Performances accrues.** Le temps de chargement de la page de détail a été optimisé pour une expérience plus fluide.",
-        "**Notifications interactives.** Les messages de l'application peuvent maintenant être fermés manuellement grâce à un nouveau bouton.",
-        "Corrections de bugs divers et améliorations de la stabilité."
+        "### Ajouts",
+        "- Nouveau bouton de statut sur la page de détail pour gérer vos mangas plus facilement",
+        "- Les notifications peuvent être fermées manuellement",
+        "### Améliorations",
+        "- Optimisation du temps de chargement de la page de détail",
+        "- Améliorations de la stabilité"
       ]
     },
     {
       "version": "0.1.1",
       "notes": [
-        "**Connexion par empreinte digitale.** Connectez-vous plus rapidement et en toute sécurité grâce à l'authentification biométrique.",
-        "**Votre bibliothèque personnelle.** Vous pouvez maintenant ajouter des mangas à votre bibliothèque pour suivre votre progression de lecture.",
-        "**Nouveaux statuts de lecture.** Suivez vos mangas avec les statuts 'En cours', 'À lire plus tard' et 'Terminé'."
+        "### Ajouts",
+        "- Connexion par empreinte digitale avec authentification biométrique",
+        "- Vous pouvez ajouter des mangas à votre bibliothèque pour suivre votre progression",
+        "- Nouveaux statuts de lecture : 'En cours', 'À lire plus tard' et 'Terminé'"
       ]
     },
     {
       "version": "0.1.0",
       "notes": [
-        "Lancement initial de Manga Tracker.",
-        "Recherche et consultation des détails des mangas."
+        "Lancement initial de Manga Tracker",
+        "Recherche et consultation des détails des mangas"
       ]
     }
   ]
