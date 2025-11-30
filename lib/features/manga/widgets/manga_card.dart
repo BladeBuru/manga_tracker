@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 import '../helpers/image.helper.dart';
 import '../views/detail.dart';
@@ -13,6 +15,7 @@ class MangaCard extends StatelessWidget {
   final String? rating;
   final num? lastChapter;
   final num? readChapter;
+  final bool showDownloadedOnly; // Nouveau paramètre
 
   const MangaCard({
     super.key,
@@ -23,12 +26,77 @@ class MangaCard extends StatelessWidget {
     this.rating,
     this.lastChapter,
     this.readChapter,
+    this.showDownloadedOnly = false, // Par défaut false
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
+        if (showDownloadedOnly) {
+          final downloadManager = DownloadManagerService();
+          final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
+          
+          if (downloadedChapters.isNotEmpty && context.mounted) {
+            // Trier les chapitres téléchargés par numéro
+            final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
+            
+            // Déterminer le chapitre à ouvrir : priorité au prochain chapitre non lu ou reprise de lecture
+            int targetChapterNumber;
+            if (readChapter != null && readChapter! > 0) {
+              final lastReadChapterNum = readChapter!.toInt();
+              
+              // Vérifier d'abord si le dernier chapitre lu est téléchargé et a une position de scroll sauvegardée
+              final lastReadChapter = sortedChapters.where(
+                (ch) => ch.chapterNumber == lastReadChapterNum && ch.scrollPosition != null && ch.scrollPosition! > 0,
+              ).firstOrNull;
+              
+              if (lastReadChapter != null) {
+                // Reprendre la lecture du dernier chapitre lu là où on s'est arrêté
+                targetChapterNumber = lastReadChapterNum;
+              } else {
+                // Chercher le prochain chapitre non lu (dernier lu + 1)
+                final nextChapter = lastReadChapterNum + 1;
+                final nextChapterDownloaded = sortedChapters.where(
+                  (ch) => ch.chapterNumber == nextChapter,
+                ).firstOrNull;
+                
+                if (nextChapterDownloaded != null) {
+                  // Le prochain chapitre est téléchargé, l'utiliser
+                  targetChapterNumber = nextChapter;
+                } else {
+                  // Sinon, chercher le chapitre téléchargé le plus proche après le dernier lu
+                  final nextAvailable = sortedChapters.where(
+                    (ch) => ch.chapterNumber > lastReadChapterNum,
+                  ).firstOrNull;
+                  targetChapterNumber = nextAvailable?.chapterNumber ?? sortedChapters.first.chapterNumber;
+                }
+              }
+            } else {
+              // Aucun chapitre lu, ouvrir le premier téléchargé
+              targetChapterNumber = sortedChapters.first.chapterNumber;
+            }
+            
+            // En mode téléchargé uniquement, utiliser directement le titre fourni
+            // pour éviter toute requête réseau qui pourrait ralentir ou échouer
+            if (context.mounted) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OfflineReaderView(
+                    muId: int.parse(muId),
+                    chapterNumber: targetChapterNumber,
+                    mangaTitle: mangaTitle, // Utiliser directement le titre fourni
+                  ),
+                ),
+              );
+              return;
+            }
+          }
+        }
+        
+        // Sinon, aller sur le détail normal
         Navigator.push(
           context,
           MaterialPageRoute(

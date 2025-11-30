@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/services/app_update_service.dart';
+import '../../../core/services/translation_service.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/service_locator/service_locator.dart';
+import '../../../core/components/changelog_dialog.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Widget pour afficher le changelog dans le profil
@@ -14,8 +18,10 @@ class ChangelogCard extends StatefulWidget {
 
 class _ChangelogCardState extends State<ChangelogCard> {
   ChangelogInfo? _changelogInfo;
+  ChangelogInfo? _translatedChangelogInfo;
   String _currentVersion = '';
   bool _isLoading = true;
+  final TranslationService _translationService = getIt<TranslationService>();
 
   @override
   void initState() {
@@ -34,12 +40,138 @@ class _ChangelogCardState extends State<ChangelogCard> {
         _currentVersion = packageInfo.version;
         // Afficher les nouveaux changelogs s'il y en a, sinon tous les changelogs
         _changelogInfo = newChangelog ?? allChangelogs;
+        // Initialiser avec les changelogs originaux pour les afficher immédiatement
+        _translatedChangelogInfo = _changelogInfo;
         _isLoading = false;
       });
+      
+      // Traduire les changelogs en arrière-plan sans bloquer l'affichage
+      if (_changelogInfo != null) {
+        _translateChangelogs();
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+  
+  /// Traduit les changelogs si nécessaire (en arrière-plan)
+  Future<void> _translateChangelogs() async {
+    if (_changelogInfo == null || _changelogInfo!.isEmpty) return;
+    
+    try {
+      // Obtenir la langue actuelle de l'application
+      final languageService = await getIt.getAsync<LanguageService>();
+      final currentLocale = languageService.getCurrentLocale();
+      final targetLanguage = currentLocale.languageCode;
+      
+      // Ne traduire que si la langue n'est pas le français (langue par défaut)
+      if (targetLanguage != 'fr') {
+        debugPrint('🔄 Traduction changelogs: début (${_changelogInfo!.newVersions.length} versions)');
+        final translatedVersions = <VersionChanges>[];
+        
+        for (int v = 0; v < _changelogInfo!.newVersions.length; v++) {
+          final versionChanges = _changelogInfo!.newVersions[v];
+          debugPrint('🔄 Traduction version ${v + 1}/${_changelogInfo!.newVersions.length}: ${versionChanges.version} (${versionChanges.notes.length} notes)');
+          
+          final translatedNotes = <String>[];
+          
+          for (int n = 0; n < versionChanges.notes.length; n++) {
+            final note = versionChanges.notes[n];
+            
+            // Convertir la note en texte (gérer différents types)
+            String noteText;
+            if (note is String) {
+              noteText = note;
+            } else if (note is List) {
+              // Si c'est une liste, joindre les éléments
+              noteText = note.map((e) => e.toString()).join('\n');
+            } else {
+              noteText = note.toString();
+            }
+            
+            // Nettoyer le texte (enlever les préfixes markdown si présents)
+            noteText = noteText.trim();
+            if (noteText.startsWith('- ')) {
+              noteText = noteText.substring(2);
+            }
+            if (noteText.startsWith('* ')) {
+              noteText = noteText.substring(2);
+            }
+            
+            debugPrint('  📝 Note ${n + 1}/${versionChanges.notes.length}: ${noteText.length} caractères');
+            
+            if (noteText.isNotEmpty) {
+              // Vérifier le cache par version et note
+              String? translated = await _translationService.getCachedChangelogTranslation(
+                versionChanges.version,
+                noteText,
+                targetLanguage,
+              );
+              
+              if (translated == null) {
+                // Pas dans le cache, traduire
+                translated = await _translationService.translateText(
+                  noteText,
+                  targetLanguage,
+                );
+                
+                // Mettre en cache si la traduction a réussi
+                if (translated != null && translated != noteText && translated.isNotEmpty) {
+                  await _translationService.cacheChangelogTranslation(
+                    versionChanges.version,
+                    noteText,
+                    targetLanguage,
+                    translated,
+                  );
+                }
+              } else {
+                debugPrint('  ✅ Note ${n + 1} trouvée dans le cache');
+              }
+              
+              if (translated != null && translated != noteText && translated.isNotEmpty) {
+                debugPrint('  ✅ Note ${n + 1} traduite: ${translated.length} caractères');
+                translatedNotes.add(translated);
+              } else {
+                debugPrint('  ⚠️ Note ${n + 1} non traduite ou identique, garder original');
+                translatedNotes.add(noteText);
+              }
+            } else {
+              translatedNotes.add(noteText);
+            }
+            
+            // Petite pause entre les notes pour éviter de surcharger l'API
+            if (n < versionChanges.notes.length - 1) {
+              await Future.delayed(const Duration(milliseconds: 300));
+            }
+          }
+          
+          translatedVersions.add(VersionChanges(
+            version: versionChanges.version,
+            notes: translatedNotes,
+          ));
+          
+          // Pause entre les versions
+          if (v < _changelogInfo!.newVersions.length - 1) {
+            await Future.delayed(const Duration(milliseconds: 500));
+          }
+        }
+        
+        debugPrint('✅ Traduction changelogs: terminée (${translatedVersions.length} versions traduites)');
+        
+        // Mettre à jour uniquement si le widget est toujours monté
+        if (mounted) {
+          setState(() {
+            _translatedChangelogInfo = ChangelogInfo(translatedVersions);
+          });
+        }
+      }
+      // Si français, _translatedChangelogInfo est déjà initialisé avec _changelogInfo
+    } catch (e, stackTrace) {
+      debugPrint('❌ Erreur lors de la traduction des changelogs: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      // En cas d'erreur, garder les changelogs originaux
     }
   }
 
@@ -49,56 +181,12 @@ class _ChangelogCardState extends State<ChangelogCard> {
     final allChangelogs = await appUpdateService.getAllChangelogs();
     
     if (allChangelogs == null || allChangelogs.isEmpty) return;
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Quoi de neuf ?'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: allChangelogs.newVersions.map((changes) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Version ${_cleanVersion(changes.version)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...changes.notes.map((note) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: MarkdownBody(
-                            data: RegExp(r'^[#\-\*]').hasMatch("$note")
-                                ? "$note"
-                                : "- $note",
-                            styleSheet: MarkdownStyleSheet(
-                              p: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        )),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _markAsSeen();
-            },
-            child: const Text('Super !'),
-          ),
-        ],
-      ),
+    
+    ChangelogDialog.show(
+      context,
+      allChangelogs,
+      barrierDismissible: true,
+      onClose: _markAsSeen,
     );
   }
 
@@ -107,6 +195,7 @@ class _ChangelogCardState extends State<ChangelogCard> {
     await appUpdateService.markChangelogAsSeen();
     setState(() {
       _changelogInfo = null;
+      _translatedChangelogInfo = null;
     });
   }
 
@@ -122,7 +211,8 @@ class _ChangelogCardState extends State<ChangelogCard> {
       return const SizedBox.shrink();
     }
 
-    final hasNewChangelog = _changelogInfo != null && !_changelogInfo!.isEmpty;
+    final displayChangelog = _translatedChangelogInfo ?? _changelogInfo;
+    final hasNewChangelog = displayChangelog != null && !displayChangelog.isEmpty;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

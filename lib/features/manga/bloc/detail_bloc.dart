@@ -8,6 +8,10 @@ import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
+import 'package:mangatracker/features/manga/services/chapter_check_service.dart';
+import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
+import 'package:mangatracker/features/manga/services/notification_service.dart';
+import 'package:mangatracker/features/manga/services/notification_preferences_service.dart';
 import 'detail_event.dart';
 import 'detail_state.dart';
 
@@ -17,9 +21,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   final LibraryService _libraryService = getIt<LibraryService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
+  final ChapterCheckService _chapterCheckService = ChapterCheckService();
+  final NewChapterService _newChapterService = NewChapterService();
+  final NotificationService _notificationService = NotificationService();
+  final NotificationPreferencesService _notificationPreferences = NotificationPreferencesService();
   
   StreamSubscription<bool>? _connectivitySubscription;
   int? _currentMuId;
+  Timer? _chapterCheckTimer; // Timer pour la vérification différée des chapitres
 
   DetailBloc() : super(const DetailInitial()) {
     on<LoadMangaDetail>(_onLoadMangaDetail);
@@ -37,6 +46,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   @override
   Future<void> close() {
     _connectivitySubscription?.cancel();
+    _chapterCheckTimer?.cancel();
     return super.close();
   }
 
@@ -82,13 +92,31 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       final updatedMangaDetail = await _enrichWithLibraryInfo(event.muId, mangaDetail);
       
-      // Si aucune erreur, on est online
+      // Si aucune erreur, on est online - émettre l'état immédiatement
       emit(DetailLoaded(
         mangaDetail: updatedMangaDetail,
         isOffline: false,
         pendingActions: pendingActions,
         stale: false,
       ));
+      
+      // Vérifier les nouveaux chapitres en arrière-plan (non-bloquant)
+      // pour éviter de ralentir le chargement de la page
+      // Attendre 3 secondes pour laisser la page se charger complètement avant de vérifier
+      if (updatedMangaDetail.customLink != null && updatedMangaDetail.customLink!.isNotEmpty) {
+        // Annuler toute vérification précédente en cours
+        _chapterCheckTimer?.cancel();
+        
+        // Exécuter en arrière-plan avec un délai pour ne pas bloquer le chargement initial
+        _chapterCheckTimer = Timer(const Duration(seconds: 3), () {
+          // Vérifier que le muId n'a pas changé (l'utilisateur n'a pas changé de manga)
+          if (_currentMuId == event.muId) {
+            _checkForNewChapters(event.muId, updatedMangaDetail).catchError((e) {
+              debugPrint('⚠️ DetailBloc: Erreur lors de la vérification en arrière-plan: $e');
+            });
+          }
+        });
+      }
     } catch (e) {
       // Ne pas traiter InvalidCredentialsException comme une erreur réseau
       if (e.toString().contains('InvalidCredentialsException')) {
@@ -394,11 +422,13 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       if (success) {
         debugPrint('🔍 Détermination du statut de lecture...');
         // Déterminer le statut de lecture automatiquement
-        ReadingStatus newStatus = _determineReadingStatus(
+        ReadingStatus newStatus = await _determineReadingStatus(
           currentReadingStatus: currentState.mangaDetail.readingStatus,
           readChapters: event.readChapters,
           totalChapters: currentState.mangaDetail.totalChapters,
           isCompleted: currentState.mangaDetail.isCompleted,
+          customLink: currentState.mangaDetail.customLink,
+          muId: event.muId,
         );
         debugPrint('🔍 Nouveau statut déterminé: ${newStatus.name}');
         
@@ -459,16 +489,46 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   }
   
   /// Détermine le statut de lecture automatiquement en fonction de la progression
-  ReadingStatus _determineReadingStatus({
+  /// Vérifie également s'il y a de nouveaux chapitres disponibles avant de passer à "À jour"
+  Future<ReadingStatus> _determineReadingStatus({
     ReadingStatus? currentReadingStatus,
     required int readChapters,
     required int totalChapters,
     bool? isCompleted,
-  }) {
+    String? customLink,
+    int? muId,
+  }) async {
     debugPrint('🔍 _determineReadingStatus: readChapters=$readChapters, totalChapters=$totalChapters, isCompleted=$isCompleted');
     
     // Si tous les chapitres disponibles sont lus
     if (readChapters >= totalChapters && totalChapters > 0) {
+      // Vérifier s'il y a de nouveaux chapitres disponibles en ligne
+      // avant de passer à "À jour"
+      if (customLink != null && customLink.isNotEmpty && muId != null) {
+        try {
+          // Vérifier si le chapitre suivant existe
+          final nextChapterExists = await _chapterCheckService.checkNextChapter(
+            muId,
+            customLink,
+            readChapters,
+          );
+          
+          if (nextChapterExists) {
+            debugPrint('✅ Chapitre suivant disponible → reading (pas encore à jour)');
+            // Enregistrer le nouveau chapitre
+            await _newChapterService.addNewChapter(muId, readChapters + 1);
+            return ReadingStatus.reading;
+          } else {
+            debugPrint('✅ Aucun nouveau chapitre disponible → caughtUp');
+            // S'assurer qu'il n'y a pas de nouveaux chapitres enregistrés
+            await _newChapterService.clearNewChapters(muId);
+          }
+        } catch (e) {
+          debugPrint('⚠️ Erreur lors de la vérification du chapitre suivant: $e');
+          // En cas d'erreur, on suppose qu'il n'y a pas de nouveau chapitre
+        }
+      }
+      
       if (isCompleted == true) {
         debugPrint('✅ Tous chapitres lus + manga terminé → completed');
         return ReadingStatus.completed;
@@ -487,6 +547,67 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     // Sinon, garder le statut actuel ou mettre "À lire plus tard" par défaut
     debugPrint('✅ Aucun chapitre lu → readLater');
     return currentReadingStatus ?? ReadingStatus.readLater;
+  }
+
+  /// Vérifie s'il y a de nouveaux chapitres disponibles pour un manga
+  Future<void> _checkForNewChapters(int muId, MangaDetailDto mangaDetail) async {
+    if (mangaDetail.customLink == null || mangaDetail.customLink!.isEmpty) {
+      return;
+    }
+
+    final readChapters = mangaDetail.readChaptersCount ?? 0;
+    if (readChapters <= 0) {
+      return; // Pas de chapitres lus, pas besoin de vérifier
+    }
+
+    try {
+      debugPrint('🔍 DetailBloc: Vérification des nouveaux chapitres pour $muId (lu: $readChapters)');
+      
+      // Vérifier le chapitre suivant
+      final nextChapterExists = await _chapterCheckService.checkNextChapter(
+        muId,
+        mangaDetail.customLink!,
+        readChapters,
+      );
+
+      if (nextChapterExists) {
+        final nextChapter = readChapters + 1;
+        await _newChapterService.addNewChapter(muId, nextChapter);
+        debugPrint('✅ DetailBloc: Nouveau chapitre détecté: $nextChapter');
+        
+        // Envoyer une notification seulement si les notifications sont activées
+        final notificationsEnabled = await _notificationPreferences.areNewChapterNotificationsEnabled();
+        if (notificationsEnabled) {
+          await _notificationService.showNewChapterNotification(
+            muId: muId,
+            mangaTitle: mangaDetail.title,
+            chapterNumber: nextChapter,
+          );
+        }
+      } else {
+        // Pas de nouveau chapitre, nettoyer la liste si nécessaire
+        final hasNewChapters = await _newChapterService.hasNewChapters(muId);
+        if (hasNewChapters) {
+          // Vérifier si les chapitres enregistrés existent toujours
+          final newChapters = await _newChapterService.getNewChapters(muId);
+          for (final chapter in newChapters) {
+            final exists = await _chapterCheckService.checkChapterExists(
+              mangaDetail.customLink!,
+              chapter,
+            );
+            if (!exists) {
+              await _newChapterService.markChapterAsRead(muId, chapter);
+            }
+          }
+        }
+      }
+
+      // Enregistrer le dernier chapitre vérifié
+      await _newChapterService.setLastCheckedChapter(muId, readChapters);
+      await _newChapterService.setLastCheckDate(DateTime.now());
+    } catch (e) {
+      debugPrint('⚠️ DetailBloc: Erreur lors de la vérification des nouveaux chapitres: $e');
+    }
   }
 
   /// Met à jour le lien personnalisé

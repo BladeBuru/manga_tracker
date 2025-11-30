@@ -170,6 +170,165 @@
   "passwordStrengthLabel": "Passwortstärke",
   "passwordStrengthWeak": "Schwach",
   "passwordStrengthMedium": "Mittel",
-  "passwordStrengthStrong": "Stark"
+  "passwordStrengthStrong": "Stark",
+  
+  "yes": "Ja",
+  "no": "Nein",
+  "yesValidate": "Ja, bestätigen",
+  "chapterSkipMessage": "Sie springen von Kapitel {prev} zu {next}.\n{prev} als gelesen markieren?",
+  "validateReadingMessage": "Haben Sie Kapitel {chapter} beendet?",
+  "validateReadingHint": "Ihr Fortschritt wird automatisch gespeichert.",
+  "adBlockerTitle": "Werbeblocker",
+  "adBlockerDescription": "Der Werbeblocker blockiert automatisch Werbung auf Leseseiten.\n\nWenn Sie Links hinzufügen oder Verbesserungen für die Werbeblockierung vorschlagen möchten, treten Sie unserem Discord-Server bei!",
+  "adBlockerTooltip": "Informationen zum Werbeblocker",
+  "joinDiscord": "Discord beitreten",
+  "joinDiscordSubtitle": "Teilen Sie Ihre Vorschläge und melden Sie Probleme",
+  "contactUs": "Kontaktieren Sie uns",
+  "discordLinkError": "Discord-Link kann nicht geöffnet werden",
+  "urlCopied": "URL in Zwischenablage kopiert",
+  "urlCopyError": "Fehler beim Kopieren der URL",
+  "copyUrl": "URL kopieren",
+  "progressUpdated": "Fortschritt aktualisiert",
+  "invalidUrl": "Ungültige URL",
+  "webModeProgressTracking": "Web-Modus - Fortschrittsverfolgung",
+  "webModeProgressDescription": "Um Ihren Fortschritt zu verfolgen, fügen Sie die URL des Kapitels ein, das Sie gerade lesen.",
+  "chapterUrlLabel": "Kapitel-URL",
+  "updateProgress": "Fortschritt aktualisieren",
+  "openInNewTab": "In neuem Tab öffnen",
+  "linkUrlLabel": "Scan-Site-URL",
+  "linkFormatInfo": "Kapitelformat erforderlich",
+  "linkFormatDescription": "Fügen Sie die Kapitelnummer in die URL ein, um das automatische Speichern des Fortschritts zu ermöglichen.\n\nAkzeptierte Formate:\n• /kapitel-23/ oder /chapter-23/\n• /c23/ oder /ch23/\n• /ep-23/ oder /episode-23/\n• ?chapter=23 oder ?num=24",
+  "linkFormatWarning": "Kein Kapitelformat erkannt. Der Link leitet zur Manga-Seite weiter (nicht zu einem bestimmten Kapitel).",
+  "linkFormatDetected": "Kapitelformat erkannt! Der Fortschritt wird automatisch gespeichert.",
+  
+  "captchaDetected": "Captcha erkannt - Werbeblocker wurde vorübergehend deaktiviert",
+  "@captchaDetected": {
+    "description": "Nachricht wenn ein Captcha erkannt wird"
+  },
+  
+  "captchaResolved": "Captcha gelöst - Werbeblocker wurde wieder aktiviert",
+  "@captchaResolved": {
+    "description": "Nachricht wenn ein Captcha gelöst wurde"
+  },
+  
+  "scrollPositionSaved": "Scroll-Position gespeichert",
+  "@scrollPositionSaved": {
+    "description": "Bestätigungsnachricht für das Speichern der Scroll-Position"
+  },
+  
+  "chapterProgressSaved": "Kapitelfortschritt gespeichert",
+  "@chapterProgressSaved": {
+    "description": "Bestätigungsnachricht für das Speichern des Fortschritts"
+  },
+  
+  "readingOffline": "Offline lesen",
+  "@readingOffline": {
+    "description": "Titel für Offline-Lesen"
+  },
+  
+  "chapterDownloaded": "Kapitel heruntergeladen",
+  "@chapterDownloaded": {
+    "description": "Nachricht, die anzeigt, dass ein Kapitel heruntergeladen wurde"
+  },
+  
+  "offlineReadingMode": "Offline-Lesemodus",
+  "@offlineReadingMode": {
+    "description": "Beschreibung des Offline-Lesemodus"
+  },
+  
+  "deleteChapterTitle": "Kapitel löschen",
+  "@deleteChapterTitle": {
+    "description": "Dialogtitel zum Löschen eines Kapitels"
+  },
+  
+  "deleteChapterMessage": "Möchten Sie Kapitel {chapterNumber} wirklich löschen?",
+  "@deleteChapterMessage": {
+    "description": "Bestätigungsnachricht zum Löschen eines Kapitels",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Alle Kapitel löschen",
+  "@deleteAllChaptersTitle": {
+    "description": "Dialogtitel zum Löschen aller Kapitel eines Mangas"
+  },
+  
+  "deleteAllChaptersMessage": "Möchten Sie wirklich alle heruntergeladenen Kapitel für diesen Manga löschen?",
+  "@deleteAllChaptersMessage": {
+    "description": "Bestätigungsnachricht zum Löschen aller Kapitel eines Mangas"
+  },
+  
+  "deleteAllDownloadsTitle": "Alle Downloads löschen",
+  "@deleteAllDownloadsTitle": {
+    "description": "Dialogtitel zum Löschen aller Downloads"
+  },
+  
+  "deleteAllDownloadsMessage": "Möchten Sie wirklich ALLE Downloads löschen? Diese Aktion ist unwiderruflich.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Bestätigungsnachricht zum Löschen aller Downloads"
+  },
+  
+  "delete": "Löschen",
+  "@delete": {
+    "description": "Schaltfläche zum Löschen"
+  },
+  
+  "deleteAll": "Alles löschen",
+  "@deleteAll": {
+    "description": "Schaltfläche zum Löschen aller"
+  },
+  
+  "cancel": "Abbrechen",
+  "@cancel": {
+    "description": "Schaltfläche zum Abbrechen"
+  },
+  
+  "chapterDeleted": "Kapitel gelöscht",
+  "@chapterDeleted": {
+    "description": "Erfolgsnachricht nach dem Löschen eines Kapitels"
+  },
+  
+  "allChaptersDeleted": "Alle Kapitel gelöscht",
+  "@allChaptersDeleted": {
+    "description": "Erfolgsnachricht nach dem Löschen aller Kapitel eines Mangas"
+  },
+  
+  "allDownloadsDeleted": "Alle Downloads gelöscht",
+  "@allDownloadsDeleted": {
+    "description": "Erfolgsnachricht nach dem Löschen aller Downloads"
+  },
+  
+  "noChaptersDownloaded": "Keine Kapitel heruntergeladen",
+  "@noChaptersDownloaded": {
+    "description": "Nachricht, die angezeigt wird, wenn keine Kapitel heruntergeladen wurden"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{Keine Kapitel heruntergeladen} =1{1 Kapitel heruntergeladen} other{{count} Kapitel heruntergeladen}}",
+  "@chaptersDownloadedCount": {
+    "description": "Anzahl der heruntergeladenen Kapitel",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Lesen",
+  "@readChapter": {
+    "description": "Schaltfläche zum Lesen eines Kapitels"
+  },
+  
+  "deleteAllChaptersAction": "Alle Kapitel löschen",
+  "@deleteAllChaptersAction": {
+    "description": "Aktion zum Löschen aller Kapitel eines Mangas"
+  },
+  
+  "deleteAllDownloadsTooltip": "Alle Downloads löschen",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip für die Schaltfläche zum Löschen aller Downloads"
+  }
 }
 

@@ -8,6 +8,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/features/auth/views/startup_page.dart';
+import 'package:mangatracker/features/manga/services/chapter_check_background_service.dart';
+import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 import 'core/theme/app_theme.dart';
@@ -29,6 +31,19 @@ Future<void> main() async {
   // Register all services
   setupServiceLocator();
   await getIt.allReady();
+
+  // Initialiser le service de vérification en arrière-plan
+  try {
+    final backgroundService = ChapterCheckBackgroundService();
+    await backgroundService.initialize();
+    // Démarrer la vérification périodique (toutes les 6 heures)
+    await backgroundService.startPeriodicCheck(intervalHours: 6);
+    
+    // Initialiser le service de notifications
+    await NotificationService().initialize();
+  } catch (e) {
+    debugPrint('⚠️ Erreur lors de l\'initialisation du service de vérification en arrière-plan: $e');
+  }
 
   runApp(const MyApp());
 }
@@ -70,7 +85,7 @@ class _MyAppState extends State<MyApp> {
         _setupLanguageListener();
       });
     }
-  }
+}
 
   Future<void> _loadLocale() async {
     try {

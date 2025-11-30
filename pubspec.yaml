@@ -79,6 +79,11 @@ dependencies:
     sdk: flutter
   intl: ^0.20.2
 
+  # Tâches périodiques en arrière-plan
+  workmanager: ^0.9.0
+  # Notifications locales
+  flutter_local_notifications: ^17.2.3
+
 
 
 flutter_launcher_icons:

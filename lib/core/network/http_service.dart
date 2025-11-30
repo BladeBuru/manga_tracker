@@ -8,6 +8,7 @@ import 'package:mangatracker/features/auth/services/auth.service.dart';
 
 import '../service_locator/service_locator.dart';
 import '../storage/services/storage.service.dart';
+import '../services/connectivity_service.dart';
 
 class HttpService {
   final StorageService _storage = getIt<StorageService>();
@@ -87,18 +88,38 @@ class HttpService {
   Future<Map<String, String>> _addAuthHeaders(Map<String, String>? h) async {
     final headers = h == null ? <String,String>{} : Map.of(h);
 
-
     String? accessToken = await _storage.readSecureData('accessToken');
     String? refreshToken = await _storage.readSecureData('refreshToken');
 
+    // Vérifier le refresh token
     if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
       debugPrint('⚠️ HttpService: Refresh token expiré ou absent');
       throw InvalidCredentialsException('Refresh token expired');
     }
 
-
+    // Si l'access token est expiré, tenter de le rafraîchir
     if (accessToken == null || _auth.isTokenExpired(accessToken)) {
       debugPrint('🔄 HttpService: Access token expiré, tentative de refresh...');
+      
+      // Vérifier la connectivité avant de tenter le refresh
+      try {
+        final connectivityService = getIt<ConnectivityService>();
+        if (!connectivityService.isConnected) {
+          debugPrint('⚠️ HttpService: Pas de connexion, impossible de rafraîchir le token');
+          // En mode hors ligne avec refreshToken valide, on peut quand même utiliser l'ancien accessToken
+          // même s'il est expiré, certaines APIs peuvent l'accepter ou retourner une erreur spécifique
+          if (accessToken != null) {
+            debugPrint('📱 HttpService: Mode hors ligne, utilisation de l\'ancien accessToken');
+            headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
+            return headers;
+          }
+          throw InvalidCredentialsException('No connection and no access token');
+        }
+      } catch (e) {
+        debugPrint('⚠️ HttpService: Erreur lors de la vérification de connectivité: $e');
+        // Continuer même si on ne peut pas vérifier la connectivité
+      }
+      
       final ok = await _auth.refreshAccessToken();
       if (!ok) {
         debugPrint('❌ HttpService: Échec du refresh du access token');

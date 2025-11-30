@@ -109,6 +109,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notifications => 'Benachrichtigungen';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => 'Benachrichtigungen verwalten';
 
   @override
@@ -564,4 +573,404 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get passwordStrengthStrong => 'Stark';
+
+  @override
+  String get yes => 'Ja';
+
+  @override
+  String get no => 'Nein';
+
+  @override
+  String get yesValidate => 'Ja, bestätigen';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return 'Sie springen von Kapitel $prev zu $next.\n$prev als gelesen markieren?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return 'Haben Sie Kapitel $chapter beendet?';
+  }
+
+  @override
+  String get validateReadingHint =>
+      'Ihr Fortschritt wird automatisch gespeichert.';
+
+  @override
+  String get adBlockerTitle => 'Werbeblocker';
+
+  @override
+  String get adBlockerDescription =>
+      'Der Werbeblocker blockiert automatisch Werbung auf Leseseiten.\n\nWenn Sie Links hinzufügen oder Verbesserungen für die Werbeblockierung vorschlagen möchten, treten Sie unserem Discord-Server bei!';
+
+  @override
+  String get adBlockerTooltip => 'Informationen zum Werbeblocker';
+
+  @override
+  String get joinDiscord => 'Discord beitreten';
+
+  @override
+  String get joinDiscordSubtitle =>
+      'Teilen Sie Ihre Vorschläge und melden Sie Probleme';
+
+  @override
+  String get contactUs => 'Kontaktieren Sie uns';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
+
+  @override
+  String get discordLinkError => 'Discord-Link kann nicht geöffnet werden';
+
+  @override
+  String get urlCopied => 'URL in Zwischenablage kopiert';
+
+  @override
+  String get urlCopyError => 'Fehler beim Kopieren der URL';
+
+  @override
+  String get copyUrl => 'URL kopieren';
+
+  @override
+  String get progressUpdated => 'Fortschritt aktualisiert';
+
+  @override
+  String get invalidUrl => 'Ungültige URL';
+
+  @override
+  String get webModeProgressTracking => 'Web-Modus - Fortschrittsverfolgung';
+
+  @override
+  String get webModeProgressDescription =>
+      'Um Ihren Fortschritt zu verfolgen, fügen Sie die URL des Kapitels ein, das Sie gerade lesen.';
+
+  @override
+  String get chapterUrlLabel => 'Kapitel-URL';
+
+  @override
+  String get updateProgress => 'Fortschritt aktualisieren';
+
+  @override
+  String get openInNewTab => 'In neuem Tab öffnen';
+
+  @override
+  String get linkUrlLabel => 'Scan-Site-URL';
+
+  @override
+  String get linkFormatInfo => 'Kapitelformat erforderlich';
+
+  @override
+  String get linkFormatDescription =>
+      'Fügen Sie die Kapitelnummer in die URL ein, um das automatische Speichern des Fortschritts zu ermöglichen.\n\nAkzeptierte Formate:\n• /kapitel-23/ oder /chapter-23/\n• /c23/ oder /ch23/\n• /ep-23/ oder /episode-23/\n• ?chapter=23 oder ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      'Kein Kapitelformat erkannt. Der Link leitet zur Manga-Seite weiter (nicht zu einem bestimmten Kapitel).';
+
+  @override
+  String get linkFormatDetected =>
+      'Kapitelformat erkannt! Der Fortschritt wird automatisch gespeichert.';
+
+  @override
+  String get linkAddCustomPattern =>
+      'Ajouter un pattern personnalisé pour ce format';
+
+  @override
+  String get customSelectors => 'Sélecteurs personnalisés';
+
+  @override
+  String get manageCustomSelectors => 'Gérer les sélecteurs';
+
+  @override
+  String get manageCustomSelectorsSubtitle =>
+      'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu';
+
+  @override
+  String get addCustomSelector => 'Ajouter un sélecteur';
+
+  @override
+  String get selectorDomainLabel => 'Domaine (ex: exemple.com)';
+
+  @override
+  String get selectorCssLabel => 'Sélecteur CSS';
+
+  @override
+  String get selectorTypeLabel => 'Type de sélecteur';
+
+  @override
+  String get selectorTypeUrlPattern => 'Pattern d\'URL';
+
+  @override
+  String get selectorUrlPatternLabel => 'Pattern d\'URL (regex)';
+
+  @override
+  String get selectorUrlPatternHint =>
+      'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22';
+
+  @override
+  String get selectorExamplesUrlPattern => 'Exemples de patterns d\'URL :';
+
+  @override
+  String get selectorExampleUrlPattern => 'Exemple : /chapter-22';
+
+  @override
+  String get selectorExampleUrlPatternExplanation =>
+      'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :';
+
+  @override
+  String get selectorUrlPatternExampleDesc =>
+      'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22';
+
+  @override
+  String get selectorUrlPatternGlobal =>
+      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+
+  @override
+  String get selectorTypeAdBlocker => 'Bloqueur de publicités';
+
+  @override
+  String get selectorTypeChapterContent => 'Contenu du chapitre';
+
+  @override
+  String get selectorDescriptionLabel => 'Description (optionnel)';
+
+  @override
+  String get selectorDescriptionHint => 'Description du sélecteur';
+
+  @override
+  String get selectorRequiredFields => 'Tous les champs sont requis';
+
+  @override
+  String get selectorAdded => 'Sélecteur ajouté';
+
+  @override
+  String get deleteSelector => 'Supprimer le sélecteur';
+
+  @override
+  String get deleteSelectorConfirm =>
+      'Êtes-vous sûr de vouloir supprimer ce sélecteur ?';
+
+  @override
+  String get selectorDeleted => 'Sélecteur supprimé';
+
+  @override
+  String get selectorsExported => 'Sélecteurs exportés dans le presse-papiers';
+
+  @override
+  String get importSelectors => 'Importer des sélecteurs';
+
+  @override
+  String get selectorsJsonLabel => 'JSON des sélecteurs';
+
+  @override
+  String get import => 'Importer';
+
+  @override
+  String selectorsImported(String count) {
+    return '$count sélecteur(s) importé(s)';
+  }
+
+  @override
+  String get selectorsReadyToShare =>
+      'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.';
+
+  @override
+  String get exportSelectors => 'Exporter';
+
+  @override
+  String get shareSelectors => 'Partager';
+
+  @override
+  String get noCustomSelectors => 'Aucun sélecteur personnalisé';
+
+  @override
+  String get addFirstSelector =>
+      'Ajoutez votre premier sélecteur pour commencer';
+
+  @override
+  String get selectorExamples => 'Exemples';
+
+  @override
+  String get selectorExamplesAdBlocker =>
+      'Exemples pour bloquer des publicités :';
+
+  @override
+  String get selectorExampleAd1 => 'Bannière publicitaire';
+
+  @override
+  String get selectorExampleAd2 => 'Publicité par ID';
+
+  @override
+  String get selectorExampleAd3 => 'Iframe publicitaire';
+
+  @override
+  String get selectorExampleAd4 => 'Script publicitaire';
+
+  @override
+  String get selectorExamplesChapter =>
+      'Exemples pour identifier le contenu du chapitre :';
+
+  @override
+  String get selectorExampleChapter1 => 'Conteneur de chapitre';
+
+  @override
+  String get selectorExampleChapter2 => 'Lecteur de manga';
+
+  @override
+  String get selectorExampleChapter3 => 'Images du chapitre';
+
+  @override
+  String get selectorExampleChapter4 => 'Contenu de lecture';
+
+  @override
+  String get selectorExampleChapter5 => 'Format manga/chapitre-22';
+
+  @override
+  String get selectorExampleChapter5Explanation =>
+      'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"';
+
+  @override
+  String get selectorUrlFormatDetected =>
+      '✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+
+  @override
+  String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
+
+  @override
+  String get selectorPracticalExample => 'Exemple pratique :';
+
+  @override
+  String get selectorExampleScenario =>
+      'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"';
+
+  @override
+  String get selectorStep1 =>
+      'Ouvrez la page du chapitre dans votre navigateur';
+
+  @override
+  String get selectorStep2 =>
+      'Appuyez sur F12 pour ouvrir les outils de développement';
+
+  @override
+  String get selectorStep3 =>
+      'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)';
+
+  @override
+  String get selectorStep4 =>
+      'Cliquez sur le conteneur qui contient les images du chapitre';
+
+  @override
+  String get selectorStep5 =>
+      'Dans le code HTML, trouvez la classe ou l\'ID du conteneur';
+
+  @override
+  String get selectorFillForm => 'Remplissez le formulaire :';
+
+  @override
+  String get selectorCssWhenNeededDesc =>
+      '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+
+  @override
+  String get selectorDomainExampleDesc =>
+      'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)';
+
+  @override
+  String get selectorOtherExamples => 'Autres exemples courants :';
+
+  @override
+  String get selectorExampleChapter5Desc =>
+      'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.';
+
+  @override
+  String get selectorExamplesHint =>
+      'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected =>
+      'Captcha erkannt - Werbeblocker wurde vorübergehend deaktiviert';
+
+  @override
+  String get captchaResolved =>
+      'Captcha gelöst - Werbeblocker wurde wieder aktiviert';
+
+  @override
+  String get scrollPositionSaved => 'Scroll-Position gespeichert';
+
+  @override
+  String get chapterProgressSaved => 'Kapitelfortschritt gespeichert';
+
+  @override
+  String get readingOffline => 'Offline lesen';
+
+  @override
+  String get chapterDownloaded => 'Kapitel heruntergeladen';
+
+  @override
+  String get offlineReadingMode => 'Offline-Lesemodus';
+
+  @override
+  String get deleteChapterTitle => 'Kapitel löschen';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return 'Möchten Sie Kapitel $chapterNumber wirklich löschen?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => 'Alle Kapitel löschen';
+
+  @override
+  String get deleteAllChaptersMessage =>
+      'Möchten Sie wirklich alle heruntergeladenen Kapitel für diesen Manga löschen?';
+
+  @override
+  String get deleteAllDownloadsTitle => 'Alle Downloads löschen';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      'Möchten Sie wirklich ALLE Downloads löschen? Diese Aktion ist unwiderruflich.';
+
+  @override
+  String get deleteAll => 'Alles löschen';
+
+  @override
+  String get chapterDeleted => 'Kapitel gelöscht';
+
+  @override
+  String get allChaptersDeleted => 'Alle Kapitel gelöscht';
+
+  @override
+  String get allDownloadsDeleted => 'Alle Downloads gelöscht';
+
+  @override
+  String get noChaptersDownloaded => 'Keine Kapitel heruntergeladen';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Kapitel heruntergeladen',
+      one: '1 Kapitel heruntergeladen',
+      zero: 'Keine Kapitel heruntergeladen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => 'Lesen';
+
+  @override
+  String get deleteAllChaptersAction => 'Alle Kapitel löschen';
+
+  @override
+  String get deleteAllDownloadsTooltip => 'Alle Downloads löschen';
 }

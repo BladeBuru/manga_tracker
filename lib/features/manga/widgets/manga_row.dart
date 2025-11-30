@@ -3,6 +3,8 @@ import '../helpers/image.helper.dart';
 import '../views/detail.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -13,6 +15,9 @@ class MangaRow extends StatelessWidget {
   final String? mediumImgPath;
   final String? rating;
   final VoidCallback? onDetailReturn;
+  final bool hasNewChapters;
+  final int? newChaptersCount;
+  final bool showDownloadedOnly; // Nouveau paramètre
 
   const MangaRow({
     super.key,
@@ -24,12 +29,82 @@ class MangaRow extends StatelessWidget {
     this.rating,
     this.mediumImgPath,
     this.onDetailReturn,
+    this.hasNewChapters = false,
+    this.newChaptersCount,
+    this.showDownloadedOnly = false, // Par défaut false
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
+        if (showDownloadedOnly) {
+          final downloadManager = DownloadManagerService();
+          final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
+          
+          if (downloadedChapters.isNotEmpty && context.mounted) {
+            // Trier les chapitres téléchargés par numéro
+            final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
+            
+            // Déterminer le chapitre à ouvrir : priorité au prochain chapitre non lu ou reprise de lecture
+            int targetChapterNumber;
+            if (readChapter != null && readChapter! > 0) {
+              final lastReadChapterNum = readChapter!.toInt();
+              
+              // Vérifier d'abord si le dernier chapitre lu est téléchargé et a une position de scroll sauvegardée
+              final lastReadChapter = sortedChapters.where(
+                (ch) => ch.chapterNumber == lastReadChapterNum && ch.scrollPosition != null && ch.scrollPosition! > 0,
+              ).firstOrNull;
+              
+              if (lastReadChapter != null) {
+                // Reprendre la lecture du dernier chapitre lu là où on s'est arrêté
+                targetChapterNumber = lastReadChapterNum;
+              } else {
+                // Chercher le prochain chapitre non lu (dernier lu + 1)
+                final nextChapter = lastReadChapterNum + 1;
+                final nextChapterDownloaded = sortedChapters.where(
+                  (ch) => ch.chapterNumber == nextChapter,
+                ).firstOrNull;
+                
+                if (nextChapterDownloaded != null) {
+                  // Le prochain chapitre est téléchargé, l'utiliser
+                  targetChapterNumber = nextChapter;
+                } else {
+                  // Sinon, chercher le chapitre téléchargé le plus proche après le dernier lu
+                  final nextAvailable = sortedChapters.where(
+                    (ch) => ch.chapterNumber > lastReadChapterNum,
+                  ).firstOrNull;
+                  targetChapterNumber = nextAvailable?.chapterNumber ?? sortedChapters.first.chapterNumber;
+                }
+              }
+            } else {
+              // Aucun chapitre lu, ouvrir le premier téléchargé
+              targetChapterNumber = sortedChapters.first.chapterNumber;
+            }
+            
+            // En mode téléchargé uniquement, utiliser directement le titre fourni
+            // pour éviter toute requête réseau qui pourrait ralentir ou échouer
+            if (context.mounted) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OfflineReaderView(
+                    muId: int.parse(muId),
+                    chapterNumber: targetChapterNumber,
+                    mangaTitle: mangaName, // Utiliser directement le titre fourni
+                  ),
+                ),
+              );
+              if (onDetailReturn != null) {
+                onDetailReturn!();
+              }
+              return;
+            }
+          }
+        }
+        
+        // Sinon, aller sur le détail normal
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -74,15 +149,60 @@ class MangaRow extends StatelessWidget {
                     topLeft: Radius.circular(AppRadius.xl),
                     bottomLeft: Radius.circular(AppRadius.xl),
                   ),
-                  child: SizedBox(
-                    width: 80,
-                    height: 100,
-                    child: ImageHelper.loadMangaImage(
-                      mediumImgPath,
-                      width: 80,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 80,
+                        height: 100,
+                        child: ImageHelper.loadMangaImage(
+                          mediumImgPath,
+                          width: 80,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // Badge pour nouveaux chapitres
+                      if (hasNewChapters)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.fiber_new,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                if (newChaptersCount != null && newChaptersCount! > 0) ...[
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    newChaptersCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Expanded(

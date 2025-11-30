@@ -10,12 +10,16 @@ import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../auth/services/validator.service.dart';
 import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/profile_section.dart';
+import 'package:mangatracker/features/download/views/downloads_page.dart';
+import 'notifications_settings_page.dart';
 import '../widgets/changelog_card.dart';
+import 'custom_selectors_page.dart';
 
 /// Page de profil moderne avec Material 3 et composants réutilisables
 class Profile extends StatefulWidget {
@@ -398,7 +402,11 @@ class _ProfileState extends State<Profile> {
                         title: l10n.notifications,
                         subtitle: l10n.manageNotifications,
                         onTap: () {
-                          _notifier.info(l10n.comingSoon);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsSettingsPage(),
+                            ),
+                          );
                         },
                         iconColor: Colors.blue,
                       ),
@@ -460,6 +468,73 @@ class _ProfileState extends State<Profile> {
                         onTap: _showConfirmDeleteAccount,
                         iconColor: Colors.red,
                         backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Nous contacter
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.contactUs,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.chat,
+                        title: l10n.joinDiscord,
+                        subtitle: l10n.joinDiscordSubtitle,
+                        onTap: () async {
+                          final uri = Uri.parse('https://discord.gg/X6sBgFY7');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            _notifier.error(l10n.discordLinkError);
+                          }
+                        },
+                        iconColor: Colors.indigo,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Téléchargements
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.downloads,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.download,
+                        title: l10n.manageDownloads,
+                        subtitle: l10n.manageDownloadsSubtitle,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const DownloadsPage(),
+                            ),
+                          );
+                        },
+                        iconColor: Colors.blue,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Sélecteurs personnalisés
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.customSelectors,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.code,
+                        title: l10n.manageCustomSelectors,
+                        subtitle: l10n.manageCustomSelectorsSubtitle,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const CustomSelectorsPage(),
+                            ),
+                          );
+                        },
+                        iconColor: Colors.purple,
                       ),
                     ],
                   ),

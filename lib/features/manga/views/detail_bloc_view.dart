@@ -21,6 +21,11 @@ import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import '../services/custom_selectors.service.dart';
+import '../../profile/views/custom_selectors_page.dart';
+import 'chapter_download_dialog.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -327,7 +332,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       right: 16,
                       child: IgnorePointer(
                         child: AutoSizeText(
-                          parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
+                          parse(manga.title).documentElement?.text ?? '',
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           style: GoogleFonts.poppins(
@@ -550,20 +555,49 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               ),
               onPressed: () async {
                 final lastRead = lastReadChapters;
+                final nextChapterNumber = lastRead + 1;
                 final baseLink = customLink ?? '';
-                final targetUrl = ChapterLinkResolver.buildUrlForChapter(
-                        baseLink, lastRead + 1) ?? baseLink;
+                final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
+                        baseLink, nextChapterNumber) ?? baseLink;
+                
+                // Récupérer le titre du manga depuis le state
+                final currentState = context.read<DetailBloc>().state;
+                String? mangaTitle;
+                if (currentState is DetailLoaded) {
+                  mangaTitle = currentState.mangaDetail.title;
+                } else {
+                  mangaTitle = widget.mangaTitle;
+                }
 
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ReaderWebView(
-                      muId: muId,
-                      initialLastRead: lastRead,
-                      initialUrl: targetUrl,
-                      baseUserLink: baseLink,
+                // Vérifier si le chapitre est téléchargé
+                final downloadManager = DownloadManagerService();
+                final isDownloaded = await downloadManager.isChapterDownloaded(muId, nextChapterNumber);
+                
+                if (isDownloaded && mangaTitle != null) {
+                  // Utiliser la version hors ligne
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => OfflineReaderView(
+                        muId: muId,
+                        chapterNumber: nextChapterNumber,
+                        mangaTitle: mangaTitle!,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  // Utiliser la version en ligne
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ReaderWebView(
+                        muId: muId,
+                        mangaTitle: mangaTitle,
+                        initialLastRead: lastRead,
+                        initialUrl: targetUrl,
+                        baseUserLink: baseLink,
+                      ),
+                    ),
+                  );
+                }
                 if (mounted) widget.onRefreshLibraryState(context);
               },
               icon: const Icon(Icons.link),
@@ -706,118 +740,122 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   void _showManageLibrarySheet(ReadingStatus status) {
     final muId = widget.muId;
+    final detailBloc = context.read<DetailBloc>();
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              // Titre de la section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return Text(
-                      l10n?.changeStatus ?? 'Changer le statut',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const Divider(height: 1),
-              
-              // En cours
-              if (status != ReadingStatus.reading)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
-                      title: Text(ReadingStatus.reading.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // À lire plus tard
-              if (status != ReadingStatus.readLater)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
-                      title: Text(ReadingStatus.readLater.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // À jour
-              if (status != ReadingStatus.caughtUp)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
-                      title: Text(ReadingStatus.caughtUp.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              // Terminé
-              if (status != ReadingStatus.completed)
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
-                      title: Text(ReadingStatus.completed.getLabel(context)),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
-                        widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
-                      },
-                    );
-                  },
-                ),
-              
-              const Divider(height: 1),
-              
-              // Retirer de la bibliothèque
-              Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context);
-                  return ListTile(
-                    leading: const Icon(Icons.delete_outline, color: Colors.red),
-                    title: Text(
-                      l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      context.read<DetailBloc>().add(RemoveFromLibrary(muId));
-                      widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
+        return BlocProvider.value(
+          value: detailBloc,
+          child: SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                // Titre de la section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.changeStatus ?? 'Changer le statut',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
                     },
-                  );
-                },
-              ),
-            ],
+                  ),
+                ),
+                const Divider(height: 1),
+                
+                // En cours
+                if (status != ReadingStatus.reading)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
+                        title: Text(ReadingStatus.reading.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // À lire plus tard
+                if (status != ReadingStatus.readLater)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
+                        title: Text(ReadingStatus.readLater.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // À jour
+                if (status != ReadingStatus.caughtUp)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
+                        title: Text(ReadingStatus.caughtUp.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                // Terminé
+                if (status != ReadingStatus.completed)
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return ListTile(
+                        leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
+                        title: Text(ReadingStatus.completed.getLabel(context)),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
+                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
+                        },
+                      );
+                    },
+                  ),
+                
+                const Divider(height: 1),
+                
+                // Retirer de la bibliothèque
+                Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return ListTile(
+                      leading: const Icon(Icons.delete_outline, color: Colors.red),
+                      title: Text(
+                        l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        context.read<DetailBloc>().add(RemoveFromLibrary(muId));
+                        widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -849,6 +887,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.download, color: Colors.blue),
+                title: const Text('Télécharger des chapitres'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showDownloadDialog(ctx);
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: Builder(
                   builder: (context) {
@@ -873,70 +919,268 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   Future<void> _addCustomLink() async {
     final controller = TextEditingController(text: customLink);
+    bool hasChapterFormat = false;
+    bool isCheckingCustomPatterns = false;
+    final selectorsService = CustomSelectorsService();
+    
     final link = await showDialog<String?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Builder(
-          builder: (context) {
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
             final l10n = AppLocalizations.of(context);
-            return Text(l10n?.addOrModifyLink ?? 'Ajouter ou modifier un lien');
-          },
-        ),
-        content: Builder(
-          builder: (context) {
-            final l10n = AppLocalizations.of(context);
-            return TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com',
+            
+            // Vérifier si l'URL contient un format de chapitre
+            Future<void> checkChapterFormat() async {
+              final text = controller.text.trim();
+              if (text.isEmpty) {
+                setState(() {
+                  hasChapterFormat = false;
+                  isCheckingCustomPatterns = false;
+                });
+                return;
+              }
+              
+              // Vérifier d'abord les patterns par défaut
+              final detectedChapter = ChapterLinkResolver.extractChapterSync(text);
+              if (detectedChapter != null) {
+                setState(() {
+                  hasChapterFormat = true;
+                  isCheckingCustomPatterns = false;
+                });
+                return;
+              }
+              
+              // Si aucun pattern par défaut ne correspond, vérifier les patterns personnalisés
+              setState(() => isCheckingCustomPatterns = true);
+              try {
+                // Initialiser le service pour vérifier les patterns personnalisés
+                ChapterLinkResolver.init(selectorsService);
+                final customDetectedChapter = await ChapterLinkResolver.extractChapter(text);
+                setState(() {
+                  hasChapterFormat = customDetectedChapter != null;
+                  isCheckingCustomPatterns = false;
+                });
+              } catch (e) {
+                setState(() {
+                  hasChapterFormat = false;
+                  isCheckingCustomPatterns = false;
+                });
+              }
+            }
+            
+            // Vérifier au chargement initial
+            if (controller.text.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                checkChapterFormat();
+              });
+            }
+            
+            return AlertDialog(
+              title: Row(
+                children: [
+                  const Icon(Icons.link, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(l10n?.addOrModifyLink ?? 'Ajouter ou modifier un lien'),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
-        actions: [
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return TextButton(
-                onPressed: () => Navigator.of(ctx).pop(null),
-                child: Text(
-                  l10n?.cancel ?? 'Annuler',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        labelText: l10n?.linkUrlLabel ?? 'URL du site de scan',
+                        hintText: l10n?.linkUrlPlaceholder ?? 'https://exemple.com/manga/chapitre-23',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.language),
+                        suffixIcon: isCheckingCustomPatterns
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : null,
+                      ),
+                      onChanged: (_) => checkChapterFormat(),
+                    ),
+                    const SizedBox(height: 16),
+                    // Message d'aide
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  l10n?.linkFormatInfo ?? 'Format de chapitre requis',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n?.linkFormatDescription ?? 
+                            'Incluez le numéro de chapitre dans l\'URL pour permettre la sauvegarde automatique de progression.\n\n'
+                            'Formats acceptés :\n'
+                            '• /chapitre-23/ ou /chapter-23/\n'
+                            '• /c23/ ou /ch23/\n'
+                            '• /ep-23/ ou /episode-23/\n'
+                            '• ?chapter=23 ou ?num=24',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Avertissement si pas de format détecté
+                    if (!hasChapterFormat && controller.text.trim().isNotEmpty && !isCheckingCustomPatterns)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    l10n?.linkFormatWarning ?? 
+                                    'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const CustomSelectorsPage(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.add_circle_outline, color: Colors.orange, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        l10n?.linkAddCustomPattern ?? 
+                                        'Ajouter un pattern personnalisé pour ce format',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.orange,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(Icons.arrow_forward, color: Colors.orange, size: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Confirmation si format détecté
+                    if (hasChapterFormat && !isCheckingCustomPatterns)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n?.linkFormatDetected ?? 
+                                'Format de chapitre détecté ! La progression sera sauvegardée automatiquement.',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(null),
+                  child: Text(
+                    l10n?.cancel ?? 'Annuler',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
-                onPressed: () {
-                  final link = controller.text.trim();
-                  final uri = Uri.tryParse(link);
-                  final isValid = uri != null &&
-                      uri.hasScheme &&
-                      (uri.isAbsolute || uri.host.isNotEmpty);
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: () {
+                    final link = controller.text.trim();
+                    final uri = Uri.tryParse(link);
+                    final isValid = uri != null &&
+                        uri.hasScheme &&
+                        (uri.isAbsolute || uri.host.isNotEmpty);
 
-                  if (isValid) {
-                    Navigator.of(ctx).pop(link);
-                  } else {
-                    widget.notifier.error(
-                      l10n?.invalidLink ?? "Lien invalide. Le lien doit commencer par http:// ou https://",
-                    );
-                  }
-                },
-                child: Text(l10n?.validate ?? 'Valider'),
-              );
-            },
-          ),
-        ],
-      ),
+                    if (isValid) {
+                      Navigator.of(ctx).pop(link);
+                    } else {
+                      widget.notifier.error(
+                        l10n?.invalidLink ?? "Lien invalide. Le lien doit commencer par http:// ou https://",
+                      );
+                    }
+                  },
+                  child: Text(l10n?.validate ?? 'Valider'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
 
     if (link != null) {
@@ -954,5 +1198,27 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     final l10n = AppLocalizations.of(context);
     context.read<DetailBloc>().add(DeleteCustomLink());
     widget.notifier.success(l10n?.linkRemoved ?? "Lien supprimé !");
+  }
+
+  void _showDownloadDialog(BuildContext context) {
+    final state = this.context.read<DetailBloc>().state;
+    if (state is! DetailLoaded) return;
+
+    final manga = state.mangaDetail;
+    if (manga.customLink == null || manga.customLink!.isEmpty) {
+      widget.notifier.warning('Veuillez d\'abord ajouter un lien personnalisé');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => ChapterDownloadDialog(
+        muId: widget.muId,
+        mangaTitle: manga.title,
+        baseUrl: manga.customLink!,
+        totalChapters: manga.totalChapters,
+        readChapters: manga.readChaptersCount,
+      ),
+    );
   }
 }

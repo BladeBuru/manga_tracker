@@ -185,5 +185,227 @@
   "passwordStrengthLabel": "Password strength",
   "passwordStrengthWeak": "Weak",
   "passwordStrengthMedium": "Medium",
-  "passwordStrengthStrong": "Strong"
+  "passwordStrengthStrong": "Strong",
+  
+  "yes": "Yes",
+  "no": "No",
+  "yesValidate": "Yes, validate",
+  "chapterSkipMessage": "You are jumping from chapter {prev} to {next}.\nMark {prev} as read?",
+  "validateReadingMessage": "Have you finished chapter {chapter}?",
+  "validateReadingHint": "Your progress will be saved automatically.",
+  "adBlockerTitle": "Ad Blocker",
+  "adBlockerDescription": "The ad blocker automatically blocks ads on reading sites.\n\nIf you want to add links or suggest improvements for ad blocking, join our Discord server!",
+  "adBlockerTooltip": "Ad blocker information",
+  "joinDiscord": "Join Discord",
+  "joinDiscordSubtitle": "Share your suggestions and report issues",
+  "contactUs": "Contact Us",
+  "discordLinkError": "Unable to open Discord link",
+  "urlCopied": "URL copied to clipboard",
+  "urlCopyError": "Error copying URL",
+  "copyUrl": "Copy URL",
+  "progressUpdated": "Progress updated",
+  "invalidUrl": "Invalid URL",
+  "webModeProgressTracking": "Web Mode - Progress Tracking",
+  "webModeProgressDescription": "To track your progress, paste the URL of the chapter you are currently reading.",
+  "chapterUrlLabel": "Chapter URL",
+  "updateProgress": "Update progress",
+  "openInNewTab": "Open in new tab",
+  "linkUrlLabel": "Scan site URL",
+  "linkFormatInfo": "Chapter format required",
+  "linkFormatDescription": "Include the chapter number in the URL to enable automatic progress saving.\n\nAccepted formats:\n• /chapter-23/ or /chapitre-23/\n• /c23/ or /ch23/\n• /ep-23/ or /episode-23/\n• ?chapter=23 or ?num=24",
+  "linkFormatWarning": "No chapter format detected. The link will redirect to the manga page (not a specific chapter).",
+  "linkFormatDetected": "Chapter format detected! Progress will be saved automatically.",
+  "linkAddCustomPattern": "Add a custom pattern for this format",
+  "customSelectors": "Custom Selectors",
+  "manageCustomSelectors": "Manage Selectors",
+  "manageCustomSelectorsSubtitle": "Add custom CSS selectors to block ads or identify content",
+  "addCustomSelector": "Add Selector",
+  "selectorDomainLabel": "Domain (e.g., example.com)",
+  "selectorCssLabel": "CSS Selector",
+  "selectorTypeLabel": "Selector Type",
+  "selectorTypeUrlPattern": "URL Pattern",
+  "selectorUrlPatternLabel": "URL Pattern (regex)",
+  "selectorUrlPatternHint": "Example: /chapter-(\\d+)/ to detect /chapter-22",
+  "selectorExamplesUrlPattern": "URL Pattern Examples:",
+  "selectorExampleUrlPattern": "Example: /chapter-22",
+  "selectorExampleUrlPatternExplanation": "If your site uses \"/chapter-22\" in the URL and the system doesn't detect it automatically:",
+  "selectorUrlPatternExampleDesc": "Use a regular expression (regex) with (\\d+) to capture the chapter number.\n\nThis pattern will be applied to ALL sites.\n\nPattern examples:\n• /chapter-(\\d+)/ → detects /chapter-22\n• /chapppter-(\\d+)/ → detects /chapppter-22 (with 3 p's)\n• /manga/chapter-(\\d+)/ → detects /manga/chapter-22\n• /episode-(\\d+)/ → detects /episode-22",
+  "selectorUrlPatternGlobal": "ℹ️ The pattern will be applied to ALL sites. No need to specify a domain.",
+  "selectorTypeAdBlocker": "Ad Blocker",
+  "selectorTypeChapterContent": "Chapter Content",
+  "selectorDescriptionLabel": "Description (optional)",
+  "selectorDescriptionHint": "Selector description",
+  "selectorRequiredFields": "All fields are required",
+  "selectorAdded": "Selector added",
+  "deleteSelector": "Delete Selector",
+  "deleteSelectorConfirm": "Are you sure you want to delete this selector?",
+  "selectorDeleted": "Selector deleted",
+  "selectorsExported": "Selectors exported to clipboard",
+  "importSelectors": "Import Selectors",
+  "selectorsJsonLabel": "Selectors JSON",
+  "import": "Import",
+  "selectorsImported": "{count} selector(s) imported",
+  "selectorsReadyToShare": "Selectors ready to share! Paste the JSON in Discord.",
+  "exportSelectors": "Export",
+  "shareSelectors": "Share",
+  "noCustomSelectors": "No custom selectors",
+  "addFirstSelector": "Add your first selector to get started",
+  "selectorExamples": "Examples",
+  "selectorExamplesAdBlocker": "Examples for blocking ads:",
+  "selectorExampleAd1": "Ad Banner",
+  "selectorExampleAd2": "Ad by ID",
+  "selectorExampleAd3": "Ad Iframe",
+  "selectorExampleAd4": "Ad Script",
+  "selectorExamplesChapter": "Examples for identifying chapter content:",
+  "selectorExampleChapter1": "Chapter Container",
+  "selectorExampleChapter2": "Manga Reader",
+  "selectorExampleChapter3": "Chapter Images",
+  "selectorExampleChapter4": "Reading Content",
+  "selectorExampleChapter5": "Format manga/chapter-22",
+  "selectorExampleChapter5Explanation": "Concrete example: If your URL is \"mysite.com/manga/chapter-22\"",
+  "selectorUrlFormatDetected": "✅ GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.",
+  "selectorWhenNeeded": "When to add a CSS selector?",
+  "selectorPracticalExample": "Practical example:",
+  "selectorExampleScenario": "Case: Your site uses \"/chapppter-22\" (with 3 p's) instead of \"/chapter-22\"",
+  "selectorStep1": "Open the chapter page in your browser",
+  "selectorStep2": "Press F12 to open developer tools",
+  "selectorStep3": "Click on the \"Inspect\" icon (or Ctrl+Shift+C)",
+  "selectorStep4": "Click on the container that contains the chapter images",
+  "selectorStep5": "In the HTML code, find the container's class or ID",
+  "selectorFillForm": "Fill in the form:",
+  "selectorCssWhenNeededDesc": "⚠️ ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)",
+  "selectorDomainExampleDesc": "Enter only the domain name (without http://, without www, without the path /manga/chapter-22)",
+  "selectorOtherExamples": "Other common examples:",
+  "selectorExampleChapter5Desc": "For sites using the manga/chapter-22 format in their URLs. Example: if your URL is \"site.com/manga/chapter-22\", use these selectors to identify the content.",
+  "selectorExamplesHint": "Tip: Use your browser's developer tools (F12) to inspect elements and find appropriate CSS selectors.",
+  
+  "captchaDetected": "Captcha detected - Ad blocker has been temporarily disabled",
+  "@captchaDetected": {
+    "description": "Message when a captcha is detected"
+  },
+  
+  "captchaResolved": "Captcha resolved - Ad blocker has been re-enabled",
+  "@captchaResolved": {
+    "description": "Message when a captcha is resolved"
+  },
+  
+  "scrollPositionSaved": "Scroll position saved",
+  "@scrollPositionSaved": {
+    "description": "Confirmation message for saving scroll position"
+  },
+  
+  "chapterProgressSaved": "Chapter progress saved",
+  "@chapterProgressSaved": {
+    "description": "Confirmation message for saving progress"
+  },
+  
+  "readingOffline": "Reading offline",
+  "@readingOffline": {
+    "description": "Title for offline reading"
+  },
+  
+  "chapterDownloaded": "Chapter downloaded",
+  "@chapterDownloaded": {
+    "description": "Message indicating that a chapter is downloaded"
+  },
+  
+  "offlineReadingMode": "Offline reading mode",
+  "@offlineReadingMode": {
+    "description": "Description of offline reading mode"
+  },
+  
+  "deleteChapterTitle": "Delete chapter",
+  "@deleteChapterTitle": {
+    "description": "Dialog title for deleting a chapter"
+  },
+  
+  "deleteChapterMessage": "Do you really want to delete chapter {chapterNumber}?",
+  "@deleteChapterMessage": {
+    "description": "Confirmation message for deleting a chapter",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Delete all chapters",
+  "@deleteAllChaptersTitle": {
+    "description": "Dialog title for deleting all chapters of a manga"
+  },
+  
+  "deleteAllChaptersMessage": "Do you really want to delete all downloaded chapters for this manga?",
+  "@deleteAllChaptersMessage": {
+    "description": "Confirmation message for deleting all chapters of a manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Delete all downloads",
+  "@deleteAllDownloadsTitle": {
+    "description": "Dialog title for deleting all downloads"
+  },
+  
+  "deleteAllDownloadsMessage": "Do you really want to delete ALL downloads? This action is irreversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Confirmation message for deleting all downloads"
+  },
+  
+  "delete": "Delete",
+  "@delete": {
+    "description": "Button to delete"
+  },
+  
+  "deleteAll": "Delete all",
+  "@deleteAll": {
+    "description": "Button to delete all"
+  },
+  
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button to cancel"
+  },
+  
+  "chapterDeleted": "Chapter deleted",
+  "@chapterDeleted": {
+    "description": "Success message after deleting a chapter"
+  },
+  
+  "allChaptersDeleted": "All chapters deleted",
+  "@allChaptersDeleted": {
+    "description": "Success message after deleting all chapters of a manga"
+  },
+  
+  "allDownloadsDeleted": "All downloads deleted",
+  "@allDownloadsDeleted": {
+    "description": "Success message after deleting all downloads"
+  },
+  
+  "noChaptersDownloaded": "No chapters downloaded",
+  "@noChaptersDownloaded": {
+    "description": "Message displayed when no chapters are downloaded"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{No chapters downloaded} =1{1 chapter downloaded} other{{count} chapters downloaded}}",
+  "@chaptersDownloadedCount": {
+    "description": "Number of downloaded chapters",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Read",
+  "@readChapter": {
+    "description": "Button to read a chapter"
+  },
+  
+  "deleteAllChaptersAction": "Delete all chapters",
+  "@deleteAllChaptersAction": {
+    "description": "Action to delete all chapters of a manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Delete all downloads",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip for the delete all downloads button"
+  }
 }

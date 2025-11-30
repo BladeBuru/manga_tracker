@@ -9,6 +9,9 @@ import 'package:mangatracker/features/library/bloc/library_state.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/download/views/downloads_page.dart';
 import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -25,6 +28,8 @@ class LibraryBlocView extends StatefulWidget {
 
 class _LibraryBlocViewState extends State<LibraryBlocView> {
   final LibraryBloc _libraryBloc = getIt<LibraryBloc>();
+  final NewChapterService _newChapterService = NewChapterService();
+  final DownloadManagerService _downloadManager = DownloadManagerService();
   final TextEditingController _searchController = TextEditingController();
   final Map<ReadingStatus, bool> _isExpanded = {
     ReadingStatus.reading: true,
@@ -35,6 +40,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   static bool? _cachedViewMode;
   bool _isCardView = false;
   String _searchQuery = '';
+  bool _showDownloadedOnly = false;
 
   @override
   void initState() {
@@ -121,13 +127,24 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     return maxScore;
   }
 
-  List<MangaQuickViewDto> _filterMangas(List<MangaQuickViewDto> mangas) {
+  /// Filtre les mangas selon la recherche et le filtre téléchargés
+  Future<List<MangaQuickViewDto>> _filterMangas(List<MangaQuickViewDto> mangas) async {
+    List<MangaQuickViewDto> filtered = mangas;
+
+    // Filtrer par téléchargements si activé
+    if (_showDownloadedOnly) {
+      final downloadedChapters = await _downloadManager.getAllDownloadedChapters();
+      final downloadedMuIds = downloadedChapters.keys.toSet();
+      filtered = filtered.where((manga) => downloadedMuIds.contains(manga.muId.toInt())).toList();
+    }
+
+    // Filtrer par recherche
     if (_searchQuery.isEmpty) {
-      return mangas;
+      return filtered;
     }
     
     // Filtrer et calculer les scores
-    final filtered = mangas.map((manga) {
+    final filteredWithScores = filtered.map((manga) {
       final titleMatch = manga.title.toLowerCase().contains(_searchQuery);
       final associatedMatch = manga.associated?.any((name) => 
         name.toLowerCase().contains(_searchQuery)
@@ -140,9 +157,9 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     }).whereType<MapEntry<MangaQuickViewDto, int>>().toList();
     
     // Trier par score décroissant
-    filtered.sort((a, b) => b.value.compareTo(a.value));
+    filteredWithScores.sort((a, b) => b.value.compareTo(a.value));
     
-    return filtered.map((e) => e.key).toList();
+    return filteredWithScores.map((e) => e.key).toList();
   }
 
   /// Trouve le nom associé qui correspond à la recherche, ou retourne le titre
@@ -212,6 +229,24 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           },
         ),
         actions: [
+          IconButton(
+            icon: Icon(_showDownloadedOnly ? Icons.download : Icons.download_outlined),
+            onPressed: () {
+              setState(() {
+                _showDownloadedOnly = !_showDownloadedOnly;
+              });
+            },
+            tooltip: _showDownloadedOnly ? 'Afficher tous les mangas' : 'Afficher uniquement les téléchargés',
+          ),
+          IconButton(
+            icon: const Icon(Icons.folder),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const DownloadsPage()),
+              );
+            },
+            tooltip: 'Gérer les téléchargements',
+          ),
           IconButton(
             icon: Icon(_isCardView ? Icons.view_list : Icons.view_module),
             onPressed: () {
@@ -306,7 +341,6 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   }
 
   Widget _buildActionInProgress(LibraryActionInProgress state) {
-    final filteredMangas = _filterMangas(state.mangas);
     return Column(
       children: [
         // Barre de recherche
@@ -377,14 +411,23 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         
         // Contenu de la bibliothèque
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              _libraryBloc.add(const RefreshLibrary());
-              await Future.delayed(const Duration(milliseconds: 500));
+          child: FutureBuilder<List<MangaQuickViewDto>>(
+            future: _filterMangas(state.mangas),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final filteredMangas = snapshot.data ?? [];
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _libraryBloc.add(const RefreshLibrary());
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _isCardView 
+                    ? _buildLibraryGrid(filteredMangas)
+                    : _buildLibraryList(filteredMangas),
+              );
             },
-            child: _isCardView 
-                ? _buildLibraryGrid(filteredMangas)
-                : _buildLibraryList(filteredMangas),
           ),
         ),
       ],
@@ -394,8 +437,6 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   Widget _buildLibraryContent(LibraryLoaded state) {
     // Debug : afficher l'état offline
     debugPrint('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
-    
-    final filteredMangas = _filterMangas(state.mangas);
     
     return Column(
       children: [
@@ -442,14 +483,23 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         
         // Liste de la bibliothèque
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              _libraryBloc.add(const RefreshLibrary());
-              await Future.delayed(const Duration(milliseconds: 500));
+          child: FutureBuilder<List<MangaQuickViewDto>>(
+            future: _filterMangas(state.mangas),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final filteredMangas = snapshot.data ?? [];
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _libraryBloc.add(const RefreshLibrary());
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _isCardView 
+                    ? _buildLibraryGrid(filteredMangas)
+                    : _buildLibraryList(filteredMangas),
+              );
             },
-            child: _isCardView 
-                ? _buildLibraryGrid(filteredMangas)
-                : _buildLibraryList(filteredMangas),
           ),
         ),
       ],
@@ -525,15 +575,24 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             childrenPadding: EdgeInsets.zero,
             children: items.map((manga) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                  child: MangaRow(
-                    muId: manga.muId.toString(),
-                    mangaName: _getDisplayName(manga),
-                    mangaAuthor: manga.year,
-                    lastChapter: manga.totalChapters,
-                    readChapter: manga.readChapters,
-                    mediumImgPath: manga.mediumCoverUrl,
-                    rating: manga.rating,
-                    onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
+                  child: FutureBuilder<int>(
+                    future: _newChapterService.getNewChaptersCount(manga.muId.toInt()),
+                    builder: (context, snapshot) {
+                      final newChaptersCount = snapshot.data ?? 0;
+                      return MangaRow(
+                        muId: manga.muId.toString(),
+                        mangaName: _getDisplayName(manga),
+                        mangaAuthor: manga.year,
+                        lastChapter: manga.totalChapters,
+                        readChapter: manga.readChapters,
+                        mediumImgPath: manga.mediumCoverUrl,
+                        rating: manga.rating,
+                        hasNewChapters: manga.hasNewChapters,
+                        newChaptersCount: newChaptersCount > 0 ? newChaptersCount : null,
+                        onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
+                        showDownloadedOnly: _showDownloadedOnly,
+                      );
+                    },
                   ),
                 )).toList(),
           ),
@@ -632,6 +691,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                       rating: manga.rating,
                       lastChapter: manga.totalChapters,
                       readChapter: manga.readChapters,
+                      showDownloadedOnly: _showDownloadedOnly,
                     );
                   },
                 ),
