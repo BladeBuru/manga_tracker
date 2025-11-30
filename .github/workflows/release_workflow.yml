@@ -59,8 +59,11 @@ jobs:
         if: steps.get_bump.outputs.bump == 'true'
         id: version
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
+          VERSION_FULL=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
+          # Extraire uniquement la version sans le build (avant le +)
+          VERSION=$(echo "$VERSION_FULL" | cut -d '+' -f1)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_full=$VERSION_FULL" >> $GITHUB_OUTPUT
 
       - name: 🛠️ Générer les fichiers .env
         run: |
@@ -102,10 +105,17 @@ jobs:
             echo "✅ Keystore nettoyé"
           fi
 
-      - name: 🚀 Push tag
+      - name: 🏷️ Create and push tag (version only, no build)
         if: steps.get_bump.outputs.bump == 'true'
         run: |
-          git push origin --tags
+          # Supprimer les tags locaux créés par version_assist (s'il y en a avec le build)
+          git tag -d v${{ steps.version.outputs.version_full }} 2>/dev/null || true
+          # Créer un nouveau tag avec uniquement la version (sans le build)
+          git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
+          # Supprimer le tag avec build du remote s'il existe
+          git push origin :refs/tags/v${{ steps.version.outputs.version_full }} 2>/dev/null || true
+          # Pousser le tag avec uniquement la version
+          git push origin v${{ steps.version.outputs.version }}
           git push
 
       - name: 🧾 Extract changelog from PR
