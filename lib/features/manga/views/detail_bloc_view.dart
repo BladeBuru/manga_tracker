@@ -332,7 +332,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       right: 16,
                       child: IgnorePointer(
                         child: AutoSizeText(
-                          parse(widget.mangaTitle ?? manga.title).documentElement?.text ?? '',
+                          parse(manga.title).documentElement?.text ?? '',
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           style: GoogleFonts.poppins(
