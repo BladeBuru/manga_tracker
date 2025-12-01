@@ -35,6 +35,10 @@
   "theme": "Tema",
   "lightMode": "Modo claro",
   "darkMode": "Modo oscuro",
+  "systemMode": "Sistema",
+  "@systemMode": {
+    "description": "Etiqueta para el modo sistema (usa las preferencias del teléfono)"
+  },
   "language": "Idioma",
   "selectLanguage": "Seleccionar idioma",
   "french": "Francés",

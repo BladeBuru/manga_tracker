@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/features/auth/views/startup_page.dart';
 import 'package:mangatracker/features/manga/services/chapter_check_background_service.dart';
 import 'package:mangatracker/features/manga/services/notification_service.dart';
@@ -59,13 +60,17 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Locale _locale = const Locale('fr', '');
+  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
     super.initState();
     _loadLocale();
+    _loadTheme();
     // Écouter les changements de langue via un callback global
     _setupLanguageListener();
+    // Écouter les changements de thème via un callback global
+    _setupThemeListener();
   }
 
   void _setupLanguageListener() async {
@@ -99,11 +104,48 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void _setupThemeListener() async {
+    // Écouter les changements de thème via le ThemeService
+    try {
+      final themeService = await getIt.getAsync<ThemeService>();
+      themeService.onThemeChanged = (ThemeMode mode) {
+        if (mounted) {
+          setState(() {
+            _themeMode = mode;
+          });
+        }
+      };
+    } catch (e) {
+      // Si le service n'est pas encore prêt, réessayer après un délai
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _setupThemeListener();
+      });
+    }
+  }
+
+  Future<void> _loadTheme() async {
+    try {
+      final themeService = await getIt.getAsync<ThemeService>();
+      setState(() {
+        _themeMode = themeService.getCurrentThemeMode();
+      });
+    } catch (e) {
+      // Si le service n'est pas encore prêt, utiliser le thème par défaut
+      _themeMode = ThemeMode.system;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark));
+    // Adapter SystemChrome selon le thème
+    final isDark = _themeMode == ThemeMode.dark || 
+                   (_themeMode == ThemeMode.system && 
+                    MediaQuery.of(context).platformBrightness == Brightness.dark);
+    
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    ));
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
@@ -111,8 +153,8 @@ class _MyAppState extends State<MyApp> {
       title: 'MangaTracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      // darkTheme: AppTheme.dark,
-      // themeMode: ThemeMode.system,
+      darkTheme: AppTheme.dark,
+      themeMode: _themeMode,
       locale: _locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

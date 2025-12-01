@@ -35,6 +35,10 @@
   "theme": "テーマ",
   "lightMode": "ライトモード",
   "darkMode": "ダークモード",
+  "systemMode": "システム",
+  "@systemMode": {
+    "description": "システムモードのラベル（電話の設定を使用）"
+  },
   "language": "言語",
   "selectLanguage": "言語を選択",
   "french": "フランス語",

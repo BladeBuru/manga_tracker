@@ -330,6 +330,12 @@ abstract class AppLocalizations {
   /// **'Mode sombre'**
   String get darkMode;
 
+  /// Label pour le mode système (utilise les préférences du téléphone)
+  ///
+  /// In fr, this message translates to:
+  /// **'Système'**
+  String get systemMode;
+
   /// Option pour choisir la langue
   ///
   /// In fr, this message translates to:

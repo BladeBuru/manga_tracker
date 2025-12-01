@@ -681,42 +681,58 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
             showDialog(
               context: context,
-              builder: (_) => AlertDialog(
+              builder: (dialogContext) => AlertDialog(
                 title: Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context);
                     return Text(l10n?.recommendedMangas ?? 'Mangas recommandés');
                   },
                 ),
-                content: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: 200,
-                  child: (_mangaRecommendationsCache?.isEmpty ?? true)
+                content: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    minHeight: 200,
+                    maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: (_mangaRecommendationsCache?.isEmpty ?? true)
                       ? Builder(
                           builder: (context) {
                             final l10n = AppLocalizations.of(context);
                             return Center(
-                              child: Text(
-                                l10n?.noRecommendationsAvailable ?? 'Aucune recommandation disponible.',
-                                textAlign: TextAlign.center,
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Text(
+                                  l10n?.noRecommendationsAvailable ?? 'Aucune recommandation disponible.',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             );
                           },
                         )
                       : ListView.builder(
                           scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
                           itemCount: _mangaRecommendationsCache!.length,
                           itemBuilder: (_, index) {
                             final manga = _mangaRecommendationsCache![index];
-                            return MangaCard(
-                          muId: manga.muId.toString(),
-                          mangaTitle: manga.title,
-                          mangaAuthor: manga.year.toString(),
-                          mediumImgPath: manga.mediumCoverUrl,
-                          rating: manga.rating,
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12.0),
+                              child: SizedBox(
+                                width: 120,
+                                child: MangaCard(
+                                  muId: manga.muId.toString(),
+                                  mangaTitle: manga.title,
+                                  mangaAuthor: manga.year.toString(),
+                                  mediumImgPath: manga.mediumCoverUrl,
+                                  rating: manga.rating,
+                                ),
+                              ),
                             );
                           },
                         ),
+                  ),
                 ),
                 actions: [
                   Builder(
@@ -724,7 +740,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       final l10n = AppLocalizations.of(context);
                       return TextButton(
                         child: Text(l10n?.close ?? 'Fermer'),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
                       );
                     },
                   ),

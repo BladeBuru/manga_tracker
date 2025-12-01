@@ -129,6 +129,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get darkMode => 'ダークモード';
 
   @override
+  String get systemMode => 'システム';
+
+  @override
   String get language => '言語';
 
   @override

@@ -20,13 +20,22 @@ class FilterButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: selected ? theme.colorScheme.primary : Colors.white,
+        backgroundColor: selected 
+            ? theme.colorScheme.primary 
+            : theme.colorScheme.surface,
+        foregroundColor: selected 
+            ? theme.colorScheme.onPrimary 
+            : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+        elevation: selected ? 2 : 0,
+        shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.huge)),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: selected ? Colors.white : const Color(0xff858597),
+          color: selected 
+              ? theme.colorScheme.onPrimary 
+              : theme.colorScheme.onSurface.withValues(alpha: 0.7),
         ),
       ),
     );

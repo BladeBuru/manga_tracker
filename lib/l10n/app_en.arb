@@ -35,6 +35,10 @@
   "theme": "Theme",
   "lightMode": "Light mode",
   "darkMode": "Dark mode",
+  "systemMode": "System",
+  "@systemMode": {
+    "description": "Label for system mode (uses phone preferences)"
+  },
   "language": "Language",
   "selectLanguage": "Select language",
   "french": "French",

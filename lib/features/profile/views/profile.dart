@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/views/login.view.dart';
@@ -38,6 +40,7 @@ class _ProfileState extends State<Profile> {
   bool _isLoading = true;
   Locale? _currentLocale;
   bool? _biometricEnabled;
+  ThemeMode? _currentThemeMode;
   
   Future<void> _loadLanguageService() async {
     final languageService = await getIt.getAsync<LanguageService>();
@@ -52,14 +55,192 @@ class _ProfileState extends State<Profile> {
     _loadUserInformation();
     _loadLanguageService();
     _loadBiometricStatus();
+    _loadThemeMode();
   }
 
   Future<void> _loadBiometricStatus() async {
+    debugPrint('🔐 Profile Debug - Chargement du statut biométrique...');
     final isEnabled = await _authService.isBiometricEnabled();
+    debugPrint('🔐 Profile Debug - Biométrie activée dans les préférences: $isEnabled');
+    
+    final hasSupport = await _authService.biometricService.hasBiometricSupport();
+    debugPrint('🔐 Profile Debug - Support biométrique disponible: $hasSupport');
+    
+    final availableTypes = await _authService.biometricService.getAvailableBiometrics();
+    debugPrint('🔐 Profile Debug - Types biométriques disponibles: $availableTypes');
+    
+    final hasCreds = await _authService.storageService.hasBiometricCredentials();
+    debugPrint('🔐 Profile Debug - Identifiants biométriques sauvegardés: $hasCreds');
+    
     if (mounted) {
       setState(() {
         _biometricEnabled = isEnabled;
       });
+    }
+  }
+
+  Future<void> _loadThemeMode() async {
+    try {
+      final themeService = await getIt.getAsync<ThemeService>();
+      if (mounted) {
+        setState(() {
+          _currentThemeMode = themeService.getCurrentThemeMode();
+        });
+      }
+    } catch (e) {
+      // Ignorer les erreurs
+    }
+  }
+
+  Future<void> _showThemeSelector() async {
+    final l10n = AppLocalizations.of(context)!;
+    final themeService = await getIt.getAsync<ThemeService>();
+    final currentMode = _currentThemeMode ?? themeService.getCurrentThemeMode();
+
+    final selectedMode = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.palette_outlined,
+                color: theme.colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(l10n.theme),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.light,
+                currentMode: currentMode,
+                icon: Icons.light_mode,
+                title: l10n.lightMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.light),
+              ),
+              const SizedBox(height: 12),
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.dark,
+                currentMode: currentMode,
+                icon: Icons.dark_mode,
+                title: l10n.darkMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.dark),
+              ),
+              const SizedBox(height: 12),
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.system,
+                currentMode: currentMode,
+                icon: Icons.brightness_auto,
+                title: l10n.systemMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.system),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedMode != null && selectedMode != currentMode) {
+      await themeService.setThemeMode(selectedMode);
+      if (mounted) {
+        setState(() {
+          _currentThemeMode = selectedMode;
+        });
+      }
+    }
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext context,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isSelected = mode == currentMode;
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.circularXl,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHighest,
+          borderRadius: AppRadius.circularXl,
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: theme.colorScheme.primary,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeModeName(ThemeMode mode, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (mode) {
+      case ThemeMode.light:
+        return l10n.lightMode;
+      case ThemeMode.dark:
+        return l10n.darkMode;
+      case ThemeMode.system:
+        return l10n.systemMode;
     }
   }
 
@@ -410,14 +591,21 @@ class _ProfileState extends State<Profile> {
                         },
                         iconColor: Colors.blue,
                       ),
-                      ProfileOptionTile(
-                        icon: Icons.dark_mode_outlined,
-                        title: l10n.theme,
-                        subtitle: l10n.lightMode,
-                        onTap: () {
-                          _notifier.info(l10n.comingSoon);
+                      Builder(
+                        builder: (context) {
+                          final themeService = getIt<ThemeService>();
+                          final currentMode = _currentThemeMode ?? themeService.getCurrentThemeMode();
+                          
+                          return ProfileOptionTile(
+                            icon: Icons.dark_mode_outlined,
+                            title: l10n.theme,
+                            subtitle: _getThemeModeName(currentMode, context),
+                            onTap: () async {
+                              await _showThemeSelector();
+                            },
+                            iconColor: Colors.indigo,
+                          );
                         },
-                        iconColor: Colors.indigo,
                       ),
                       FutureBuilder<bool>(
                         future: _authService.biometricService.hasBiometricSupport(),

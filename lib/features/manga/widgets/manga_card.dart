@@ -159,10 +159,10 @@ class MangaCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: AppRadius.circularSm,
-                    color: Colors.grey[200],
-                  ),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.circularSm,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     child: Text(

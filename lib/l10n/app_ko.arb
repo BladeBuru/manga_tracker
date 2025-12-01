@@ -35,6 +35,10 @@
   "theme": "테마",
   "lightMode": "라이트 모드",
   "darkMode": "다크 모드",
+  "systemMode": "시스템",
+  "@systemMode": {
+    "description": "시스템 모드 레이블 (전화 설정 사용)"
+  },
   "language": "언어",
   "selectLanguage": "언어 선택",
   "french": "프랑스어",

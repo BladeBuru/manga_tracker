@@ -129,6 +129,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get darkMode => '다크 모드';
 
   @override
+  String get systemMode => '시스템';
+
+  @override
   String get language => '언어';
 
   @override

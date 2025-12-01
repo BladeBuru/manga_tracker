@@ -130,6 +130,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get darkMode => 'Dunkles Design';
 
   @override
+  String get systemMode => 'System';
+
+  @override
   String get language => 'Sprache';
 
   @override

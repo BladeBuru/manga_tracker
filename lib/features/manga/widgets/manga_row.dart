@@ -123,17 +123,17 @@ class MangaRow extends StatelessWidget {
             top: 0.0, bottom: 20.0, right: 2.0, left: 2.0),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: AppRadius.circularXl,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.shade200.withValues(alpha: 0.8),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
               BoxShadow(
-                color: Colors.grey.shade100.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
                 spreadRadius: 0,
                 blurRadius: 4,
                 offset: const Offset(0, 1),
@@ -169,11 +169,11 @@ class MangaRow extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: Theme.of(context).colorScheme.error,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
+                                  color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.3),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -182,17 +182,17 @@ class MangaRow extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.fiber_new,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onError,
                                   size: 14,
                                 ),
                                 if (newChaptersCount != null && newChaptersCount! > 0) ...[
                                   const SizedBox(width: 2),
                                   Text(
                                     newChaptersCount.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onError,
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -226,8 +226,8 @@ class MangaRow extends StatelessWidget {
                         Text(
                           mangaAuthor,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
@@ -236,7 +236,7 @@ class MangaRow extends StatelessWidget {
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: AppRadius.circularLg,
-                              color: Colors.grey[200],
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
@@ -271,7 +271,7 @@ class MangaRow extends StatelessWidget {
                             Text(
                               rating!,
                               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Colors.black87,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

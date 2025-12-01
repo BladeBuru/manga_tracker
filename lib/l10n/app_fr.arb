@@ -190,6 +190,11 @@
     "description": "Label pour le mode sombre"
   },
   
+  "systemMode": "Système",
+  "@systemMode": {
+    "description": "Label pour le mode système (utilise les préférences du téléphone)"
+  },
+  
   "language": "Langue",
   "@language": {
     "description": "Option pour choisir la langue"

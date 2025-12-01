@@ -16,6 +16,7 @@ import '../services/sync_service.dart';
 import '../services/cache_helper_service.dart';
 import '../services/language_service.dart';
 import '../services/translation_service.dart';
+import '../services/theme_service.dart';
 import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
@@ -90,6 +91,13 @@ void setupServiceLocator() {
       () async {
         final prefs = await SharedPreferences.getInstance();
         return LanguageService(prefs);
+      });
+  
+  // Service de thème
+  getIt.registerSingletonAsync<ThemeService>(
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        return ThemeService(prefs);
       });
   
   // Service de traduction

@@ -35,6 +35,10 @@
   "theme": "Design",
   "lightMode": "Helles Design",
   "darkMode": "Dunkles Design",
+  "systemMode": "System",
+  "@systemMode": {
+    "description": "Bezeichnung für den Systemmodus (verwendet die Telefoneinstellungen)"
+  },
   "language": "Sprache",
   "selectLanguage": "Sprache auswählen",
   "french": "Französisch",

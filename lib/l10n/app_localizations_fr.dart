@@ -130,6 +130,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get darkMode => 'Mode sombre';
 
   @override
+  String get systemMode => 'Système';
+
+  @override
   String get language => 'Langue';
 
   @override
