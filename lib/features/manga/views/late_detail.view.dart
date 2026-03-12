@@ -271,6 +271,105 @@ class _LateDetailViewState extends State<LateDetailView> {
     });
     _saveExpandedState();
   }
+
+  /// Helper pour construire un widget de chapitre (évite la duplication)
+  Widget _buildChapterItem(int chapNum, {bool isInSection = false}) {
+    final line = chapNum.toString().padLeft(2, '0');
+    final isRead = chapNum <= _currentReadCount!;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isInSection ? 16 : 0,
+        vertical: isInSection ? 0 : 1,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: AppRadius.circularMd,
+          onTap: _isSaving
+              ? null
+              : () => _handleSaveChapter(widget.muId, chapNum),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 0),
+            child: RowChapter(
+              line: line,
+              chapter: chapNum.toString(),
+              read: isRead,
+              enabled: !_isSaving,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSaveChapter(String mangaId, num chapterNumber) async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    // NE PLUS appeler handleAddToLibrary ici car le BLoC gère maintenant
+    // automatiquement l'ajout à la bibliothèque dans _onSaveChapterProgress
+
+    int newCount;
+    
+    // Calculer le nouveau compte de chapitres
+    if (_currentReadCount! >= chapterNumber) {
+      newCount = chapterNumber.toInt() - 1;
+    } else {
+      newCount = chapterNumber.toInt();
+    }
+
+    // Utiliser le callback BLoC si disponible (mise à jour réactive)
+    if (widget.onReadCountChanged != null) {
+      // Marquer la mise à jour comme en attente
+      setState(() {
+        _currentReadCount = newCount;
+        _pendingChapterUpdate = newCount;
+        // _isSaving reste à true jusqu'à ce que didUpdateWidget détecte le changement
+      });
+      
+      // Appeler le callback pour déclencher la mise à jour via le BLoC
+      widget.onReadCountChanged!(newCount);
+      
+      // _isSaving sera remis à false dans didUpdateWidget quand le BLoC aura terminé
+      return;
+    }
+
+    // Sinon, fallback sur l'ancien comportement
+    bool success;
+    if (_currentReadCount! >= chapterNumber) {
+      if (newCount == 0) {
+        success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
+      } else {
+        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+      }
+    } else {
+      success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+    }
+
+    if (!success && mounted) {
+      setState(() => _isSaving = false);
+      final l10n = AppLocalizations.of(context);
+      _notifier.error(l10n?.errorUpdatingChapter ?? 'Erreur lors de la mise à jour du chapitre.');
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _currentReadCount = (newCount == 0) ? -1 : newCount;
+        _isSaving = false;
+      });
+
+      final l10n = AppLocalizations.of(context);
+      final message = newCount == 0
+          ? (l10n?.mangaRemovedFromLibrary ?? 'Manga retiré de la bibliothèque')
+          : '${l10n?.chapter ?? "Chapitre"} $chapterNumber ${_currentReadCount! >= chapterNumber
+          ? (l10n?.chapterRead ?? 'lu')
+          : (l10n?.chapterUnread ?? 'non lu')}';
+
+      _notifier.info(message);
+    }
+  }
   
   @override
   void didUpdateWidget(LateDetailView oldWidget) {
@@ -310,74 +409,6 @@ class _LateDetailViewState extends State<LateDetailView> {
             .map((a) => a.name)
             .toList() ??
             [];
-
-    Future<void> handleSaveChapter(String mangaId, num chapterNumber) async {
-      if (_isSaving) return;
-      setState(() => _isSaving = true);
-
-      // NE PLUS appeler handleAddToLibrary ici car le BLoC gère maintenant
-      // automatiquement l'ajout à la bibliothèque dans _onSaveChapterProgress
-
-      int newCount;
-      
-      // Calculer le nouveau compte de chapitres
-      if (_currentReadCount! >= chapterNumber) {
-        newCount = chapterNumber.toInt() - 1;
-      } else {
-        newCount = chapterNumber.toInt();
-      }
-
-      // Utiliser le callback BLoC si disponible (mise à jour réactive)
-      if (widget.onReadCountChanged != null) {
-        // Marquer la mise à jour comme en attente
-        setState(() {
-          _currentReadCount = newCount;
-          _pendingChapterUpdate = newCount;
-          // _isSaving reste à true jusqu'à ce que didUpdateWidget détecte le changement
-        });
-        
-        // Appeler le callback BLoC
-        widget.onReadCountChanged!(newCount);
-        
-        // _isSaving sera remis à false dans didUpdateWidget quand le BLoC aura terminé
-        return;
-      }
-
-      // Sinon, fallback sur l'ancien comportement
-      bool success;
-      if (_currentReadCount! >= chapterNumber) {
-        if (newCount == 0) {
-          success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
-        } else {
-          success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
-        }
-      } else {
-        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
-      }
-
-      if (!success && mounted) {
-        setState(() => _isSaving = false);
-        final l10n = AppLocalizations.of(context);
-        _notifier.error(l10n?.errorUpdatingChapter ?? 'Erreur lors de la mise à jour du chapitre.');
-        return;
-      }
-
-      if (mounted) {
-        setState(() {
-          _currentReadCount = (newCount == 0) ? -1 : newCount;
-          _isSaving = false;
-        });
-
-        final l10n = AppLocalizations.of(context);
-        final message = newCount == 0
-            ? (l10n?.mangaRemovedFromLibrary ?? 'Manga retiré de la bibliothèque')
-            : '${l10n?.chapter ?? "Chapitre"} $chapterNumber ${_currentReadCount! >= chapterNumber
-            ? (l10n?.chapterRead ?? 'lu')
-            : (l10n?.chapterUnread ?? 'non lu')}';
-
-        _notifier.info(message);
-      }
-    }
 
     Future<void> handleLinkTap(String url) async {
       final uri = Uri.parse(url);
@@ -1075,33 +1106,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                                   ),
                                   child: Column(
                                     children: section.chapterNumbers.map((chapNum) {
-                                      final line = chapNum.toString().padLeft(2, '0');
-                                      final isRead = chapNum <= _currentReadCount!;
-
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 0,
-                                        ),
-                                        child: Material(
-                                          color: Colors.transparent,
-                                          child: InkWell(
-                                            borderRadius: AppRadius.circularMd,
-                                            onTap: _isSaving
-                                                ? null
-                                                : () => handleSaveChapter(widget.muId, chapNum),
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 0),
-                                              child: RowChapter(
-                                                line: line,
-                                                chapter: chapNum.toString(),
-                                                read: isRead,
-                                                enabled: !_isSaving,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
+                                      return _buildChapterItem(chapNum, isInSection: true);
                                     }).toList(),
                                   ),
                                 ),
@@ -1129,35 +1134,7 @@ class _LateDetailViewState extends State<LateDetailView> {
                         const SizedBox(height: 6),
                         Column(
                           children: List.generate(total, (i) => total - i).map((chapNum) {
-                            final line = chapNum.toString().padLeft(2, '0');
-                            final isRead = chapNum <= _currentReadCount!;
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Material(
-                                color: Colors.white,
-                                borderRadius: AppRadius.circularXl,
-                                child: InkWell(
-                                  borderRadius: AppRadius.circularXl,
-                                  onTap: _isSaving
-                                      ? null
-                                      : () => handleSaveChapter(widget.muId, chapNum),
-                                  child: AnimatedScale(
-                                    scale: _isSaving ? 1.0 : 1.0,
-                                    duration: const Duration(milliseconds: 100),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4),
-                                      child: RowChapter(
-                                        line: line,
-                                        chapter: chapNum.toString(),
-                                        read: isRead,
-                                        enabled: !_isSaving,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
+                            return _buildChapterItem(chapNum, isInSection: false);
                           }).toList(),
                         ),
                       ],

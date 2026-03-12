@@ -1,0 +1,204 @@
+---
+description: Standards des services, GetIt et architecture offline pour Manga Tracker Flutter
+globs: ["lib/features/**/services/**/*.dart", "lib/core/services/**/*.dart", "lib/core/service_locator/**/*.dart"]
+alwaysApply: false
+---
+
+# Services & Architecture — Manga Tracker Flutter
+
+## Pattern Service (OBLIGATOIRE)
+
+```dart
+// Les services ne connaissent PAS le BuildContext, les BLoCs ou les widgets
+class LibraryService {
+  final HttpService _httpService;
+  final OfflineCacheService _cacheService;
+
+  LibraryService({
+    required HttpService httpService,
+    required OfflineCacheService cacheService,
+  })  : _httpService = httpService,
+        _cacheService = cacheService;
+
+  Future<List<MangaQuickViewDto>> getUserLibrary() async {
+    final response = await _httpService.getWithAuthTokens('/api/library');
+    final library = (response as List)
+        .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
+        .toList();
+    await _cacheService.saveLibrary(library); // Mise en cache systématique
+    return library;
+  }
+}
+```
+
+## Services existants
+
+### Core Services
+| Service | Rôle | Enregistrement |
+|---------|------|---------------|
+| `HttpService` | Requêtes HTTP avec JWT auto-refresh | Singleton |
+| `StorageService` | flutter_secure_storage wrapper | Async singleton |
+| `OfflineCacheService` | Cache des données (JSON) | Singleton |
+| `CacheHelperService` | Fallback API → cache automatique | Singleton |
+| `SyncService` | Sync des actions offline à la reconnexion | Singleton |
+| `ConnectivityService` | Détection connectivité | Async singleton |
+
+### Feature Services
+| Service | Rôle | Enregistrement |
+|---------|------|---------------|
+| `AuthService` | Login/register/refresh token | Singleton |
+| `MangaService` | Récupération des mangas | Singleton |
+| `LibraryService` | Bibliothèque CRUD | Async singleton |
+| `UserService` | Profil utilisateur (avec cache 7j) | Singleton |
+| `LanguageService` | Langue + persistance | Singleton |
+| `AppUpdateService` | Vérification mises à jour, changelog | Singleton |
+
+## HttpService — Utilisation
+
+```dart
+// Toujours injecter HttpService, jamais utiliser http.Client directement
+final response = await _httpService.getWithAuthTokens('/api/mangas/trending');
+final body = await _httpService.postWithAuthTokens(
+  '/api/library',
+  body: {'muId': muId},
+);
+await _httpService.deleteWithAuthTokens('/api/library/$muId');
+await _httpService.putWithAuthTokens(
+  '/api/library/$muId/status',
+  body: {'readingStatus': status.name},
+);
+```
+
+- Le refresh automatique du JWT est géré par `HttpService` — transparent
+- En cas d'expiration → refresh automatique → retry de la requête
+- Lève une `InvalidTokenException` si le refresh échoue (déconnexion)
+
+## OfflineCacheService — Clés de cache
+
+| Clé | Données | Expiration |
+|-----|---------|-----------|
+| `cached_library` | Bibliothèque utilisateur | 24h |
+| `cached_manga_detail_<muId>` | Détails d'un manga | 24h |
+| `cached_homepage` | Page d'accueil | 24h |
+| `cached_search_<query>` | Résultats de recherche | 24h |
+| `cached_user_info` | Infos utilisateur | 7 jours |
+| `offline_queue` | Queue d'actions offline | Persistant |
+
+```dart
+// Sauvegarder en cache
+await _cacheService.saveLibrary(library);
+await _cacheService.saveMangaDetail(muId, mangaDetail);
+
+// Charger depuis le cache
+final cached = await _cacheService.getCachedLibrary();
+final detail = await _cacheService.getCachedMangaDetail(muId);
+```
+
+## CacheHelperService — Pattern fallback
+
+```dart
+// Utiliser CacheHelperService pour le fallback automatique API → cache
+final data = await _cacheHelper.loadWithFallback(
+  apiCall: () => _mangaService.getHomePageData(),
+  cacheCall: () => _cacheService.getCachedHomePage(),
+  onSuccess: (data) => _cacheService.saveHomePage(data),
+);
+```
+
+## Queue d'actions offline
+
+```dart
+// Mettre en file d'attente une action quand offline
+try {
+  await _libraryService.addMangaToLibrary(muId);
+} on SocketException {
+  await _cacheService.queueOfflineAction(
+    OfflineAction(
+      type: OfflineActionType.addManga,
+      payload: {'muId': muId},
+    ),
+  );
+  emit(state.copyWith(isOffline: true, pendingActions: state.pendingActions + 1));
+}
+```
+
+## Enregistrement GetIt — Ordre d'initialisation
+
+```dart
+// service_locator.dart — ORDRE OBLIGATOIRE
+Future<void> setupServiceLocator() async {
+  // 1. Storage (async)
+  getIt.registerSingletonAsync<StorageService>(() async {
+    final service = StorageService();
+    await service.init();
+    return service;
+  });
+
+  await getIt.isReady<StorageService>();
+
+  // 2. Auth (dépend de Storage)
+  getIt.registerSingleton<AuthService>(
+    AuthService(storageService: getIt<StorageService>()),
+  );
+
+  // 3. HTTP (dépend de Storage + Auth)
+  getIt.registerSingleton<HttpService>(
+    HttpService(
+      storageService: getIt<StorageService>(),
+      authService: getIt<AuthService>(),
+    ),
+  );
+
+  // ... continuer dans l'ordre des dépendances
+}
+```
+
+## DTOs — Pattern
+
+```dart
+// Toujours créer des DTOs pour les données API (pas de Map<String, dynamic> raw)
+class MangaQuickViewDto {
+  final String muId;
+  final String title;
+  final String? coverUrl;
+
+  const MangaQuickViewDto({
+    required this.muId,
+    required this.title,
+    this.coverUrl,
+  });
+
+  factory MangaQuickViewDto.fromJson(Map<String, dynamic> json) {
+    return MangaQuickViewDto(
+      muId: json['muId'] as String,
+      title: json['title'] as String? ?? '',
+      coverUrl: json['coverUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'muId': muId,
+    'title': title,
+    if (coverUrl != null) 'coverUrl': coverUrl,
+  };
+}
+```
+
+## Exceptions personnalisées
+
+```dart
+// Utiliser des exceptions personnalisées pour les erreurs métier
+class InvalidCredentialsException implements Exception {
+  final String message;
+  const InvalidCredentialsException([this.message = 'Invalid credentials']);
+  @override
+  String toString() => message;
+}
+
+class InvalidTokenException implements Exception {}
+
+// Dans les services
+if (response.statusCode == 401) {
+  throw const InvalidCredentialsException();
+}
+```

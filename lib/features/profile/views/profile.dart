@@ -437,8 +437,11 @@ class _ProfileState extends State<Profile> {
     final l10n = AppLocalizations.of(context)!;
     final currentStatus = _biometricEnabled ?? false;
     
+    debugPrint('🔐 Profile Debug - Toggle biométrique - Statut actuel: $currentStatus');
+    
     if (currentStatus) {
       // Désactiver la biométrie
+      debugPrint('🔐 Profile Debug - Désactivation de la biométrie...');
       await _authService.setBiometricEnabled(false);
       setState(() {
         _biometricEnabled = false;
@@ -446,11 +449,46 @@ class _ProfileState extends State<Profile> {
       _notifier.success(l10n.disableBiometricAuth);
     } else {
       // Activer la biométrie
+      debugPrint('🔐 Profile Debug - Activation de la biométrie...');
+      
+      // Vérifier d'abord le support biométrique
+      final hasSupport = await _authService.biometricService.hasBiometricSupport();
+      debugPrint('🔐 Profile Debug - Support biométrique: $hasSupport');
+      
+      final availableTypes = await _authService.biometricService.getAvailableBiometrics();
+      debugPrint('🔐 Profile Debug - Types disponibles: $availableTypes');
+      
+      // Si aucune biométrie n'est détectée, tester quand même authenticate() pour voir l'erreur exacte
+      if (availableTypes.isEmpty) {
+        debugPrint('🔐 Profile Debug - Aucune biométrie détectée, test d\'authentification pour diagnostic...');
+        final testResult = await _authService.biometricService.authenticateWithBiometrics(context);
+        debugPrint('🔐 Profile Debug - Résultat test authentification: $testResult');
+        
+        // Si le test échoue, ne pas activer la biométrie
+        // (le message d'erreur a déjà été affiché par authenticateWithBiometrics)
+        if (!testResult) {
+          debugPrint('🔐 Profile Debug - Test échoué, activation annulée');
+          return;
+        }
+        
+        // Si le test réussit malgré la liste vide, continuer l'activation
+        debugPrint('🔐 Profile Debug - Test réussi malgré liste vide, activation autorisée');
+      }
+      
+      // Double vérification : si pas de support ET liste vide, ne pas activer
+      if (!hasSupport && availableTypes.isEmpty) {
+        debugPrint('🔐 Profile Debug - Pas de support biométrique disponible');
+        _notifier.info(l10n.biometricAuthNotAvailable);
+        return;
+      }
+      
       // Vérifier si des identifiants sont déjà sauvegardés
       final hasCreds = await _authService.storageService.hasBiometricCredentials();
+      debugPrint('🔐 Profile Debug - Identifiants sauvegardés: $hasCreds');
       
       if (!hasCreds) {
         // Pas d'identifiants disponibles, informer l'utilisateur
+        debugPrint('🔐 Profile Debug - Pas d\'identifiants, demande de reconnexion');
         if (mounted) {
           showDialog(
             context: context,
@@ -477,6 +515,7 @@ class _ProfileState extends State<Profile> {
         }
       } else {
         // Des identifiants existent, activer directement
+        debugPrint('🔐 Profile Debug - Activation directe de la biométrie');
         await _authService.setBiometricEnabled(true);
         setState(() {
           _biometricEnabled = true;

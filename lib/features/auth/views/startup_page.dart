@@ -84,12 +84,15 @@ class _StartupPageState extends State<StartupPage> {
     }
 
     // 4. Tentative de connexion biométrique
+    debugPrint('🔐 StartupPage: Tentative de connexion biométrique...');
     final biometricSuccess = await authService.tryBiometricLogin(context);
     if (!mounted) return;
     if (biometricSuccess) {
       debugPrint('✅ StartupPage: Connexion biométrique réussie');
       _onLoginSuccess();
       return;
+    } else {
+      debugPrint('⚠️ StartupPage: Échec de la connexion biométrique');
     }
     
     // 5. Aucune méthode d'authentification disponible

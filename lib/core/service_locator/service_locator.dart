@@ -22,6 +22,10 @@ import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
 import '../../features/manga/bloc/detail_bloc.dart';
 import '../../features/search/services/search_history.service.dart';
+import '../../features/reader/services/scroll_position_service.dart';
+import '../../features/reader/services/captcha_detection_service.dart';
+import '../../features/reader/services/ad_blocker_service.dart';
+import '../../features/reader/services/webview_navigation_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 GetIt getIt = GetIt.instance;
@@ -99,6 +103,18 @@ void setupServiceLocator() {
         final prefs = await SharedPreferences.getInstance();
         return ThemeService(prefs);
       });
+  
+  // Service de gestion de la position de scroll pour les WebViews
+  getIt.registerSingleton<ScrollPositionService>(ScrollPositionService());
+  
+  // Service de détection de captcha
+  getIt.registerSingleton<CaptchaDetectionService>(CaptchaDetectionService());
+  
+  // Service de blocage de publicités
+  getIt.registerSingleton<AdBlockerService>(AdBlockerService());
+  
+  // Service de navigation WebView
+  getIt.registerSingleton<WebViewNavigationService>(WebViewNavigationService());
   
   // Service de traduction
   getIt.registerSingleton<TranslationService>(TranslationService());

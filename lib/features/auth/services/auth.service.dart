@@ -267,17 +267,26 @@ class AuthService {
   }
 
   Future<bool> tryBiometricLogin(BuildContext context, {int maxRetries = 2}) async {
+    debugPrint('🔐 AuthService Debug - Début tryBiometricLogin');
+    
     // Vérifier d'abord si la biométrie est activée
     final isEnabled = await isBiometricEnabled();
+    debugPrint('🔐 AuthService Debug - Biométrie activée: $isEnabled');
     if (!isEnabled) return false;
 
     final hasCreds = await storageService.hasBiometricCredentials();
+    debugPrint('🔐 AuthService Debug - Identifiants biométriques présents: $hasCreds');
     if (!hasCreds) return false;
 
     final isAvailable = await biometricService.hasBiometricSupport();
+    debugPrint('🔐 AuthService Debug - Support biométrique disponible: $isAvailable');
     if (!isAvailable) return false;
 
+    final availableTypes = await biometricService.getAvailableBiometrics();
+    debugPrint('🔐 AuthService Debug - Types biométriques disponibles: $availableTypes');
+
     final jsonCreds = await storageService.readSecureDataBiometric('secure_credentials');
+    debugPrint('🔐 AuthService Debug - Identifiants récupérés: ${jsonCreds != null}');
     if (jsonCreds == null) return false;
 
     final decoded = jsonDecode(jsonCreds);
@@ -285,21 +294,41 @@ class AuthService {
     final password = decoded['password'];
 
     for (var attempt = 0; attempt < maxRetries; attempt++) {
+      debugPrint('🔐 AuthService Debug - Tentative ${attempt + 1}/$maxRetries');
+      
       final authenticated = await biometricService.authenticateWithBiometrics(context);
+      debugPrint('🔐 AuthService Debug - Authentification biométrique réussie: $authenticated');
+      
       if (!authenticated) {
+        // Si l'erreur est NotAvailable, pas besoin de réessayer
+        // (cela signifie que la biométrie n'est vraiment pas disponible)
+        final availableTypes = await biometricService.getAvailableBiometrics();
+        if (availableTypes.isEmpty) {
+          debugPrint('🔐 AuthService Debug - Aucune biométrie disponible, arrêt des tentatives');
+          // Désactiver automatiquement la biométrie si elle n'est pas disponible
+          await setBiometricEnabled(false);
+          debugPrint('🔐 AuthService Debug - Biométrie désactivée automatiquement (non disponible)');
+          return false;
+        }
+        
         if (attempt < maxRetries - 1) {
+          debugPrint('🔐 AuthService Debug - Attente avant nouvelle tentative...');
           await Future<void>.delayed(const Duration(milliseconds: 600));
           continue;
         }
+        debugPrint('🔐 AuthService Debug - Échec après $maxRetries tentatives');
         return false;
       }
 
       try {
+        debugPrint('🔐 AuthService Debug - Tentative de connexion avec identifiants...');
         final result = await attemptLogIn(email, password);
         await storageService.writeSecureData('accessToken', result['accessToken']);
         await storageService.writeSecureData('refreshToken', result['refreshToken']);
+        debugPrint('🔐 AuthService Debug - Connexion réussie !');
         return true;
-      } catch (_) {
+      } catch (e) {
+        debugPrint('🔐 AuthService Debug - Erreur lors de la connexion: $e');
         if (attempt < maxRetries - 1) {
           await Future<void>.delayed(const Duration(milliseconds: 600));
           continue;
@@ -308,6 +337,7 @@ class AuthService {
       }
     }
 
+    debugPrint('🔐 AuthService Debug - Échec final');
     return false;
   }
 

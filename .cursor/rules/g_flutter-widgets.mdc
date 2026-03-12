@@ -1,0 +1,218 @@
+---
+description: Standards UI et widgets pour Manga Tracker Flutter — Material 3, découpage, composants
+globs: ["lib/features/**/views/**/*.dart", "lib/features/**/widgets/**/*.dart", "lib/core/components/**/*.dart"]
+alwaysApply: false
+---
+
+# Widget Standards — Manga Tracker Flutter
+
+## Règle du découpage (OBLIGATOIRE)
+
+**MAX 150 lignes** par widget. Si plus → extraire des sous-widgets privés (`_NomWidget`).
+
+```dart
+// ❌ MAUVAIS — tout dans un seul widget
+class LateDetailView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [/* 300 lignes... */]);
+  }
+}
+
+// ✅ BON — découpé en sous-composants
+class LateDetailView extends StatelessWidget {
+  const LateDetailView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        const _DetailAppBar(),
+        _DetailInfo(),
+        const _DetailChapterList(),
+        const _DetailActionButtons(),
+      ],
+    );
+  }
+}
+
+// Widgets privés dans le même fichier ou dans widgets/
+class _DetailAppBar extends StatelessWidget {
+  const _DetailAppBar();
+  @override
+  Widget build(BuildContext context) { /* MAX 50 lignes */ }
+}
+```
+
+## `const` constructors (OBLIGATOIRE)
+
+```dart
+// ✅ const partout où possible
+const Text('Titre')
+const SizedBox(height: 16)
+const _MyPrivateWidget()
+const EdgeInsets.symmetric(horizontal: 16)
+
+// Widget : const constructor si pas de paramètres dynamiques
+class MangaCard extends StatelessWidget {
+  final MangaQuickViewDto manga;
+  const MangaCard({super.key, required this.manga}); // ✅ const
+}
+```
+
+## Material 3 — Utilisation obligatoire du thème
+
+```dart
+// ✅ Tokens du thème
+color: Theme.of(context).colorScheme.primary
+color: Theme.of(context).colorScheme.surface
+color: Theme.of(context).colorScheme.onSurface
+style: Theme.of(context).textTheme.titleMedium
+style: Theme.of(context).textTheme.bodySmall
+
+// ✅ AppRadius pour la cohérence des arrondis
+decoration: BoxDecoration(
+  borderRadius: BorderRadius.circular(AppRadius.card),
+)
+decoration: BoxDecoration(
+  borderRadius: BorderRadius.circular(AppRadius.small),
+)
+
+// ❌ JAMAIS hardcoder
+color: Colors.blue          // ❌
+color: const Color(0xFF1234) // ❌
+borderRadius: BorderRadius.circular(12) // ❌
+```
+
+## Images réseau — cached_network_image obligatoire
+
+```dart
+// ✅ Toujours CachedNetworkImage
+CachedNetworkImage(
+  imageUrl: manga.coverUrl,
+  placeholder: (context, url) => const _MangaCardSkeleton(),
+  errorWidget: (context, url, error) => const _MangaCardFallback(),
+  fit: BoxFit.cover,
+)
+
+// ❌ Image.network INTERDIT (pas de cache)
+Image.network(manga.coverUrl)
+```
+
+## Listes — ListView.builder obligatoire
+
+```dart
+// ✅ Toujours ListView.builder pour les listes dynamiques
+ListView.builder(
+  itemCount: mangas.length,
+  itemBuilder: (context, index) => MangaRow(manga: mangas[index]),
+)
+
+// ❌ ListView avec children INTERDIT pour les listes dynamiques
+ListView(
+  children: mangas.map((m) => MangaRow(manga: m)).toList(),
+)
+```
+
+## Composants réutilisables existants
+
+**Vérifier ces composants avant d'en créer un nouveau :**
+
+| Composant | Usage | Localisation |
+|-----------|-------|-------------|
+| `MangaCard` | Carte manga (image + titre) | `core/components/` |
+| `MangaRow` | Ligne dans une liste | `core/components/` |
+| `FilterButton` | Bouton filtre activable | `core/components/` |
+| `WelcomeHeader` | En-tête de bienvenue | `core/components/` |
+| `MangaType` | Chips genres/tags | `core/components/` |
+| `ProfileOptionTile` | Option menu profil | `core/components/` |
+| `ProfileSection` | Section groupée profil | `core/components/` |
+| `ProfileHeader` | En-tête profil + avatar | `core/components/` |
+| `ChangelogCard` | Affichage changelog | `core/components/` |
+
+## Indicateur offline (obligatoire si isOffline)
+
+```dart
+// Toujours afficher un indicateur visuel en mode offline
+if (state.isOffline)
+  Container(
+    color: Colors.orange,
+    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+    child: Row(
+      children: [
+        const Icon(Icons.cloud_off, size: 16, color: Colors.white),
+        const SizedBox(width: 8),
+        Text(
+          context.l10n.offlineMode,
+          style: const TextStyle(color: Colors.white),
+        ),
+        if (state.pendingActions > 0)
+          Text(' · ${state.pendingActions} ${context.l10n.pendingActions}',
+            style: const TextStyle(color: Colors.white)),
+      ],
+    ),
+  ),
+```
+
+## États de chargement — Skeleton screens
+
+```dart
+// Préférer les skeleton screens aux CircularProgressIndicator génériques
+FeatureLoading() => const _MangaListSkeleton(),
+
+// Pour les petits composants
+FeatureLoading() => const Center(child: CircularProgressIndicator()),
+```
+
+## Genres — Chips Material 3 avec Wrap
+
+```dart
+// Pattern établi pour afficher les genres (voir LateDetailView)
+Wrap(
+  spacing: 8,
+  runSpacing: 4,
+  children: manga.genres.map((genre) => Chip(
+    label: Text(genre, style: Theme.of(context).textTheme.labelSmall),
+    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+    side: BorderSide.none,
+  )).toList(),
+)
+```
+
+## Formulaires — Validation
+
+```dart
+// Toujours utiliser Form + GlobalKey pour la validation
+final _formKey = GlobalKey<FormState>();
+
+Form(
+  key: _formKey,
+  child: TextFormField(
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return context.l10n.fieldRequired;
+      }
+      return null;
+    },
+  ),
+)
+
+// Valider avant de soumettre
+if (_formKey.currentState!.validate()) {
+  context.read<MyBloc>().add(SubmitForm(data: ...));
+}
+```
+
+## Auto-size text pour les titres longs
+
+```dart
+import 'package:auto_size_text/auto_size_text.dart';
+
+AutoSizeText(
+  manga.title,
+  maxLines: 2,
+  minFontSize: 12,
+  overflow: TextOverflow.ellipsis,
+  style: Theme.of(context).textTheme.titleMedium,
+)
+```

@@ -24,6 +24,7 @@ class RowChapter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Opacity(
       opacity: enabled ? 1.0 : 0.5,
       child: Padding(
@@ -31,7 +32,7 @@ class RowChapter extends StatelessWidget {
             top: 7.0, bottom: 7.0, right: 10.0, left: 10.0),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.colorScheme.surface,
             borderRadius: AppRadius.circularXl,
           ),
           child: Row(
@@ -46,7 +47,7 @@ class RowChapter extends StatelessWidget {
                         textStyle: const TextStyle(fontSize: 22),
                         fontWeight: FontWeight.w500,
                         fontStyle: FontStyle.normal,
-                        color: Colors.grey,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       )),
                 ),
               ),
@@ -65,7 +66,7 @@ class RowChapter extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               textStyle: const TextStyle(fontSize: 16),
                               fontWeight: FontWeight.w400,
-                              color: Colors.grey[600],
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           );
                         },
@@ -83,26 +84,25 @@ class RowChapter extends StatelessWidget {
                       ? Container(
                           height: 5,
                           width: 5,
-                          decoration:  BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context).colorScheme.primary.withAlpha(77)
-                            ,
+                            color: theme.colorScheme.primary.withAlpha(77),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check_box_outlined,
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                             size: 17,
                           ))
                       : Container(
                           height: 5,
                           width: 5,
-                          decoration:  BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: theme.colorScheme.primary,
                           ),
-                          child: const Icon(
-                           Icons.check_box_outline_blank_outlined,
-                            color: Colors.white,
+                          child: Icon(
+                            Icons.check_box_outline_blank_outlined,
+                            color: theme.colorScheme.onPrimary,
                             size: 17,
                           )),
                 ),

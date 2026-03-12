@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
@@ -19,9 +18,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/custom_selectors.service.dart';
 import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart';
+import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
+import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
+import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
+import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
 import 'dart:async';
-
-final _customSelectorsService = CustomSelectorsService();
 
 class ReaderWebView extends StatefulWidget {
   final int muId;
@@ -51,11 +52,14 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   final _notifier = getIt<Notifier>();
   final _library = getIt<LibraryService>();
   final _downloadManager = DownloadManagerService();
+  final _scrollPositionService = getIt<ScrollPositionService>();
+  final _adBlockerService = getIt<AdBlockerService>();
+  final _captchaDetectionService = getIt<CaptchaDetectionService>();
+  final _navigationService = getIt<WebViewNavigationService>();
 
   InAppWebViewController? _controller;
   final TextEditingController _urlTextController = TextEditingController();
   List<ContentBlocker> _cachedBlockers = []; // Cache pour les blockers
-  Timer? _scrollSaveTimer; // Timer pour sauvegarder périodiquement la position de scroll
   bool _hasRestoredScroll = false; // Indique si la position de scroll a été restaurée
 
   // État lecteur
@@ -68,717 +72,17 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   bool _captchaDetected = false; // Indique si un captcha est détecté
   bool _adBlockerWasEnabled = true; // Mémorise l'état du bloqueur avant désactivation pour captcha
 
-  // Liste étendue de domaines de publicités
-  final Set<String> _denyHosts = {
-    'google-analytics.com',
-    'www.google-analytics.com',
-    'googlesyndication.com',
-    'pagead2.googlesyndication.com',
-    'doubleclick.net',
-    'adservice.google.com',
-    'taboola.com',
-    'outbrain.com',
-    'criteo.com',
-    'scorecardresearch.com',
-    'adsafeprotected.com',
-    'advertising.com',
-    'amazon-adsystem.com',
-    'adnxs.com',
-    'adform.net',
-    'adtechus.com',
-    'adzerk.net',
-    'casalemedia.com',
-    'contextweb.com',
-    'facebook.com/tr',
-    'googletagmanager.com',
-    'moatads.com',
-    'openx.net',
-    'pubmatic.com',
-    'rubiconproject.com',
-    'serving-sys.com',
-    'smartadserver.com',
-    'yieldlab.net',
-    'zemanta.com',
-    // Nouveaux domaines détectés
-    'onclckmn.com',
-    'onclckbn.net',
-    'bid.onclckbn.net',
-    'adxbid.info',
-    'a.pemsrv.com',
-    's.pemsrv.com',
-    'pemsrv.com',
-    'media.pubfuture.com',
-    'pubfuture.com',
-    'bobapsoabauns.com',
-    // Domaines de synchronisation et overlay
-    'kueezrtb.com',
-    'sync.kueezrtb.com',
-    'monetixads.com',
-    'static.cdn.monetixads.com',
-    // Nouveaux domaines détectés
-    'crcdn.org',
-    'adexchangeclear.com',
-    'aqle3.com',
-    'pubadx.one',
-    'imp9.pubadx.one',
-    'madurird.com',
-  };
-
-  /// Vérifie si l'URL contient des indices de captcha
-  bool _urlContainsCaptcha(String url) {
-    final urlLower = url.toLowerCase();
-    return urlLower.contains('challenge') ||
-           urlLower.contains('cf_challenge') ||
-           urlLower.contains('challenges.cloudflare.com') ||
-           urlLower.contains('challenge-platform.cloudflare.com') ||
-           urlLower.contains('recaptcha') ||
-           urlLower.contains('hcaptcha');
-  }
-
-  /// Vérifie si un domaine est lié à un captcha (à ne pas bloquer)
-  bool _isCaptchaDomain(String host) {
-    final hostLower = host.toLowerCase();
-    return hostLower.contains('cloudflare.com') ||
-           hostLower.contains('challenges.cloudflare.com') ||
-           hostLower.contains('challenge-platform.cloudflare.com') ||
-           hostLower.contains('google.com') && hostLower.contains('recaptcha') ||
-           hostLower.contains('hcaptcha.com') ||
-           hostLower.contains('recaptcha.net');
-  }
-
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
-    if (!_adBlockerEnabled || _captchaDetected) return [];
-    
-    final blockers = <ContentBlocker>[
-      // Blocage de domaines de publicités connus
-      ContentBlocker(
-        trigger: ContentBlockerTrigger(
-          urlFilter: r".*(doubleclick\.net|googlesyndication\.com|adservice\.google\..*|google-analytics\.com|taboola\.com|outbrain\.com|criteo\.com|scorecardresearch\.com|adsafeprotected\.com|advertising\.com|amazon-adsystem\.com|adnxs\.com|adform\.net|adtechus\.com|adzerk\.net|casalemedia\.com|contextweb\.com|googletagmanager\.com|moatads\.com|openx\.net|pubmatic\.com|rubiconproject\.com|serving-sys\.com|smartadserver\.com|yieldlab\.net|zemanta\.com|onclckmn\.com|onclckbn\.net|bid\.onclckbn\.net|adxbid\.info|pemsrv\.com|media\.pubfuture\.com|pubfuture\.com|bobapsoabauns\.com|kueezrtb\.com|monetixads\.com|crcdn\.org|adexchangeclear\.com|aqle3\.com|pubadx\.one|madurird\.com).*",
-        ),
-        action: ContentBlockerAction(type: ContentBlockerActionType.BLOCK),
-      ),
-      // Sélecteurs CSS plus spécifiques pour éviter de bloquer les images du chapitre
-      ContentBlocker(
-        trigger: ContentBlockerTrigger(urlFilter: r".*"),
-        action: ContentBlockerAction(
-          type: ContentBlockerActionType.CSS_DISPLAY_NONE,
-          selector: """
-            .advertisement,
-            .ad-banner,
-            .ad-container,
-            .ad-wrapper,
-            .ad-box,
-            .ad-unit,
-            .ad-slot,
-            .ad-placeholder,
-            .ad-content,
-            .ad-frame,
-            .ad-holder,
-            .ad-area,
-            .ad-section,
-            .ad-block,
-            .ad-widget,
-            .ad-panel,
-            .ad-sidebar,
-            .ad-header,
-            .ad-footer,
-            .ad-top,
-            .ad-bottom,
-            .ad-left,
-            .ad-right,
-            .ad-center,
-            #advertisement,
-            #ad-banner,
-            #ad-container,
-            #ad-wrapper,
-            #ad-box,
-            #ad-unit,
-            #ad-slot,
-            #ad-content,
-            #ad-frame,
-            #ad-area,
-            #ad-section,
-            #ad-block,
-            #ad-widget,
-            #ad-panel,
-            #ad-sidebar,
-            #ad-header,
-            #ad-footer,
-            iframe[src*='doubleclick'],
-            iframe[src*='googlesyndication'],
-            iframe[src*='adservice'],
-            iframe[src*='advertising'],
-            iframe[src*='ads'],
-            iframe[src*='onclck'],
-            iframe[src*='onclckbn'],
-            iframe[src*='onclckmn'],
-            iframe[src*='pemsrv'],
-            iframe[src*='pubfuture'],
-            iframe[src*='adxbid'],
-            iframe[src*='kueezrtb'],
-            iframe[src*='monetixads'],
-            iframe[id*='ad'],
-            iframe[class*='ad'],
-            iframe[data-cbi],
-            iframe[style*='position: fixed'],
-            iframe[style*='z-index'],
-            iframe[sandbox],
-            iframe[data-asg-handled],
-            div[id*='google_ads'],
-            div[class*='google-ad'],
-            div[id*='ad-'],
-            div[class*='ad-'],
-            div[id*='pf-'],
-            div[class*='pf-'],
-            div[class*='PUBFUTURE'],
-            div[class*='pf-config'],
-            div[class*='pf-wrapper'],
-            div[class*='gfpl-'],
-            div[id*='asg-'],
-            div[class*='ammc8brnmqe2aahjvxvkti9jx6p1df1o'],
-            div[id*='bg-ssp-'],
-            div[class*='bg-ssp-'],
-            div[id*='note-'],
-            div[id*='dl-banner-'],
-            in-page-message,
-            [data-unit],
-            [data-banner-id],
-            [data-funnel],
-            [data-bg],
-            [data-icon],
-            [data-title*='Bloquez'],
-            [data-description*='Naviguez'],
-            ins[class*='adsbygoogle'],
-            script[src*='ads'],
-            script[src*='advertising'],
-            script[src*='onclck'],
-            script[src*='pemsrv'],
-            script[src*='pubfuture'],
-            script[src*='adxbid'],
-            script[id*='popmagic'],
-            [data-ad-slot],
-            [data-ad-client],
-            [data-ad-format],
-            [data-unit],
-            [data-banner-id],
-            .PUBFUTURE,
-            [class*="pf-config"],
-            [class*="pf-wrapper"],
-            [class*="gfpl-"],
-            .exo-native-widget-item-image,
-            .exo-native-widget-item-title,
-            .exo-native-widget-item-text,
-            .exo-native-widget-item-content,
-            .exo-native-widget-item-image-ratio,
-            [class*="exo-native-widget"]
-          """,
-        ),
-      ),
-    ];
-    
-    // Ajouter les sélecteurs personnalisés (uniquement ceux de type adBlocker, pas urlPattern)
-    try {
-      final customSelectors = await _customSelectorsService.loadSelectors();
-      final adBlockSelectors = customSelectors
-          .where((s) => s.type == SelectorType.adBlocker)
-          .toList();
-      
-      if (adBlockSelectors.isNotEmpty) {
-        // Grouper par domaine pour créer des blockers spécifiques
-        final selectorsByDomain = <String, List<String>>{};
-        
-        for (final selector in adBlockSelectors) {
-          final domain = selector.domain == '*' ? '.*' : selector.domain.replaceAll('.', '\\.');
-          if (!selectorsByDomain.containsKey(domain)) {
-            selectorsByDomain[domain] = [];
-          }
-          selectorsByDomain[domain]!.add(selector.selector);
-        }
-        
-        // Créer un ContentBlocker pour chaque domaine
-        for (final entry in selectorsByDomain.entries) {
-          final domainPattern = entry.key == '.*' ? r".*" : r"https?://[^/]*" + entry.key + r".*";
-          blockers.add(
-            ContentBlocker(
-              trigger: ContentBlockerTrigger(urlFilter: domainPattern),
-              action: ContentBlockerAction(
-                type: ContentBlockerActionType.CSS_DISPLAY_NONE,
-                selector: entry.value.join(',\n'),
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('⚠️ Erreur lors du chargement des sélecteurs personnalisés: $e');
-    }
-    
-    return blockers;
+    return await _adBlockerService.getBlockers(
+      enabled: _adBlockerEnabled,
+      captchaDetected: _captchaDetected,
+    );
   }
 
   // Script JavaScript pour nettoyer le DOM des publicités
   Future<String> _buildAdBlockScript() async {
-    // Charger les sélecteurs personnalisés
-    final customSelectors = <String>[];
-    try {
-      final url = await _controller?.getUrl();
-      if (url != null) {
-        final uri = Uri.parse(url.toString());
-        final domain = uri.host;
-        final selectors = await _customSelectorsService.loadSelectors();
-        final adBlockSelectors = selectors
-            .where((s) => 
-                (s.domain == domain || s.domain == '*') && 
-                s.type == SelectorType.adBlocker)
-            .map((s) => s.selector)
-            .toList();
-        customSelectors.addAll(adBlockSelectors);
-      }
-    } catch (e) {
-      debugPrint('⚠️ Erreur lors du chargement des sélecteurs personnalisés pour le script: $e');
-    }
-    
-    // Créer la liste complète des sélecteurs
-    final allSelectors = [
-      '.advertisement', '.ad-banner', '.ad-container', '.ad-wrapper',
-      '.ad-box', '.ad-unit', '.ad-slot', '.ad-content', '.ad-frame',
-      '#advertisement', '#ad-banner', '#ad-container', '#ad-wrapper',
-      'iframe[src*="doubleclick"]', 'iframe[src*="googlesyndication"]',
-      'iframe[src*="adservice"]', 'iframe[src*="onclck"]',
-      'iframe[src*="onclckbn"]', 'iframe[src*="onclckmn"]',
-      'iframe[src*="pemsrv"]', 'iframe[src*="pubfuture"]',
-      'iframe[src*="adxbid"]', 'iframe[src*="kueezrtb"]',
-      'iframe[src*="monetixads"]', 'iframe[data-cbi]',
-      'iframe[sandbox]', 'iframe[data-asg-handled]',
-      'ins.adsbygoogle', '[data-ad-slot]', '[data-ad-client]',
-      '.PUBFUTURE', '[class*="pf-"]', '[id*="pf-"]',
-      '[class*="pf-config"]', '[class*="pf-wrapper"]',
-      '[class*="gfpl-"]', '[data-unit]', '[data-banner-id]',
-      '[id*="asg-"]', '[class*="ammc8brnmqe2aahjvxvkti9jx6p1df1o"]',
-      '[id*="bg-ssp-"]', '[class*="bg-ssp-"]',
-      '[id*="note-"]', '[id*="dl-banner-"]',
-      'in-page-message', '[data-funnel]', '[data-bg]',
-      '[data-icon]', '[data-title*="Bloquez"]',
-      'script[src*="onclck"]', 'script[src*="pemsrv"]',
-      'script[src*="pubfuture"]', 'script[src*="adxbid"]',
-      'script[src*="aqle3"]', 'script[src*="pubadx"]',
-      'script[id*="popmagic"]', '.pf-banner-default',
-      '.exo-native-widget-item-image', '.exo-native-widget-item-title',
-      '.exo-native-widget-item-text', '.exo-native-widget-item-content',
-      '.exo-native-widget-item-image-ratio', '[class*="exo-native-widget"]',
-      // Sélecteurs spécifiques pour les divs de pub
-      'div.flex.flex-wrap.gap-2:has(script[src*="pubadx"]), div.flex.flex-wrap.gap-2:has(script[src*="tapioni"]), div.flex.flex-wrap.gap-2:has(script[src*="chnsrv"]), div.flex.flex-wrap.gap-2:has(script[src*="noritesfarrago"]), div.flex.flex-wrap.gap-2:has([id*="bg-ssp-"]), div.flex.flex-wrap.gap-2:has([data-funnel]), div.flex.flex-wrap.gap-2:has([data-asg-ins])',
-      'div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="pubadx"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="tapioni"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="chnsrv"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([id*="bg-ssp-"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([data-funnel]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([data-asg-ins])',
-      // Attributs data-* suspects
-      '[data-asg-ins]', '[data-spots]', '[data-funnel]', '[data-bg]', '[data-cfasync]',
-      '[data-aa]', '[data-keywords]', '[data-zoneid]', '[data-processed]',
-      // Scripts suspects
-      'script[src*="pubadx"]', 'script[src*="tapioni"]', 'script[src*="chnsrv"]', 'script[src*="noritesfarrago"]',
-      'script[src*="tsyndicate"]', 'script[src*="trcktr"]', 'script[src*="acscdn"]', 'script[src*="diveinthebluesky"]',
-      'script[src*="smacksmallness"]', 'script[src*="ad-provider"]',
-      // Containers de pub spécifiques
-      '[id*="bg-container-"]', '[class*="bg-container-"]', '[class*="bg-dsp-"]',
-      '[id*="pa-dsp-"]', '[id*="pa-"]', '[class*="qtxoBITy"]',
-      ...customSelectors, // Ajouter les sélecteurs personnalisés
-    ];
-    
-    // Échapper les sélecteurs pour JavaScript
-    final escapedSelectors = allSelectors.map((s) => "'${s.replaceAll("'", "\\'")}'").join(', ');
-    
-    return """
-    (function() {
-      // Supprimer les éléments publicitaires spécifiques
-      const adSelectors = [
-        $escapedSelectors
-      ];
-      
-      // Fonction pour détecter intelligemment si un élément est une pub
-      function isAdElement(el) {
-        if (!el || el.nodeType !== 1) return false;
-        
-        // Vérifier par ID
-        if (el.id && (el.id.includes('ad') || el.id.includes('pf-') || 
-            el.id.includes('asg-') || el.id.includes('bg-ssp-') || 
-            el.id.includes('note-') || el.id.includes('dl-banner-') ||
-            el.id.includes('bg-container-') || el.id.includes('pa-dsp-') ||
-            el.id.match(/bg-ssp-\\d+/) || el.id.match(/pa-\\d+/))) {
-          return true;
-        }
-        
-        // Vérifier par classe
-        if (el.className && typeof el.className === 'string' && 
-            (el.className.includes('ad') || el.className.includes('PUBFUTURE') || 
-             el.className.includes('pf-') || el.className.includes('gfpl-') ||
-             el.className.includes('bg-ssp-') || el.className.includes('bg-container-') ||
-             el.className.includes('bg-dsp-') || el.className.match(/qtxo[A-Za-z0-9]+/))) {
-          return true;
-        }
-        
-        // Vérifier par attributs data-*
-        const adDataAttrs = ['data-unit', 'data-banner-id', 'data-asg-handled', 'data-funnel',
-                             'data-icon', 'data-bg', 'data-asg-ins', 'data-spots', 'data-cfasync',
-                             'data-aa', 'data-keywords', 'data-zoneid', 'data-processed'];
-        if (adDataAttrs.some(attr => el.hasAttribute(attr))) {
-          return true;
-        }
-        
-        // Vérifier les scripts avec sources suspectes
-        if (el.tagName === 'SCRIPT') {
-          const src = el.src || '';
-          const adScripts = ['onclck', 'pemsrv', 'pubfuture', 'adxbid', 'aqle3', 'pubadx',
-                            'tapioni', 'chnsrv', 'noritesfarrago', 'tsyndicate', 'trcktr',
-                            'acscdn', 'diveinthebluesky', 'smacksmallness', 'ad-provider'];
-          if (adScripts.some(keyword => src.includes(keyword))) {
-            return true;
-          }
-          const content = el.textContent || el.innerHTML || '';
-          if (content.includes('AdProvider') || content.includes('aclib.runInPagePush') ||
-              content.includes('pubfuturetag') || content.includes('popMagic')) {
-            return true;
-          }
-        }
-        
-        // Vérifier les iframes
-        if (el.tagName === 'IFRAME') {
-          const src = el.src || '';
-          const adIframes = ['onclck', 'pemsrv', 'pubfuture', 'adxbid', 'kueezrtb', 'monetixads',
-                            'tsyndicate', 'trcktr', 'smacksmallness', 'noritesfarrago'];
-          if (adIframes.some(keyword => src.includes(keyword))) {
-            return true;
-          }
-          // Dimensions standard de pub
-          if ((el.width === '300' && el.height === '250') ||
-              (el.width === '728' && el.height === '90')) {
-            return true;
-          }
-          const style = el.getAttribute('style') || '';
-          if ((style.includes('300px') && style.includes('250px')) ||
-              (style.includes('width: 300') && style.includes('height: 250'))) {
-            return true;
-          }
-          // Iframe avec srcdoc suspect
-          if (el.hasAttribute('srcdoc')) {
-            const srcdoc = el.getAttribute('srcdoc');
-            if (srcdoc.includes('AdProvider') || srcdoc.includes('tsyndicate') ||
-                (srcdoc.includes('iframe') && srcdoc.includes('300'))) {
-              return true;
-            }
-          }
-        }
-        
-        // Vérifier les divs flex qui contiennent des pubs
-        if (el.tagName === 'DIV' && el.className && typeof el.className === 'string' &&
-            el.className.includes('flex') && el.className.includes('gap-2')) {
-          if (el.querySelector('script[src*="pubadx"]') || el.querySelector('script[src*="tapioni"]') ||
-              el.querySelector('script[src*="chnsrv"]') || el.querySelector('[id*="bg-ssp-"]') ||
-              el.querySelector('[data-funnel]') || el.querySelector('[data-asg-ins]')) {
-            return true;
-          }
-        }
-        
-        return false;
-      }
-      
-      // Fonction pour supprimer les éléments publicitaires
-      function removeAds() {
-        // Supprimer avec les sélecteurs CSS
-        adSelectors.forEach(selector => {
-          try {
-            document.querySelectorAll(selector).forEach(el => {
-              // Vérifier que ce n'est pas une image du chapitre
-              const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
-              if (!isChapterImage) {
-                el.remove();
-              }
-            });
-          } catch(e) {}
-        });
-        
-        // Détection intelligente supplémentaire
-        try {
-          document.querySelectorAll('div, script, iframe, ins').forEach(el => {
-            if (isAdElement(el)) {
-              const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
-              if (!isChapterImage) {
-                el.remove();
-              }
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les scripts de publicités spécifiques
-        try {
-          document.querySelectorAll('script').forEach(script => {
-            const src = script.src || '';
-            const content = script.textContent || script.innerHTML || '';
-            const adScriptKeywords = ['onclck', 'pemsrv', 'pubfuture', 'adxbid', 'aqle3', 'pubadx',
-                                     'tapioni', 'chnsrv', 'noritesfarrago', 'tsyndicate', 'trcktr',
-                                     'acscdn', 'diveinthebluesky', 'smacksmallness', 'ad-provider'];
-            if (adScriptKeywords.some(keyword => src.includes(keyword)) ||
-                content.includes('pubfuturetag') || content.includes('popMagic') ||
-                content.includes('window.pubfuturetag') || content.includes('popmagic') ||
-                content.includes('AdProvider') || content.includes('aclib.runInPagePush')) {
-              const isChapterScript = script.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-              if (!isChapterScript) {
-                script.remove();
-              }
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les iframes cachées (position: absolute avec top/left négatifs)
-        try {
-          document.querySelectorAll('iframe[style*="top: -"], iframe[style*="left: -"]').forEach(iframe => {
-            const style = iframe.getAttribute('style') || '';
-            if (style.includes('top: -') || style.includes('left: -') || 
-                style.includes('visibility: hidden') || iframe.hasAttribute('data-asg-handled')) {
-              const isChapterIframe = iframe.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-              if (!isChapterIframe) {
-                iframe.remove();
-              }
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les éléments in-page-message (publicités pour bloqueurs de pub)
-        try {
-          document.querySelectorAll('in-page-message, [id*="note-"], [data-icon], [data-title*="Bloquez"], [data-description*="Naviguez"]').forEach(el => {
-            const isChapterElement = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-            if (!isChapterElement) {
-              el.remove();
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les éléments ASG et bg-ssp
-        try {
-          document.querySelectorAll('[id*="asg-"], [class*="ammc8brnmqe2aahjvxvkti9jx6p1df1o"], [id*="bg-ssp-"], [class*="bg-ssp-"], [id*="dl-banner-"]').forEach(el => {
-            const isChapterElement = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-            if (!isChapterElement) {
-              el.remove();
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les scripts de publicités supplémentaires
-        try {
-          document.querySelectorAll('script').forEach(script => {
-            const src = script.src || '';
-            const content = script.textContent || script.innerHTML || '';
-            const adScriptKeywords = ['aqle3', 'pubadx', 'adexchangeclear', 'tapioni', 'chnsrv',
-                                     'noritesfarrago', 'tsyndicate', 'trcktr', 'acscdn',
-                                     'diveinthebluesky', 'smacksmallness', 'ad-provider'];
-            if (adScriptKeywords.some(keyword => src.includes(keyword)) ||
-                content.includes('bg-ssp') || content.includes('asg-') || 
-                content.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o') ||
-                content.includes('AdProvider') || content.includes('aclib.runInPagePush')) {
-              const isChapterScript = script.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-              if (!isChapterScript) {
-                script.remove();
-              }
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les iframes en overlay (qui couvrent toute la page)
-        try {
-          document.querySelectorAll('iframe').forEach(iframe => {
-            const style = iframe.getAttribute('style') || '';
-            const computedStyle = window.getComputedStyle(iframe);
-            const zIndex = parseInt(computedStyle.zIndex || style.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0');
-            const position = computedStyle.position || style.match(/position[\\s:]*([^;]+)/)?.[1]?.trim();
-            const width = computedStyle.width || iframe.getAttribute('width') || '';
-            const height = computedStyle.height || iframe.getAttribute('height') || '';
-            
-            // Détecter les iframes qui couvrent toute la page
-            const isFullScreenOverlay = 
-              (position === 'fixed' && zIndex > 1000) ||
-              (style.includes('position: fixed') && zIndex > 1000) ||
-              (style.includes('width: 100%') && style.includes('height: 100%') && zIndex > 1000) ||
-              (style.includes('inset: 0px') && zIndex > 1000) ||
-              (width === '100%' && height === '100%' && zIndex > 1000);
-            
-            // Détecter les iframes de synchronisation cachées ou avec sources suspectes
-            const adIframeKeywords = ['sync', 'kueezrtb', 'monetixads', 'tsyndicate', 'trcktr',
-                                      'smacksmallness', 'noritesfarrago', 'onclck', 'pemsrv',
-                                      'pubfuture', 'adxbid'];
-            const isSyncIframe = 
-              iframe.hasAttribute('sandbox') && 
-              (width === '0' || height === '0' || style.includes('width:0') || style.includes('height:0') ||
-               adIframeKeywords.some(keyword => iframe.src.includes(keyword))) ||
-              // Iframe avec dimensions standard de pub
-              ((iframe.width === '300' && iframe.height === '250') ||
-               (iframe.width === '728' && iframe.height === '90') ||
-               (style.includes('300px') && style.includes('250px')) ||
-               (style.includes('width: 300') && style.includes('height: 250'))) ||
-              // Iframe avec srcdoc suspect
-              (iframe.hasAttribute('srcdoc') && (
-                iframe.getAttribute('srcdoc').includes('AdProvider') ||
-                iframe.getAttribute('srcdoc').includes('tsyndicate') ||
-                (iframe.getAttribute('srcdoc').includes('iframe') && iframe.getAttribute('srcdoc').includes('300'))
-              ));
-            
-            if (isFullScreenOverlay || isSyncIframe) {
-              const isChapterIframe = iframe.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
-              if (!isChapterIframe) {
-                iframe.remove();
-              }
-            }
-          });
-        } catch(e) {}
-        
-        // Supprimer les éléments avec des styles de popup/publicité
-        try {
-          document.querySelectorAll('div[style*="position: absolute"], div[style*="position: fixed"]').forEach(el => {
-            const style = el.getAttribute('style') || '';
-            const text = el.textContent || '';
-            // Détecter les popups de publicité
-            if ((style.includes('z-index') && parseInt(style.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 100) ||
-                text.includes('Validation requise') || text.includes('Veuillez compléter') ||
-                text.includes('Continuer') && text.includes('Fermer') ||
-                el.querySelector('[style*="background"][style*="border-radius"][style*="box-shadow"]')) {
-              const isChapterPopup = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content');
-              if (!isChapterPopup) {
-                el.remove();
-              }
-            }
-          });
-        } catch(e) {}
-      }
-      
-      // Exécuter immédiatement
-      removeAds();
-      
-      // Observer pour les publicités chargées dynamiquement
-      const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-          mutation.addedNodes.forEach(function(node) {
-            if (node.nodeType === 1) {
-              const element = node;
-              // Vérifier si c'est une publicité avec détection intelligente améliorée
-              const isAd = 
-                // Vérification par ID
-                (element.id && (element.id.includes('ad') || element.id.includes('pf-') || 
-                 element.id.includes('asg-') || element.id.includes('bg-ssp-') || 
-                 element.id.includes('note-') || element.id.includes('dl-banner-') ||
-                 element.id.includes('bg-container-') || element.id.includes('pa-dsp-') ||
-                 element.id.includes('pa-') || element.id.match(/bg-ssp-\\d+/))) ||
-                // Vérification par classe
-                (element.className && typeof element.className === 'string' && 
-                 (element.className.includes('ad') || element.className.includes('PUBFUTURE') || 
-                  element.className.includes('pf-') || element.className.includes('gfpl-') ||
-                  element.className.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o') ||
-                  element.className.includes('bg-ssp-') || element.className.includes('bg-container-') ||
-                  element.className.includes('bg-dsp-') || element.className.match(/qtxo[A-Za-z0-9]+/))) ||
-                // Vérification par attributs data-* suspects
-                element.hasAttribute('data-unit') || element.hasAttribute('data-banner-id') ||
-                element.hasAttribute('data-asg-handled') || element.hasAttribute('data-funnel') ||
-                element.hasAttribute('data-icon') || element.hasAttribute('data-bg') ||
-                element.hasAttribute('data-asg-ins') || element.hasAttribute('data-spots') ||
-                element.hasAttribute('data-cfasync') || element.hasAttribute('data-aa') ||
-                element.hasAttribute('data-keywords') || element.hasAttribute('data-zoneid') ||
-                element.hasAttribute('data-processed') ||
-                // Vérification par tag SCRIPT avec sources suspectes
-                (element.tagName === 'SCRIPT' && (
-                  (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') || 
-                   element.src.includes('pubfuture') || element.src.includes('adxbid') ||
-                   element.src.includes('aqle3') || element.src.includes('pubadx') ||
-                   element.src.includes('adexchangeclear') || element.src.includes('tapioni') ||
-                   element.src.includes('chnsrv') || element.src.includes('noritesfarrago') ||
-                   element.src.includes('tsyndicate') || element.src.includes('trcktr') ||
-                   element.src.includes('acscdn') || element.src.includes('diveinthebluesky') ||
-                   element.src.includes('smacksmallness') || element.src.includes('ad-provider'))) ||
-                  (element.textContent && (element.textContent.includes('pubfuturetag') || 
-                   element.textContent.includes('popMagic') || element.textContent.includes('bg-ssp') ||
-                   element.textContent.includes('asg-') || element.textContent.includes('ammc8brnmqe2aahjvxvkti9jx6p1df1o') ||
-                   element.textContent.includes('AdProvider') || element.textContent.includes('aclib.runInPagePush')))
-                )) ||
-                // Vérification par tag IFRAME avec sources ou dimensions suspectes
-                (element.tagName === 'IFRAME' && (
-                  (element.src && (element.src.includes('onclck') || element.src.includes('pemsrv') ||
-                   element.src.includes('pubfuture') || element.src.includes('adxbid') ||
-                   element.src.includes('kueezrtb') || element.src.includes('monetixads') ||
-                   element.src.includes('tsyndicate') || element.src.includes('trcktr') ||
-                   element.src.includes('smacksmallness') || element.src.includes('noritesfarrago'))) ||
-                  // Iframe avec dimensions standard de pub (300x250, 728x90, etc.)
-                  ((element.width === '300' && element.height === '250') ||
-                   (element.width === '728' && element.height === '90') ||
-                   (element.getAttribute('style')?.includes('300px') && element.getAttribute('style')?.includes('250px')) ||
-                   (element.getAttribute('style')?.includes('width: 300') && element.getAttribute('style')?.includes('height: 250'))) ||
-                  (element.hasAttribute('sandbox') && (element.getAttribute('style')?.includes('width:0') || 
-                   element.getAttribute('width') === '0')) ||
-                  (element.getAttribute('style')?.includes('position: fixed') && 
-                   parseInt(element.getAttribute('style')?.match(/z-index[\\s:]*([0-9]+)/)?.[1] || '0') > 1000) ||
-                  element.hasAttribute('data-asg-handled') ||
-                  // Iframe avec srcdoc contenant des mots-clés de pub
-                  (element.hasAttribute('srcdoc') && (
-                    element.getAttribute('srcdoc').includes('AdProvider') ||
-                    element.getAttribute('srcdoc').includes('tsyndicate') ||
-                    element.getAttribute('srcdoc').includes('iframe') && element.getAttribute('srcdoc').includes('300')
-                  ))
-                )) ||
-                // Vérification par tag IN-PAGE-MESSAGE
-                element.tagName === 'IN-PAGE-MESSAGE' ||
-                // Vérification par attributs data-title/data-description
-                (element.hasAttribute('data-title') && element.getAttribute('data-title')?.includes('Bloquez')) ||
-                (element.hasAttribute('data-description') && element.getAttribute('data-description')?.includes('Naviguez')) ||
-                // Détection intelligente : div avec classes flex qui contient des scripts de pub
-                (element.tagName === 'DIV' && element.className && typeof element.className === 'string' &&
-                 (element.className.includes('flex') && element.className.includes('gap-2')) &&
-                 (element.querySelector('script[src*="pubadx"]') || element.querySelector('script[src*="tapioni"]') ||
-                  element.querySelector('script[src*="chnsrv"]') || element.querySelector('[id*="bg-ssp-"]') ||
-                  element.querySelector('[data-funnel]') || element.querySelector('[data-asg-ins]')));
-              
-              if (isAd) {
-                const isChapterImage = element.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
-                if (!isChapterImage) {
-                  element.remove();
-                }
-              }
-            }
-          });
-        });
-      });
-      
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-      
-      // Nettoyer périodiquement (toutes les 3 secondes au lieu de 2 pour réduire les appels)
-      let cleanupInterval = null;
-      function startPeriodicCleanup() {
-        if (cleanupInterval) return; // Déjà démarré
-        cleanupInterval = setInterval(function() {
-          try {
-            // Vérifier que le document est toujours valide
-            if (document.body && document.body.parentNode) {
-              removeAds();
-            } else {
-              // Arrêter le nettoyage si le document est détruit
-              if (cleanupInterval) {
-                clearInterval(cleanupInterval);
-                cleanupInterval = null;
-              }
-            }
-          } catch(e) {
-            // Ignorer les erreurs silencieusement
-          }
-        }, 3000);
-      }
-      
-      startPeriodicCleanup();
-      
-      // Arrêter le nettoyage si la page est déchargée
-      window.addEventListener('beforeunload', function() {
-        if (cleanupInterval) {
-          clearInterval(cleanupInterval);
-          cleanupInterval = null;
-        }
-      });
-    })();
-    """;
+    return await _adBlockerService.buildAdBlockScript(_controller);
   }
 
   @override
@@ -867,46 +171,9 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   /// Détecte la présence d'un captcha et désactive temporairement le bloqueur de pub
   Future<void> _detectAndHandleCaptcha(InAppWebViewController controller, WebUri url) async {
     try {
-      // Script pour détecter les captchas (Cloudflare, reCAPTCHA, etc.)
-      final captchaDetectionScript = """
-        (function() {
-          // Détecter les iframes Cloudflare
-          const cloudflareIframes = document.querySelectorAll('iframe[src*="challenges.cloudflare.com"], iframe[src*="challenge-platform.cloudflare.com"]');
-          if (cloudflareIframes.length > 0) {
-            return 'cloudflare';
-          }
-          
-          // Détecter les éléments Cloudflare
-          const cfElements = document.querySelectorAll('[id*="cf-"], [class*="cf-"], [id*="challenge"], [class*="challenge"], [id*="cf_challenge"], [class*="cf_challenge"]');
-          if (cfElements.length > 0) {
-            return 'cloudflare';
-          }
-          
-          // Détecter reCAPTCHA
-          const recaptchaElements = document.querySelectorAll('[id*="recaptcha"], [class*="recaptcha"], iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"]');
-          if (recaptchaElements.length > 0) {
-            return 'recaptcha';
-          }
-          
-          // Détecter hCaptcha
-          const hcaptchaElements = document.querySelectorAll('[id*="hcaptcha"], [class*="hcaptcha"], iframe[src*="hcaptcha"]');
-          if (hcaptchaElements.length > 0) {
-            return 'hcaptcha';
-          }
-          
-          // Détecter dans l'URL
-          if (window.location.href.includes('challenge') || window.location.href.includes('cf_challenge')) {
-            return 'url';
-          }
-          
-          return 'none';
-        })();
-      """;
+      final captchaType = await _captchaDetectionService.detectCaptcha(controller);
       
-      final result = await controller.evaluateJavascript(source: captchaDetectionScript);
-      final captchaType = result?.toString().replaceAll('"', '') ?? 'none';
-      
-      if (captchaType != 'none' && _adBlockerEnabled) {
+      if (captchaType != null && _adBlockerEnabled) {
         // Captcha détecté, désactiver temporairement le bloqueur
         if (!_captchaDetected) {
           debugPrint('🔒 Captcha détecté ($captchaType), désactivation temporaire du bloqueur de pub');
@@ -922,13 +189,11 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           final l10n = AppLocalizations.of(context);
           _notifier.info(l10n?.captchaDetected ?? "Captcha détecté - Le bloqueur de pub a été temporairement désactivé");
         }
-      } else if (captchaType == 'none' && _captchaDetected) {
-        // Vérifier si le captcha est résolu (présence de cookies cf_clearance)
-        final cookieManager = CookieManager.instance();
-        final cookies = await cookieManager.getCookies(url: url);
-        final hasClearanceCookie = cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'));
+      } else if (captchaType == null && _captchaDetected) {
+        // Vérifier si le captcha est résolu
+        final isResolved = await _captchaDetectionService.isCaptchaResolved(controller, url);
         
-        if (hasClearanceCookie) {
+        if (isResolved) {
           // Captcha résolu, réactiver le bloqueur
           debugPrint('✅ Captcha résolu, réactivation du bloqueur de pub');
           setState(() {
@@ -967,352 +232,27 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       _interactiveAdBlockMode = !_interactiveAdBlockMode;
     });
 
+    if (_controller == null) return;
+
     if (_interactiveAdBlockMode) {
       _notifier.info("Mode détection activé - Cliquez sur une pub pour la bloquer automatiquement");
-      // Injecter le script de détection de clic
-      await _injectInteractiveAdBlockScript();
+      await _adBlockerService.injectInteractiveAdBlockScript(_controller!);
     } else {
       _notifier.info("Mode détection désactivé");
-      // Retirer le script de détection
-      await _removeInteractiveAdBlockScript();
+      await _adBlockerService.removeInteractiveAdBlockScript(_controller!);
     }
-  }
-
-  Future<void> _injectInteractiveAdBlockScript() async {
-    if (_controller == null) return;
-
-    final script = """
-      (function() {
-        if (window._adBlockInteractiveMode) return; // Déjà injecté
-        
-        window._adBlockInteractiveMode = true;
-        window._adBlockClickedElement = null;
-        
-        // Fonction pour générer un sélecteur CSS unique et spécifique pour un élément
-        function getSelector(element) {
-          if (!element) return null;
-          
-          // Essayer d'abord avec l'ID (le plus spécifique)
-          if (element.id && element.id.trim() !== '') {
-            return '#' + element.id;
-          }
-          
-          // Ensuite avec toutes les classes (plus spécifique qu'une seule classe)
-          if (element.className && typeof element.className === 'string') {
-            const classes = element.className.trim().split(/\\s+/).filter(c => c && c.length > 0);
-            if (classes.length > 0) {
-              // Utiliser toutes les classes pour être plus spécifique
-              return element.tagName.toLowerCase() + '.' + classes.join('.');
-            }
-          }
-          
-          // Ensuite avec le tag et les attributs data-*
-          const tagName = element.tagName.toLowerCase();
-          const dataAttrs = [];
-          
-          // Collecter tous les attributs data-*
-          for (let attr of element.attributes) {
-            if (attr.name.startsWith('data-') && attr.value) {
-              dataAttrs.push('[' + attr.name + '="' + attr.value + '"]');
-            }
-          }
-          
-          if (dataAttrs.length > 0) {
-            return tagName + dataAttrs.join('');
-          }
-          
-          // Si on a une classe mais pas d'ID, utiliser tag + classe
-          if (element.getAttribute('class')) {
-            const classes = element.getAttribute('class').trim().split(/\\s+/).filter(c => c);
-            if (classes.length > 0) {
-              return tagName + '.' + classes[0];
-            }
-          }
-          
-          // Dernier recours : tag seul (mais on va le rejeter côté Flutter)
-          return tagName;
-        }
-        
-        // Gestionnaire de clic
-        function handleClick(e) {
-          if (!window._adBlockInteractiveMode) return;
-          
-          const element = e.target;
-          if (!element) return;
-          
-          const selector = getSelector(element);
-          
-          if (selector) {
-            window._adBlockClickedElement = {
-              selector: selector,
-              tagName: element.tagName.toLowerCase(),
-              className: element.className || '',
-              id: element.id || '',
-            };
-            
-            // Empêcher le comportement par défaut
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Bloquer immédiatement l'élément cliqué
-            try {
-              if (element.parentNode) {
-                element.style.display = 'none';
-                // Attendre un peu avant de supprimer pour éviter les erreurs
-                setTimeout(function() {
-                  try {
-                    if (element.parentNode) {
-                      element.remove();
-                    }
-                  } catch(err) {
-                    // Ignorer les erreurs de suppression
-                  }
-                }, 10);
-              }
-            } catch(err) {
-              // Ignorer les erreurs
-            }
-            
-            // Notifier Flutter
-            if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-              window.flutter_inappwebview.callHandler('onAdBlockClick', selector);
-            }
-          }
-        }
-        
-        document.addEventListener('click', handleClick, true);
-      })();
-    """;
-
-    try {
-      await _controller?.evaluateJavascript(source: script);
-    } catch (e) {
-      debugPrint('Erreur lors de l\'injection du script interactif: $e');
-    }
-  }
-
-  Future<void> _removeInteractiveAdBlockScript() async {
-    if (_controller == null) return;
-
-    final script = """
-      (function() {
-        if (window._adBlockInteractiveMode) {
-          window._adBlockInteractiveMode = false;
-          // Retirer le gestionnaire de clic serait complexe, on le laisse mais on désactive le mode
-        }
-      })();
-    """;
-
-    try {
-      await _controller?.evaluateJavascript(source: script);
-    } catch (e) {
-      debugPrint('Erreur lors de la suppression du script interactif: $e');
-    }
-  }
-
-  /// Vérifie si un sélecteur est trop générique pour être utilisé comme bloqueur de pub
-  bool _isSelectorTooGeneric(String selector) {
-    // Liste des sélecteurs trop génériques qui bloqueraient trop de contenu
-    final genericSelectors = [
-      'img',
-      'div',
-      'span',
-      'a',
-      'p',
-      'body',
-      'html',
-      'section',
-      'article',
-      'main',
-      'header',
-      'footer',
-      'nav',
-      'ul',
-      'ol',
-      'li',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-    ];
-    
-    // Normaliser le sélecteur (enlever les espaces)
-    final normalized = selector.trim().toLowerCase();
-    
-    // Vérifier si c'est un sélecteur trop générique
-    if (genericSelectors.contains(normalized)) {
-      return true;
-    }
-    
-    // Vérifier si c'est juste un tag HTML sans classe ni ID
-    if (normalized.length <= 3 && normalized.contains(RegExp(r'^[a-z]+$'))) {
-      return true;
-    }
-    
-    return false;
   }
 
   Future<void> _handleAdBlockClick(String selector) async {
+    if (_controller == null) return;
+    await _adBlockerService.handleAdBlockClick(_controller!, selector);
+    
+    // Recharger le script complet pour s'assurer que le sélecteur est bien inclus
     try {
-      final url = await _controller?.getUrl();
-      if (url == null) return;
-
-      final uri = Uri.parse(url.toString());
-      final domain = uri.host;
-
-      // Vérifier si le sélecteur est trop générique
-      if (_isSelectorTooGeneric(selector)) {
-        _notifier.error("Ce sélecteur est trop générique et bloquerait trop de contenu. Veuillez cliquer sur un élément plus spécifique.");
-        debugPrint('⚠️ Sélecteur trop générique ignoré: $selector');
-        return;
-      }
-
-      // Vérifier si un sélecteur similaire ou équivalent existe déjà
-      final existingSelectors = await _customSelectorsService.loadSelectors();
-      final adBlockSelectors = existingSelectors
-          .where((s) => s.domain == domain && s.type == SelectorType.adBlocker)
-          .toList();
-      
-      // Vérifier si le sélecteur est équivalent à un existant
-      // Par exemple : "div.class" équivaut à ".class", "tag.class" équivaut à ".class"
-      bool isEquivalent(String sel1, String sel2) {
-        if (sel1 == sel2) return true;
-        
-        // Normaliser les sélecteurs (enlever les tags devant les classes)
-        String normalize(String s) {
-          // Si c'est "tag.class", retourner ".class"
-          if (s.contains('.') && !s.startsWith('.')) {
-            final parts = s.split('.');
-            if (parts.length > 1) {
-              return '.${parts.sublist(1).join('.')}';
-            }
-          }
-          return s;
-        }
-        
-        final norm1 = normalize(sel1);
-        final norm2 = normalize(sel2);
-        return norm1 == norm2;
-      }
-      
-      final equivalentSelector = adBlockSelectors.firstWhere(
-        (s) => isEquivalent(s.selector, selector),
-        orElse: () => CustomSelector(
-          id: '',
-          domain: '',
-          selector: '',
-          type: SelectorType.adBlocker,
-        ),
-      );
-
-      if (equivalentSelector.id.isNotEmpty) {
-        // Ne pas afficher de notification si le sélecteur est déjà bloqué
-        debugPrint('ℹ️ Sélecteur équivalent déjà existant: $selector (équivaut à ${equivalentSelector.selector})');
-        // Bloquer quand même l'élément immédiatement sans créer de doublon
-        if (_controller != null) {
-          final blockScript = """
-            (function() {
-              try {
-                const elements = document.querySelectorAll('$selector');
-                let blockedCount = 0;
-                elements.forEach(function(el) {
-                  try {
-                    if (el && el.offsetParent !== null && el.parentNode !== null) {
-                      el.style.display = 'none';
-                      if (el.parentNode) {
-                        el.remove();
-                        blockedCount++;
-                      }
-                    }
-                  } catch(e) {
-                    // Ignorer si l'élément est déjà supprimé
-                  }
-                });
-                console.log('Bloqué ' + blockedCount + ' élément(s) existant avec le sélecteur: $selector');
-              } catch(e) {
-                console.error('Erreur lors du blocage: ' + e);
-              }
-            })();
-          """;
-          await _controller?.evaluateJavascript(source: blockScript);
-          
-          // Recharger le script complet pour s'assurer que le sélecteur est bien inclus
-          try {
-            final script = await _buildAdBlockScript();
-            await _controller?.evaluateJavascript(source: script);
-          } catch (e) {
-            debugPrint('⚠️ Erreur lors du rechargement du script de blocage: $e');
-          }
-        }
-        return;
-      }
-
-      // Créer un sélecteur personnalisé
-      final customSelector = CustomSelector(
-        id: 'interactive_${domain}_${DateTime.now().millisecondsSinceEpoch}',
-        domain: domain,
-        selector: selector,
-        type: SelectorType.adBlocker,
-        description: 'Détecté automatiquement par clic utilisateur',
-      );
-
-      // Sauvegarder le sélecteur
-      await _customSelectorsService.addSelector(customSelector);
-
-      // Bloquer immédiatement l'élément
-      if (_controller != null) {
-        final blockScript = """
-          (function() {
-            try {
-              const elements = document.querySelectorAll('$selector');
-              let blockedCount = 0;
-              elements.forEach(function(el) {
-                try {
-                  // Vérifier que l'élément existe toujours et n'est pas déjà supprimé
-                  if (el && el.parentNode && el.offsetParent !== null) {
-                    el.style.display = 'none';
-                    // Vérifier à nouveau avant de supprimer
-                    if (el.parentNode) {
-                      el.remove();
-                      blockedCount++;
-                    }
-                  }
-                } catch(e) {
-                  // Ignorer les erreurs pour cet élément spécifique
-                  console.log('Erreur pour un élément: ' + e);
-                }
-              });
-              console.log('Bloqué ' + blockedCount + ' élément(s) avec le sélecteur: $selector');
-              
-              // Ajouter le sélecteur à la liste des sélecteurs actifs pour le nettoyage périodique
-              if (typeof window._adBlockSelectors !== 'undefined') {
-                if (!window._adBlockSelectors.includes('$selector')) {
-                  window._adBlockSelectors.push('$selector');
-                }
-              }
-            } catch(e) {
-              console.error('Erreur lors du blocage: ' + e);
-            }
-          })();
-        """;
-        await _controller?.evaluateJavascript(source: blockScript);
-        
-        // Recharger le script complet pour inclure le nouveau sélecteur dans le nettoyage périodique
-        try {
-          final script = await _buildAdBlockScript();
-          await _controller?.evaluateJavascript(source: script);
-        } catch (e) {
-          debugPrint('⚠️ Erreur lors du rechargement du script de blocage: $e');
-        }
-      }
-
-      _notifier.success("Pub bloquée avec succès: $selector");
-      debugPrint('✅ Pub bloquée: $selector sur $domain');
+      final script = await _buildAdBlockScript();
+      await _controller?.evaluateJavascript(source: script);
     } catch (e) {
-      debugPrint('❌ Erreur lors du blocage de la pub: $e');
-      _notifier.error("Erreur lors du blocage de la pub: $e");
+      debugPrint('⚠️ Erreur lors du rechargement du script de blocage: $e');
     }
   }
 
@@ -1610,77 +550,81 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   void _handleDetected(Uri uri) async {
-    // Filtrage domaines : on ne réagit pas aux pubs/trackers
-    final host = uri.host;
-    if (_denyHosts.contains(host)) return;
-    // On reste sur le même provider (ou sous-domaines)
-    if (!_sameProvider(host, _originHost)) return;
-
-    final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
-    if (newCh == null) return;
-
-    if (_currentChapter == null) {
-      _currentChapter = newCh; // premier chap détecté
-      _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
-      // Réinitialiser le flag de restauration pour le nouveau chapitre
+    final result = await _navigationService.detectChapterChange(
+      uri,
+      _originHost,
+      _currentChapter,
+    );
+    
+    if (result == null) return;
+    
+    final newCh = result.newChapter!;
+    
+    // Fonction helper pour initialiser un nouveau chapitre
+    void initializeChapter(int chapter) {
+      _currentChapter = chapter;
+      _updateNextLinkFrom(uri.toString(), currentChapter: chapter);
       _hasRestoredScroll = false;
-      return;
+      if (_controller != null) {
+        _scrollPositionService.startSaveTimer(_controller!, widget.muId, chapter);
+      }
     }
-
-    if (newCh == _currentChapter! + 1) {
-      // Passage naturel au suivant => on valide le précédent ET le nouveau
-      final prev = _currentChapter!;
-      // Sauvegarder la position de scroll du chapitre précédent avant de changer
-      await _saveScrollPosition();
-      _currentChapter = newCh;
-      // Sauvegarder le chapitre précédent comme lu
-      await _commitIfNeeded(prev);
-      // Sauvegarder aussi le nouveau chapitre comme lu (car on est dessus)
-      await _commitIfNeeded(newCh);
-      _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
-      // Réinitialiser le flag de restauration pour le nouveau chapitre
-      _hasRestoredScroll = false;
-      return;
+    
+    switch (result.changeType) {
+      case ChapterChangeType.firstDetected:
+        initializeChapter(newCh);
+        break;
+        
+      case ChapterChangeType.nextChapter:
+        // Passage naturel au suivant => on valide le précédent ET le nouveau
+        final prev = result.previousChapter!;
+        // Sauvegarder la position du chapitre actuel avant de changer
+        if (_controller != null) {
+          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
+        }
+        // Supprimer la position sauvegardée du chapitre précédent (on avance)
+        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
+        // Sauvegarder le chapitre précédent comme lu
+        await _commitIfNeeded(prev);
+        // Sauvegarder aussi le nouveau chapitre comme lu (car on est dessus)
+        await _commitIfNeeded(newCh);
+        initializeChapter(newCh);
+        break;
+        
+      case ChapterChangeType.jumpForward:
+        // Saut de chapitres => on propose de valider le précédent
+        final prev = result.previousChapter!;
+        // Sauvegarder la position du chapitre actuel avant de changer
+        if (_controller != null) {
+          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
+        }
+        // Supprimer la position sauvegardée du chapitre actuel (on avance)
+        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
+        _promptJumpConfirm(prev: prev, next: newCh).then((yes) {
+          if (yes == true) _commitIfNeeded(newCh - 1); // on valide au moins le précédent
+          initializeChapter(newCh);
+        });
+        break;
+        
+      case ChapterChangeType.jumpBackward:
+        // Retour en arrière => sauvegarder la position du chapitre actuel avant de changer
+        final prev = result.previousChapter!;
+        if (_controller != null) {
+          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
+        }
+        // Supprimer la position sauvegardée du chapitre actuel car on recule
+        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
+        initializeChapter(newCh);
+        break;
+        
+      case ChapterChangeType.noChange:
+        // Même chapitre, rien à faire
+        break;
     }
-
-    if (newCh > _currentChapter! + 1) {
-      // Saut de chapitres => on propose de valider le précédent
-      // Sauvegarder la position de scroll du chapitre actuel avant de changer
-      await _saveScrollPosition();
-      _promptJumpConfirm(prev: _currentChapter!, next: newCh).then((yes) {
-        _currentChapter = newCh;
-        if (yes == true) _commitIfNeeded(newCh - 1); // on valide au moins le précédent
-        _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
-        // Réinitialiser le flag de restauration pour le nouveau chapitre
-        _hasRestoredScroll = false;
-      });
-      return;
-    }
-
-    if (newCh < _currentChapter!) {
-      // Retour en arrière => pas de commit
-      // Sauvegarder la position de scroll du chapitre actuel avant de changer
-      await _saveScrollPosition();
-      _currentChapter = newCh;
-      // Réinitialiser le flag de restauration pour le nouveau chapitre
-      _hasRestoredScroll = false;
-      return;
-    }
-  }
-
-  bool _sameProvider(String a, String b) {
-    String root(String h) {
-      final parts = h.split('.');
-      return parts.length >= 2 ? '${parts[parts.length-2]}.${parts.last}' : h;
-    }
-    return root(a) == root(b);
   }
 
   bool _isAllowedDomain(String host) {
-    // Vérifier si c'est un domaine de publicité
-    if (_denyHosts.contains(host)) return false;
-    // Vérifier si c'est le même provider
-    return _sameProvider(host, _originHost);
+    return _adBlockerService.isAllowedDomain(host, _originHost);
   }
 
   Future<bool?> _promptJumpConfirm({required int prev, required int next}) {
@@ -1710,7 +654,19 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   Future<bool> _onWillPop() async {
     // Sauvegarder la position de scroll avant de fermer
-    await _saveScrollPosition();
+    debugPrint('🔍 _onWillPop - Sauvegarde de la position avant fermeture');
+    debugPrint('🔍 _onWillPop - Controller: ${_controller != null}, Chapitre: $_currentChapter');
+    if (_controller != null && _currentChapter != null) {
+      debugPrint('🔍 _onWillPop - Sauvegarde de la position pour chapitre $_currentChapter');
+      await _scrollPositionService.saveScrollPosition(
+        _controller!,
+        widget.muId,
+        _currentChapter!,
+      );
+      debugPrint('🔍 _onWillPop - Position sauvegardée avec succès');
+    } else {
+      debugPrint('⚠️ _onWillPop - Impossible de sauvegarder: controller=${_controller != null}, chapter=$_currentChapter');
+    }
     
     // Si autoDownload est activé et que le callback existe, l'appeler avec false si on ferme sans télécharger
     if (widget.autoDownload && widget.onDownloadComplete != null) {
@@ -1740,7 +696,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       // Ne demander la validation que si l'utilisateur est proche de la fin
       if (!isNearEnd) {
         // NE PAS marquer le chapitre comme lu si l'utilisateur n'est pas proche de la fin
-        // La position de scroll est déjà sauvegardée par _saveScrollPosition()
+        // La position de scroll est déjà sauvegardée par ScrollPositionService
         return true; // Fermer sans demander
       }
       
@@ -1995,7 +951,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             final host = uri.host;
 
             // Bloquer les domaines de publicités
-            if (_denyHosts.any((h) => url.contains(h))) {
+            if (_adBlockerService.shouldBlockRequest(url)) {
               return NavigationActionPolicy.CANCEL;
             }
 
@@ -2019,7 +975,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               final urlString = url.toString();
               
               // Détecter le captcha dès le début du chargement via l'URL
-              if (_urlContainsCaptcha(urlString) || _isCaptchaDomain(host)) {
+              if (_captchaDetectionService.urlContainsCaptcha(urlString) || _captchaDetectionService.isCaptchaDomain(host)) {
                 if (!_captchaDetected && _adBlockerEnabled) {
                   debugPrint('🔒 Captcha détecté dans l\'URL, désactivation précoce du bloqueur de pub');
                   setState(() {
@@ -2077,16 +1033,47 @@ class _ReaderWebViewState extends State<ReaderWebView> {
               await _saveCookiesForDomain(url);
             }
             
+            // Détecter le chapitre depuis l'URL si pas encore détecté
+            if (_currentChapter == null && url != null) {
+              final uri = url;
+              final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
+              if (newCh != null) {
+                debugPrint('🔍 onLoadStop - Détection du chapitre depuis l\'URL: $newCh');
+                _currentChapter = newCh;
+                _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
+                _hasRestoredScroll = false;
+              }
+            }
+            
             // Restaurer la position de scroll si disponible (en arrière-plan pour ne pas bloquer)
-            if (_currentChapter != null && mounted) {
+            if (_currentChapter != null && mounted && _controller != null) {
+              debugPrint('🔍 onLoadStop - Chapitre $_currentChapter détecté, démarrage du timer');
               // Réinitialiser le flag de restauration pour le nouveau chapitre
               _hasRestoredScroll = false;
+              // Démarrer le timer de sauvegarde périodique AVANT la restauration
+              // pour s'assurer qu'il démarre même si la restauration échoue
+              _scrollPositionService.startSaveTimer(
+                _controller!,
+                widget.muId,
+                _currentChapter!,
+              );
               // Restaurer en arrière-plan pour ne pas bloquer le chargement
-              _restoreScrollPosition().catchError((e) {
+              _scrollPositionService.restoreScrollPosition(
+                _controller!,
+                widget.muId,
+                _currentChapter!,
+                hasRestoredScroll: _hasRestoredScroll,
+              ).then((restored) {
+                if (mounted) {
+                  setState(() {
+                    _hasRestoredScroll = restored;
+                  });
+                }
+              }).catchError((e) {
                 debugPrint('⚠️ Erreur lors de la restauration en arrière-plan: $e');
               });
-              // Démarrer le timer de sauvegarde périodique
-              _startScrollSaveTimer();
+            } else {
+              debugPrint('⚠️ onLoadStop - Chapitre non détecté: _currentChapter=$_currentChapter, controller=${_controller != null}, mounted=$mounted');
             }
             
             // Si autoDownload est activé, lancer automatiquement le téléchargement après un délai
@@ -2139,17 +1126,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
             final host = req.url.host;
             
             // Ne pas bloquer les domaines de captcha
-            if (_isCaptchaDomain(host) || _urlContainsCaptcha(u)) {
+            if (_captchaDetectionService.isCaptchaDomain(host) || _captchaDetectionService.urlContainsCaptcha(u)) {
               return null;
             }
             
-            if (_denyHosts.any((h) => u.contains(h))) {
-              return WebResourceResponse(
-                contentType: 'text/plain',
-                data: Uint8List(0),
-                statusCode: 403,
-                reasonPhrase: 'Blocked',
-              );
+            if (_adBlockerService.shouldBlockRequest(u)) {
+              return _adBlockerService.createBlockedResponse();
             }
             return null;
           },
@@ -2160,89 +1142,29 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   /// Vérifie si l'utilisateur est proche de la fin du chapitre (dans les 15% de la fin)
 
-  /// Sauvegarde la position de scroll actuelle dans SharedPreferences
-  Future<void> _saveScrollPosition() async {
-    if (_controller == null || _currentChapter == null) return;
-    
-    try {
-      final scrollScript = """
-        (function() {
-          return window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-        })();
-      """;
-      
-      final scrollResult = await _controller?.evaluateJavascript(source: scrollScript);
-      final scrollPosition = scrollResult != null ? double.tryParse(scrollResult.toString()) : null;
-      
-      if (scrollPosition != null && scrollPosition > 0) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'scroll_position_${widget.muId}_${_currentChapter}';
-        await prefs.setDouble(key, scrollPosition);
-      }
-    } catch (e) {
-      debugPrint('⚠️ Erreur lors de la sauvegarde de la position de scroll: $e');
-    }
-  }
-
-  /// Restaure la position de scroll sauvegardée depuis SharedPreferences
-  Future<void> _restoreScrollPosition() async {
-    if (_controller == null || _currentChapter == null || _hasRestoredScroll) return;
-    
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'scroll_position_${widget.muId}_${_currentChapter}';
-      final savedPosition = prefs.getDouble(key);
-      
-      if (savedPosition != null && savedPosition > 0) {
-        // Attendre que la page soit prête, mais de manière non-bloquante
-        // Utiliser un délai plus court et vérifier que le DOM est chargé
-        await Future.delayed(const Duration(milliseconds: 300));
-        
-        // Vérifier que le document est prêt avant de restaurer
-        final readyScript = """
-          (function() {
-            return document.readyState === 'complete' || document.readyState === 'interactive';
-          })();
-        """;
-        
-        final isReady = await _controller?.evaluateJavascript(source: readyScript);
-        if (isReady == true || isReady == 'true') {
-          final scrollScript = 'window.scrollTo(0, $savedPosition);';
-          await _controller?.evaluateJavascript(source: scrollScript);
-          _hasRestoredScroll = true;
-        } else {
-          // Si pas prêt, réessayer après un court délai
-          Future.delayed(const Duration(milliseconds: 200), () async {
-            if (_controller != null && !_hasRestoredScroll && mounted) {
-              final scrollScript = 'window.scrollTo(0, $savedPosition);';
-              await _controller?.evaluateJavascript(source: scrollScript);
-              _hasRestoredScroll = true;
-            }
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('⚠️ Erreur lors de la restauration de la position de scroll: $e');
-    }
-  }
-
-  /// Démarre le timer de sauvegarde périodique de la position de scroll
-  void _startScrollSaveTimer() {
-    _scrollSaveTimer?.cancel();
-    _scrollSaveTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      _saveScrollPosition();
-    });
-  }
 
   @override
   void dispose() {
-    _scrollSaveTimer?.cancel();
-    // Sauvegarder la position de scroll avant de fermer
-    _saveScrollPosition();
+    debugPrint('🔍 dispose() - Arrêt du timer et sauvegarde finale');
+    debugPrint('🔍 dispose() - Controller: ${_controller != null}, Chapitre: $_currentChapter');
+    _scrollPositionService.stopSaveTimer();
+    // Sauvegarder la position de scroll avant de fermer (sans await car dispose ne peut pas être async)
+    // La sauvegarde sera faite de manière synchrone dans le service
+    if (_controller != null && _currentChapter != null) {
+      debugPrint('🔍 dispose() - Sauvegarde de la position pour chapitre $_currentChapter');
+      // Utiliser un Future pour sauvegarder sans bloquer dispose
+      _scrollPositionService.saveScrollPosition(
+        _controller!,
+        widget.muId,
+        _currentChapter!,
+      ).then((_) {
+        debugPrint('🔍 dispose() - Position sauvegardée avec succès');
+      }).catchError((e) {
+        debugPrint('⚠️ Erreur lors de la sauvegarde dans dispose: $e');
+      });
+    } else {
+      debugPrint('⚠️ dispose() - Impossible de sauvegarder: controller=${_controller != null}, chapter=$_currentChapter');
+    }
     
     // NE PAS sauvegarder automatiquement le chapitre dans dispose()
     // La sauvegarde doit être gérée par _onWillPop() qui vérifie si l'utilisateur est proche de la fin
