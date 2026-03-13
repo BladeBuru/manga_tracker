@@ -33,6 +33,24 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    // Stockage du résultat Google OAuth (rempli par postMessage)
+    window.__googleAuthResult = null;
+
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        window.__googleAuthResult = {
+          accessToken: event.data.accessToken,
+          refreshToken: event.data.refreshToken
+        };
+      }
+    });
+
+    // Ouvre la popup Google OAuth SANS "noopener" pour que window.opener soit disponible
+    window.openGoogleOAuthPopup = function(url) {
+      window.open(url, 'googleOAuth', 'width=520,height=640,left=200,top=100');
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

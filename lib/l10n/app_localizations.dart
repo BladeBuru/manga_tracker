@@ -144,6 +144,18 @@ abstract class AppLocalizations {
   /// **'Se connecter'**
   String get login;
 
+  /// Message d'erreur quand la connexion Google échoue
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de la connexion avec Google'**
+  String get googleLoginFailed;
+
+  /// Bouton connexion Google
+  ///
+  /// In fr, this message translates to:
+  /// **'Se connecter avec Google'**
+  String get loginWithGoogle;
+
   /// Libellé pour retourner en arrière
   ///
   /// In fr, this message translates to:

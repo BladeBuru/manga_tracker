@@ -27,6 +27,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get login => '로그인';
 
   @override
+  String get googleLoginFailed => 'Google 로그인 실패';
+
+  @override
+  String get loginWithGoogle => 'Google로 로그인';
+
+  @override
   String get back => '뒤로';
 
   @override

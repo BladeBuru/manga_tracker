@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/http_service.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
@@ -33,7 +33,7 @@ class LibraryService {
     // if (_userLibraryCache != null) {
     //   return _userLibraryCache!;
     // }
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/all');
+    final url = buildApiUri('/library/all');
     final library = await _fetchMangaList(url);
     // _userLibraryCache = library; // Désactivé pour permettre la détection offline
     return library;
@@ -46,7 +46,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/save');
+        final url = buildApiUri('/library/save');
         final success = await _postOrDelete(
           method: _http.postWithAuthTokens,
           url: url,
@@ -74,7 +74,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/chapter');
+        final url = buildApiUri('/library/chapter');
         final res = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -102,7 +102,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/delete');
+        final url = buildApiUri('/library/delete');
         final success = await _postOrDelete(
           method: _http.deleteWithAuthTokens,
           url: url,
@@ -128,7 +128,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/status');
+        final url = buildApiUri('/library/status');
         final response = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -158,7 +158,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+        final url = buildApiUri('/library/custom-link');
         final res = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -185,7 +185,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+        final url = buildApiUri('/library/custom-link');
         final res = await _http.deleteWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},

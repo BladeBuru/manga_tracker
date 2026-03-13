@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
@@ -36,7 +36,7 @@ class UserService {
 
     // Charger depuis le réseau
     try {
-      Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/user/information');
+      Uri url = buildApiUri('/user/information');
       Response response = await httpService.getWithAuthTokens(url);
       Map<String, dynamic> data = jsonDecode(response.body);
       final userInfo = UserInformationDto.fromJson(data);
@@ -58,7 +58,7 @@ class UserService {
   /// Met à jour les informations utilisateur depuis le réseau en arrière-plan
   Future<void> _refreshUserInformationFromNetwork() async {
     try {
-      Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/user/information');
+      Uri url = buildApiUri('/user/information');
       Response response = await httpService.getWithAuthTokens(url);
       Map<String, dynamic> data = jsonDecode(response.body);
       final userInfo = UserInformationDto.fromJson(data);
@@ -73,7 +73,7 @@ class UserService {
 
   Future deleteAccount() async {
     final response = await httpService.deleteWithAuthTokens(
-      Uri.https(dotenv.env['MT_API_URL']!, '/user/delete'),
+      buildApiUri('/user/delete'),
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
     );
 
@@ -92,7 +92,7 @@ class UserService {
 
   Future changePassword(password) async {
     final response = await httpService.putWithAuthTokens(
-      Uri.https(dotenv.env['MT_API_URL']!, '/user/password'),
+      buildApiUri('/user/password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'password': password}),
     );

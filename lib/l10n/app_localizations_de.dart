@@ -27,6 +27,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get login => 'Anmelden';
 
   @override
+  String get googleLoginFailed => 'Google-Anmeldung fehlgeschlagen';
+
+  @override
+  String get loginWithGoogle => 'Mit Google anmelden';
+
+  @override
   String get back => 'Zurück';
 
   @override

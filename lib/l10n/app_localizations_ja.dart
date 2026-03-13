@@ -27,6 +27,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get login => 'サインイン';
 
   @override
+  String get googleLoginFailed => 'Googleログインに失敗しました';
+
+  @override
+  String get loginWithGoogle => 'Googleでサインイン';
+
+  @override
   String get back => '戻る';
 
   @override

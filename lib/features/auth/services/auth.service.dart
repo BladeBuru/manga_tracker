@@ -4,8 +4,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mangatracker/core/network/uri_builder.dart';
+import 'package:mangatracker/features/auth/views/google_auth_webview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
@@ -29,7 +31,7 @@ class AuthService {
   }
 
   Future attemptLogIn(String emailAddress, String password) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/login');
+    var url = buildApiUri('/auth/login');
     var res = await http.post(url,
         body: <String, String>{'email': emailAddress, 'password': password});
 
@@ -54,7 +56,7 @@ class AuthService {
     String emailAddress,
     String password,
   ) async {
-    final url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
+    final url = buildApiUri('/auth/register');
 
     try {
       final res = await http
@@ -152,7 +154,7 @@ class AuthService {
     _refreshCompleter = Completer<bool>();
 
     try {
-      final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
+      final url = buildApiUri('/auth/refresh');
       final res = await http.post(
         url,
         headers: {
@@ -341,6 +343,28 @@ class AuthService {
     return false;
   }
 
+
+  /// Connexion via Google OAuth — ouvre un WebView, intercepte le callback et sauvegarde les tokens.
+  /// Retourne `true` si la connexion a réussi.
+  Future<bool> loginWithGoogle(BuildContext context) async {
+    final oauthUrl = buildApiUri('/auth/google').toString();
+
+    if (!context.mounted) return false;
+
+    final result = await Navigator.of(context).push<GoogleAuthResult>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => GoogleAuthWebView(oauthUrl: oauthUrl),
+      ),
+    );
+
+    if (result == null) return false;
+
+    await storageService.writeSecureData('accessToken', result.accessToken);
+    await storageService.writeSecureData('refreshToken', result.refreshToken);
+    debugPrint('✅ AuthService: Connexion Google réussie');
+    return true;
+  }
 
   String? _extractMessage(String body) {
     if (body.isEmpty) return null;

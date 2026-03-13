@@ -7,6 +7,8 @@
   "password": "パスワード",
   "forgotPassword": "パスワードをお忘れですか？",
   "login": "サインイン",
+  "googleLoginFailed": "Googleログインに失敗しました",
+  "loginWithGoogle": "Googleでサインイン",
   "back": "戻る",
   "signUp": "サインアップ",
   "invalidCredentials": "無効な認証情報",

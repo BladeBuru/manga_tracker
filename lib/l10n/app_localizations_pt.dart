@@ -27,6 +27,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get login => 'Entrar';
 
   @override
+  String get googleLoginFailed => 'Falha no login com Google';
+
+  @override
+  String get loginWithGoogle => 'Entrar com Google';
+
+  @override
   String get back => 'Voltar';
 
   @override

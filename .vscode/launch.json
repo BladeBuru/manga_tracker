@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Web (Chrome) — port 3001",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "args": [
+        "--web-port", "3001"
+      ],
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Flutter Android",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "android"
+    }
+  ]
+}

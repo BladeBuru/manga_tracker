@@ -7,6 +7,8 @@
   "password": "Contraseña",
   "forgotPassword": "¿Olvidaste la contraseña?",
   "login": "Iniciar sesión",
+  "googleLoginFailed": "Error al iniciar sesión con Google",
+  "loginWithGoogle": "Iniciar sesión con Google",
   "back": "Atrás",
   "signUp": "Registrarse",
   "invalidCredentials": "Credenciales inválidas",

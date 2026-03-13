@@ -30,6 +30,16 @@
     "description": "Bouton de connexion"
   },
 
+  "googleLoginFailed": "Échec de la connexion avec Google",
+  "@googleLoginFailed": {
+    "description": "Message d'erreur quand la connexion Google échoue"
+  },
+
+  "loginWithGoogle": "Se connecter avec Google",
+  "@loginWithGoogle": {
+    "description": "Bouton connexion Google"
+  },
+
   "back": "Retour",
   "@back": {
     "description": "Libellé pour retourner en arrière"

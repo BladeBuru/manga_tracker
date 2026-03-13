@@ -7,6 +7,8 @@
   "password": "Passwort",
   "forgotPassword": "Passwort vergessen?",
   "login": "Anmelden",
+  "googleLoginFailed": "Google-Anmeldung fehlgeschlagen",
+  "loginWithGoogle": "Mit Google anmelden",
   "back": "Zurück",
   "signUp": "Registrieren",
   "invalidCredentials": "Ungültige Anmeldedaten",

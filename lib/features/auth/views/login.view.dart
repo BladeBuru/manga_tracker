@@ -334,11 +334,21 @@ class _LoginViewState extends State<LoginView> {
                                 children: [
                                   Semantics(
                                     button: true,
-                                    label: l10n?.comingSoon ?? 'Fonctionnalité à venir',
+                                    label: 'Se connecter avec Google',
                                     child: SquareTile(
                                       imagePath: 'assets/images/google_logo.png',
-                                      onTap: () {
-                                        notifier.info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
+                                      onTap: loginState.isLoading ? null : () async {
+                                        final success = await authService.loginWithGoogle(context);
+                                        if (!context.mounted) return;
+                                        if (success) {
+                                          Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(builder: (_) => const BottomNavbar()),
+                                          );
+                                        } else {
+                                          notifier.error(
+                                            l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
+                                          );
+                                        }
                                       },
                                     ),
                                   ),

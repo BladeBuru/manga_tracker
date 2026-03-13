@@ -12,6 +12,7 @@ import '../../../core/components/auth_button.dart';
 import 'login.view.dart';
 import '../widgets/square_tile.dart';
 import '../services/auth.service.dart';
+import '../../home/views/bottom_navbar.dart';
 import '../presentation/cubit/auth_submission_status.dart';
 import '../presentation/cubit/register_cubit.dart';
 import '../presentation/cubit/register_state.dart';
@@ -227,11 +228,22 @@ class _RegisterViewState extends State<RegisterView> {
                                       children: [
                                         Semantics(
                                           button: true,
-                                          label: l10n?.comingSoon ?? 'Fonctionnalité à venir',
+                                          label: l10n?.loginWithGoogle ?? 'Se connecter avec Google',
                                           child: SquareTile(
                                             imagePath: 'assets/images/google_logo.png',
-                                            onTap: () {
-                                              getIt<Notifier>().info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
+                                            onTap: registerState.isLoading ? null : () async {
+                                              final success = await authService.loginWithGoogle(context);
+                                              if (!context.mounted) return;
+                                              if (success) {
+                                                Navigator.of(context).pushAndRemoveUntil(
+                                                  MaterialPageRoute(builder: (_) => const BottomNavbar()),
+                                                  (route) => false,
+                                                );
+                                              } else {
+                                                getIt<Notifier>().error(
+                                                  l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
+                                                );
+                                              }
                                             },
                                           ),
                                         ),
