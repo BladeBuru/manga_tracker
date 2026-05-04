@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';

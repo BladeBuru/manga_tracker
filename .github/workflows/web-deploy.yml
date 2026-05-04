@@ -1,0 +1,247 @@
+name: Web Deploy — Manga Tracker
+
+# Build Flutter Web + image Docker + déploiement sur NAS TrueNAS via SSH/midclt
+# Triggers : push manuel uniquement pour l'instant (à activer sur dev quand stable)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environnement de déploiement'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+  # push:
+  #   branches: [dev]   # à activer après stabilisation
+
+env:
+  IMAGE: bladeburu/manga-tracker-web
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # 1. Build Flutter Web (vérification rapide avant Docker)
+  # ─────────────────────────────────────────────────────────────
+  test-build:
+    name: Build Web Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Inject .env.production
+        run: |
+          mkdir -p assets/env
+          echo "${{ secrets.WEB_ENV_PRODUCTION }}" > assets/env/.env.production
+          echo "✅ .env.production créé ($(wc -l < assets/env/.env.production) lignes)"
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze (info only)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: flutter build web
+        run: flutter build web --release --base-href "/"
+
+      - name: Build artifacts size
+        run: |
+          du -sh build/web/
+          ls -lh build/web/main.dart.js build/web/index.html
+
+  # ─────────────────────────────────────────────────────────────
+  # 2. Build & Push image Docker
+  # ─────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    needs: test-build
+    timeout-minutes: 25
+
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject .env.production
+        run: |
+          mkdir -p assets/env
+          echo "${{ secrets.WEB_ENV_PRODUCTION }}" > assets/env/.env.production
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Définir le tag
+        id: meta
+        run: |
+          SHA_SHORT="${GITHUB_SHA::8}"
+          echo "tag=sha-${SHA_SHORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/web/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────
+  # 3. Deploy sur NAS TrueNAS via SSH + midclt
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy NAS
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: production
+      url: https://app.bladeburu.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH (midclt)
+        uses: appleboy/ssh-action@v1
+        env:
+          TAG: ${{ needs.build-and-push.outputs.tag }}
+        with:
+          host: ${{ secrets.NAS_HOST }}
+          port: ${{ secrets.NAS_PORT }}
+          username: ${{ secrets.NAS_USER }}
+          key: ${{ secrets.NAS_SSH_KEY }}
+          envs: TAG
+          script: |
+            set -euo pipefail
+
+            echo "▶ Déploiement manga-tracker-web — image tag: $TAG"
+
+            python3 - << 'PYEOF'
+            import subprocess, json, time, sys, os
+
+            TAG = os.environ['TAG']
+
+            compose = f"""services:
+              manga-tracker-web:
+                image: bladeburu/manga-tracker-web:{TAG}
+                pull_policy: always
+                restart: unless-stopped
+                ports:
+                  - "8080:80"
+                healthcheck:
+                  test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:80/health"]
+                  interval: 30s
+                  timeout: 5s
+                  retries: 3
+                  start_period: 10s
+            """
+
+            # Liste les apps existantes pour décider entre create vs update
+            r = subprocess.run(
+                ['midclt', 'call', 'app.query'],
+                capture_output=True, text=True, timeout=30
+            )
+            apps = json.loads(r.stdout) if r.returncode == 0 else []
+            app_names = {a['name'] for a in apps}
+            app_exists = 'manga-tracker-web' in app_names
+
+            if app_exists:
+                # ─── UPDATE ───────────────────────────────────────
+                print("⏹  Arrêt de l'app existante...")
+                subprocess.run(['midclt', 'call', 'app.stop', 'manga-tracker-web'], capture_output=True)
+                time.sleep(5)
+
+                print("🔄 Mise à jour de la configuration...")
+                payload = json.dumps({'custom_compose_config_string': compose})
+                r = subprocess.run(
+                    ['midclt', 'call', '-j', 'app.update', 'manga-tracker-web', payload],
+                    capture_output=True, text=True, timeout=120
+                )
+                if r.returncode != 0:
+                    print(f"ERREUR app.update: {r.stdout[:500]} {r.stderr[:500]}", file=sys.stderr)
+                    sys.exit(1)
+
+                print("▶  Démarrage de l'app...")
+                subprocess.run(['midclt', 'call', '-j', 'app.start', 'manga-tracker-web'],
+                               capture_output=True, text=True, timeout=60)
+            else:
+                # ─── CREATE ───────────────────────────────────────
+                print("🆕 Création de l'app manga-tracker-web (custom)...")
+                payload = json.dumps({
+                    'app_name': 'manga-tracker-web',
+                    'custom_app': True,
+                    'custom_compose_config_string': compose,
+                })
+                r = subprocess.run(
+                    ['midclt', 'call', '-j', 'app.create', payload],
+                    capture_output=True, text=True, timeout=180
+                )
+                if r.returncode != 0:
+                    print(f"ERREUR app.create: {r.stdout[:500]} {r.stderr[:500]}", file=sys.stderr)
+                    sys.exit(1)
+
+            # ─── Polling app-level RUNNING ─────────────────────────
+            print("⏳ Attente démarrage Nginx (max 2 min)...")
+            deadline = time.time() + 120
+            last_state = None
+            while time.time() < deadline:
+                time.sleep(5)
+                r = subprocess.run(['midclt', 'call', 'app.query'], capture_output=True, text=True)
+                apps = json.loads(r.stdout)
+                for a in apps:
+                    if a['name'] != 'manga-tracker-web':
+                        continue
+                    state = a.get('state', '')
+                    if state != last_state:
+                        print(f"   État: {state}")
+                        last_state = state
+                    if state == 'RUNNING':
+                        print(f"✅ App RUNNING — déploiement web réussi (tag {TAG})")
+                        sys.exit(0)
+            print(f"❌ TIMEOUT — état final: {last_state}", file=sys.stderr)
+            sys.exit(1)
+            PYEOF
+
+            # Nettoyage images orphelines
+            midclt call -j app.image.prune '{"filters": {"dangling": true}}' 2>/dev/null || true
+
+  # ─────────────────────────────────────────────────────────────
+  # 4. Smoke-test HTTP post-deploy
+  # ─────────────────────────────────────────────────────────────
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Healthcheck HTTP (retry 5×)
+        run: |
+          echo "🔍 Vérification https://app.bladeburu.com/"
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://app.bladeburu.com/)
+            echo "  Tentative $i → HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Web app opérationnelle"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "❌ Web app ne répond pas après 5 tentatives"
+          exit 1

@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';

@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 
@@ -86,52 +85,62 @@ class HttpService {
   }
 
   Future<Map<String, String>> _addAuthHeaders(Map<String, String>? h) async {
-    final headers = h == null ? <String,String>{} : Map.of(h);
+    final headers = h == null ? <String, String>{} : Map.of(h);
 
     String? accessToken = await _storage.readSecureData('accessToken');
     String? refreshToken = await _storage.readSecureData('refreshToken');
 
-    // Vérifier le refresh token
-    if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
-      debugPrint('⚠️ HttpService: Refresh token expiré ou absent');
-      throw InvalidCredentialsException('Refresh token expired');
+    // Cas 1 : l'access token est encore valide → on l'utilise directement
+    if (accessToken != null && !_auth.isTokenExpired(accessToken)) {
+      headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
+      return headers;
     }
 
-    // Si l'access token est expiré, tenter de le rafraîchir
-    if (accessToken == null || _auth.isTokenExpired(accessToken)) {
-      debugPrint('🔄 HttpService: Access token expiré, tentative de refresh...');
-      
-      // Vérifier la connectivité avant de tenter le refresh
+    // Cas 2 : l'access token est expiré/absent → on tente un refresh
+    debugPrint('🔄 HttpService: Access token expiré, tentative de refresh...');
+
+    if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
+      // Refresh token aussi expiré : vérifier si on est hors ligne avant de déconnecter
       try {
         final connectivityService = getIt<ConnectivityService>();
-        if (!connectivityService.isConnected) {
-          debugPrint('⚠️ HttpService: Pas de connexion, impossible de rafraîchir le token');
-          // En mode hors ligne avec refreshToken valide, on peut quand même utiliser l'ancien accessToken
-          // même s'il est expiré, certaines APIs peuvent l'accepter ou retourner une erreur spécifique
-          if (accessToken != null) {
-            debugPrint('📱 HttpService: Mode hors ligne, utilisation de l\'ancien accessToken');
-            headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
-            return headers;
-          }
-          throw InvalidCredentialsException('No connection and no access token');
+        if (!connectivityService.isConnected && accessToken != null) {
+          // Hors ligne avec un ancien access token : on tente quand même (le serveur gérera le 401)
+          debugPrint('📱 HttpService: Hors ligne, utilisation de l\'ancien accessToken');
+          headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
+          return headers;
         }
-      } catch (e) {
-        debugPrint('⚠️ HttpService: Erreur lors de la vérification de connectivité: $e');
-        // Continuer même si on ne peut pas vérifier la connectivité
-      }
-      
-      final ok = await _auth.refreshAccessToken();
-      if (!ok) {
-        debugPrint('❌ HttpService: Échec du refresh du access token');
-        throw InvalidCredentialsException('Could not refresh access token');
-      }
-      accessToken = await _storage.readSecureData('accessToken');
-      if (accessToken == null) {
-        debugPrint('❌ HttpService: Access token toujours null après refresh');
-        throw InvalidCredentialsException('Access token not available after refresh');
-      }
-      debugPrint('✅ HttpService: Access token rafraîchi avec succès');
+      } catch (_) {}
+      debugPrint('❌ HttpService: Les deux tokens sont expirés');
+      throw InvalidCredentialsException('Both tokens expired');
     }
+
+    // Refresh token valide : vérifier la connectivité
+    try {
+      final connectivityService = getIt<ConnectivityService>();
+      if (!connectivityService.isConnected) {
+        if (accessToken != null) {
+          debugPrint('📱 HttpService: Hors ligne, utilisation de l\'ancien accessToken');
+          headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
+          return headers;
+        }
+        throw InvalidCredentialsException('No connection and no access token');
+      }
+    } catch (e) {
+      if (e is InvalidCredentialsException) rethrow;
+      // ConnectivityService non disponible → on continue
+    }
+
+    final ok = await _auth.refreshAccessToken();
+    if (!ok) {
+      debugPrint('❌ HttpService: Échec du refresh du access token');
+      throw InvalidCredentialsException('Could not refresh access token');
+    }
+
+    accessToken = await _storage.readSecureData('accessToken');
+    if (accessToken == null) {
+      throw InvalidCredentialsException('Access token not available after refresh');
+    }
+    debugPrint('✅ HttpService: Access token rafraîchi avec succès');
 
     headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
     return headers;

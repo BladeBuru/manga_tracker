@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/features/auth/views/google_auth_webview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -344,9 +345,70 @@ class AuthService {
   }
 
 
-  /// Connexion via Google OAuth — ouvre un WebView, intercepte le callback et sauvegarde les tokens.
-  /// Retourne `true` si la connexion a réussi.
+  /// Connexion via Google.
+  ///
+  /// - Sur **mobile** : utilise le package `google_sign_in` (popup natif Google)
+  ///   → envoie l'idToken au backend `POST /auth/google/mobile`
+  /// - Sur **web** : ouvre une popup via WebView + postMessage (flux OAuth existant)
   Future<bool> loginWithGoogle(BuildContext context) async {
+    if (!kIsWeb) {
+      return _loginWithGoogleMobile();
+    }
+    return _loginWithGoogleWeb(context);
+  }
+
+  // Web Client ID = le même que le backend utilise pour vérifier l'idToken
+  static const _googleWebClientId =
+      '43781664315-4qruuj7eek7j71meh9ccl398r9k20a6k.apps.googleusercontent.com';
+
+  Future<bool> _loginWithGoogleMobile() async {
+    try {
+      // Initialise le SDK (idempotent si déjà initialisé)
+      await GoogleSignIn.instance.initialize(serverClientId: _googleWebClientId);
+
+      // Force le choix de compte Google
+      await GoogleSignIn.instance.signOut();
+
+      // Lance le popup natif Google
+      final account = await GoogleSignIn.instance.authenticate();
+
+      // En v7, authentication est un getter synchrone
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        debugPrint('❌ AuthService: idToken Google null (serverClientId manquant ?)');
+        return false;
+      }
+
+      debugPrint('🔵 AuthService: idToken reçu, envoi au backend...');
+      final url = buildApiUri('/auth/google/mobile');
+      final res = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'idToken': idToken,
+              'deviceInfo': 'Flutter Mobile',
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (res.statusCode == HttpStatus.created || res.statusCode == HttpStatus.ok) {
+        final data = jsonDecode(res.body);
+        await storageService.writeSecureData('accessToken', data['accessToken']);
+        await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        debugPrint('✅ AuthService: Connexion Google mobile réussie');
+        return true;
+      } else {
+        debugPrint('❌ AuthService: Erreur backend Google mobile - ${res.statusCode}: ${res.body}');
+        return false;
+      }
+    } on Exception catch (e) {
+      debugPrint('⚠️ AuthService: Connexion Google annulée ou erreur: $e');
+      return false;
+    }
+  }
+
+  Future<bool> _loginWithGoogleWeb(BuildContext context) async {
     final oauthUrl = buildApiUri('/auth/google').toString();
 
     if (!context.mounted) return false;
@@ -362,8 +424,27 @@ class AuthService {
 
     await storageService.writeSecureData('accessToken', result.accessToken);
     await storageService.writeSecureData('refreshToken', result.refreshToken);
-    debugPrint('✅ AuthService: Connexion Google réussie');
+    debugPrint('✅ AuthService: Connexion Google web réussie');
     return true;
+  }
+
+  /// Persiste un couple `{accessToken, refreshToken}` reçu d'une voie
+  /// alternative à `attemptLogIn` (vérification email, reset password
+  /// confirmé, refresh côté serveur, etc.).
+  ///
+  /// **Sécurité** : à n'appeler QUE depuis un flow qui a déjà validé
+  /// l'identité de l'utilisateur (token email vérifié, etc.). Les tokens
+  /// sont stockés via `flutter_secure_storage` (Keystore Android,
+  /// Keychain iOS, WebCrypto Web).
+  Future<void> persistTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    await storageService.writeSecureData('accessToken', accessToken);
+    if (refreshToken.isNotEmpty) {
+      await storageService.writeSecureData('refreshToken', refreshToken);
+    }
+    debugPrint('✅ AuthService: Tokens persistés via persistTokens()');
   }
 
   String? _extractMessage(String body) {

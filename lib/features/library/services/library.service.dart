@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/http_service.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -177,6 +177,35 @@ class LibraryService {
       await _cacheService.queueOfflineAction(OfflineAction.updateCustomLink(muId, customLink));
       return true; // Retourner true car l'action est en queue
     }
+  }
+
+// ─────────── PUT /library/rating ───────────
+  /// Met à jour la note personnelle de l'utilisateur pour un manga (0-10).
+  /// `rating = 0` supprime la note. Le manga doit déjà être en bibliothèque.
+  Future<bool> updateRating(int muId, int rating) async {
+    if (rating < 0 || rating > 10) {
+      throw ArgumentError('Rating must be between 0 and 10, got $rating');
+    }
+
+    final isOnline = _connectivityService.isConnected;
+
+    if (isOnline) {
+      try {
+        final url = buildApiUri('/library/rating');
+        final res = await _http.putWithAuthTokens(
+          url,
+          headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+          body: jsonEncode({'muId': muId, 'rating': rating}),
+        );
+        return res.statusCode == HttpStatus.ok;
+      } catch (e) {
+        debugPrint('⚠️ updateRating: erreur réseau ($e)');
+        return false;
+      }
+    }
+    // Mode hors ligne : pas de queue pour le rating (action non critique)
+    debugPrint('⚠️ updateRating: hors ligne, ignoré');
+    return false;
   }
 
 // ─────────── DELETE /library/custom-link ───────────

@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
