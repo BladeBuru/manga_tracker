@@ -47,11 +47,17 @@ class IntputTexteField extends StatelessWidget {
         textInputAction: textInputAction,
         focusNode: focusNode,
         onFieldSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
+        // Couleur du texte saisi forcée en sombre car le fillColor est gris
+        // clair fixe — sans cette ligne, en dark mode système, le texte
+        // saisi prend la couleur blanche du theme et devient illisible.
+        style: const TextStyle(color: Color(0xFF1A1A1A)),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[400]),
+          hintStyle: TextStyle(color: Colors.grey[600]),
           labelText: labelText,
+          labelStyle: TextStyle(color: Colors.grey[700]),
           helperText: helperText,
+          helperStyle: TextStyle(color: Colors.grey[600]),
           filled: true,
           fillColor: Colors.grey[100],
           prefixIcon: prefixIcon,
