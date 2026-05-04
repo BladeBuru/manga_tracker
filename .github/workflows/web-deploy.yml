@@ -180,7 +180,9 @@ jobs:
                     capture_output=True, text=True, timeout=120
                 )
                 if r.returncode != 0:
-                    print(f"ERREUR app.update: {r.stdout[:500]} {r.stderr[:500]}", file=sys.stderr)
+                    print(f"ERREUR app.update (rc={r.returncode}):", file=sys.stderr)
+                    print(f"=== STDOUT ===\n{r.stdout}", file=sys.stderr)
+                    print(f"=== STDERR ===\n{r.stderr}", file=sys.stderr)
                     sys.exit(1)
 
                 print("▶  Démarrage de l'app...")
@@ -194,13 +196,17 @@ jobs:
                     'custom_app': True,
                     'custom_compose_config_string': compose,
                 })
+                print(f"DEBUG payload (compose abrégé):\n  app_name=manga-tracker-web custom_app=True\n  compose=\n{compose}")
                 r = subprocess.run(
                     ['midclt', 'call', '-j', 'app.create', payload],
-                    capture_output=True, text=True, timeout=180
+                    capture_output=True, text=True, timeout=300
                 )
                 if r.returncode != 0:
-                    print(f"ERREUR app.create: {r.stdout[:500]} {r.stderr[:500]}", file=sys.stderr)
+                    print(f"ERREUR app.create (rc={r.returncode}):", file=sys.stderr)
+                    print(f"=== STDOUT (full) ===\n{r.stdout}", file=sys.stderr)
+                    print(f"=== STDERR (full) ===\n{r.stderr}", file=sys.stderr)
                     sys.exit(1)
+                print(f"OK app.create:\n{r.stdout[-2000:]}")
 
             # ─── Polling app-level RUNNING ─────────────────────────
             print("⏳ Attente démarrage Nginx (max 2 min)...")
