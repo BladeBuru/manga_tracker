@@ -22,20 +22,29 @@ L'app Flutter consomme l'API NestJS sur `https://api.bladeburu.com` (CORS déjà
 
 ## Prérequis (one-time setup)
 
-### 1. Secret GitHub — `WEB_ENV_PRODUCTION`
+### 1. Secret GitHub — `ENV_PRODUCTION` (déjà existant)
 
-Créer le secret avec le contenu de `assets/env/.env.production` pour le web :
+Le workflow réutilise le secret `ENV_PRODUCTION` déjà en place pour le release APK
+(contient `MT_API_URL=https://api.bladeburu.com`). Aucune action.
 
-```env
-MT_API_URL=https://api.bladeburu.com
-```
+### 2. Secrets à ajouter (mêmes valeurs que dans le repo API-mangaTracker)
 
-Ajouter via : **Settings → Secrets and variables → Actions → New repository secret**
+GitHub isole les secrets par repo (pas de partage cross-repo). Il faut donc copier
+les valeurs depuis le repo API :
 
-### 2. Secrets déjà partagés avec l'API (réutilisés)
+| Secret | Source |
+|---|---|
+| `DOCKERHUB_USER` | repo API → Settings → Secrets → copier la valeur |
+| `DOCKERHUB_TOKEN` | repo API |
+| `NAS_HOST` | repo API |
+| `NAS_PORT` | repo API |
+| `NAS_USER` | repo API |
+| `NAS_SSH_KEY` | repo API (clé privée multi-ligne) |
 
-- `DOCKERHUB_USER`, `DOCKERHUB_TOKEN` — push Docker Hub
-- `NAS_HOST`, `NAS_PORT`, `NAS_USER`, `NAS_SSH_KEY` — SSH NAS
+**Note** : on réutilise volontairement la même clé SSH déjà autorisée sur le NAS
+plutôt que d'en créer une nouvelle (simplicité). Si tu veux une isolation forte
+plus tard, génère une clé dédiée `web-deploy` et ajoute son `.pub` au NAS via
+TrueNAS UI / `~/.ssh/authorized_keys`.
 
 ### 3. NPMplus — Proxy host pour `app.bladeburu.com`
 

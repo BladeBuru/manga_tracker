@@ -37,10 +37,10 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Inject .env.production
+      - name: Inject .env.production (réutilise le secret existant ENV_PRODUCTION)
         run: |
           mkdir -p assets/env
-          echo "${{ secrets.WEB_ENV_PRODUCTION }}" > assets/env/.env.production
+          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
           echo "✅ .env.production créé ($(wc -l < assets/env/.env.production) lignes)"
 
       - name: flutter pub get
@@ -72,10 +72,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject .env.production
+      - name: Inject .env.production (réutilise le secret existant ENV_PRODUCTION)
         run: |
           mkdir -p assets/env
-          echo "${{ secrets.WEB_ENV_PRODUCTION }}" > assets/env/.env.production
+          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
