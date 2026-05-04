@@ -36,8 +36,34 @@ class _StartupPageState extends State<StartupPage> {
     } catch (e) {
       debugPrint('⚠️ StartupPage: ConnectivityService non disponible: $e');
     }
-    
+
+    // PRIORITÉ ABSOLUE : vérifier les mises à jour AVANT toute tentative
+    // d'authentification. Si l'auth est cassée par un bug (ex: l'API n'est
+    // pas joignable, ou un fix est attendu côté serveur), l'utilisateur
+    // doit toujours pouvoir installer la nouvelle version. Sans cette
+    // vérif au boot, l'utilisateur reste bloqué sur la version buggée.
+    if (!kIsWeb) {
+      await _checkForUpdateBeforeAuth();
+    }
+    if (!mounted) return;
+
     await _attemptAutoLogin();
+  }
+
+  /// Vérifie l'update GitHub Releases et propose la maj si dispo.
+  /// Indépendant du flow d'auth : tourne au boot pour ne jamais bloquer
+  /// l'utilisateur sur une version buggée.
+  Future<void> _checkForUpdateBeforeAuth() async {
+    try {
+      final updateAvailable = await appUpdateService.isUpdateAvailable();
+      if (updateAvailable && mounted) {
+        await _showUpdateDialog();
+      }
+    } catch (e) {
+      // Pas grave : si la vérif update échoue (offline, GH Pages down,
+      // etc.), on ne bloque pas le boot — on tente l'auto-login.
+      debugPrint('⚠️ StartupPage: vérif update au boot échouée : $e');
+    }
   }
 
   Future<void> _attemptAutoLogin() async {
@@ -100,29 +126,23 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   /// Le chef d'orchestre : une logique claire et séquentielle après la connexion.
+  ///
+  /// Note : la vérification des mises à jour (`isUpdateAvailable`) est faite
+  /// AU BOOT (`_checkForUpdateBeforeAuth`), AVANT toute tentative d'auth,
+  /// pour ne pas bloquer l'utilisateur si l'auth est cassée. Ici on ne fait
+  /// plus que le changelog post-update (état "Quoi de neuf ?").
   Future<void> _onLoginSuccess() async {
     if (kIsWeb) {
       _navigateToHome();
       return;
     }
-    // Étape 1 : Gérer le changelog. On attend que ce soit terminé.
+    // Affichage du changelog si nouvelle version installée depuis le dernier login.
     final changelogInfo = await appUpdateService.getNewChangelog();
     if (changelogInfo != null && changelogInfo.isEmpty == false && mounted) {
       await _showChangelogDialog(changelogInfo);
       await appUpdateService.markChangelogAsSeen();
     }
 
-    // Étape 2 : Vérifier si une mise à jour est disponible.
-    final updateAvailable = await appUpdateService.isUpdateAvailable();
-    if (updateAvailable && mounted) {
-      // Si oui, on affiche la proposition. L'utilisateur fait son choix.
-      // L'await permet de s'assurer que la dialog est bien fermée avant de continuer.
-      await _showUpdateDialog();
-    }
-
-    // ÉTAPE FINALE (LA CORRECTION) :
-    // Que l'on ait montré une dialog ou non, maintenant que tout est terminé,
-    // on navigue vers l'écran d'accueil.
     _navigateToHome();
   }
 
