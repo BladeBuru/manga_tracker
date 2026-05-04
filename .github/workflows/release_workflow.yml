@@ -142,9 +142,15 @@ jobs:
           git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
           # Supprimer le tag avec build du remote s'il existe
           git push origin :refs/tags/v${{ steps.version.outputs.version_full }} 2>/dev/null || true
-          # Pousser le tag avec uniquement la version
+
+          # Garde-fou anti race condition : si master a divergé pendant le run
+          # (ex: un autre push entre-temps), on rebase notre commit de bump
+          # par-dessus. `pull --rebase` échoue proprement si conflit irréconciliable.
+          git pull --rebase origin master
+
+          # Pousser le tag avec uniquement la version, puis le commit de bump
           git push origin v${{ steps.version.outputs.version }}
-          git push
+          git push origin master
 
       # ──────────────────────────────────────────────────────────────
       # Changelog : depuis input (workflow_dispatch) ou PR body (PR)
@@ -181,7 +187,9 @@ jobs:
         run: |
           git add assets/version.json
           git commit -m "📝 Update version.json for ${{ steps.version.outputs.version }}" || echo "Nothing to commit"
-          git push
+          # Idem ici : rebase si master a bougé pendant le build
+          git pull --rebase origin master
+          git push origin master
 
 
       - name: 🚀 Create GitHub Release
