@@ -45,8 +45,9 @@ Voir skill `/cross-platform-audit` pour vérifier un fichier ou feature.
 
 1. [.claude/memory-bank/architecture.md](.claude/memory-bank/architecture.md) — Stack, BLoC, GetIt, services, navigation
 2. [.claude/memory-bank/progress.md](.claude/memory-bank/progress.md) — État d'avancement, priorités
-3. [.claude/memory-bank/known-issues.md](.claude/memory-bank/known-issues.md) — Bugs actifs et workarounds
-4. [.claude/memory-bank/decisions.md](.claude/memory-bank/decisions.md) — Décisions architecturales (lire avant de proposer autre chose)
+3. [.claude/memory-bank/roadmap.md](.claude/memory-bank/roadmap.md) — Vue d'ensemble des features (✅ / 🔵 / ⏳ / ❌) + mindmap mermaid
+4. [.claude/memory-bank/known-issues.md](.claude/memory-bank/known-issues.md) — Bugs actifs et workarounds
+5. [.claude/memory-bank/decisions.md](.claude/memory-bank/decisions.md) — Décisions architecturales (lire avant de proposer autre chose)
 
 **Si la feature touche une page existante → lire son code avant de modifier.**
 **Si pattern incertain → DEMANDER avant de coder.**
@@ -65,6 +66,7 @@ Voir skill `/cross-platform-audit` pour vérifier un fichier ou feature.
 - ✅ **TOUJOURS** respecter le pattern BLoC
 - ✅ **TOUJOURS** traduire tous les textes visibles
 - ✅ **TOUJOURS** mettre à jour `memory-bank/progress.md` après chaque feature
+- ✅ **TOUJOURS** mettre à jour `memory-bank/roadmap.md` (statut `⏳` → `🔵` ou `✅`) quand une feature avance
 
 ---
 
