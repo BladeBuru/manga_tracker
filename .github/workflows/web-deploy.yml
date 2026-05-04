@@ -40,8 +40,11 @@ jobs:
       - name: Inject .env.production (réutilise le secret existant ENV_PRODUCTION)
         run: |
           mkdir -p assets/env
-          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
-          echo "✅ .env.production créé ($(wc -l < assets/env/.env.production) lignes)"
+          printf '%s' "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+          # .env.development est déclaré comme asset dans pubspec.yaml mais gitignored
+          # → on crée un fichier vide pour que flutter build web ne plante pas
+          test -f assets/env/.env.development || printf '' > assets/env/.env.development
+          echo "✅ assets/env/ prêt ($(wc -c < assets/env/.env.production) octets prod)"
 
       - name: flutter pub get
         run: flutter pub get
@@ -75,7 +78,9 @@ jobs:
       - name: Inject .env.production (réutilise le secret existant ENV_PRODUCTION)
         run: |
           mkdir -p assets/env
-          echo "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+          printf '%s' "${{ secrets.ENV_PRODUCTION }}" > assets/env/.env.production
+          # Garde-fou identique au job test-build (cf. commentaire ci-dessus)
+          test -f assets/env/.env.development || printf '' > assets/env/.env.development
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
