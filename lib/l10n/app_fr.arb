@@ -29,6 +29,21 @@
   "@login": {
     "description": "Bouton de connexion"
   },
+
+  "googleLoginFailed": "Échec de la connexion avec Google",
+  "@googleLoginFailed": {
+    "description": "Message d'erreur quand la connexion Google échoue"
+  },
+
+  "loginWithGoogle": "Se connecter avec Google",
+  "@loginWithGoogle": {
+    "description": "Bouton connexion Google"
+  },
+
+  "back": "Retour",
+  "@back": {
+    "description": "Libellé pour retourner en arrière"
+  },
   
   "signUp": "S'inscrire",
   "@signUp": {
@@ -150,6 +165,21 @@
     "description": "Option pour gérer les notifications"
   },
   
+  "newChapterNotifications": "Notifications nouveaux chapitres",
+  "@newChapterNotifications": {
+    "description": "Titre pour les notifications de nouveaux chapitres"
+  },
+  
+  "newChapterNotificationsEnabled": "Activées",
+  "@newChapterNotificationsEnabled": {
+    "description": "Texte indiquant que les notifications sont activées"
+  },
+  
+  "newChapterNotificationsDisabled": "Désactivées",
+  "@newChapterNotificationsDisabled": {
+    "description": "Texte indiquant que les notifications sont désactivées"
+  },
+  
   "manageNotifications": "Gérer les notifications",
   "@manageNotifications": {
     "description": "Sous-titre pour gérer les notifications"
@@ -168,6 +198,11 @@
   "darkMode": "Mode sombre",
   "@darkMode": {
     "description": "Label pour le mode sombre"
+  },
+  
+  "systemMode": "Système",
+  "@systemMode": {
+    "description": "Label pour le mode système (utilise les préférences du téléphone)"
   },
   
   "language": "Langue",
@@ -393,6 +428,15 @@
   "totalChapters": "Total de chapitres",
   "@totalChapters": {
     "description": "Label pour le total de chapitres"
+  },
+  
+  "associatedNames": "Noms associés",
+  "@associatedNames": {
+    "description": "Titre pour la section des noms associés du manga"
+  },
+  "associatedNamesCount": "{count, plural, =0{Aucun nom} =1{{count} nom} other{{count} noms}}",
+  "@associatedNamesCount": {
+    "description": "Nombre de noms associés"
   },
   
   "saveProgress": "Enregistrer la progression",
@@ -721,12 +765,909 @@
   },
   
   "cannotOpenLink": "Impossible d'ouvrir le lien : {url}",
-  "@cannotOpenLink": {
-    "description": "Message d'erreur pour l'ouverture d'un lien",
+    "@cannotOpenLink": {
+      "description": "Message d'erreur pour l'ouverture d'un lien",
+      "placeholders": {
+        "url": {
+          "type": "String"
+        }
+      }
+    },
+  
+  "searchHistoryTitle": "Historique de recherche",
+    "@searchHistoryTitle": {
+      "description": "Titre pour l'historique de recherche"
+    },
+  
+  "searchEmptyStateMessage": "Recherchez un manga, manhwa ou manhua",
+    "@searchEmptyStateMessage": {
+      "description": "Message pour l'état vide de la recherche"
+    },
+  
+  "clear": "Effacer",
+    "@clear": {
+      "description": "Bouton pour effacer l'historique de recherche"
+    },
+  
+  "biometricAuthTitle": "Authentification biométrique",
+    "@biometricAuthTitle": {
+      "description": "Titre pour l'authentification biométrique"
+    },
+  
+  "biometricAuthSubtitle": "Utiliser l'empreinte digitale ou le Face ID pour se connecter rapidement",
+    "@biometricAuthSubtitle": {
+      "description": "Sous-titre pour l'authentification biométrique"
+    },
+  
+  "enableBiometricAuth": "Activer l'authentification biométrique",
+    "@enableBiometricAuth": {
+      "description": "Message de succès pour l'activation de la biométrie"
+    },
+  
+  "disableBiometricAuth": "Authentification biométrique désactivée",
+    "@disableBiometricAuth": {
+      "description": "Message de succès pour la désactivation de la biométrie"
+    },
+  
+  "biometricAuthEnabled": "Activée",
+    "@biometricAuthEnabled": {
+      "description": "Statut activé pour la biométrie"
+    },
+  
+  "biometricAuthDisabled": "Désactivée",
+    "@biometricAuthDisabled": {
+      "description": "Statut désactivé pour la biométrie"
+    },
+  
+  "biometricAuthFirstTimeTitle": "Activer l'authentification biométrique ?",
+    "@biometricAuthFirstTimeTitle": {
+      "description": "Titre de la dialog de première activation"
+    },
+  
+  "biometricAuthFirstTimeMessage": "Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l'avenir ?",
+    "@biometricAuthFirstTimeMessage": {
+      "description": "Message de la dialog de première activation"
+    },
+  
+  "biometricAuthNotAvailable": "L'authentification biométrique n'est pas disponible sur cet appareil",
+    "@biometricAuthNotAvailable": {
+      "description": "Message quand la biométrie n'est pas disponible"
+    },
+  
+  "biometricAuthRequiresReconnect": "Pour activer l'authentification biométrique, veuillez vous reconnecter",
+    "@biometricAuthRequiresReconnect": {
+      "description": "Message quand il faut se reconnecter pour activer la biométrie"
+    },
+  
+  "or": "Ou",
+    "@or": {
+      "description": "Séparateur entre connexion classique et OAuth"
+    },
+  
+  "startTrackingNow": "Commencez à suivre votre lecture maintenant",
+    "@startTrackingNow": {
+      "description": "Message d'accueil sur la page d'inscription"
+    },
+  
+  "username": "Nom d'utilisateur",
+    "@username": {
+      "description": "Label pour le champ nom d'utilisateur"
+    },
+  
+  "confirmPassword": "Confirmation",
+    "@confirmPassword": {
+      "description": "Label pour le champ de confirmation de mot de passe"
+    },
+  
+  "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "@alreadyHaveAccount": {
+      "description": "Message pour rediriger vers la page de connexion"
+    },
+  
+  "newPassword": "Nouveau mot de passe",
+    "@newPassword": {
+      "description": "Label pour le champ nouveau mot de passe"
+    },
+  
+  "validationEmailRequired": "Veuillez entrer votre adresse e-mail",
+    "@validationEmailRequired": {
+      "description": "Message d'erreur quand l'email est vide"
+    },
+  
+  "validationEmailInvalid": "Veuillez entrer une adresse e-mail valide",
+    "@validationEmailInvalid": {
+      "description": "Message d'erreur quand l'email est invalide"
+    },
+  
+  "validationPasswordRequired": "Veuillez entrer votre mot de passe",
+    "@validationPasswordRequired": {
+      "description": "Message d'erreur quand le mot de passe est vide"
+    },
+  
+  "validationPasswordLength": "Votre mot de passe doit comporter entre 8 et 64 caractères",
+    "@validationPasswordLength": {
+      "description": "Message d'erreur pour la longueur du mot de passe"
+    },
+  
+  "validationPasswordComplexity": "Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial",
+    "@validationPasswordComplexity": {
+      "description": "Message d'erreur pour la complexité du mot de passe"
+    },
+  
+  "validationConfirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+    "@validationConfirmPasswordRequired": {
+      "description": "Message d'erreur quand la confirmation de mot de passe est vide"
+    },
+  
+  "validationPasswordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "@validationPasswordsDoNotMatch": {
+      "description": "Message d'erreur quand les mots de passe ne correspondent pas"
+    },
+
+  "showPassword": "Afficher le mot de passe",
+    "@showPassword": {
+      "description": "Libellé pour afficher le mot de passe"
+    },
+
+  "hidePassword": "Masquer le mot de passe",
+    "@hidePassword": {
+      "description": "Libellé pour masquer le mot de passe"
+    },
+  "emailAlreadyUsed": "Cette adresse e-mail est déjà utilisée",
+  "networkError": "Veuillez vérifier votre connexion internet",
+  "timeoutError": "Le serveur met trop de temps à répondre. Veuillez réessayer.",
+
+  "passwordStrengthLabel": "Robustesse du mot de passe",
+    "@passwordStrengthLabel": {
+      "description": "Libellé pour indiquer la robustesse du mot de passe"
+    },
+
+  "passwordStrengthWeak": "Faible",
+  "passwordStrengthMedium": "Moyen",
+  "passwordStrengthStrong": "Fort",
+  
+  "yes": "Oui",
+  "@yes": {
+    "description": "Bouton de confirmation positive"
+  },
+  
+  "no": "Non",
+  "@no": {
+    "description": "Bouton de confirmation négative"
+  },
+  
+  "yesValidate": "Oui, valider",
+  "@yesValidate": {
+    "description": "Bouton pour valider la lecture"
+  },
+  
+  "chapterSkipMessage": "Vous passez du chapitre {prev} au {next}.\nMarquer {prev} comme lu ?",
+  "@chapterSkipMessage": {
+    "description": "Message pour le saut de chapitres",
     "placeholders": {
-      "url": {
+      "prev": {
+        "type": "String"
+      },
+      "next": {
         "type": "String"
       }
     }
-  }
+  },
+  
+  "validateReadingMessage": "Avez-vous fini le chapitre {chapter} ?",
+  "@validateReadingMessage": {
+    "description": "Message pour valider la lecture",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "validateReadingHint": "Votre progression sera sauvegardée automatiquement.",
+  "@validateReadingHint": {
+    "description": "Indice pour la validation de lecture"
+  },
+  
+  "adBlockerTitle": "Bloqueur de publicités",
+  "@adBlockerTitle": {
+    "description": "Titre de la popup du bloqueur de pub"
+  },
+  
+  "adBlockerDescription": "Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\nSi vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, rejoignez notre serveur Discord !",
+  "@adBlockerDescription": {
+    "description": "Description du bloqueur de pub"
+  },
+  
+  "adBlockerTooltip": "Informations sur le bloqueur de pub",
+  "@adBlockerTooltip": {
+    "description": "Tooltip pour l'icône d'info du bloqueur"
+  },
+  
+  "joinDiscord": "Rejoindre Discord",
+  "@joinDiscord": {
+    "description": "Bouton pour rejoindre Discord"
+  },
+  
+  "joinDiscordSubtitle": "Partagez vos suggestions et signalez des problèmes",
+  "@joinDiscordSubtitle": {
+    "description": "Sous-titre pour rejoindre Discord"
+  },
+  
+  "contactUs": "Nous contacter",
+  "@contactUs": {
+    "description": "Section nous contacter"
+  },
+  
+  "downloads": "Téléchargements",
+  "@downloads": {
+    "description": "Titre de la section téléchargements"
+  },
+  
+  "manageDownloads": "Gérer les téléchargements",
+  "@manageDownloads": {
+    "description": "Titre pour gérer les téléchargements"
+  },
+  
+  "manageDownloadsSubtitle": "Voir et supprimer les chapitres téléchargés",
+  "@manageDownloadsSubtitle": {
+    "description": "Sous-titre pour gérer les téléchargements"
+  },
+  
+  "discordLinkError": "Impossible d'ouvrir le lien Discord",
+  "@discordLinkError": {
+    "description": "Erreur lors de l'ouverture du lien Discord"
+  },
+  
+  "urlCopied": "URL copiée dans le presse-papiers",
+  "@urlCopied": {
+    "description": "Message de succès pour la copie d'URL"
+  },
+  
+  "urlCopyError": "Erreur lors de la copie de l'URL",
+  "@urlCopyError": {
+    "description": "Message d'erreur pour la copie d'URL"
+  },
+  
+  "copyUrl": "Copier l'URL",
+  "@copyUrl": {
+    "description": "Tooltip pour le bouton de copie d'URL"
+  },
+  
+  "progressUpdated": "Progression mise à jour",
+  "@progressUpdated": {
+    "description": "Message de succès pour la mise à jour de progression"
+  },
+  
+  "invalidUrl": "URL invalide",
+  "@invalidUrl": {
+    "description": "Message d'erreur pour une URL invalide"
+  },
+  
+  "webModeProgressTracking": "Mode Web - Suivi de progression",
+  "@webModeProgressTracking": {
+    "description": "Titre pour le mode web de suivi de progression"
+  },
+  
+  "webModeProgressDescription": "Pour suivre votre progression, collez l'URL du chapitre que vous êtes en train de lire.",
+  "@webModeProgressDescription": {
+    "description": "Description pour le mode web de suivi de progression"
+  },
+  
+  "chapterUrlLabel": "URL du chapitre",
+  "@chapterUrlLabel": {
+    "description": "Label pour le champ URL du chapitre"
+  },
+  
+  "updateProgress": "Mettre à jour la progression",
+  "@updateProgress": {
+    "description": "Bouton pour mettre à jour la progression"
+  },
+  
+  "openInNewTab": "Ouvrir dans un nouvel onglet",
+  "@openInNewTab": {
+    "description": "Bouton pour ouvrir dans un nouvel onglet"
+  },
+  
+  "linkUrlLabel": "URL du site de scan",
+  "@linkUrlLabel": {
+    "description": "Label pour le champ URL du lien"
+  },
+  
+  "linkFormatInfo": "Format de chapitre requis",
+  "@linkFormatInfo": {
+    "description": "Titre pour l'information sur le format de chapitre"
+  },
+  
+  "linkFormatDescription": "Incluez le numéro de chapitre dans l'URL pour permettre la sauvegarde automatique de progression.\n\nFormats acceptés :\n• /chapitre-23/ ou /chapter-23/\n• /c23/ ou /ch23/\n• /ep-23/ ou /episode-23/\n• ?chapter=23 ou ?num=24",
+  "@linkFormatDescription": {
+    "description": "Description des formats de chapitre acceptés"
+  },
+  
+  "linkFormatWarning": "Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).",
+  "@linkFormatWarning": {
+    "description": "Avertissement quand aucun format de chapitre n'est détecté"
+  },
+  
+  "linkFormatDetected": "Format de chapitre détecté ! La progression sera sauvegardée automatiquement.",
+  "@linkFormatDetected": {
+    "description": "Message de confirmation quand un format de chapitre est détecté"
+  },
+  
+  "linkAddCustomPattern": "Ajouter un pattern personnalisé pour ce format",
+  "@linkAddCustomPattern": {
+    "description": "Lien pour ajouter un pattern personnalisé"
+  },
+  
+  "customSelectors": "Sélecteurs personnalisés",
+  "@customSelectors": {
+    "description": "Titre pour la section des sélecteurs personnalisés"
+  },
+  
+  "manageCustomSelectors": "Gérer les sélecteurs",
+  "@manageCustomSelectors": {
+    "description": "Option pour gérer les sélecteurs personnalisés"
+  },
+  
+  "manageCustomSelectorsSubtitle": "Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu",
+  "@manageCustomSelectorsSubtitle": {
+    "description": "Sous-titre pour gérer les sélecteurs"
+  },
+  
+  "addCustomSelector": "Ajouter un sélecteur",
+  "@addCustomSelector": {
+    "description": "Titre pour ajouter un sélecteur"
+  },
+  
+  "selectorDomainLabel": "Domaine (ex: exemple.com)",
+  "@selectorDomainLabel": {
+    "description": "Label pour le champ domaine"
+  },
+  
+  "selectorCssLabel": "Sélecteur CSS",
+  "@selectorCssLabel": {
+    "description": "Label pour le champ sélecteur CSS"
+  },
+  
+  "selectorTypeLabel": "Type de sélecteur",
+  "@selectorTypeLabel": {
+    "description": "Label pour le type de sélecteur"
+  },
+  
+  "selectorTypeUrlPattern": "Pattern d'URL",
+  "@selectorTypeUrlPattern": {
+    "description": "Type de sélecteur : pattern d'URL"
+  },
+  
+  "selectorUrlPatternLabel": "Pattern d'URL (regex)",
+  "@selectorUrlPatternLabel": {
+    "description": "Label pour le champ pattern d'URL"
+  },
+  
+  "selectorUrlPatternHint": "Exemple : /chapter-(\\d+)/ pour détecter /chapter-22",
+  "@selectorUrlPatternHint": {
+    "description": "Hint pour le champ pattern d'URL"
+  },
+  
+  "selectorExamplesUrlPattern": "Exemples de patterns d'URL :",
+  "@selectorExamplesUrlPattern": {
+    "description": "Titre pour les exemples de patterns d'URL"
+  },
+  
+  "selectorExampleUrlPattern": "Exemple : /chapter-22",
+  "@selectorExampleUrlPattern": {
+    "description": "Titre de l'exemple pattern d'URL"
+  },
+  
+  "selectorExampleUrlPatternExplanation": "Si votre site utilise \"/chapter-22\" dans l'URL et que le système ne le détecte pas automatiquement :",
+  "@selectorExampleUrlPatternExplanation": {
+    "description": "Explication de l'exemple pattern d'URL"
+  },
+  
+  "selectorUrlPatternExampleDesc": "Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22",
+  "@selectorUrlPatternExampleDesc": {
+    "description": "Description détaillée de l'exemple pattern d'URL"
+  },
+  
+  "selectorUrlPatternGlobal": "ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.",
+  "@selectorUrlPatternGlobal": {
+    "description": "Message expliquant que le pattern est global"
+  },
+  
+  "selectorTypeAdBlocker": "Bloqueur de publicités",
+  "@selectorTypeAdBlocker": {
+    "description": "Type de sélecteur : bloqueur de pub"
+  },
+  
+  "selectorTypeChapterContent": "Contenu du chapitre",
+  "@selectorTypeChapterContent": {
+    "description": "Type de sélecteur : contenu du chapitre"
+  },
+  
+  "selectorDescriptionLabel": "Description (optionnel)",
+  "@selectorDescriptionLabel": {
+    "description": "Label pour la description du sélecteur"
+  },
+  
+  "selectorDescriptionHint": "Description du sélecteur",
+  "@selectorDescriptionHint": {
+    "description": "Placeholder pour la description"
+  },
+  
+  "selectorRequiredFields": "Tous les champs sont requis",
+  "@selectorRequiredFields": {
+    "description": "Message d'erreur pour les champs requis"
+  },
+  
+  "selectorAdded": "Sélecteur ajouté",
+  "@selectorAdded": {
+    "description": "Message de succès pour l'ajout d'un sélecteur"
+  },
+  
+  "deleteSelector": "Supprimer le sélecteur",
+  "@deleteSelector": {
+    "description": "Titre pour supprimer un sélecteur"
+  },
+  
+  "deleteSelectorConfirm": "Êtes-vous sûr de vouloir supprimer ce sélecteur ?",
+  "@deleteSelectorConfirm": {
+    "description": "Message de confirmation pour supprimer un sélecteur"
+  },
+  
+  "selectorDeleted": "Sélecteur supprimé",
+  "@selectorDeleted": {
+    "description": "Message de succès pour la suppression d'un sélecteur"
+  },
+  
+  "selectorsExported": "Sélecteurs exportés dans le presse-papiers",
+  "@selectorsExported": {
+    "description": "Message de succès pour l'export des sélecteurs"
+  },
+  
+  "importSelectors": "Importer des sélecteurs",
+  "@importSelectors": {
+    "description": "Titre pour importer des sélecteurs"
+  },
+  
+  "selectorsJsonLabel": "JSON des sélecteurs",
+  "@selectorsJsonLabel": {
+    "description": "Label pour le champ JSON"
+  },
+  
+  "import": "Importer",
+  "@import": {
+    "description": "Bouton pour importer"
+  },
+  
+  "selectorsImported": "{count} sélecteur(s) importé(s)",
+  "@selectorsImported": {
+    "description": "Message de succès pour l'import des sélecteurs",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "selectorsReadyToShare": "Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.",
+  "@selectorsReadyToShare": {
+    "description": "Message pour le partage des sélecteurs"
+  },
+  
+  "exportSelectors": "Exporter",
+  "@exportSelectors": {
+    "description": "Bouton pour exporter"
+  },
+  
+  "shareSelectors": "Partager",
+  "@shareSelectors": {
+    "description": "Bouton pour partager"
+  },
+  
+  "noCustomSelectors": "Aucun sélecteur personnalisé",
+  "@noCustomSelectors": {
+    "description": "Message quand il n'y a pas de sélecteurs"
+  },
+  
+  "addFirstSelector": "Ajoutez votre premier sélecteur pour commencer",
+  "@addFirstSelector": {
+    "description": "Message pour ajouter le premier sélecteur"
+  },
+  
+  "selectorExamples": "Exemples",
+  "@selectorExamples": {
+    "description": "Titre pour la section d'exemples"
+  },
+  
+  "selectorExamplesAdBlocker": "Exemples pour bloquer des publicités :",
+  "@selectorExamplesAdBlocker": {
+    "description": "Titre pour les exemples de bloqueur de pub"
+  },
+  
+  "selectorExampleAd1": "Bannière publicitaire",
+  "@selectorExampleAd1": {
+    "description": "Exemple 1 pour bloqueur de pub"
+  },
+  
+  "selectorExampleAd2": "Publicité par ID",
+  "@selectorExampleAd2": {
+    "description": "Exemple 2 pour bloqueur de pub"
+  },
+  
+  "selectorExampleAd3": "Iframe publicitaire",
+  "@selectorExampleAd3": {
+    "description": "Exemple 3 pour bloqueur de pub"
+  },
+  
+  "selectorExampleAd4": "Script publicitaire",
+  "@selectorExampleAd4": {
+    "description": "Exemple 4 pour bloqueur de pub"
+  },
+  
+  "selectorExamplesChapter": "Exemples pour identifier le contenu du chapitre :",
+  "@selectorExamplesChapter": {
+    "description": "Titre pour les exemples de contenu de chapitre"
+  },
+  
+  "selectorExampleChapter1": "Conteneur de chapitre",
+  "@selectorExampleChapter1": {
+    "description": "Exemple 1 pour contenu de chapitre"
+  },
+  
+  "selectorExampleChapter2": "Lecteur de manga",
+  "@selectorExampleChapter2": {
+    "description": "Exemple 2 pour contenu de chapitre"
+  },
+  
+  "selectorExampleChapter3": "Images du chapitre",
+  "@selectorExampleChapter3": {
+    "description": "Exemple 3 pour contenu de chapitre"
+  },
+  
+  "selectorExampleChapter4": "Contenu de lecture",
+  "@selectorExampleChapter4": {
+    "description": "Exemple 4 pour contenu de chapitre"
+  },
+  
+  "selectorExampleChapter5": "Format manga/chapitre-22",
+  "@selectorExampleChapter5": {
+    "description": "Exemple 5 pour contenu de chapitre avec format manga/chapitre"
+  },
+  
+  "selectorExampleChapter5Explanation": "Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"",
+  "@selectorExampleChapter5Explanation": {
+    "description": "Explication de l'exemple manga/chapitre-22"
+  },
+  
+  "selectorUrlFormatDetected": "✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l'URL est déjà détecté automatiquement par le système !\n\nVous n'avez PAS besoin d'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l'URL.",
+  "@selectorUrlFormatDetected": {
+    "description": "Message expliquant que le format URL est déjà détecté"
+  },
+  
+  "selectorWhenNeeded": "Quand ajouter un sélecteur CSS ?",
+  "@selectorWhenNeeded": {
+    "description": "Titre pour expliquer quand ajouter un sélecteur"
+  },
+  
+  "selectorPracticalExample": "Exemple pratique :",
+  "@selectorPracticalExample": {
+    "description": "Titre pour l'exemple pratique"
+  },
+  
+  "selectorExampleScenario": "Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"",
+  "@selectorExampleScenario": {
+    "description": "Scénario d'exemple avec format non détecté"
+  },
+  
+  "selectorStep1": "Ouvrez la page du chapitre dans votre navigateur",
+  "@selectorStep1": {
+    "description": "Étape 1 de l'exemple"
+  },
+  
+  "selectorStep2": "Appuyez sur F12 pour ouvrir les outils de développement",
+  "@selectorStep2": {
+    "description": "Étape 2 de l'exemple"
+  },
+  
+  "selectorStep3": "Cliquez sur l'icône \"Inspecter\" (ou Ctrl+Shift+C)",
+  "@selectorStep3": {
+    "description": "Étape 3 de l'exemple"
+  },
+  
+  "selectorStep4": "Cliquez sur le conteneur qui contient les images du chapitre",
+  "@selectorStep4": {
+    "description": "Étape 4 de l'exemple"
+  },
+  
+  "selectorStep5": "Dans le code HTML, trouvez la classe ou l'ID du conteneur",
+  "@selectorStep5": {
+    "description": "Étape 5 de l'exemple"
+  },
+  
+  "selectorFillForm": "Remplissez le formulaire :",
+  "@selectorFillForm": {
+    "description": "Titre pour remplir le formulaire"
+  },
+  
+  "selectorCssWhenNeededDesc": "⚠️ UNIQUEMENT si votre site a besoin d'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l'URL, vous n'avez PAS besoin d'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)",
+  "@selectorCssWhenNeededDesc": {
+    "description": "Description expliquant quand ajouter un sélecteur CSS"
+  },
+  
+  "selectorDomainExampleDesc": "Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)",
+  
+  "selectorOtherExamples": "Autres exemples courants :",
+  "@selectorOtherExamples": {
+    "description": "Titre pour les autres exemples"
+  },
+  
+  "selectorExampleChapter5Desc": "Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.",
+  "@selectorExampleChapter5Desc": {
+    "description": "Description détaillée de l'exemple manga/chapitre-22"
+  },
+  
+  "selectorExamplesHint": "Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.",
+  "@selectorExamplesHint": {
+    "description": "Astuce pour trouver les sélecteurs CSS"
+  },
+  
+  "captchaDetected": "Captcha détecté - Le bloqueur de pub a été temporairement désactivé",
+  "@captchaDetected": {
+    "description": "Message quand un captcha est détecté"
+  },
+  
+  "captchaResolved": "Captcha résolu - Le bloqueur de pub a été réactivé",
+  "@captchaResolved": {
+    "description": "Message quand un captcha est résolu"
+  },
+  
+  "scrollPositionSaved": "Position de scroll sauvegardée",
+  "@scrollPositionSaved": {
+    "description": "Message de confirmation pour la sauvegarde de la position de scroll"
+  },
+  
+  "chapterProgressSaved": "Progression du chapitre sauvegardée",
+  "@chapterProgressSaved": {
+    "description": "Message de confirmation pour la sauvegarde de progression"
+  },
+  
+  "readingOffline": "Lecture hors ligne",
+  "@readingOffline": {
+    "description": "Titre pour la lecture hors ligne"
+  },
+  
+  "chapterDownloaded": "Chapitre téléchargé",
+  "@chapterDownloaded": {
+    "description": "Message indiquant qu'un chapitre est téléchargé"
+  },
+  
+  "offlineReadingMode": "Mode lecture hors ligne",
+  "@offlineReadingMode": {
+    "description": "Description du mode lecture hors ligne"
+  },
+  
+  "deleteChapterTitle": "Supprimer le chapitre",
+  "@deleteChapterTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer un chapitre"
+  },
+  
+  "deleteChapterMessage": "Voulez-vous vraiment supprimer le chapitre {chapterNumber} ?",
+  "@deleteChapterMessage": {
+    "description": "Message de confirmation pour supprimer un chapitre",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Supprimer tous les chapitres",
+  "@deleteAllChaptersTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllChaptersMessage": "Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?",
+  "@deleteAllChaptersMessage": {
+    "description": "Message de confirmation pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Supprimer tous les téléchargements",
+  "@deleteAllDownloadsTitle": {
+    "description": "Titre de la boîte de dialogue pour supprimer tous les téléchargements"
+  },
+  
+  "deleteAllDownloadsMessage": "Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Message de confirmation pour supprimer tous les téléchargements"
+  },
+  
+  "delete": "Supprimer",
+  "@delete": {
+    "description": "Bouton pour supprimer"
+  },
+  
+  "deleteAll": "Supprimer tout",
+  "@deleteAll": {
+    "description": "Bouton pour tout supprimer"
+  },
+  
+  "cancel": "Annuler",
+  "@cancel": {
+    "description": "Bouton pour annuler"
+  },
+  
+  "chapterDeleted": "Chapitre supprimé",
+  "@chapterDeleted": {
+    "description": "Message de succès après suppression d'un chapitre"
+  },
+  
+  "allChaptersDeleted": "Tous les chapitres supprimés",
+  "@allChaptersDeleted": {
+    "description": "Message de succès après suppression de tous les chapitres d'un manga"
+  },
+  
+  "allDownloadsDeleted": "Tous les téléchargements supprimés",
+  "@allDownloadsDeleted": {
+    "description": "Message de succès après suppression de tous les téléchargements"
+  },
+  
+  "noChaptersDownloaded": "Aucun chapitre téléchargé",
+  "@noChaptersDownloaded": {
+    "description": "Message affiché quand aucun chapitre n'est téléchargé"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{Aucun chapitre téléchargé} =1{1 chapitre téléchargé} other{{count} chapitres téléchargés}}",
+  "@chaptersDownloadedCount": {
+    "description": "Nombre de chapitres téléchargés",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Lire",
+  "@readChapter": {
+    "description": "Bouton pour lire un chapitre"
+  },
+  
+  "deleteAllChaptersAction": "Supprimer tous les chapitres",
+  "@deleteAllChaptersAction": {
+    "description": "Action pour supprimer tous les chapitres d'un manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Supprimer tous les téléchargements",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip pour le bouton de suppression de tous les téléchargements"
+  },
+
+  "recommendedForYou": "Recommandé pour toi",
+  "@recommendedForYou": {
+    "description": "Section de recommandations personnalisées de manga"
+  },
+
+  "recommendedForYouEmpty": "Ajoutez des mangas à votre bibliothèque\npour obtenir des recommandations personnalisées.",
+  "@recommendedForYouEmpty": {
+    "description": "Message affiché dans la section recommandations quand la bibliothèque est vide"
+  },
+
+  "recommendedForYouCount": "{count, plural, =1{1 manga} other{{count} mangas}}",
+  "@recommendedForYouCount": {
+    "description": "Sous-titre indiquant le nombre de mangas recommandés",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recommendedForYouCached": "Recommandations en cache (mode hors ligne)",
+  "@recommendedForYouCached": {
+    "description": "Indicateur affiché quand les recommandations affichées proviennent du cache offline"
+  },
+
+  "errorWithMessage": "Erreur : {message}",
+  "@errorWithMessage": {
+    "description": "Préfixe générique d'erreur avec un message technique",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "recommendedBecauseOf": "Parce que vous avez aimé {titles}",
+  "@recommendedBecauseOf": {
+    "description": "Explication d'une recommandation, listant les mangas sources",
+    "placeholders": {
+      "titles": { "type": "String" }
+    }
+  },
+
+  "yourRating": "Votre note",
+  "@yourRating": {
+    "description": "Label affiché à côté du widget de notation utilisateur dans le détail manga"
+  },
+
+  "myDataTitle": "Mes données",
+  "@myDataTitle": {},
+  "myDataSubtitle": "Voir, exporter ou supprimer mes données (RGPD)",
+  "@myDataSubtitle": {},
+  "gdprIntro": "Conformément au RGPD, vous disposez de droits sur vos données personnelles. Cette page vous permet de les exercer simplement.",
+  "@gdprIntro": {},
+  "gdprAccessTitle": "Voir mes données",
+  "@gdprAccessTitle": {},
+  "gdprAccessSubtitle": "Article 15 — résumé des informations stockées",
+  "@gdprAccessSubtitle": {},
+  "gdprExportTitle": "Exporter mes données",
+  "@gdprExportTitle": {},
+  "gdprExportSubtitle": "Article 20 — JSON complet copié dans le presse-papier",
+  "@gdprExportSubtitle": {},
+  "gdprLegalDocs": "Documents légaux",
+  "@gdprLegalDocs": {},
+  "gdprDeleteHint": "Pour supprimer définitivement votre compte, rendez-vous dans Profil → Supprimer mon compte. Cette action est irréversible.",
+  "@gdprDeleteHint": {},
+  "privacyPolicyTitle": "Politique de confidentialité",
+  "@privacyPolicyTitle": {},
+  "termsOfServiceTitle": "Conditions d'utilisation",
+  "@termsOfServiceTitle": {},
+  "tosShortVersion": "Manga Tracker est fourni en l'état, sans garantie. L'éditeur décline toute responsabilité pour l'utilisation non conforme par l'utilisateur (contenu illégal, scraping, etc.).\n\nDocument complet sur le site officiel.",
+  "@tosShortVersion": {},
+  "privacyShortVersion": "Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. Aucune donnée n'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\nDocument complet sur le site officiel.",
+  "@privacyShortVersion": {},
+  "iAcceptTos": "J'accepte les Conditions d'utilisation",
+  "@iAcceptTos": {},
+  "iAcceptPrivacy": "J'accepte la Politique de confidentialité",
+  "@iAcceptPrivacy": {},
+  "iAccept": "Accepter",
+  "@iAccept": {},
+  "consentRequired": "Vous devez accepter les CGU et la Politique de confidentialité.",
+  "@consentRequired": {},
+  "consentRefreshTitle": "Mise à jour de nos conditions",
+  "@consentRefreshTitle": {},
+  "consentRefreshIntro": "Nos conditions d'utilisation et notre politique de confidentialité ont été mises à jour. Veuillez les accepter pour continuer.",
+  "@consentRefreshIntro": {},
+  "refuseAndLogout": "Refuser et se déconnecter",
+  "@refuseAndLogout": {},
+  "versionLabel": "Version",
+  "@versionLabel": {},
+
+  "forgotPasswordTitle": "Mot de passe oublié",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIntro": "Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.",
+  "@forgotPasswordIntro": {},
+  "sendResetLink": "Envoyer le lien",
+  "@sendResetLink": {},
+  "resetEmailSentTitle": "Vérifiez votre boîte mail",
+  "@resetEmailSentTitle": {},
+  "resetEmailSentMessage": "Si un compte existe pour {email}, un email contenant un lien pour définir un nouveau mot de passe vient d'être envoyé.\n\nLe lien expire dans 30 minutes.",
+  "@resetEmailSentMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordTitle": "Nouveau mot de passe",
+  "@resetPasswordTitle": {},
+  "resetPasswordIntro": "Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.",
+  "@resetPasswordIntro": {},
+  "confirmReset": "Confirmer",
+  "@confirmReset": {},
+  "resetTokenExpired": "Lien invalide ou expiré. Refaites une demande.",
+  "@resetTokenExpired": {},
+  "resetPasswordSuccess": "Mot de passe modifié",
+  "@resetPasswordSuccess": {},
+  "resetPasswordSuccessHint": "Vous êtes maintenant connecté. Redirection en cours…",
+  "@resetPasswordSuccessHint": {},
+  "verifyingEmail": "Vérification en cours…",
+  "@verifyingEmail": {},
+  "emailVerifiedSuccess": "Email vérifié !",
+  "@emailVerifiedSuccess": {},
+  "emailVerifiedHint": "Connexion en cours…",
+  "@emailVerifiedHint": {},
+  "emailVerifyFailedTitle": "Lien invalide ou expiré",
+  "@emailVerifyFailedTitle": {},
+  "emailVerifyFailedHint": "Le lien que vous avez utilisé n'est plus valide. Connectez-vous et demandez un nouveau lien depuis votre profil.",
+  "@emailVerifyFailedHint": {},
+  "backToLogin": "Retour à la connexion",
+  "@backToLogin": {},
+  "verifyEmailBannerMessage": "Vérifiez votre adresse email pour activer toutes les fonctionnalités.",
+  "@verifyEmailBannerMessage": {},
+  "emailSentShort": "Envoyé",
+  "@emailSentShort": {},
+  "resendEmailShort": "Renvoyer",
+  "@resendEmailShort": {}
 }

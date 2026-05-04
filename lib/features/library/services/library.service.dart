@@ -1,18 +1,21 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/http_service.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 import '../../manga/dto/reading_status.enum.dart';
 
 class LibraryService {
   final HttpService _http = getIt<HttpService>();
+  MangaService get _mangaService => getIt<MangaService>();
   late final ConnectivityService _connectivityService;
   late final OfflineCacheService _cacheService;
   
@@ -30,7 +33,7 @@ class LibraryService {
     // if (_userLibraryCache != null) {
     //   return _userLibraryCache!;
     // }
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/all');
+    final url = buildApiUri('/library/all');
     final library = await _fetchMangaList(url);
     // _userLibraryCache = library; // Désactivé pour permettre la détection offline
     return library;
@@ -43,7 +46,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/save');
+        final url = buildApiUri('/library/save');
         final success = await _postOrDelete(
           method: _http.postWithAuthTokens,
           url: url,
@@ -71,7 +74,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/chapter');
+        final url = buildApiUri('/library/chapter');
         final res = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -99,7 +102,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/delete');
+        final url = buildApiUri('/library/delete');
         final success = await _postOrDelete(
           method: _http.deleteWithAuthTokens,
           url: url,
@@ -125,7 +128,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/status');
+        final url = buildApiUri('/library/status');
         final response = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -155,7 +158,7 @@ class LibraryService {
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+        final url = buildApiUri('/library/custom-link');
         final res = await _http.putWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -176,13 +179,42 @@ class LibraryService {
     }
   }
 
+// ─────────── PUT /library/rating ───────────
+  /// Met à jour la note personnelle de l'utilisateur pour un manga (0-10).
+  /// `rating = 0` supprime la note. Le manga doit déjà être en bibliothèque.
+  Future<bool> updateRating(int muId, int rating) async {
+    if (rating < 0 || rating > 10) {
+      throw ArgumentError('Rating must be between 0 and 10, got $rating');
+    }
+
+    final isOnline = _connectivityService.isConnected;
+
+    if (isOnline) {
+      try {
+        final url = buildApiUri('/library/rating');
+        final res = await _http.putWithAuthTokens(
+          url,
+          headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+          body: jsonEncode({'muId': muId, 'rating': rating}),
+        );
+        return res.statusCode == HttpStatus.ok;
+      } catch (e) {
+        debugPrint('⚠️ updateRating: erreur réseau ($e)');
+        return false;
+      }
+    }
+    // Mode hors ligne : pas de queue pour le rating (action non critique)
+    debugPrint('⚠️ updateRating: hors ligne, ignoré');
+    return false;
+  }
+
 // ─────────── DELETE /library/custom-link ───────────
   Future<bool> deleteCustomLink(int muId) async {
     final isOnline = _connectivityService.isConnected;
     
     if (isOnline) {
       try {
-        final url = Uri.https(dotenv.env['MT_API_URL']!, '/library/custom-link');
+        final url = buildApiUri('/library/custom-link');
         final res = await _http.deleteWithAuthTokens(
           url,
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
@@ -224,6 +256,25 @@ class LibraryService {
   Future<ReadingStatus?> getReadingStatusByUid(int muId) async {
     final manga = await getLibraryEntry(muId);
     return  manga?.readingStatus;
+  }
+
+  /// Récupère le customLink d'un manga, ou null si absent
+  Future<String?> getCustomLink(int muId) async {
+    final isOnline = _connectivityService.isConnected;
+    
+    if (isOnline) {
+      try {
+        // Récupérer les détails du manga depuis MangaService
+        final mangaDetail = await _mangaService.getMangaDetail(muId.toString());
+        return mangaDetail.customLink;
+      } catch (e) {
+        debugPrint('⚠️ LibraryService: Erreur lors de la récupération du customLink: $e');
+        return null;
+      }
+    } else {
+      // En mode offline, on ne peut pas récupérer le customLink
+      return null;
+    }
   }
 
   Future<List<MangaQuickViewDto>> _fetchMangaList(Uri url) async {

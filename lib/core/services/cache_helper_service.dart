@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
@@ -19,7 +20,7 @@ class CacheHelperService {
       await _cacheService.cacheLibrary(data);
       return data;
     } catch (e) {
-      print('Erreur réseau, fallback vers cache: $e');
+      debugPrint('Erreur réseau, fallback vers cache: $e');
       // Laisser l'exception remonter pour que les BLoCs puissent détecter l'erreur réseau
       rethrow;
     }
@@ -36,7 +37,7 @@ class CacheHelperService {
       await _cacheService.cacheHomePageData(data);
       return data;
     } catch (e) {
-      print('Erreur réseau, fallback vers cache: $e');
+      debugPrint('Erreur réseau, fallback vers cache: $e');
       // Laisser l'exception remonter pour que les BLoCs puissent détecter l'erreur réseau
       rethrow;
     }
@@ -53,7 +54,7 @@ class CacheHelperService {
       await _cacheService.cacheMangaDetail(muId, data);
       return data;
     } catch (e) {
-      print('Erreur réseau, fallback vers cache: $e');
+      debugPrint('Erreur réseau, fallback vers cache: $e');
       // Laisser l'exception remonter pour que les BLoCs puissent détecter l'erreur réseau
       rethrow;
     }
@@ -71,7 +72,7 @@ class CacheHelperService {
       await _cacheService.cacheSearchResults(query, data);
       return data;
     } catch (e) {
-      print('Erreur réseau, fallback vers cache: $e');
+      debugPrint('Erreur réseau, fallback vers cache: $e');
       // Laisser l'exception remonter pour que les BLoCs puissent détecter l'erreur réseau
       rethrow;
     }

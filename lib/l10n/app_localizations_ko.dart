@@ -27,6 +27,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get login => '로그인';
 
   @override
+  String get googleLoginFailed => 'Google 로그인 실패';
+
+  @override
+  String get loginWithGoogle => 'Google로 로그인';
+
+  @override
+  String get back => '뒤로';
+
+  @override
   String get signUp => '회원가입';
 
   @override
@@ -105,6 +114,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notifications => '알림';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => '알림 관리';
 
   @override
@@ -115,6 +133,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get darkMode => '다크 모드';
+
+  @override
+  String get systemMode => '시스템';
 
   @override
   String get language => '언어';
@@ -251,6 +272,21 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get totalChapters => '전체 챕터';
+
+  @override
+  String get associatedNames => '관련 이름';
+
+  @override
+  String associatedNamesCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 이름',
+      one: '$count개 이름',
+      zero: '이름 없음',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get saveProgress => '진행 상황 저장';
@@ -422,4 +458,669 @@ class AppLocalizationsKo extends AppLocalizations {
   String cannotOpenLink(String url) {
     return '링크를 열 수 없습니다: $url';
   }
+
+  @override
+  String get searchHistoryTitle => '검색 기록';
+
+  @override
+  String get searchEmptyStateMessage => '만화, 만화 또는 만화 검색';
+
+  @override
+  String get clear => '지우기';
+
+  @override
+  String get biometricAuthTitle => '생체 인증';
+
+  @override
+  String get biometricAuthSubtitle => '지문 또는 Face ID를 사용하여 빠르게 로그인';
+
+  @override
+  String get enableBiometricAuth => '생체 인증이 활성화되었습니다';
+
+  @override
+  String get disableBiometricAuth => '생체 인증이 비활성화되었습니다';
+
+  @override
+  String get biometricAuthEnabled => '활성화됨';
+
+  @override
+  String get biometricAuthDisabled => '비활성화됨';
+
+  @override
+  String get biometricAuthFirstTimeTitle => '생체 인증을 활성화하시겠습니까?';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      '향후 지문 또는 Face ID를 사용하여 빠르게 로그인하시겠습니까?';
+
+  @override
+  String get biometricAuthNotAvailable => '이 기기에서는 생체 인증을 사용할 수 없습니다';
+
+  @override
+  String get biometricAuthRequiresReconnect => '생체 인증을 활성화하려면 다시 로그인하세요';
+
+  @override
+  String get or => '또는';
+
+  @override
+  String get startTrackingNow => '지금 읽기를 추적하기 시작하세요';
+
+  @override
+  String get username => '사용자 이름';
+
+  @override
+  String get confirmPassword => '확인';
+
+  @override
+  String get alreadyHaveAccount => '이미 계정이 있으신가요?';
+
+  @override
+  String get newPassword => '새 비밀번호';
+
+  @override
+  String get validationEmailRequired => '이메일 주소를 입력해주세요';
+
+  @override
+  String get validationEmailInvalid => '유효한 이메일 주소를 입력해주세요';
+
+  @override
+  String get validationPasswordRequired => '비밀번호를 입력해주세요';
+
+  @override
+  String get validationPasswordLength => '비밀번호는 8자 이상 64자 이하여야 합니다';
+
+  @override
+  String get validationPasswordComplexity =>
+      '비밀번호에는 최소한 하나의 소문자, 하나의 대문자 및 하나의 특수 문자가 포함되어야 합니다';
+
+  @override
+  String get validationConfirmPasswordRequired => '비밀번호를 확인해주세요';
+
+  @override
+  String get validationPasswordsDoNotMatch => '비밀번호가 일치하지 않습니다';
+
+  @override
+  String get showPassword => '비밀번호 표시';
+
+  @override
+  String get hidePassword => '비밀번호 숨기기';
+
+  @override
+  String get emailAlreadyUsed => '이 이메일 주소는 이미 등록되어 있습니다';
+
+  @override
+  String get networkError => '인터넷 연결을 확인하세요';
+
+  @override
+  String get timeoutError => '서버 응답이 너무 오래 걸립니다. 다시 시도해주세요.';
+
+  @override
+  String get passwordStrengthLabel => '비밀번호 강도';
+
+  @override
+  String get passwordStrengthWeak => '약함';
+
+  @override
+  String get passwordStrengthMedium => '보통';
+
+  @override
+  String get passwordStrengthStrong => '강함';
+
+  @override
+  String get yes => '예';
+
+  @override
+  String get no => '아니오';
+
+  @override
+  String get yesValidate => '예, 확인';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return '챕터 $prev에서 $next로 건너뜁니다.\n$prev을(를) 읽음으로 표시하시겠습니까?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return '챕터 $chapter을(를) 읽으셨나요?';
+  }
+
+  @override
+  String get validateReadingHint => '진행 상황이 자동으로 저장됩니다.';
+
+  @override
+  String get adBlockerTitle => '광고 차단기';
+
+  @override
+  String get adBlockerDescription =>
+      '광고 차단기는 읽기 사이트의 광고를 자동으로 차단합니다.\n\n링크를 추가하거나 광고 차단 개선 사항을 제안하려면 Discord 서버에 참여하세요!';
+
+  @override
+  String get adBlockerTooltip => '광고 차단기 정보';
+
+  @override
+  String get joinDiscord => 'Discord 참여';
+
+  @override
+  String get joinDiscordSubtitle => '제안을 공유하고 문제를 보고하세요';
+
+  @override
+  String get contactUs => '문의하기';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
+
+  @override
+  String get discordLinkError => 'Discord 링크를 열 수 없습니다';
+
+  @override
+  String get urlCopied => 'URL이 클립보드에 복사되었습니다';
+
+  @override
+  String get urlCopyError => 'URL 복사 오류';
+
+  @override
+  String get copyUrl => 'URL 복사';
+
+  @override
+  String get progressUpdated => '진행 상황이 업데이트되었습니다';
+
+  @override
+  String get invalidUrl => '잘못된 URL';
+
+  @override
+  String get webModeProgressTracking => '웹 모드 - 진행 상황 추적';
+
+  @override
+  String get webModeProgressDescription =>
+      '진행 상황을 추적하려면 현재 읽고 있는 챕터의 URL을 붙여넣으세요.';
+
+  @override
+  String get chapterUrlLabel => '챕터 URL';
+
+  @override
+  String get updateProgress => '진행 상황 업데이트';
+
+  @override
+  String get openInNewTab => '새 탭에서 열기';
+
+  @override
+  String get linkUrlLabel => '스캔 사이트 URL';
+
+  @override
+  String get linkFormatInfo => '챕터 형식 필요';
+
+  @override
+  String get linkFormatDescription =>
+      '자동 진행 상황 저장을 활성화하려면 URL에 챕터 번호를 포함하세요.\n\n허용되는 형식:\n• /챕터-23/ 또는 /chapter-23/\n• /c23/ 또는 /ch23/\n• /ep-23/ 또는 /episode-23/\n• ?chapter=23 또는 ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      '챕터 형식이 감지되지 않았습니다. 링크는 만화 페이지로 리디렉션됩니다(특정 챕터가 아님).';
+
+  @override
+  String get linkFormatDetected => '챕터 형식이 감지되었습니다! 진행 상황이 자동으로 저장됩니다.';
+
+  @override
+  String get linkAddCustomPattern =>
+      'Ajouter un pattern personnalisé pour ce format';
+
+  @override
+  String get customSelectors => 'Sélecteurs personnalisés';
+
+  @override
+  String get manageCustomSelectors => 'Gérer les sélecteurs';
+
+  @override
+  String get manageCustomSelectorsSubtitle =>
+      'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu';
+
+  @override
+  String get addCustomSelector => 'Ajouter un sélecteur';
+
+  @override
+  String get selectorDomainLabel => 'Domaine (ex: exemple.com)';
+
+  @override
+  String get selectorCssLabel => 'Sélecteur CSS';
+
+  @override
+  String get selectorTypeLabel => 'Type de sélecteur';
+
+  @override
+  String get selectorTypeUrlPattern => 'Pattern d\'URL';
+
+  @override
+  String get selectorUrlPatternLabel => 'Pattern d\'URL (regex)';
+
+  @override
+  String get selectorUrlPatternHint =>
+      'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22';
+
+  @override
+  String get selectorExamplesUrlPattern => 'Exemples de patterns d\'URL :';
+
+  @override
+  String get selectorExampleUrlPattern => 'Exemple : /chapter-22';
+
+  @override
+  String get selectorExampleUrlPatternExplanation =>
+      'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :';
+
+  @override
+  String get selectorUrlPatternExampleDesc =>
+      'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22';
+
+  @override
+  String get selectorUrlPatternGlobal =>
+      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+
+  @override
+  String get selectorTypeAdBlocker => 'Bloqueur de publicités';
+
+  @override
+  String get selectorTypeChapterContent => 'Contenu du chapitre';
+
+  @override
+  String get selectorDescriptionLabel => 'Description (optionnel)';
+
+  @override
+  String get selectorDescriptionHint => 'Description du sélecteur';
+
+  @override
+  String get selectorRequiredFields => 'Tous les champs sont requis';
+
+  @override
+  String get selectorAdded => 'Sélecteur ajouté';
+
+  @override
+  String get deleteSelector => 'Supprimer le sélecteur';
+
+  @override
+  String get deleteSelectorConfirm =>
+      'Êtes-vous sûr de vouloir supprimer ce sélecteur ?';
+
+  @override
+  String get selectorDeleted => 'Sélecteur supprimé';
+
+  @override
+  String get selectorsExported => 'Sélecteurs exportés dans le presse-papiers';
+
+  @override
+  String get importSelectors => 'Importer des sélecteurs';
+
+  @override
+  String get selectorsJsonLabel => 'JSON des sélecteurs';
+
+  @override
+  String get import => 'Importer';
+
+  @override
+  String selectorsImported(String count) {
+    return '$count sélecteur(s) importé(s)';
+  }
+
+  @override
+  String get selectorsReadyToShare =>
+      'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.';
+
+  @override
+  String get exportSelectors => 'Exporter';
+
+  @override
+  String get shareSelectors => 'Partager';
+
+  @override
+  String get noCustomSelectors => 'Aucun sélecteur personnalisé';
+
+  @override
+  String get addFirstSelector =>
+      'Ajoutez votre premier sélecteur pour commencer';
+
+  @override
+  String get selectorExamples => 'Exemples';
+
+  @override
+  String get selectorExamplesAdBlocker =>
+      'Exemples pour bloquer des publicités :';
+
+  @override
+  String get selectorExampleAd1 => 'Bannière publicitaire';
+
+  @override
+  String get selectorExampleAd2 => 'Publicité par ID';
+
+  @override
+  String get selectorExampleAd3 => 'Iframe publicitaire';
+
+  @override
+  String get selectorExampleAd4 => 'Script publicitaire';
+
+  @override
+  String get selectorExamplesChapter =>
+      'Exemples pour identifier le contenu du chapitre :';
+
+  @override
+  String get selectorExampleChapter1 => 'Conteneur de chapitre';
+
+  @override
+  String get selectorExampleChapter2 => 'Lecteur de manga';
+
+  @override
+  String get selectorExampleChapter3 => 'Images du chapitre';
+
+  @override
+  String get selectorExampleChapter4 => 'Contenu de lecture';
+
+  @override
+  String get selectorExampleChapter5 => 'Format manga/chapitre-22';
+
+  @override
+  String get selectorExampleChapter5Explanation =>
+      'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"';
+
+  @override
+  String get selectorUrlFormatDetected =>
+      '✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+
+  @override
+  String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
+
+  @override
+  String get selectorPracticalExample => 'Exemple pratique :';
+
+  @override
+  String get selectorExampleScenario =>
+      'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"';
+
+  @override
+  String get selectorStep1 =>
+      'Ouvrez la page du chapitre dans votre navigateur';
+
+  @override
+  String get selectorStep2 =>
+      'Appuyez sur F12 pour ouvrir les outils de développement';
+
+  @override
+  String get selectorStep3 =>
+      'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)';
+
+  @override
+  String get selectorStep4 =>
+      'Cliquez sur le conteneur qui contient les images du chapitre';
+
+  @override
+  String get selectorStep5 =>
+      'Dans le code HTML, trouvez la classe ou l\'ID du conteneur';
+
+  @override
+  String get selectorFillForm => 'Remplissez le formulaire :';
+
+  @override
+  String get selectorCssWhenNeededDesc =>
+      '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+
+  @override
+  String get selectorDomainExampleDesc =>
+      'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)';
+
+  @override
+  String get selectorOtherExamples => 'Autres exemples courants :';
+
+  @override
+  String get selectorExampleChapter5Desc =>
+      'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.';
+
+  @override
+  String get selectorExamplesHint =>
+      'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected => '캡차가 감지되었습니다 - 광고 차단기가 일시적으로 비활성화되었습니다';
+
+  @override
+  String get captchaResolved => '캡차가 해결되었습니다 - 광고 차단기가 다시 활성화되었습니다';
+
+  @override
+  String get scrollPositionSaved => '스크롤 위치가 저장되었습니다';
+
+  @override
+  String get chapterProgressSaved => '챕터 진행 상황이 저장되었습니다';
+
+  @override
+  String get readingOffline => '오프라인으로 읽기';
+
+  @override
+  String get chapterDownloaded => '챕터가 다운로드되었습니다';
+
+  @override
+  String get offlineReadingMode => '오프라인 읽기 모드';
+
+  @override
+  String get deleteChapterTitle => '챕터 삭제';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return '정말 챕터 $chapterNumber을(를) 삭제하시겠습니까?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => '모든 챕터 삭제';
+
+  @override
+  String get deleteAllChaptersMessage => '이 만화의 모든 다운로드된 챕터를 정말 삭제하시겠습니까?';
+
+  @override
+  String get deleteAllDownloadsTitle => '모든 다운로드 삭제';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      '정말 모든 다운로드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get deleteAll => '모두 삭제';
+
+  @override
+  String get chapterDeleted => '챕터가 삭제되었습니다';
+
+  @override
+  String get allChaptersDeleted => '모든 챕터가 삭제되었습니다';
+
+  @override
+  String get allDownloadsDeleted => '모든 다운로드가 삭제되었습니다';
+
+  @override
+  String get noChaptersDownloaded => '다운로드된 챕터가 없습니다';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 챕터가 다운로드되었습니다',
+      one: '1개 챕터가 다운로드되었습니다',
+      zero: '다운로드된 챕터가 없습니다',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => '읽기';
+
+  @override
+  String get deleteAllChaptersAction => '모든 챕터 삭제';
+
+  @override
+  String get deleteAllDownloadsTooltip => '모든 다운로드 삭제';
+
+  @override
+  String get recommendedForYou => '추천 항목';
+
+  @override
+  String get recommendedForYouEmpty => '라이브러리에 만화를 추가하여\n맞춤 추천을 받아보세요.';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '만화 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached => '캐시된 추천 (오프라인 모드)';
+
+  @override
+  String errorWithMessage(String message) {
+    return '오류: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return '$titles을(를) 좋아했기 때문에';
+  }
+
+  @override
+  String get yourRating => '내 평점';
+
+  @override
+  String get myDataTitle => '내 데이터';
+
+  @override
+  String get myDataSubtitle => '내 데이터 보기, 내보내기 또는 삭제 (GDPR)';
+
+  @override
+  String get gdprIntro =>
+      'GDPR에 따라 귀하는 개인 데이터에 대한 권리를 가집니다. 이 페이지에서 이러한 권리를 쉽게 행사할 수 있습니다.';
+
+  @override
+  String get gdprAccessTitle => '내 데이터 보기';
+
+  @override
+  String get gdprAccessSubtitle => '제15조 — 저장된 정보의 요약';
+
+  @override
+  String get gdprExportTitle => '내 데이터 내보내기';
+
+  @override
+  String get gdprExportSubtitle => '제20조 — 클립보드에 복사된 전체 JSON';
+
+  @override
+  String get gdprLegalDocs => '법적 문서';
+
+  @override
+  String get gdprDeleteHint =>
+      '계정을 영구적으로 삭제하려면 프로필 → 계정 삭제로 이동하세요. 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get privacyPolicyTitle => '개인정보 처리방침';
+
+  @override
+  String get termsOfServiceTitle => '이용 약관';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Tracker는 보증 없이 그대로 제공됩니다. 발행인은 사용자의 비규정 사용(불법 콘텐츠, 스크래핑 등)에 대한 모든 책임을 부인합니다.\n\n전체 문서는 공식 웹사이트에서 확인할 수 있습니다.';
+
+  @override
+  String get privacyShortVersion =>
+      '수집된 데이터: 이메일, 비밀번호(해시화), 만화 라이브러리, 환경 설정. 데이터는 제3자에게 판매되지 않습니다. 언제든지 데이터를 내보내거나 삭제할 수 있습니다.\n\n전체 문서는 공식 웹사이트에서 확인할 수 있습니다.';
+
+  @override
+  String get iAcceptTos => '이용 약관에 동의합니다';
+
+  @override
+  String get iAcceptPrivacy => '개인정보 처리방침에 동의합니다';
+
+  @override
+  String get iAccept => '동의';
+
+  @override
+  String get consentRequired => '이용 약관과 개인정보 처리방침에 동의해야 합니다.';
+
+  @override
+  String get consentRefreshTitle => '약관이 업데이트되었습니다';
+
+  @override
+  String get consentRefreshIntro =>
+      '이용 약관과 개인정보 처리방침이 업데이트되었습니다. 계속하려면 동의해 주세요.';
+
+  @override
+  String get refuseAndLogout => '거부하고 로그아웃';
+
+  @override
+  String get versionLabel => '버전';
+
+  @override
+  String get forgotPasswordTitle => '비밀번호 찾기';
+
+  @override
+  String get forgotPasswordIntro =>
+      '이메일을 입력하세요. 계정이 존재하면 새 비밀번호를 설정할 수 있는 링크를 받게 됩니다.';
+
+  @override
+  String get sendResetLink => '링크 보내기';
+
+  @override
+  String get resetEmailSentTitle => '받은 편지함을 확인하세요';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return '$email 계정이 존재하는 경우 새 비밀번호를 설정할 수 있는 링크가 포함된 이메일이 전송되었습니다.\n\n링크는 30분 후에 만료됩니다.';
+  }
+
+  @override
+  String get resetPasswordTitle => '새 비밀번호';
+
+  @override
+  String get resetPasswordIntro => '계정의 새 비밀번호를 설정하세요. 확인 후 자동으로 로그인됩니다.';
+
+  @override
+  String get confirmReset => '확인';
+
+  @override
+  String get resetTokenExpired => '유효하지 않거나 만료된 링크입니다. 다시 요청해 주세요.';
+
+  @override
+  String get resetPasswordSuccess => '비밀번호가 변경되었습니다';
+
+  @override
+  String get resetPasswordSuccessHint => '로그인되었습니다. 리디렉션 중…';
+
+  @override
+  String get verifyingEmail => '확인 중…';
+
+  @override
+  String get emailVerifiedSuccess => '이메일이 확인되었습니다!';
+
+  @override
+  String get emailVerifiedHint => '로그인 중…';
+
+  @override
+  String get emailVerifyFailedTitle => '유효하지 않거나 만료된 링크';
+
+  @override
+  String get emailVerifyFailedHint =>
+      '사용하신 링크는 더 이상 유효하지 않습니다. 로그인하여 프로필에서 새 링크를 요청하세요.';
+
+  @override
+  String get backToLogin => '로그인으로 돌아가기';
+
+  @override
+  String get verifyEmailBannerMessage => '모든 기능을 활성화하려면 이메일 주소를 확인하세요.';
+
+  @override
+  String get emailSentShort => '전송됨';
+
+  @override
+  String get resendEmailShort => '재전송';
 }

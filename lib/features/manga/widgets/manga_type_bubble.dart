@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class MangaType extends StatelessWidget {
   final String type;
@@ -15,7 +16,7 @@ class MangaType extends StatelessWidget {
       child: Container(
         height: 10,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: AppRadius.circularLg,
           color: Colors.white,
         ),
         child: Padding(

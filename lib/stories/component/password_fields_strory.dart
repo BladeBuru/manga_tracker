@@ -1,4 +1,5 @@
 import 'package:dashbook/dashbook.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import '../../../core/theme/app_theme.dart';
@@ -35,7 +36,7 @@ void addPasswordFieldsStory(Dashbook dashbook) {
                       AuthButton(
                           text: 'Valider',
                           onTap: () { final isValid = formKey.currentState?.validate() ?? false;
-                          print("Est valide $isValid");}
+                          debugPrint("Est valide $isValid");}
 
                       ),
                     ],
@@ -53,16 +54,22 @@ void addPasswordFieldsStory(Dashbook dashbook) {
 
 class FakeValidatorService extends ValidatorService {
   @override
-  String? validatePassword(String? value) {
+  String? validatePassword(String? value, BuildContext? context) {
     if (value == null || value.isEmpty) return 'Champ requis';
     if (value.length < 6) return 'Minimum 6 caractères';
     return null;
   }
 
   @override
-  String? validateConfirmPassword(String? value, TextEditingController passwordController) {
+  String? validateConfirmPassword(
+    String? value,
+    TextEditingController passwordController,
+    BuildContext? context,
+  ) {
     if (value == null || value.isEmpty) return 'Champ requis';
-    if (value != passwordController.text) return 'Les mots de passe ne correspondent pas';
+    if (value != passwordController.text) {
+      return 'Les mots de passe ne correspondent pas';
+    }
     return null;
   }
 }

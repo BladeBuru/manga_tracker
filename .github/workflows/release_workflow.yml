@@ -1,13 +1,31 @@
-name: Release APK on PR Merge
+name: Release APK
 
+# Deux modes de déclenchement :
+#  1. PR mergée sur `master` avec label `patch`/`minor`/`major` → ancien flow
+#  2. workflow_dispatch (manuel ou via skill `/release`) → flow direct
 on:
   pull_request:
     types: [closed]
-    branches: [dev]
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type de bump de version'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      changelog:
+        description: 'Changelog (markdown, lignes séparées par \n)'
+        required: true
+        type: string
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true
+    # Run si workflow_dispatch OU PR effectivement mergée
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -15,6 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: true
+          ref: master
 
       - name: 🔧 Set up Flutter
         uses: subosito/flutter-action@v2
@@ -27,23 +46,32 @@ jobs:
       - name: 🌍 Install version_assist globally
         run: dart pub global activate version_assist
 
-      - name: 📌 Get bump type from label
+      # ──────────────────────────────────────────────────────────────
+      # Bump type : depuis input (workflow_dispatch) ou label (PR)
+      # ──────────────────────────────────────────────────────────────
+      - name: 📌 Get bump type
         id: get_bump
         run: |
-          LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels)
-          if echo "$LABELS" | grep -q patch; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "bump=true" >> $GITHUB_OUTPUT
-            echo "type=patch" >> $GITHUB_OUTPUT
-          elif echo "$LABELS" | grep -q minor; then
-            echo "bump=true" >> $GITHUB_OUTPUT
-            echo "type=minor" >> $GITHUB_OUTPUT
-          elif echo "$LABELS" | grep -q major; then
-            echo "bump=true" >> $GITHUB_OUTPUT
-            echo "type=major" >> $GITHUB_OUTPUT
+            echo "type=${{ inputs.version_type }}" >> $GITHUB_OUTPUT
+            echo "Source: workflow_dispatch (type=${{ inputs.version_type }})"
           else
-            echo "bump=false" >> $GITHUB_OUTPUT
-            echo "Aucun bump de version requis."
+            LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels)
+            if echo "$LABELS" | grep -q patch; then
+              echo "bump=true" >> $GITHUB_OUTPUT
+              echo "type=patch" >> $GITHUB_OUTPUT
+            elif echo "$LABELS" | grep -q minor; then
+              echo "bump=true" >> $GITHUB_OUTPUT
+              echo "type=minor" >> $GITHUB_OUTPUT
+            elif echo "$LABELS" | grep -q major; then
+              echo "bump=true" >> $GITHUB_OUTPUT
+              echo "type=major" >> $GITHUB_OUTPUT
+            else
+              echo "bump=false" >> $GITHUB_OUTPUT
+              echo "Aucun bump de version requis (PR sans label patch/minor/major)."
+            fi
           fi
 
       - name: 📛 Set Git identity
@@ -59,8 +87,11 @@ jobs:
         if: steps.get_bump.outputs.bump == 'true'
         id: version
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
+          VERSION_FULL=$(grep '^version:' pubspec.yaml | cut -d ' ' -f2)
+          # Extraire uniquement la version sans le build (avant le +)
+          VERSION=$(echo "$VERSION_FULL" | cut -d '+' -f1)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version_full=$VERSION_FULL" >> $GITHUB_OUTPUT
 
       - name: 🛠️ Générer les fichiers .env
         run: |
@@ -102,20 +133,39 @@ jobs:
             echo "✅ Keystore nettoyé"
           fi
 
-      - name: 🚀 Push tag
+      - name: 🏷️ Create and push tag (version only, no build)
         if: steps.get_bump.outputs.bump == 'true'
         run: |
-          git push origin --tags
+          # Supprimer les tags locaux créés par version_assist (s'il y en a avec le build)
+          git tag -d v${{ steps.version.outputs.version_full }} 2>/dev/null || true
+          # Créer un nouveau tag avec uniquement la version (sans le build)
+          git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
+          # Supprimer le tag avec build du remote s'il existe
+          git push origin :refs/tags/v${{ steps.version.outputs.version_full }} 2>/dev/null || true
+          # Pousser le tag avec uniquement la version
+          git push origin v${{ steps.version.outputs.version }}
           git push
 
-      - name: 🧾 Extract changelog from PR
+      # ──────────────────────────────────────────────────────────────
+      # Changelog : depuis input (workflow_dispatch) ou PR body (PR)
+      # ──────────────────────────────────────────────────────────────
+      - name: 🧾 Get changelog
         if: steps.get_bump.outputs.bump == 'true'
         id: changelog
         run: |
-          BODY=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
-          CONTENT=$(printf "%s\n" "$BODY" | sed -n '/<!-- CHANGELOG:START -->/,/<!-- CHANGELOG:END -->/p' | sed '1d;$d')
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Le \n littéral dans l'input est converti en vrai newline
+            CONTENT=$(printf '%b' "${{ inputs.changelog }}")
+          else
+            BODY=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
+            CONTENT=$(printf "%s\n" "$BODY" | sed -n '/<!-- CHANGELOG:START -->/,/<!-- CHANGELOG:END -->/p' | sed '1d;$d')
+          fi
           ESCAPED=$(echo "$CONTENT" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
           echo "log=$ESCAPED" >> $GITHUB_OUTPUT
+          # Print pour debug (sans secrets dedans)
+          echo "─── Changelog ───"
+          echo "$CONTENT"
+          echo "─────────────────"
 
       - name: 📝 Update version.json with changelog
         if: steps.get_bump.outputs.bump == 'true'

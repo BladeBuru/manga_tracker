@@ -1,14 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/components/search_bar.dart' show CustomSearchBar;
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
 import 'package:mangatracker/features/library/bloc/library_event.dart';
 import 'package:mangatracker/features/library/bloc/library_state.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
-import '../../auth/views/login.view.dart';
+import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
+import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 /// Vue réactive de la bibliothèque utilisant BLoC
 class LibraryBlocView extends StatefulWidget {
@@ -20,23 +27,194 @@ class LibraryBlocView extends StatefulWidget {
 
 class _LibraryBlocViewState extends State<LibraryBlocView> {
   final LibraryBloc _libraryBloc = getIt<LibraryBloc>();
+  final NewChapterService _newChapterService = NewChapterService();
+  final DownloadManagerService _downloadManager = DownloadManagerService();
+  final TextEditingController _searchController = TextEditingController();
   final Map<ReadingStatus, bool> _isExpanded = {
     ReadingStatus.reading: true,
     ReadingStatus.readLater: true,
     ReadingStatus.caughtUp: true,
     ReadingStatus.completed: true,
   };
+  static bool? _cachedViewMode;
+  bool _isCardView = false;
+  String _searchQuery = '';
+  bool _showDownloadedOnly = false;
 
   @override
   void initState() {
     super.initState();
-    print('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
+    debugPrint('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
     // Charger la bibliothèque au démarrage
     _libraryBloc.add(const LoadLibrary());
+    _searchController.addListener(_onSearchChanged);
+    if (_cachedViewMode != null) {
+      _isCardView = _cachedViewMode!;
+    }
+    _loadViewState();
+  }
+
+  Future<void> _loadViewState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedValue = prefs.getBool('library_view_mode');
+    if (storedValue != null) {
+      _cachedViewMode = storedValue;
+      if (mounted) {
+        setState(() {
+          _isCardView = storedValue;
+        });
+      } else {
+        _isCardView = storedValue;
+      }
+    }
+  }
+
+  Future<void> _saveViewState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('library_view_mode', _isCardView);
+    _cachedViewMode = _isCardView;
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+    });
+  }
+
+  /// Calcule le score de pertinence d'un manga pour une recherche
+  int _calculateMatchScore(MangaQuickViewDto manga, String query) {
+    if (query.isEmpty) return 0;
+    
+    final queryLower = query.toLowerCase();
+    int maxScore = 0;
+    
+    // Score pour le titre principal
+    final titleLower = manga.title.toLowerCase();
+    if (titleLower == queryLower) {
+      maxScore = 1000; // Correspondance exacte
+    } else if (titleLower.startsWith(queryLower)) {
+      maxScore = 500; // Commence par la recherche
+    } else if (titleLower.contains(queryLower)) {
+      maxScore = 100; // Contient la recherche
+    }
+    
+    // Score pour les noms associés
+    if (manga.associated != null) {
+      for (final name in manga.associated!) {
+        final nameLower = name.toLowerCase();
+        int score = 0;
+        if (nameLower == queryLower) {
+          score = 900; // Correspondance exacte dans nom associé
+        } else if (nameLower.startsWith(queryLower)) {
+          score = 450; // Commence par la recherche
+        } else if (nameLower.contains(queryLower)) {
+          score = 90; // Contient la recherche
+        }
+        if (score > maxScore) {
+          maxScore = score;
+        }
+      }
+    }
+    
+    return maxScore;
+  }
+
+  /// Filtre les mangas selon la recherche et le filtre téléchargés
+  Future<List<MangaQuickViewDto>> _filterMangas(List<MangaQuickViewDto> mangas) async {
+    List<MangaQuickViewDto> filtered = mangas;
+
+    // Filtrer par téléchargements si activé
+    if (_showDownloadedOnly) {
+      final downloadedChapters = await _downloadManager.getAllDownloadedChapters();
+      final downloadedMuIds = downloadedChapters.keys.toSet();
+      filtered = filtered.where((manga) => downloadedMuIds.contains(manga.muId.toInt())).toList();
+    }
+
+    // Filtrer par recherche
+    if (_searchQuery.isEmpty) {
+      return filtered;
+    }
+    
+    // Filtrer et calculer les scores
+    final filteredWithScores = filtered.map((manga) {
+      final titleMatch = manga.title.toLowerCase().contains(_searchQuery);
+      final associatedMatch = manga.associated?.any((name) => 
+        name.toLowerCase().contains(_searchQuery)
+      ) ?? false;
+      
+      if (titleMatch || associatedMatch) {
+        return MapEntry(manga, _calculateMatchScore(manga, _searchQuery));
+      }
+      return null;
+    }).whereType<MapEntry<MangaQuickViewDto, int>>().toList();
+    
+    // Trier par score décroissant
+    filteredWithScores.sort((a, b) => b.value.compareTo(a.value));
+    
+    return filteredWithScores.map((e) => e.key).toList();
+  }
+
+  /// Trouve le nom associé qui correspond à la recherche, ou retourne le titre
+  String _getDisplayName(MangaQuickViewDto manga) {
+    if (_searchQuery.isEmpty) {
+      return manga.title;
+    }
+    
+    final queryLower = _searchQuery.toLowerCase();
+    final titleLower = manga.title.toLowerCase();
+    
+    // Si le titre correspond, on l'utilise
+    if (titleLower.contains(queryLower)) {
+      return manga.title;
+    }
+    
+    // Sinon, chercher dans les noms associés
+    if (manga.associated != null) {
+      for (final name in manga.associated!) {
+        final nameLower = name.toLowerCase();
+        if (nameLower.contains(queryLower)) {
+          return name; // Retourner le nom associé qui match
+        }
+      }
+    }
+    
+    // Par défaut, retourner le titre
+    return manga.title;
+  }
+
+  /// Groupe les mangas par statut et les trie par pertinence dans chaque groupe
+  Map<ReadingStatus, List<MangaQuickViewDto>> _groupAndSortByStatus(List<MangaQuickViewDto> mangas) {
+    final grouped = <ReadingStatus, List<MangaQuickViewDto>>{};
+    
+    for (var status in ReadingStatus.values) {
+      final statusMangas = mangas.where((m) => m.readingStatus == status).toList();
+      
+      // Trier par score de pertinence si recherche active
+      if (_searchQuery.isNotEmpty) {
+        statusMangas.sort((a, b) {
+          final scoreA = _calculateMatchScore(a, _searchQuery);
+          final scoreB = _calculateMatchScore(b, _searchQuery);
+          return scoreB.compareTo(scoreA);
+        });
+      }
+      
+      if (statusMangas.isNotEmpty) {
+        grouped[status] = statusMangas;
+      }
+    }
+    
+    return grouped;
   }
 
   void _redirectToLoginPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginView()));
+    context.push('/login');
   }
 
   @override
@@ -51,8 +229,31 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _libraryBloc.add(const RefreshLibrary()),
+            icon: Icon(_showDownloadedOnly ? Icons.download : Icons.download_outlined),
+            onPressed: () {
+              setState(() {
+                _showDownloadedOnly = !_showDownloadedOnly;
+              });
+            },
+            tooltip: _showDownloadedOnly ? 'Afficher tous les mangas' : 'Afficher uniquement les téléchargés',
+          ),
+          IconButton(
+            icon: const Icon(Icons.folder),
+            onPressed: () {
+              context.push('/downloads');
+            },
+            tooltip: 'Gérer les téléchargements',
+          ),
+          IconButton(
+            icon: Icon(_isCardView ? Icons.view_list : Icons.view_module),
+            onPressed: () {
+              setState(() {
+                _isCardView = !_isCardView;
+                _cachedViewMode = _isCardView;
+              });
+              _saveViewState();
+            },
+            tooltip: _isCardView ? 'Vue liste' : 'Vue carte',
           ),
         ],
       ),
@@ -139,16 +340,24 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   Widget _buildActionInProgress(LibraryActionInProgress state) {
     return Column(
       children: [
+        // Barre de recherche
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+            child: CustomSearchBar(
+            controller: _searchController,
+            onChanged: (value) {},
+          ),
+        ),
         // Indicateur de mode hors ligne
         if (state.isOffline)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(16),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
             child: Builder(
               builder: (context) {
@@ -177,7 +386,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
               border: Border.all(color: Colors.blue),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
           child: Row(
             children: [
@@ -199,7 +408,24 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         
         // Contenu de la bibliothèque
         Expanded(
-          child: _buildLibraryList(state.mangas),
+          child: FutureBuilder<List<MangaQuickViewDto>>(
+            future: _filterMangas(state.mangas),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final filteredMangas = snapshot.data ?? [];
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _libraryBloc.add(const RefreshLibrary());
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _isCardView 
+                    ? _buildLibraryGrid(filteredMangas)
+                    : _buildLibraryList(filteredMangas),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -207,20 +433,28 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
 
   Widget _buildLibraryContent(LibraryLoaded state) {
     // Debug : afficher l'état offline
-    print('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
+    debugPrint('📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
     
     return Column(
       children: [
+        // Barre de recherche
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+            child: CustomSearchBar(
+            controller: _searchController,
+            onChanged: (value) {},
+          ),
+        ),
         // Indicateur de mode hors ligne
         if (state.isOffline)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(16),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.orange.withValues(alpha: 0.1),
               border: Border.all(color: Colors.orange),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.circularMd,
             ),
             child: Row(
               children: [
@@ -246,67 +480,223 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         
         // Liste de la bibliothèque
         Expanded(
-          child: _buildLibraryList(state.mangas),
+          child: FutureBuilder<List<MangaQuickViewDto>>(
+            future: _filterMangas(state.mangas),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final filteredMangas = snapshot.data ?? [];
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _libraryBloc.add(const RefreshLibrary());
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _isCardView 
+                    ? _buildLibraryGrid(filteredMangas)
+                    : _buildLibraryList(filteredMangas),
+              );
+            },
+          ),
         ),
       ],
     );
   }
 
   Widget _buildLibraryList(List<MangaQuickViewDto> mangas) {
-    final groupedMangas = <ReadingStatus, List<MangaQuickViewDto>>{};
-    for (var status in ReadingStatus.values) {
-      groupedMangas[status] = mangas.where((m) => m.readingStatus == status).toList();
+    if (mangas.isEmpty && _searchQuery.isNotEmpty) {
+      return Center(
+        child: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Text(l10n?.noData ?? "Aucun résultat trouvé.");
+          },
+        ),
+      );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16.0),
-      children: [
-        const SizedBox(height: 8.0),
-        ...groupedMangas.entries.map((entry) {
-          final status = entry.key;
-          final items = entry.value;
-          final isExpanded = _isExpanded[status] ?? true;
+    final groupedMangas = _groupAndSortByStatus(mangas);
 
-          return Builder(
-            builder: (context) {
-              return ExpansionTile(
-                title: Text(status.getLabel(context)),
-                initiallyExpanded: isExpanded,
-                onExpansionChanged: (value) {
-                  setState(() {
-                    _isExpanded[status] = value;
-                  });
-                },
-                children: items.isNotEmpty
-                    ? items.map((manga) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: MangaRow(
-                            muId: manga.muId.toString(),
-                            mangaName: manga.title,
-                            mangaAuthor: manga.year,
-                            lastChapter: manga.totalChapters,
-                            readChapter: manga.readChapters,
-                            mediumImgPath: manga.mediumCoverUrl,
-                            rating: manga.rating,
-                            onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
-                          ),
-                        )).toList()
-                    : [
-                        Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context);
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(l10n?.noData ?? "Aucun manga."),
-                            );
-                          },
-                        ),
-                      ],
-              );
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      children: groupedMangas.entries.map((entry) {
+        final status = entry.key;
+        final items = entry.value;
+        final isExpanded = _isExpanded[status] ?? true;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: AppRadius.circularXl,
+            border: Border.all(
+              color: Colors.red.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.only(left: 8.0, right: 16.0),
+            title: Builder(
+              builder: (context) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Text(
+                    status.getLabel(context),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red,
+                    ),
+                  ),
+                );
+              },
+            ),
+            initiallyExpanded: isExpanded,
+            onExpansionChanged: (value) {
+              setState(() {
+                _isExpanded[status] = value;
+              });
             },
-          );
-        }).toList(),
-      ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            childrenPadding: EdgeInsets.zero,
+            children: items.map((manga) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                  child: FutureBuilder<int>(
+                    future: _newChapterService.getNewChaptersCount(manga.muId.toInt()),
+                    builder: (context, snapshot) {
+                      final newChaptersCount = snapshot.data ?? 0;
+                      return MangaRow(
+                        muId: manga.muId.toString(),
+                        mangaName: _getDisplayName(manga),
+                        mangaAuthor: manga.year,
+                        lastChapter: manga.totalChapters,
+                        readChapter: manga.readChapters,
+                        mediumImgPath: manga.mediumCoverUrl,
+                        rating: manga.rating,
+                        hasNewChapters: manga.hasNewChapters,
+                        newChaptersCount: newChaptersCount > 0 ? newChaptersCount : null,
+                        onDetailReturn: () => _libraryBloc.add(const RefreshLibrary()),
+                        showDownloadedOnly: _showDownloadedOnly,
+                      );
+                    },
+                  ),
+                )).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildLibraryGrid(List<MangaQuickViewDto> mangas) {
+    if (mangas.isEmpty && _searchQuery.isNotEmpty) {
+      return Center(
+        child: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Text(l10n?.noData ?? "Aucun résultat trouvé.");
+          },
+        ),
+      );
+    }
+
+    final groupedMangas = _groupAndSortByStatus(mangas);
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      children: groupedMangas.entries.map((entry) {
+        final status = entry.key;
+        final items = entry.value;
+        final isExpanded = _isExpanded[status] ?? true;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: AppRadius.circularXl,
+            border: Border.all(
+              color: Colors.red.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.only(left: 8.0, right: 16.0),
+            title: Builder(
+              builder: (context) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                  child: Text(
+                    status.getLabel(context),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red,
+                    ),
+                  ),
+                );
+              },
+            ),
+            initiallyExpanded: isExpanded,
+            onExpansionChanged: (value) {
+              setState(() {
+                _isExpanded[status] = value;
+              });
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            childrenPadding: EdgeInsets.zero,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 12.0,
+                    mainAxisSpacing: 8.0,
+                    childAspectRatio: 0.52,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final manga = items[index];
+                    return MangaCard(
+                      muId: manga.muId.toString(),
+                      mangaTitle: _getDisplayName(manga),
+                      mangaAuthor: manga.year,
+                      mediumImgPath: manga.mediumCoverUrl,
+                      rating: manga.rating,
+                      lastChapter: manga.totalChapters,
+                      readChapter: manga.readChapters,
+                      showDownloadedOnly: _showDownloadedOnly,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

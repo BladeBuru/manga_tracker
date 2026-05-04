@@ -144,6 +144,24 @@ abstract class AppLocalizations {
   /// **'Se connecter'**
   String get login;
 
+  /// Message d'erreur quand la connexion Google échoue
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de la connexion avec Google'**
+  String get googleLoginFailed;
+
+  /// Bouton connexion Google
+  ///
+  /// In fr, this message translates to:
+  /// **'Se connecter avec Google'**
+  String get loginWithGoogle;
+
+  /// Libellé pour retourner en arrière
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get back;
+
   /// Bouton d'inscription
   ///
   /// In fr, this message translates to:
@@ -282,6 +300,24 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notifications;
 
+  /// Titre pour les notifications de nouveaux chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Notifications nouveaux chapitres'**
+  String get newChapterNotifications;
+
+  /// Texte indiquant que les notifications sont activées
+  ///
+  /// In fr, this message translates to:
+  /// **'Activées'**
+  String get newChapterNotificationsEnabled;
+
+  /// Texte indiquant que les notifications sont désactivées
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivées'**
+  String get newChapterNotificationsDisabled;
+
   /// Sous-titre pour gérer les notifications
   ///
   /// In fr, this message translates to:
@@ -305,6 +341,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Mode sombre'**
   String get darkMode;
+
+  /// Label pour le mode système (utilise les préférences du téléphone)
+  ///
+  /// In fr, this message translates to:
+  /// **'Système'**
+  String get systemMode;
 
   /// Option pour choisir la langue
   ///
@@ -378,7 +420,7 @@ abstract class AppLocalizations {
   /// **'Cette action est irréversible. Toutes vos données seront définitivement supprimées et ne pourront pas être récupérées.'**
   String get confirmDeleteAccountMessage;
 
-  /// Bouton d'annulation
+  /// Bouton pour annuler
   ///
   /// In fr, this message translates to:
   /// **'Annuler'**
@@ -390,7 +432,7 @@ abstract class AppLocalizations {
   /// **'Enregistrer'**
   String get save;
 
-  /// Bouton de suppression
+  /// Bouton pour supprimer
   ///
   /// In fr, this message translates to:
   /// **'Supprimer'**
@@ -575,6 +617,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Total de chapitres'**
   String get totalChapters;
+
+  /// Titre pour la section des noms associés du manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Noms associés'**
+  String get associatedNames;
+
+  /// Nombre de noms associés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun nom} =1{{count} nom} other{{count} noms}}'**
+  String associatedNamesCount(num count);
 
   /// Action pour enregistrer la progression
   ///
@@ -887,6 +941,1200 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Impossible d\'ouvrir le lien : {url}'**
   String cannotOpenLink(String url);
+
+  /// Titre pour l'historique de recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique de recherche'**
+  String get searchHistoryTitle;
+
+  /// Message pour l'état vide de la recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Recherchez un manga, manhwa ou manhua'**
+  String get searchEmptyStateMessage;
+
+  /// Bouton pour effacer l'historique de recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get clear;
+
+  /// Titre pour l'authentification biométrique
+  ///
+  /// In fr, this message translates to:
+  /// **'Authentification biométrique'**
+  String get biometricAuthTitle;
+
+  /// Sous-titre pour l'authentification biométrique
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser l\'empreinte digitale ou le Face ID pour se connecter rapidement'**
+  String get biometricAuthSubtitle;
+
+  /// Message de succès pour l'activation de la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer l\'authentification biométrique'**
+  String get enableBiometricAuth;
+
+  /// Message de succès pour la désactivation de la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Authentification biométrique désactivée'**
+  String get disableBiometricAuth;
+
+  /// Statut activé pour la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Activée'**
+  String get biometricAuthEnabled;
+
+  /// Statut désactivé pour la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivée'**
+  String get biometricAuthDisabled;
+
+  /// Titre de la dialog de première activation
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer l\'authentification biométrique ?'**
+  String get biometricAuthFirstTimeTitle;
+
+  /// Message de la dialog de première activation
+  ///
+  /// In fr, this message translates to:
+  /// **'Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l\'avenir ?'**
+  String get biometricAuthFirstTimeMessage;
+
+  /// Message quand la biométrie n'est pas disponible
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'authentification biométrique n\'est pas disponible sur cet appareil'**
+  String get biometricAuthNotAvailable;
+
+  /// Message quand il faut se reconnecter pour activer la biométrie
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour activer l\'authentification biométrique, veuillez vous reconnecter'**
+  String get biometricAuthRequiresReconnect;
+
+  /// Séparateur entre connexion classique et OAuth
+  ///
+  /// In fr, this message translates to:
+  /// **'Ou'**
+  String get or;
+
+  /// Message d'accueil sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencez à suivre votre lecture maintenant'**
+  String get startTrackingNow;
+
+  /// Label pour le champ nom d'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur'**
+  String get username;
+
+  /// Label pour le champ de confirmation de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmation'**
+  String get confirmPassword;
+
+  /// Message pour rediriger vers la page de connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez déjà un compte ?'**
+  String get alreadyHaveAccount;
+
+  /// Label pour le champ nouveau mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get newPassword;
+
+  /// Message d'erreur quand l'email est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer votre adresse e-mail'**
+  String get validationEmailRequired;
+
+  /// Message d'erreur quand l'email est invalide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer une adresse e-mail valide'**
+  String get validationEmailInvalid;
+
+  /// Message d'erreur quand le mot de passe est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez entrer votre mot de passe'**
+  String get validationPasswordRequired;
+
+  /// Message d'erreur pour la longueur du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre mot de passe doit comporter entre 8 et 64 caractères'**
+  String get validationPasswordLength;
+
+  /// Message d'erreur pour la complexité du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule et un caractère spécial'**
+  String get validationPasswordComplexity;
+
+  /// Message d'erreur quand la confirmation de mot de passe est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez confirmer votre mot de passe'**
+  String get validationConfirmPasswordRequired;
+
+  /// Message d'erreur quand les mots de passe ne correspondent pas
+  ///
+  /// In fr, this message translates to:
+  /// **'Les mots de passe ne correspondent pas'**
+  String get validationPasswordsDoNotMatch;
+
+  /// Libellé pour afficher le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher le mot de passe'**
+  String get showPassword;
+
+  /// Libellé pour masquer le mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Masquer le mot de passe'**
+  String get hidePassword;
+
+  /// No description provided for @emailAlreadyUsed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette adresse e-mail est déjà utilisée'**
+  String get emailAlreadyUsed;
+
+  /// No description provided for @networkError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez vérifier votre connexion internet'**
+  String get networkError;
+
+  /// No description provided for @timeoutError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur met trop de temps à répondre. Veuillez réessayer.'**
+  String get timeoutError;
+
+  /// Libellé pour indiquer la robustesse du mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Robustesse du mot de passe'**
+  String get passwordStrengthLabel;
+
+  /// No description provided for @passwordStrengthWeak.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get passwordStrengthWeak;
+
+  /// No description provided for @passwordStrengthMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyen'**
+  String get passwordStrengthMedium;
+
+  /// No description provided for @passwordStrengthStrong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fort'**
+  String get passwordStrengthStrong;
+
+  /// Bouton de confirmation positive
+  ///
+  /// In fr, this message translates to:
+  /// **'Oui'**
+  String get yes;
+
+  /// Bouton de confirmation négative
+  ///
+  /// In fr, this message translates to:
+  /// **'Non'**
+  String get no;
+
+  /// Bouton pour valider la lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Oui, valider'**
+  String get yesValidate;
+
+  /// Message pour le saut de chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous passez du chapitre {prev} au {next}.\nMarquer {prev} comme lu ?'**
+  String chapterSkipMessage(String prev, String next);
+
+  /// Message pour valider la lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Avez-vous fini le chapitre {chapter} ?'**
+  String validateReadingMessage(String chapter);
+
+  /// Indice pour la validation de lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre progression sera sauvegardée automatiquement.'**
+  String get validateReadingHint;
+
+  /// Titre de la popup du bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités'**
+  String get adBlockerTitle;
+
+  /// Description du bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Le bloqueur de publicités bloque automatiquement les publicités sur les sites de lecture.\n\nSi vous souhaitez ajouter des liens ou suggérer des améliorations pour le blocage de publicités, rejoignez notre serveur Discord !'**
+  String get adBlockerDescription;
+
+  /// Tooltip pour l'icône d'info du bloqueur
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations sur le bloqueur de pub'**
+  String get adBlockerTooltip;
+
+  /// Bouton pour rejoindre Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre Discord'**
+  String get joinDiscord;
+
+  /// Sous-titre pour rejoindre Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Partagez vos suggestions et signalez des problèmes'**
+  String get joinDiscordSubtitle;
+
+  /// Section nous contacter
+  ///
+  /// In fr, this message translates to:
+  /// **'Nous contacter'**
+  String get contactUs;
+
+  /// Titre de la section téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléchargements'**
+  String get downloads;
+
+  /// Titre pour gérer les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Gérer les téléchargements'**
+  String get manageDownloads;
+
+  /// Sous-titre pour gérer les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir et supprimer les chapitres téléchargés'**
+  String get manageDownloadsSubtitle;
+
+  /// Erreur lors de l'ouverture du lien Discord
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir le lien Discord'**
+  String get discordLinkError;
+
+  /// Message de succès pour la copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'URL copiée dans le presse-papiers'**
+  String get urlCopied;
+
+  /// Message d'erreur pour la copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur lors de la copie de l\'URL'**
+  String get urlCopyError;
+
+  /// Tooltip pour le bouton de copie d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier l\'URL'**
+  String get copyUrl;
+
+  /// Message de succès pour la mise à jour de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression mise à jour'**
+  String get progressUpdated;
+
+  /// Message d'erreur pour une URL invalide
+  ///
+  /// In fr, this message translates to:
+  /// **'URL invalide'**
+  String get invalidUrl;
+
+  /// Titre pour le mode web de suivi de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode Web - Suivi de progression'**
+  String get webModeProgressTracking;
+
+  /// Description pour le mode web de suivi de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour suivre votre progression, collez l\'URL du chapitre que vous êtes en train de lire.'**
+  String get webModeProgressDescription;
+
+  /// Label pour le champ URL du chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'URL du chapitre'**
+  String get chapterUrlLabel;
+
+  /// Bouton pour mettre à jour la progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettre à jour la progression'**
+  String get updateProgress;
+
+  /// Bouton pour ouvrir dans un nouvel onglet
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans un nouvel onglet'**
+  String get openInNewTab;
+
+  /// Label pour le champ URL du lien
+  ///
+  /// In fr, this message translates to:
+  /// **'URL du site de scan'**
+  String get linkUrlLabel;
+
+  /// Titre pour l'information sur le format de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Format de chapitre requis'**
+  String get linkFormatInfo;
+
+  /// Description des formats de chapitre acceptés
+  ///
+  /// In fr, this message translates to:
+  /// **'Incluez le numéro de chapitre dans l\'URL pour permettre la sauvegarde automatique de progression.\n\nFormats acceptés :\n• /chapitre-23/ ou /chapter-23/\n• /c23/ ou /ch23/\n• /ep-23/ ou /episode-23/\n• ?chapter=23 ou ?num=24'**
+  String get linkFormatDescription;
+
+  /// Avertissement quand aucun format de chapitre n'est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun format de chapitre détecté. Le lien redirigera vers la page du manga (pas un chapitre spécifique).'**
+  String get linkFormatWarning;
+
+  /// Message de confirmation quand un format de chapitre est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Format de chapitre détecté ! La progression sera sauvegardée automatiquement.'**
+  String get linkFormatDetected;
+
+  /// Lien pour ajouter un pattern personnalisé
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un pattern personnalisé pour ce format'**
+  String get linkAddCustomPattern;
+
+  /// Titre pour la section des sélecteurs personnalisés
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs personnalisés'**
+  String get customSelectors;
+
+  /// Option pour gérer les sélecteurs personnalisés
+  ///
+  /// In fr, this message translates to:
+  /// **'Gérer les sélecteurs'**
+  String get manageCustomSelectors;
+
+  /// Sous-titre pour gérer les sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu'**
+  String get manageCustomSelectorsSubtitle;
+
+  /// Titre pour ajouter un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un sélecteur'**
+  String get addCustomSelector;
+
+  /// Label pour le champ domaine
+  ///
+  /// In fr, this message translates to:
+  /// **'Domaine (ex: exemple.com)'**
+  String get selectorDomainLabel;
+
+  /// Label pour le champ sélecteur CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur CSS'**
+  String get selectorCssLabel;
+
+  /// Label pour le type de sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de sélecteur'**
+  String get selectorTypeLabel;
+
+  /// Type de sélecteur : pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Pattern d\'URL'**
+  String get selectorTypeUrlPattern;
+
+  /// Label pour le champ pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Pattern d\'URL (regex)'**
+  String get selectorUrlPatternLabel;
+
+  /// Hint pour le champ pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22'**
+  String get selectorUrlPatternHint;
+
+  /// Titre pour les exemples de patterns d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples de patterns d\'URL :'**
+  String get selectorExamplesUrlPattern;
+
+  /// Titre de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple : /chapter-22'**
+  String get selectorExampleUrlPattern;
+
+  /// Explication de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :'**
+  String get selectorExampleUrlPatternExplanation;
+
+  /// Description détaillée de l'exemple pattern d'URL
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22'**
+  String get selectorUrlPatternExampleDesc;
+
+  /// Message expliquant que le pattern est global
+  ///
+  /// In fr, this message translates to:
+  /// **'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.'**
+  String get selectorUrlPatternGlobal;
+
+  /// Type de sélecteur : bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités'**
+  String get selectorTypeAdBlocker;
+
+  /// Type de sélecteur : contenu du chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Contenu du chapitre'**
+  String get selectorTypeChapterContent;
+
+  /// Label pour la description du sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Description (optionnel)'**
+  String get selectorDescriptionLabel;
+
+  /// Placeholder pour la description
+  ///
+  /// In fr, this message translates to:
+  /// **'Description du sélecteur'**
+  String get selectorDescriptionHint;
+
+  /// Message d'erreur pour les champs requis
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les champs sont requis'**
+  String get selectorRequiredFields;
+
+  /// Message de succès pour l'ajout d'un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur ajouté'**
+  String get selectorAdded;
+
+  /// Titre pour supprimer un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le sélecteur'**
+  String get deleteSelector;
+
+  /// Message de confirmation pour supprimer un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Êtes-vous sûr de vouloir supprimer ce sélecteur ?'**
+  String get deleteSelectorConfirm;
+
+  /// Message de succès pour la suppression d'un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteur supprimé'**
+  String get selectorDeleted;
+
+  /// Message de succès pour l'export des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs exportés dans le presse-papiers'**
+  String get selectorsExported;
+
+  /// Titre pour importer des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer des sélecteurs'**
+  String get importSelectors;
+
+  /// Label pour le champ JSON
+  ///
+  /// In fr, this message translates to:
+  /// **'JSON des sélecteurs'**
+  String get selectorsJsonLabel;
+
+  /// Bouton pour importer
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer'**
+  String get import;
+
+  /// Message de succès pour l'import des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} sélecteur(s) importé(s)'**
+  String selectorsImported(String count);
+
+  /// Message pour le partage des sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.'**
+  String get selectorsReadyToShare;
+
+  /// Bouton pour exporter
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter'**
+  String get exportSelectors;
+
+  /// Bouton pour partager
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get shareSelectors;
+
+  /// Message quand il n'y a pas de sélecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun sélecteur personnalisé'**
+  String get noCustomSelectors;
+
+  /// Message pour ajouter le premier sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre premier sélecteur pour commencer'**
+  String get addFirstSelector;
+
+  /// Titre pour la section d'exemples
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples'**
+  String get selectorExamples;
+
+  /// Titre pour les exemples de bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples pour bloquer des publicités :'**
+  String get selectorExamplesAdBlocker;
+
+  /// Exemple 1 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Bannière publicitaire'**
+  String get selectorExampleAd1;
+
+  /// Exemple 2 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Publicité par ID'**
+  String get selectorExampleAd2;
+
+  /// Exemple 3 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Iframe publicitaire'**
+  String get selectorExampleAd3;
+
+  /// Exemple 4 pour bloqueur de pub
+  ///
+  /// In fr, this message translates to:
+  /// **'Script publicitaire'**
+  String get selectorExampleAd4;
+
+  /// Titre pour les exemples de contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemples pour identifier le contenu du chapitre :'**
+  String get selectorExamplesChapter;
+
+  /// Exemple 1 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Conteneur de chapitre'**
+  String get selectorExampleChapter1;
+
+  /// Exemple 2 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecteur de manga'**
+  String get selectorExampleChapter2;
+
+  /// Exemple 3 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Images du chapitre'**
+  String get selectorExampleChapter3;
+
+  /// Exemple 4 pour contenu de chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Contenu de lecture'**
+  String get selectorExampleChapter4;
+
+  /// Exemple 5 pour contenu de chapitre avec format manga/chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Format manga/chapitre-22'**
+  String get selectorExampleChapter5;
+
+  /// Explication de l'exemple manga/chapitre-22
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"'**
+  String get selectorExampleChapter5Explanation;
+
+  /// Message expliquant que le format URL est déjà détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.'**
+  String get selectorUrlFormatDetected;
+
+  /// Titre pour expliquer quand ajouter un sélecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Quand ajouter un sélecteur CSS ?'**
+  String get selectorWhenNeeded;
+
+  /// Titre pour l'exemple pratique
+  ///
+  /// In fr, this message translates to:
+  /// **'Exemple pratique :'**
+  String get selectorPracticalExample;
+
+  /// Scénario d'exemple avec format non détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"'**
+  String get selectorExampleScenario;
+
+  /// Étape 1 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrez la page du chapitre dans votre navigateur'**
+  String get selectorStep1;
+
+  /// Étape 2 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Appuyez sur F12 pour ouvrir les outils de développement'**
+  String get selectorStep2;
+
+  /// Étape 3 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)'**
+  String get selectorStep3;
+
+  /// Étape 4 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Cliquez sur le conteneur qui contient les images du chapitre'**
+  String get selectorStep4;
+
+  /// Étape 5 de l'exemple
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans le code HTML, trouvez la classe ou l\'ID du conteneur'**
+  String get selectorStep5;
+
+  /// Titre pour remplir le formulaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Remplissez le formulaire :'**
+  String get selectorFillForm;
+
+  /// Description expliquant quand ajouter un sélecteur CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)'**
+  String get selectorCssWhenNeededDesc;
+
+  /// No description provided for @selectorDomainExampleDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)'**
+  String get selectorDomainExampleDesc;
+
+  /// Titre pour les autres exemples
+  ///
+  /// In fr, this message translates to:
+  /// **'Autres exemples courants :'**
+  String get selectorOtherExamples;
+
+  /// Description détaillée de l'exemple manga/chapitre-22
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.'**
+  String get selectorExampleChapter5Desc;
+
+  /// Astuce pour trouver les sélecteurs CSS
+  ///
+  /// In fr, this message translates to:
+  /// **'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.'**
+  String get selectorExamplesHint;
+
+  /// Message quand un captcha est détecté
+  ///
+  /// In fr, this message translates to:
+  /// **'Captcha détecté - Le bloqueur de pub a été temporairement désactivé'**
+  String get captchaDetected;
+
+  /// Message quand un captcha est résolu
+  ///
+  /// In fr, this message translates to:
+  /// **'Captcha résolu - Le bloqueur de pub a été réactivé'**
+  String get captchaResolved;
+
+  /// Message de confirmation pour la sauvegarde de la position de scroll
+  ///
+  /// In fr, this message translates to:
+  /// **'Position de scroll sauvegardée'**
+  String get scrollPositionSaved;
+
+  /// Message de confirmation pour la sauvegarde de progression
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression du chapitre sauvegardée'**
+  String get chapterProgressSaved;
+
+  /// Titre pour la lecture hors ligne
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture hors ligne'**
+  String get readingOffline;
+
+  /// Message indiquant qu'un chapitre est téléchargé
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre téléchargé'**
+  String get chapterDownloaded;
+
+  /// Description du mode lecture hors ligne
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode lecture hors ligne'**
+  String get offlineReadingMode;
+
+  /// Titre de la boîte de dialogue pour supprimer un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le chapitre'**
+  String get deleteChapterTitle;
+
+  /// Message de confirmation pour supprimer un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer le chapitre {chapterNumber} ?'**
+  String deleteChapterMessage(int chapterNumber);
+
+  /// Titre de la boîte de dialogue pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les chapitres'**
+  String get deleteAllChaptersTitle;
+
+  /// Message de confirmation pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'**
+  String get deleteAllChaptersMessage;
+
+  /// Titre de la boîte de dialogue pour supprimer tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les téléchargements'**
+  String get deleteAllDownloadsTitle;
+
+  /// Message de confirmation pour supprimer tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'**
+  String get deleteAllDownloadsMessage;
+
+  /// Bouton pour tout supprimer
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tout'**
+  String get deleteAll;
+
+  /// Message de succès après suppression d'un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre supprimé'**
+  String get chapterDeleted;
+
+  /// Message de succès après suppression de tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les chapitres supprimés'**
+  String get allChaptersDeleted;
+
+  /// Message de succès après suppression de tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les téléchargements supprimés'**
+  String get allDownloadsDeleted;
+
+  /// Message affiché quand aucun chapitre n'est téléchargé
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun chapitre téléchargé'**
+  String get noChaptersDownloaded;
+
+  /// Nombre de chapitres téléchargés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun chapitre téléchargé} =1{1 chapitre téléchargé} other{{count} chapitres téléchargés}}'**
+  String chaptersDownloadedCount(int count);
+
+  /// Bouton pour lire un chapitre
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire'**
+  String get readChapter;
+
+  /// Action pour supprimer tous les chapitres d'un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les chapitres'**
+  String get deleteAllChaptersAction;
+
+  /// Tooltip pour le bouton de suppression de tous les téléchargements
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer tous les téléchargements'**
+  String get deleteAllDownloadsTooltip;
+
+  /// Section de recommandations personnalisées de manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandé pour toi'**
+  String get recommendedForYou;
+
+  /// Message affiché dans la section recommandations quand la bibliothèque est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez des mangas à votre bibliothèque\npour obtenir des recommandations personnalisées.'**
+  String get recommendedForYouEmpty;
+
+  /// Sous-titre indiquant le nombre de mangas recommandés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 manga} other{{count} mangas}}'**
+  String recommendedForYouCount(int count);
+
+  /// Indicateur affiché quand les recommandations affichées proviennent du cache offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations en cache (mode hors ligne)'**
+  String get recommendedForYouCached;
+
+  /// Préfixe générique d'erreur avec un message technique
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur : {message}'**
+  String errorWithMessage(String message);
+
+  /// Explication d'une recommandation, listant les mangas sources
+  ///
+  /// In fr, this message translates to:
+  /// **'Parce que vous avez aimé {titles}'**
+  String recommendedBecauseOf(String titles);
+
+  /// Label affiché à côté du widget de notation utilisateur dans le détail manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre note'**
+  String get yourRating;
+
+  /// No description provided for @myDataTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes données'**
+  String get myDataTitle;
+
+  /// No description provided for @myDataSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir, exporter ou supprimer mes données (RGPD)'**
+  String get myDataSubtitle;
+
+  /// No description provided for @gdprIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conformément au RGPD, vous disposez de droits sur vos données personnelles. Cette page vous permet de les exercer simplement.'**
+  String get gdprIntro;
+
+  /// No description provided for @gdprAccessTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir mes données'**
+  String get gdprAccessTitle;
+
+  /// No description provided for @gdprAccessSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Article 15 — résumé des informations stockées'**
+  String get gdprAccessSubtitle;
+
+  /// No description provided for @gdprExportTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter mes données'**
+  String get gdprExportTitle;
+
+  /// No description provided for @gdprExportSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Article 20 — JSON complet copié dans le presse-papier'**
+  String get gdprExportSubtitle;
+
+  /// No description provided for @gdprLegalDocs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Documents légaux'**
+  String get gdprLegalDocs;
+
+  /// No description provided for @gdprDeleteHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour supprimer définitivement votre compte, rendez-vous dans Profil → Supprimer mon compte. Cette action est irréversible.'**
+  String get gdprDeleteHint;
+
+  /// No description provided for @privacyPolicyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Politique de confidentialité'**
+  String get privacyPolicyTitle;
+
+  /// No description provided for @termsOfServiceTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions d\'utilisation'**
+  String get termsOfServiceTitle;
+
+  /// No description provided for @tosShortVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Manga Tracker est fourni en l\'état, sans garantie. L\'éditeur décline toute responsabilité pour l\'utilisation non conforme par l\'utilisateur (contenu illégal, scraping, etc.).\n\nDocument complet sur le site officiel.'**
+  String get tosShortVersion;
+
+  /// No description provided for @privacyShortVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. Aucune donnée n\'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\nDocument complet sur le site officiel.'**
+  String get privacyShortVersion;
+
+  /// No description provided for @iAcceptTos.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte les Conditions d\'utilisation'**
+  String get iAcceptTos;
+
+  /// No description provided for @iAcceptPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte la Politique de confidentialité'**
+  String get iAcceptPrivacy;
+
+  /// No description provided for @iAccept.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepter'**
+  String get iAccept;
+
+  /// No description provided for @consentRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous devez accepter les CGU et la Politique de confidentialité.'**
+  String get consentRequired;
+
+  /// No description provided for @consentRefreshTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mise à jour de nos conditions'**
+  String get consentRefreshTitle;
+
+  /// No description provided for @consentRefreshIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nos conditions d\'utilisation et notre politique de confidentialité ont été mises à jour. Veuillez les accepter pour continuer.'**
+  String get consentRefreshIntro;
+
+  /// No description provided for @refuseAndLogout.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser et se déconnecter'**
+  String get refuseAndLogout;
+
+  /// No description provided for @versionLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Version'**
+  String get versionLabel;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe oublié'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.'**
+  String get forgotPasswordIntro;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer le lien'**
+  String get sendResetLink;
+
+  /// No description provided for @resetEmailSentTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre boîte mail'**
+  String get resetEmailSentTitle;
+
+  /// No description provided for @resetEmailSentMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Si un compte existe pour {email}, un email contenant un lien pour définir un nouveau mot de passe vient d\'être envoyé.\n\nLe lien expire dans 30 minutes.'**
+  String resetEmailSentMessage(String email);
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.'**
+  String get resetPasswordIntro;
+
+  /// No description provided for @confirmReset.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer'**
+  String get confirmReset;
+
+  /// No description provided for @resetTokenExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien invalide ou expiré. Refaites une demande.'**
+  String get resetTokenExpired;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe modifié'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordSuccessHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous êtes maintenant connecté. Redirection en cours…'**
+  String get resetPasswordSuccessHint;
+
+  /// No description provided for @verifyingEmail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification en cours…'**
+  String get verifyingEmail;
+
+  /// No description provided for @emailVerifiedSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Email vérifié !'**
+  String get emailVerifiedSuccess;
+
+  /// No description provided for @emailVerifiedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en cours…'**
+  String get emailVerifiedHint;
+
+  /// No description provided for @emailVerifyFailedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien invalide ou expiré'**
+  String get emailVerifyFailedTitle;
+
+  /// No description provided for @emailVerifyFailedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le lien que vous avez utilisé n\'est plus valide. Connectez-vous et demandez un nouveau lien depuis votre profil.'**
+  String get emailVerifyFailedHint;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour à la connexion'**
+  String get backToLogin;
+
+  /// No description provided for @verifyEmailBannerMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre adresse email pour activer toutes les fonctionnalités.'**
+  String get verifyEmailBannerMessage;
+
+  /// No description provided for @emailSentShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyé'**
+  String get emailSentShort;
+
+  /// No description provided for @resendEmailShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renvoyer'**
+  String get resendEmailShort;
 }
 
 class _AppLocalizationsDelegate

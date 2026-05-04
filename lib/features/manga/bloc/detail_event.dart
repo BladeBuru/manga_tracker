@@ -77,3 +77,15 @@ class UpdateCustomLink extends DetailEvent {
 class DeleteCustomLink extends DetailEvent {
   const DeleteCustomLink();
 }
+
+/// Mettre à jour la note personnelle de l'utilisateur (0-10).
+/// `rating = 0` supprime la note.
+class UpdateUserRating extends DetailEvent {
+  final int muId;
+  final int rating;
+
+  const UpdateUserRating(this.muId, this.rating);
+
+  @override
+  List<Object?> get props => [muId, rating];
+}

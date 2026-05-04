@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
@@ -14,7 +14,7 @@ import '../dto/manga_recommendation_view.dto.dart';
 
 class MangaService {
   HttpService httpService = getIt<HttpService>();
-  LibraryService libraryService = LibraryService();
+  LibraryService get libraryService => getIt<LibraryService>();
 
   var offsetTop = 1;
   var offsetLatest = 1;
@@ -54,8 +54,7 @@ class MangaService {
       'offset': offsetTop.toString(),
       'limit': 25.toString(),
     };
-    var url = Uri.https(
-        dotenv.env['MT_API_URL']!, '/mangas/trending', queryParameters);
+    var url = buildApiUri('/mangas/trending', queryParameters);
     return getMangas(url);
   }
 
@@ -64,8 +63,7 @@ class MangaService {
       'offset': offsetTop.toString(),
       'limit': 25.toString(),
     };
-    var url = Uri.https(
-        dotenv.env['MT_API_URL']!, '/mangas/popular', queryParameters);
+    var url = buildApiUri('/mangas/popular', queryParameters);
     return getMangas(url);
   }
 
@@ -79,8 +77,7 @@ class MangaService {
       'offset': offsetTop.toString(),
       'limit': 25.toString(),
     };
-    Uri url =
-        Uri.https(dotenv.env['MT_API_URL']!, '/mangas/new', queryParameters);
+    Uri url = buildApiUri('/mangas/new', queryParameters);
     return getMangas(url);
   }
 
@@ -90,14 +87,14 @@ class MangaService {
   }
 
   Future<List<MangaQuickViewDto>> searchForMangas(String searchPattern) async {
-    Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/mangas/search');
+    Uri url = buildApiUri('/mangas/search');
     Map<String, String> body = {'search_pattern': searchPattern};
 
     return getMangas(url, post: true, body: body);
   }
 
   Future<MangaDetailDto> getMangaDetail(String muId) async {
-    Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/mangas/$muId');
+    Uri url = buildApiUri('/mangas/$muId');
     Response response = await httpService.getWithAuthTokens(url);
     if (response.statusCode == HttpStatus.ok) {
       return MangaDetailDto.fromJson(jsonDecode(response.body));
@@ -114,10 +111,7 @@ class MangaService {
   Future<List<MangaRecommendationView>> getMangaRecommendations(
       String muId,
       ) async {
-    Uri url = Uri.https(
-      dotenv.env['MT_API_URL']!,
-      '/mangas/recommendations/$muId',
-    );
+    Uri url = buildApiUri('/mangas/recommendations/$muId');
 
     Response response = await httpService.getWithAuthTokens(url);
 

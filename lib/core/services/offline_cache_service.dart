@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -104,9 +105,37 @@ class OfflineCacheService {
   static const String _homePageCacheKey = 'cached_homepage';
   static const String _searchCacheKey = 'cached_search_';
   static const String _userInfoCacheKey = 'cached_user_info';
+  static const String _recommendationsCacheKey = 'cached_recommendations';
   static const String _offlineQueueKey = 'offline_queue';
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
+
+  /// Cache la liste de recommandations personnalisées
+  Future<void> cacheRecommendations(List<MangaQuickViewDto> mangas) async {
+    try {
+      final json = mangas.map((m) => m.toJson()).toList();
+      await _storage.writeSecureData(_recommendationsCacheKey, jsonEncode(json));
+      await _updateCacheMetadata('recommendations', DateTime.now());
+    } catch (e) {
+      debugPrint('Erreur lors du cache des recommandations: $e');
+    }
+  }
+
+  /// Récupère les recommandations depuis le cache
+  Future<List<MangaQuickViewDto>?> getCachedRecommendations() async {
+    try {
+      final cached = await _storage.readSecureData(_recommendationsCacheKey);
+      if (cached != null) {
+        final List<dynamic> jsonList = jsonDecode(cached);
+        return jsonList
+            .map((json) => MangaQuickViewDto.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération du cache recommandations: $e');
+    }
+    return null;
+  }
   
   /// Cache la liste de la bibliothèque
   Future<void> cacheLibrary(List<MangaQuickViewDto> mangas) async {
@@ -115,7 +144,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_libraryCacheKey, jsonEncode(json));
       await _updateLastSyncTimestamp();
     } catch (e) {
-      print('Erreur lors du cache de la bibliothèque: $e');
+      debugPrint('Erreur lors du cache de la bibliothèque: $e');
     }
   }
   
@@ -128,7 +157,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache bibliothèque: $e');
+      debugPrint('Erreur lors de la récupération du cache bibliothèque: $e');
     }
     return null;
   }
@@ -139,7 +168,7 @@ class OfflineCacheService {
       final key = '$_mangaDetailCacheKey$muId';
       await _storage.writeSecureData(key, jsonEncode(mangaDetail.toJson()));
     } catch (e) {
-      print('Erreur lors du cache des détails manga: $e');
+      debugPrint('Erreur lors du cache des détails manga: $e');
     }
   }
   
@@ -152,7 +181,7 @@ class OfflineCacheService {
         return MangaDetailDto.fromJson(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache détails manga: $e');
+      debugPrint('Erreur lors de la récupération du cache détails manga: $e');
     }
     return null;
   }
@@ -164,7 +193,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_homePageCacheKey, jsonEncode(json));
       await _updateCacheMetadata('homepage', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache de la page d\'accueil: $e');
+      debugPrint('Erreur lors du cache de la page d\'accueil: $e');
     }
   }
   
@@ -177,7 +206,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache page d\'accueil: $e');
+      debugPrint('Erreur lors de la récupération du cache page d\'accueil: $e');
     }
     return null;
   }
@@ -190,7 +219,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(key, jsonEncode(json));
       await _updateCacheMetadata('search_$query', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache des résultats de recherche: $e');
+      debugPrint('Erreur lors du cache des résultats de recherche: $e');
     }
   }
   
@@ -204,7 +233,7 @@ class OfflineCacheService {
         return jsonList.map((json) => MangaQuickViewDto.fromJson(json)).toList();
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache recherche: $e');
+      debugPrint('Erreur lors de la récupération du cache recherche: $e');
     }
     return null;
   }
@@ -215,7 +244,7 @@ class OfflineCacheService {
       await _storage.writeSecureData(_userInfoCacheKey, jsonEncode(userInfo.toJson()));
       await _updateCacheMetadata('user_info', DateTime.now());
     } catch (e) {
-      print('Erreur lors du cache des informations utilisateur: $e');
+      debugPrint('Erreur lors du cache des informations utilisateur: $e');
     }
   }
 
@@ -227,7 +256,7 @@ class OfflineCacheService {
         return UserInformationDto.fromJson(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération du cache informations utilisateur: $e');
+      debugPrint('Erreur lors de la récupération du cache informations utilisateur: $e');
     }
     return null;
   }
@@ -239,7 +268,7 @@ class OfflineCacheService {
       existing.add(action.toJson());
       await _storage.writeSecureData(_offlineQueueKey, jsonEncode(existing));
     } catch (e) {
-      print('Erreur lors de l\'ajout à la queue hors ligne: $e');
+      debugPrint('Erreur lors de l\'ajout à la queue hors ligne: $e');
     }
   }
   
@@ -251,7 +280,7 @@ class OfflineCacheService {
         return List<Map<String, dynamic>>.from(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération de la queue hors ligne: $e');
+      debugPrint('Erreur lors de la récupération de la queue hors ligne: $e');
     }
     return [];
   }
@@ -261,7 +290,7 @@ class OfflineCacheService {
     try {
       await _storage.deleteSecureData(_offlineQueueKey);
     } catch (e) {
-      print('Erreur lors du vidage de la queue hors ligne: $e');
+      debugPrint('Erreur lors du vidage de la queue hors ligne: $e');
     }
   }
   
@@ -278,19 +307,15 @@ class OfflineCacheService {
         return DateTime.parse(cached);
       }
     } catch (e) {
-      print('Erreur lors de la récupération du timestamp de sync: $e');
+      debugPrint('Erreur lors de la récupération du timestamp de sync: $e');
     }
     return null;
   }
   
-  /// Vérifie si le cache est expiré (plus de 24h)
+  /// Vérifie si le cache est expiré.
+  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
   Future<bool> isCacheExpired() async {
-    final lastSync = await getLastSyncTimestamp();
-    if (lastSync == null) return true;
-    
-    final now = DateTime.now();
-    final difference = now.difference(lastSync);
-    return difference.inHours > 24;
+    return false;
   }
   
   /// Nettoie le cache expiré
@@ -301,7 +326,7 @@ class OfflineCacheService {
         // Note: On garde les détails de manga car ils changent moins souvent
       }
     } catch (e) {
-      print('Erreur lors du nettoyage du cache expiré: $e');
+      debugPrint('Erreur lors du nettoyage du cache expiré: $e');
     }
   }
   
@@ -315,7 +340,7 @@ class OfflineCacheService {
       await _storage.deleteSecureData(_lastSyncKey);
       await _storage.deleteSecureData(_cacheMetadataKey);
     } catch (e) {
-      print('Erreur lors du nettoyage complet du cache: $e');
+      debugPrint('Erreur lors du nettoyage complet du cache: $e');
     }
   }
   
@@ -326,7 +351,7 @@ class OfflineCacheService {
       existing[cacheType] = timestamp.toIso8601String();
       await _storage.writeSecureData(_cacheMetadataKey, jsonEncode(existing));
     } catch (e) {
-      print('Erreur lors de la mise à jour des métadonnées: $e');
+      debugPrint('Erreur lors de la mise à jour des métadonnées: $e');
     }
   }
   
@@ -338,48 +363,38 @@ class OfflineCacheService {
         return Map<String, String>.from(jsonDecode(cached));
       }
     } catch (e) {
-      print('Erreur lors de la récupération des métadonnées: $e');
+      debugPrint('Erreur lors de la récupération des métadonnées: $e');
     }
     return {};
   }
   
-  /// Vérifie si un cache spécifique est expiré
+  /// Vérifie si un cache spécifique est expiré.
+  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
   Future<bool> isCacheExpiredFor(String cacheType, {int maxHours = 24}) async {
-    final metadata = await getCacheMetadata();
-    final timestampStr = metadata[cacheType];
-    if (timestampStr == null) return true;
-    
-    try {
-      final timestamp = DateTime.parse(timestampStr);
-      final now = DateTime.now();
-      final difference = now.difference(timestamp);
-      return difference.inHours > maxHours;
-    } catch (e) {
-      return true;
-    }
+    return false;
   }
   
   /// Nettoie les caches expirés (sauf bibliothèque et détails de manga de la bibliothèque)
   Future<void> cleanExpiredCaches() async {
     try {
       // Nettoyer la page d'accueil si expirée
-      if (await isCacheExpiredFor('homepage', maxHours: 6)) {
+      if (await isCacheExpiredFor('homepage', maxHours: 24)) {
         await _storage.deleteSecureData(_homePageCacheKey);
-        print('Cache page d\'accueil nettoyé (expiré)');
+        debugPrint('Cache page d\'accueil nettoyé (expiré)');
       }
       
       // Nettoyer les recherches expirées
       final metadata = await getCacheMetadata();
       for (final key in metadata.keys) {
-        if (key.startsWith('search_') && await isCacheExpiredFor(key, maxHours: 24)) {
+        if (key.startsWith('search_') && await isCacheExpiredFor(key, maxHours: 72)) {
           final query = key.replaceFirst('search_', '');
           final searchKey = '$_searchCacheKey${query.toLowerCase().replaceAll(' ', '_')}';
           await _storage.deleteSecureData(searchKey);
-          print('Cache recherche "$query" nettoyé (expiré)');
+          debugPrint('Cache recherche "$query" nettoyé (expiré)');
         }
       }
     } catch (e) {
-      print('Erreur lors du nettoyage des caches expirés: $e');
+      debugPrint('Erreur lors du nettoyage des caches expirés: $e');
     }
   }
   
@@ -399,7 +414,7 @@ class OfflineCacheService {
         'cache_entries': metadata.length,
       };
     } catch (e) {
-      print('Erreur lors de la récupération des stats: $e');
+      debugPrint('Erreur lors de la récupération des stats: $e');
       return {};
     }
   }

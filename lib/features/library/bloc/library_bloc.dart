@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'library_event.dart';
 import 'library_state.dart';
 
@@ -13,6 +15,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   final LibraryService _libraryService = getIt<LibraryService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
+  final NewChapterService _newChapterService = NewChapterService();
   
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
@@ -51,48 +54,82 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
-    print('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
-    emit(const LibraryLoading());
+    debugPrint('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
+
+    final cachedMangas = await _cacheHelper.getCachedLibrary();
+    final hasCachedData = cachedMangas != null && cachedMangas.isNotEmpty;
+
+    if (hasCachedData) {
+      final pendingCached = await _getPendingActionsCount();
+      final List<MangaQuickViewDto> cachedList = cachedMangas;
+      // Enrichir les mangas avec les informations sur les nouveaux chapitres
+      final enrichedCachedList = await _enrichWithNewChapters(cachedList);
+      emit(LibraryLoaded(
+        mangas: enrichedCachedList,
+        isOffline: false,
+        pendingActions: pendingCached,
+        stale: true,
+      ));
+    } else {
+      emit(const LibraryLoading());
+    }
     
     try {
-      print('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
+      debugPrint('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
       final mangas = await _cacheHelper.loadLibraryData(
         networkCall: () => _libraryService.getUserSavedMangas(),
       );
       
       final pendingActions = await _getPendingActionsCount();
       
+      // Enrichir les mangas avec les informations sur les nouveaux chapitres
+      final enrichedMangas = await _enrichWithNewChapters(mangas);
+      
       // Si aucune erreur, on est online
-      print('✅ LibraryBloc: Données chargées depuis le réseau - ${mangas.length} mangas, $pendingActions actions en attente');
+      debugPrint('✅ LibraryBloc: Données chargées depuis le réseau - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
       emit(LibraryLoaded(
-        mangas: mangas,
+        mangas: enrichedMangas,
         isOffline: false,
         pendingActions: pendingActions,
+        stale: false,
       ));
     } catch (e) {
+      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
+      if (e.toString().contains('InvalidCredentialsException')) {
+        debugPrint('⚠️ LibraryBloc: Erreur d\'authentification, redirection vers login');
+        emit(LibraryError(
+          message: 'Authentification requise',
+          isOffline: false,
+        ));
+        return;
+      }
+      
       // Erreur réseau détectée : on est offline
-      print('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
-      print('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
+      debugPrint('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
+      debugPrint('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
       try {
-        final cachedMangas = await _cacheHelper.getCachedLibrary();
-        if (cachedMangas != null && cachedMangas.isNotEmpty) {
+        final fallbackMangas = cachedMangas ?? await _cacheHelper.getCachedLibrary();
+        if (fallbackMangas != null && fallbackMangas.isNotEmpty) {
           final pendingActions = await _getPendingActionsCount();
-          print('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${cachedMangas.length} mangas, $pendingActions actions en attente');
+          // Enrichir les mangas avec les informations sur les nouveaux chapitres
+          final enrichedMangas = await _enrichWithNewChapters(fallbackMangas);
+          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
-            mangas: cachedMangas,
+            mangas: enrichedMangas,
             isOffline: true,
             pendingActions: pendingActions,
+            stale: true,
           ));
         } else {
-          print('❌ LibraryBloc: Aucune donnée en cache disponible');
+          debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');
           emit(LibraryError(
             message: e.toString(),
             isOffline: true,
           ));
         }
       } catch (cacheError) {
-        print('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
+        debugPrint('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
         emit(LibraryError(
           message: e.toString(),
           isOffline: true,
@@ -314,14 +351,36 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     }
   }
 
+  /// Enrichit les mangas avec les informations sur les nouveaux chapitres
+  Future<List<MangaQuickViewDto>> _enrichWithNewChapters(List<MangaQuickViewDto> mangas) async {
+    return await Future.wait(
+      mangas.map((manga) async {
+        final hasNew = await _newChapterService.hasNewChapters(manga.muId.toInt());
+        return MangaQuickViewDto(
+          muId: manga.muId,
+          title: manga.title,
+          year: manga.year,
+          smallCoverUrl: manga.smallCoverUrl,
+          mediumCoverUrl: manga.mediumCoverUrl,
+          rating: manga.rating,
+          readingStatus: manga.readingStatus,
+          readChapters: manga.readChapters,
+          totalChapters: manga.totalChapters,
+          associated: manga.associated,
+          hasNewChapters: hasNew,
+        );
+      }),
+    );
+  }
+
   /// Vérifie l'état initial de la connectivité
   Future<void> _checkInitialConnectivity() async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
       // Cette information sera utilisée lors du premier chargement
-      print('🔍 État initial de connectivité: ${isConnected ? "Connecté" : "Hors ligne"}');
+      debugPrint('🔍 État initial de connectivité: ${isConnected ? "Connecté" : "Hors ligne"}');
     } catch (e) {
-      print('⚠️ Erreur lors de la vérification de connectivité: $e');
+      debugPrint('⚠️ Erreur lors de la vérification de connectivité: $e');
     }
   }
 }

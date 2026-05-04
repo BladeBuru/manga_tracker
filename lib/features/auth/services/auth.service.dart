@@ -1,25 +1,38 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
+import 'package:mangatracker/features/auth/views/google_auth_webview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
+import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
+import '../../../core/services/connectivity_service.dart';
 import 'biometric.service.dart';
 
 class AuthService {
   StorageService storageService = getIt<StorageService>();
   BiometricService biometricService = getIt<BiometricService>();
+  
+  // Verrou pour éviter les race conditions lors du refresh
+  bool _isRefreshing = false;
+  Completer<bool>? _refreshCompleter;
 
   Future<AuthService> init() async {
     return this;
   }
 
   Future attemptLogIn(String emailAddress, String password) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/login');
+    var url = buildApiUri('/auth/login');
     var res = await http.post(url,
         body: <String, String>{'email': emailAddress, 'password': password});
 
@@ -28,7 +41,8 @@ class AuthService {
         var data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
-        await saveCredentialsWithBiometric(emailAddress, password);
+        // Ne plus sauvegarder automatiquement les identifiants biométriques
+        // La sauvegarde se fera uniquement si l'utilisateur active la biométrie
         return data;
       case HttpStatus.notFound:
         throw InvalidCredentialsException(
@@ -38,11 +52,46 @@ class AuthService {
     }
   }
 
-  Future attemptSignUp(String username, String emailAddress, String password) async {
-    var url = Uri.https(dotenv.env['MT_API_URL']!, 'auth/register');
-    var res = await http.post(url,
-        body: {'name': username, 'email': emailAddress, 'password': password});
-    return res.statusCode;
+  Future<void> attemptSignUp(
+    String username,
+    String emailAddress,
+    String password,
+  ) async {
+    final url = buildApiUri('/auth/register');
+
+    try {
+      final res = await http
+          .post(
+            url,
+            body: {
+              'name': username,
+              'email': emailAddress,
+              'password': password,
+            },
+          )
+          .timeout(const Duration(seconds: 15));
+
+      switch (res.statusCode) {
+        case HttpStatus.created:
+        case HttpStatus.ok:
+          return;
+        case HttpStatus.conflict:
+          throw EmailAlreadyUsedException();
+        case HttpStatus.badRequest:
+        case HttpStatus.unprocessableEntity:
+          final message = _extractMessage(res.body);
+          throw AuthServerException(res.statusCode, message);
+        default:
+          throw AuthServerException(
+            res.statusCode,
+            res.body.isNotEmpty ? _extractMessage(res.body) : null,
+          );
+      }
+    } on SocketException {
+      rethrow;
+    } on TimeoutException {
+      rethrow;
+    }
   }
 
   Future<bool> isUserAuthenticated() async {
@@ -74,24 +123,85 @@ class AuthService {
     return payloadMap;
   }
 
+  /// Rafraîchit le token d'accès en utilisant le refresh token
+  /// Gère les race conditions et vérifie la connectivité
   Future<bool> refreshAccessToken({String? token}) async {
+    // Si un refresh est déjà en cours, attendre son résultat
+    if (_isRefreshing && _refreshCompleter != null) {
+      debugPrint('🔄 AuthService: Refresh déjà en cours, attente du résultat...');
+      return await _refreshCompleter!.future;
+    }
+
     final refreshToken = token ?? await storageService.readSecureData('refreshToken');
     if (refreshToken == null || isTokenExpired(refreshToken)) {
+      debugPrint('⚠️ AuthService: Refresh token est null ou expiré');
       return false;
     }
 
-    final url = Uri.https(dotenv.env['MT_API_URL']!, '/auth/refresh');
-    final res = await http.post(url, headers: {
-      HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
-    });
-
-    if (res.statusCode == HttpStatus.created) {
-      final data = jsonDecode(res.body);
-      await storageService.writeSecureData('accessToken', data['accessToken']);
-      return true;
+    // Vérifier la connectivité avant de tenter le refresh
+    try {
+      final connectivityService = getIt<ConnectivityService>();
+      if (!connectivityService.isConnected) {
+        debugPrint('⚠️ AuthService: Pas de connexion réseau, impossible de rafraîchir le token');
+        return false; // Ne pas considérer comme une erreur d'authentification
+      }
+    } catch (e) {
+      debugPrint('⚠️ AuthService: Erreur lors de la vérification de connectivité: $e');
+      // Continuer même si on ne peut pas vérifier la connectivité
     }
 
-    return false;
+    // Créer un completer pour partager le résultat avec les autres appels simultanés
+    _isRefreshing = true;
+    _refreshCompleter = Completer<bool>();
+
+    try {
+      final url = buildApiUri('/auth/refresh');
+      final res = await http.post(
+        url,
+        headers: {
+          HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
+        },
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Refresh token timeout');
+        },
+      );
+
+      if (res.statusCode == HttpStatus.created) {
+        final data = jsonDecode(res.body);
+        await storageService.writeSecureData('accessToken', data['accessToken']);
+        
+        // Si le backend renvoie un nouveau refreshToken (rotation), le sauvegarder
+        if (data.containsKey('refreshToken') && data['refreshToken'] != null) {
+          debugPrint('✅ AuthService: Nouveau refreshToken reçu, sauvegarde...');
+          await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        }
+        
+        debugPrint('✅ AuthService: Access token rafraîchi avec succès');
+        _refreshCompleter!.complete(true);
+        return true;
+      } else {
+        debugPrint('⚠️ AuthService: Échec du refresh - Status: ${res.statusCode}, Body: ${res.body}');
+        _refreshCompleter!.complete(false);
+        return false;
+      }
+    } on SocketException catch (e) {
+      debugPrint('⚠️ AuthService: Erreur réseau lors du refresh: $e');
+      _refreshCompleter!.complete(false);
+      return false; // Erreur réseau, pas d'authentification
+    } on TimeoutException catch (e) {
+      debugPrint('⚠️ AuthService: Timeout lors du refresh: $e');
+      _refreshCompleter!.complete(false);
+      return false; // Timeout, pas d'authentification
+    } catch (e) {
+      debugPrint('❌ AuthService: Erreur lors du refresh: $e');
+      _refreshCompleter!.complete(false);
+      return false;
+    } finally {
+      _isRefreshing = false;
+      _refreshCompleter = null;
+    }
   }
 
   String _decodeBase64(String str) {
@@ -113,11 +223,10 @@ class AuthService {
     return utf8.decode(base64Url.decode(output));
   }
 
-  logout() {
+  Future<void> logout() async {
     storageService.deleteSecureData('refreshToken');
     storageService.deleteSecureData('accessToken');
     // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
-
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
@@ -125,33 +234,234 @@ class AuthService {
     await storageService.writeSecureDataBiometric('secure_credentials', credentials);
   }
 
+  /// Vérifie si la biométrie est activée
+  Future<bool> isBiometricEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('biometric_auth_enabled') ?? false;
+  }
 
-  Future<bool> tryBiometricLogin(BuildContext context) async {
+  /// Vérifie si une préférence biométrique a déjà été définie
+  Future<bool> hasBiometricPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('biometric_auth_enabled');
+  }
+
+  /// Active ou désactive la biométrie
+  /// Si activation et que des identifiants sont disponibles, les sauvegarde
+  /// Si désactivation, conserve les identifiants mais ne les utilise plus
+  Future<void> setBiometricEnabled(bool enabled, {String? email, String? password}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('biometric_auth_enabled', enabled);
+    
+    if (enabled) {
+      // Si on active et qu'on a des identifiants, les sauvegarder
+      if (email != null && password != null) {
+        await saveCredentialsWithBiometric(email, password);
+      } else {
+        // Vérifier si des identifiants existent déjà
+        final hasCreds = await storageService.hasBiometricCredentials();
+        if (!hasCreds) {
+          // Pas d'identifiants disponibles, l'utilisateur devra se reconnecter
+          debugPrint('⚠️ AuthService: Activation biométrique sans identifiants disponibles');
+        }
+      }
+    }
+    // Si désactivation, on ne supprime pas les identifiants (pour réactivation future)
+  }
+
+  Future<bool> tryBiometricLogin(BuildContext context, {int maxRetries = 2}) async {
+    debugPrint('🔐 AuthService Debug - Début tryBiometricLogin');
+    
+    // Vérifier d'abord si la biométrie est activée
+    final isEnabled = await isBiometricEnabled();
+    debugPrint('🔐 AuthService Debug - Biométrie activée: $isEnabled');
+    if (!isEnabled) return false;
+
     final hasCreds = await storageService.hasBiometricCredentials();
+    debugPrint('🔐 AuthService Debug - Identifiants biométriques présents: $hasCreds');
     if (!hasCreds) return false;
 
     final isAvailable = await biometricService.hasBiometricSupport();
+    debugPrint('🔐 AuthService Debug - Support biométrique disponible: $isAvailable');
     if (!isAvailable) return false;
 
-    final authenticated = await biometricService.authenticateWithBiometrics(context);
-    if (!authenticated) return false;
+    final availableTypes = await biometricService.getAvailableBiometrics();
+    debugPrint('🔐 AuthService Debug - Types biométriques disponibles: $availableTypes');
 
     final jsonCreds = await storageService.readSecureDataBiometric('secure_credentials');
+    debugPrint('🔐 AuthService Debug - Identifiants récupérés: ${jsonCreds != null}');
     if (jsonCreds == null) return false;
 
     final decoded = jsonDecode(jsonCreds);
     final email = decoded['email'];
     final password = decoded['password'];
 
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      debugPrint('🔐 AuthService Debug - Tentative ${attempt + 1}/$maxRetries');
+      
+      final authenticated = await biometricService.authenticateWithBiometrics(context);
+      debugPrint('🔐 AuthService Debug - Authentification biométrique réussie: $authenticated');
+      
+      if (!authenticated) {
+        // Si l'erreur est NotAvailable, pas besoin de réessayer
+        // (cela signifie que la biométrie n'est vraiment pas disponible)
+        final availableTypes = await biometricService.getAvailableBiometrics();
+        if (availableTypes.isEmpty) {
+          debugPrint('🔐 AuthService Debug - Aucune biométrie disponible, arrêt des tentatives');
+          // Désactiver automatiquement la biométrie si elle n'est pas disponible
+          await setBiometricEnabled(false);
+          debugPrint('🔐 AuthService Debug - Biométrie désactivée automatiquement (non disponible)');
+          return false;
+        }
+        
+        if (attempt < maxRetries - 1) {
+          debugPrint('🔐 AuthService Debug - Attente avant nouvelle tentative...');
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+          continue;
+        }
+        debugPrint('🔐 AuthService Debug - Échec après $maxRetries tentatives');
+        return false;
+      }
+
+      try {
+        debugPrint('🔐 AuthService Debug - Tentative de connexion avec identifiants...');
+        final result = await attemptLogIn(email, password);
+        await storageService.writeSecureData('accessToken', result['accessToken']);
+        await storageService.writeSecureData('refreshToken', result['refreshToken']);
+        debugPrint('🔐 AuthService Debug - Connexion réussie !');
+        return true;
+      } catch (e) {
+        debugPrint('🔐 AuthService Debug - Erreur lors de la connexion: $e');
+        if (attempt < maxRetries - 1) {
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+          continue;
+        }
+        return false;
+      }
+    }
+
+    debugPrint('🔐 AuthService Debug - Échec final');
+    return false;
+  }
+
+
+  /// Connexion via Google.
+  ///
+  /// - Sur **mobile** : utilise le package `google_sign_in` (popup natif Google)
+  ///   → envoie l'idToken au backend `POST /auth/google/mobile`
+  /// - Sur **web** : ouvre une popup via WebView + postMessage (flux OAuth existant)
+  Future<bool> loginWithGoogle(BuildContext context) async {
+    if (!kIsWeb) {
+      return _loginWithGoogleMobile();
+    }
+    return _loginWithGoogleWeb(context);
+  }
+
+  // Web Client ID = le même que le backend utilise pour vérifier l'idToken
+  static const _googleWebClientId =
+      '43781664315-4qruuj7eek7j71meh9ccl398r9k20a6k.apps.googleusercontent.com';
+
+  Future<bool> _loginWithGoogleMobile() async {
     try {
-      final result = await attemptLogIn(email, password);
-      await storageService.writeSecureData('accessToken', result['accessToken']);
-      await storageService.writeSecureData('refreshToken', result['refreshToken']);
-      return true;
-    } catch (e) {
+      // Initialise le SDK (idempotent si déjà initialisé)
+      await GoogleSignIn.instance.initialize(serverClientId: _googleWebClientId);
+
+      // Force le choix de compte Google
+      await GoogleSignIn.instance.signOut();
+
+      // Lance le popup natif Google
+      final account = await GoogleSignIn.instance.authenticate();
+
+      // En v7, authentication est un getter synchrone
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        debugPrint('❌ AuthService: idToken Google null (serverClientId manquant ?)');
+        return false;
+      }
+
+      debugPrint('🔵 AuthService: idToken reçu, envoi au backend...');
+      final url = buildApiUri('/auth/google/mobile');
+      final res = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'idToken': idToken,
+              'deviceInfo': 'Flutter Mobile',
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (res.statusCode == HttpStatus.created || res.statusCode == HttpStatus.ok) {
+        final data = jsonDecode(res.body);
+        await storageService.writeSecureData('accessToken', data['accessToken']);
+        await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        debugPrint('✅ AuthService: Connexion Google mobile réussie');
+        return true;
+      } else {
+        debugPrint('❌ AuthService: Erreur backend Google mobile - ${res.statusCode}: ${res.body}');
+        return false;
+      }
+    } on Exception catch (e) {
+      debugPrint('⚠️ AuthService: Connexion Google annulée ou erreur: $e');
       return false;
     }
   }
 
+  Future<bool> _loginWithGoogleWeb(BuildContext context) async {
+    final oauthUrl = buildApiUri('/auth/google').toString();
 
+    if (!context.mounted) return false;
+
+    final result = await Navigator.of(context).push<GoogleAuthResult>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => GoogleAuthWebView(oauthUrl: oauthUrl),
+      ),
+    );
+
+    if (result == null) return false;
+
+    await storageService.writeSecureData('accessToken', result.accessToken);
+    await storageService.writeSecureData('refreshToken', result.refreshToken);
+    debugPrint('✅ AuthService: Connexion Google web réussie');
+    return true;
+  }
+
+  /// Persiste un couple `{accessToken, refreshToken}` reçu d'une voie
+  /// alternative à `attemptLogIn` (vérification email, reset password
+  /// confirmé, refresh côté serveur, etc.).
+  ///
+  /// **Sécurité** : à n'appeler QUE depuis un flow qui a déjà validé
+  /// l'identité de l'utilisateur (token email vérifié, etc.). Les tokens
+  /// sont stockés via `flutter_secure_storage` (Keystore Android,
+  /// Keychain iOS, WebCrypto Web).
+  Future<void> persistTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    await storageService.writeSecureData('accessToken', accessToken);
+    if (refreshToken.isNotEmpty) {
+      await storageService.writeSecureData('refreshToken', refreshToken);
+    }
+    debugPrint('✅ AuthService: Tokens persistés via persistTokens()');
+  }
+
+  String? _extractMessage(String body) {
+    if (body.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        if (decoded['message'] is String) {
+          return decoded['message'] as String;
+        }
+        if (decoded['error'] is String) {
+          return decoded['error'] as String;
+        }
+      }
+    } catch (_) {
+      return body;
+    }
+    return null;
+  }
 }

@@ -27,6 +27,18 @@ class MangaDetailDto {
   final List<SeasonChapter>? seasonChapters;
   final List<SeasonChapter>? bonusChapters;
 
+  /// Note personnelle de l'utilisateur connecté (0-10, 0 = pas de note).
+  final int userRating;
+
+  /// Moyenne des notes des utilisateurs Manga Tracker (null si aucun votant local).
+  final double? communityRating;
+
+  /// Nombre d'utilisateurs locaux ayant noté ce manga.
+  final int communityRatingCount;
+
+  /// Note agrégée Bayesian (combine la note globale MU et la note communautaire locale).
+  final double? aggregatedRating;
+
   const MangaDetailDto({
     required this.muId,
     required this.title,
@@ -51,6 +63,10 @@ class MangaDetailDto {
     this.type,
     this.seasonChapters,
     this.bonusChapters,
+    this.userRating = 0,
+    this.communityRating,
+    this.communityRatingCount = 0,
+    this.aggregatedRating,
   });
 
   factory MangaDetailDto.fromJson(Map<String, dynamic> j) {
@@ -102,6 +118,70 @@ class MangaDetailDto {
       type: (j['type'] ?? j['kind'])?.toString(),
       seasonChapters: seasons,
       bonusChapters: bonus,
+      userRating: int.tryParse(
+            (j['userRating'] ?? j['user_rating'] ?? 0).toString(),
+          ) ??
+          0,
+      communityRating: (j['communityRating'] ?? j['community_rating']) == null
+          ? null
+          : double.tryParse(
+              (j['communityRating'] ?? j['community_rating']).toString(),
+            ),
+      communityRatingCount: int.tryParse(
+            (j['communityRatingCount'] ??
+                    j['community_rating_count'] ??
+                    0)
+                .toString(),
+          ) ??
+          0,
+      aggregatedRating: (j['aggregatedRating'] ?? j['aggregated_rating']) == null
+          ? null
+          : double.tryParse(
+              (j['aggregatedRating'] ?? j['aggregated_rating']).toString(),
+            ),
+    );
+  }
+
+  /// Crée une copie avec un sous-ensemble de champs modifiés.
+  /// Utilisé par le DetailBloc pour mettre à jour le DTO sans tout remapper.
+  MangaDetailDto copyWith({
+    int? userRating,
+    double? communityRating,
+    int? communityRatingCount,
+    double? aggregatedRating,
+    bool? inLibrary,
+    int? readChaptersCount,
+    ReadingStatus? readingStatus,
+    String? customLink,
+  }) {
+    return MangaDetailDto(
+      muId: muId,
+      title: title,
+      description: description,
+      status: status,
+      publicationStatus: publicationStatus,
+      year: year,
+      smallCoverUrl: smallCoverUrl,
+      mediumCoverUrl: mediumCoverUrl,
+      largeCoverUrl: largeCoverUrl,
+      rating: rating,
+      totalChapters: totalChapters,
+      isCompleted: isCompleted,
+      authors: authors,
+      genres: genres,
+      customLink: customLink ?? this.customLink,
+      inLibrary: inLibrary ?? this.inLibrary,
+      readChaptersCount: readChaptersCount ?? this.readChaptersCount,
+      readingStatus: readingStatus ?? this.readingStatus,
+      associated: associated,
+      recommendations: recommendations,
+      type: type,
+      seasonChapters: seasonChapters,
+      bonusChapters: bonusChapters,
+      userRating: userRating ?? this.userRating,
+      communityRating: communityRating ?? this.communityRating,
+      communityRatingCount: communityRatingCount ?? this.communityRatingCount,
+      aggregatedRating: aggregatedRating ?? this.aggregatedRating,
     );
   }
   
@@ -130,6 +210,10 @@ class MangaDetailDto {
       'type': type,
       'seasonChapters': seasonChapters?.map((e) => e.toJson()).toList(),
       'bonusChapters': bonusChapters?.map((e) => e.toJson()).toList(),
+      'userRating': userRating,
+      'communityRating': communityRating,
+      'communityRatingCount': communityRatingCount,
+      'aggregatedRating': aggregatedRating,
     };
   }
 }

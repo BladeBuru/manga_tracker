@@ -9,6 +9,8 @@ class AppTheme {
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
       secondary: AppColors.accent,
+      surfaceContainerHighest: Colors.grey.shade200,
+      shadow: Colors.black,
     ),
     textTheme: GoogleFonts.interTextTheme().copyWith(
       titleSmall: TextStyle(
@@ -26,20 +28,26 @@ class AppTheme {
 
   // Thème sombre
   static final ThemeData dark = ThemeData(
-    scaffoldBackgroundColor: Colors.black,
+    scaffoldBackgroundColor: const Color(0xFF121212),
     colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
       secondary: AppColors.accent,
+      surface: const Color(0xFF1E1E1E),
+      surfaceContainerHighest: const Color(0xFF2C2C2C),
+      onSurface: Colors.white,
+      onPrimary: Colors.white,
+      outline: Colors.grey.shade700,
+      shadow: Colors.black,
     ),
-    textTheme: GoogleFonts.interTextTheme().copyWith(
+    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
       titleSmall: const TextStyle(
         fontWeight: FontWeight.w600,
         fontSize: 14,
         color: Colors.white,
       ),
-      bodySmall: const TextStyle(
+      bodySmall: TextStyle(
         fontSize: 10,
-        color: Colors.grey,
+        color: Colors.grey.shade400,
       ),
     ),
     useMaterial3: true,

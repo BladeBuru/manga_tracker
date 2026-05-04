@@ -12,6 +12,8 @@ class MangaQuickViewDto {
   final ReadingStatus? readingStatus ;
   final num? readChapters;
   final num? totalChapters;
+  final List<String>? associated;
+  final bool hasNewChapters;
 
   const MangaQuickViewDto({
     required this.muId,
@@ -23,6 +25,8 @@ class MangaQuickViewDto {
     this.readingStatus,
     this.readChapters,
     this.totalChapters,
+    this.associated,
+    this.hasNewChapters = false,
   });
 
   factory MangaQuickViewDto.fromJson(Map<String, dynamic> json) {
@@ -39,7 +43,10 @@ class MangaQuickViewDto {
             ? ReadingStatusExtension.fromValue(json['readingStatus'])
             : ReadingStatus.readLater,
         readChapters: json['readChapters'],
-        totalChapters: json['totalChapters']);
+        totalChapters: json['totalChapters'],
+        associated: (json['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
+        hasNewChapters: json['hasNewChapters'] as bool? ?? false,
+    );
   }
   
   Map<String, dynamic> toJson() {
@@ -53,6 +60,8 @@ class MangaQuickViewDto {
       'readingStatus': readingStatus?.name,
       'readChapters': readChapters,
       'totalChapters': totalChapters,
+      'associated': associated,
+      'hasNewChapters': hasNewChapters,
     };
   }
 }

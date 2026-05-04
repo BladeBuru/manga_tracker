@@ -25,38 +25,65 @@ class HomePageLoaded extends HomePageState {
   final List<MangaQuickViewDto> popularMangas;
   final List<MangaQuickViewDto> newMangas;
   final List<MangaQuickViewDto> trendingMangas;
+  final List<MangaQuickViewDto> recommendations;
+
+  /// Recommandations regroupées par genre (ex: { "Action": [...], "Romance": [...] }).
+  /// Vide si la bibliothèque est vide ou en cas d'erreur (graceful degradation).
+  final Map<String, List<MangaQuickViewDto>> recommendationsByGenre;
+
   final UserDto? user;
   final bool isOffline;
   final int pendingActions;
-  
+  final bool isStale;
+
   const HomePageLoaded({
     required this.popularMangas,
     required this.newMangas,
     required this.trendingMangas,
+    this.recommendations = const [],
+    this.recommendationsByGenre = const {},
     this.user,
     this.isOffline = false,
     this.pendingActions = 0,
-  });
-  
+    bool? stale,
+  }) : isStale = stale ?? false;
+
   @override
-  List<Object?> get props => [popularMangas, newMangas, trendingMangas, user, isOffline, pendingActions];
-  
+  List<Object?> get props => [
+        popularMangas,
+        newMangas,
+        trendingMangas,
+        recommendations,
+        recommendationsByGenre,
+        user,
+        isOffline,
+        pendingActions,
+        isStale,
+      ];
+
   /// Créer une copie avec de nouveaux paramètres
   HomePageLoaded copyWith({
     List<MangaQuickViewDto>? popularMangas,
     List<MangaQuickViewDto>? newMangas,
     List<MangaQuickViewDto>? trendingMangas,
+    List<MangaQuickViewDto>? recommendations,
+    Map<String, List<MangaQuickViewDto>>? recommendationsByGenre,
     UserDto? user,
     bool? isOffline,
     int? pendingActions,
+    bool? stale,
   }) {
     return HomePageLoaded(
       popularMangas: popularMangas ?? this.popularMangas,
       newMangas: newMangas ?? this.newMangas,
       trendingMangas: trendingMangas ?? this.trendingMangas,
+      recommendations: recommendations ?? this.recommendations,
+      recommendationsByGenre:
+          recommendationsByGenre ?? this.recommendationsByGenre,
       user: user ?? this.user,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
+      stale: stale ?? this.isStale,
     );
   }
 }
@@ -88,6 +115,7 @@ class HomePageActionInProgress extends HomePageState {
   final List<MangaQuickViewDto> popularMangas;
   final List<MangaQuickViewDto> newMangas;
   final List<MangaQuickViewDto> trendingMangas;
+  final List<MangaQuickViewDto> recommendations;
   final UserDto? user;
   final String action;
   final bool isOffline;
@@ -96,11 +124,12 @@ class HomePageActionInProgress extends HomePageState {
     required this.popularMangas,
     required this.newMangas,
     required this.trendingMangas,
+    this.recommendations = const [],
     this.user,
     required this.action,
     this.isOffline = false,
   });
   
   @override
-  List<Object?> get props => [popularMangas, newMangas, trendingMangas, user, action, isOffline];
+  List<Object?> get props => [popularMangas, newMangas, trendingMangas, recommendations, user, action, isOffline];
 }

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
+import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/profile/dto/user.dto.dart';
@@ -13,6 +15,7 @@ import 'homepage_state.dart';
 /// BLoC pour la gestion de la page d'accueil
 class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   final MangaService _mangaService = getIt<MangaService>();
+  final RecommendationService _recommendationService = getIt<RecommendationService>();
   final UserService _userService = getIt<UserService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
@@ -49,54 +52,98 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
   /// Charge la page d'accueil complète
   Future<void> _onLoadHomePage(LoadHomePage event, Emitter<HomePageState> emit) async {
-    print('🔄 HomePageBloc: Chargement de la page d\'accueil...');
-    emit(const HomePageLoading());
+    debugPrint('🔄 HomePageBloc: Chargement de la page d\'accueil...');
+
+    final cachedPopular = await _cacheHelper.getCachedSearchResults('popular');
+    final cachedNew = await _cacheHelper.getCachedSearchResults('new');
+    final cachedTrending = await _cacheHelper.getCachedSearchResults('trending');
+    final cachedUser = await _getCachedUserInfo();
+    final hasCachedData = (cachedPopular != null && cachedPopular.isNotEmpty) ||
+        (cachedNew != null && cachedNew.isNotEmpty) ||
+        (cachedTrending != null && cachedTrending.isNotEmpty);
+
+    if (hasCachedData) {
+      final pendingCached = await _getPendingActionsCount();
+      emit(HomePageLoaded(
+        popularMangas: cachedPopular ?? const <MangaQuickViewDto>[],
+        newMangas: cachedNew ?? const <MangaQuickViewDto>[],
+        trendingMangas: cachedTrending ?? const <MangaQuickViewDto>[],
+        user: cachedUser,
+        isOffline: false,
+        pendingActions: pendingCached,
+        stale: true,
+      ));
+    } else {
+      emit(const HomePageLoading());
+    }
     
     try {
-      // Charger toutes les données en parallèle
+      // Charger toutes les données en parallèle (recommandations ne bloquent pas)
       final results = await Future.wait([
         _loadPopularMangas(),
         _loadNewMangas(),
         _loadTrendingMangas(),
         _loadUserInfo(),
       ]);
-      
+
+      // Recommandations + segmentation par genre chargées en parallèle
+      // (silencieuses en cas d'erreur — la home n'est pas bloquée).
+      final recoFutures = await Future.wait([
+        _loadRecommendations(),
+        _loadRecommendationsByGenre(),
+      ]);
+      final recommendations = recoFutures[0] as List<MangaQuickViewDto>;
+      final recommendationsByGenre =
+          recoFutures[1] as Map<String, List<MangaQuickViewDto>>;
+
       final pendingActions = await _getPendingActionsCount();
-      
+
       // Si aucune erreur, on est online
       emit(HomePageLoaded(
         popularMangas: results[0] as List<MangaQuickViewDto>,
         newMangas: results[1] as List<MangaQuickViewDto>,
         trendingMangas: results[2] as List<MangaQuickViewDto>,
+        recommendations: recommendations,
+        recommendationsByGenre: recommendationsByGenre,
         user: results[3] as UserDto?,
         isOffline: false,
         pendingActions: pendingActions,
+        stale: false,
       ));
     } catch (e) {
+      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
+      if (e.toString().contains('InvalidCredentialsException')) {
+        debugPrint('⚠️ HomePageBloc: Erreur d\'authentification');
+        emit(HomePageError(
+          message: 'Authentification requise',
+          isOffline: false,
+        ));
+        return;
+      }
+      
       // Erreur réseau détectée : on est offline
-      print('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
+      debugPrint('⚠️ Erreur de chargement, tentative de récupération depuis le cache...');
       
       try {
-        // Récupérer les caches séparés pour chaque type de manga
-        final cachedPopular = await _cacheHelper.getCachedSearchResults('popular');
-        final cachedNew = await _cacheHelper.getCachedSearchResults('new');
-        final cachedTrending = await _cacheHelper.getCachedSearchResults('trending');
-        final cachedUser = await _getCachedUserInfo();
-        
-        // Si au moins un cache existe, afficher les données
-        if ((cachedPopular != null && cachedPopular.isNotEmpty) ||
-            (cachedNew != null && cachedNew.isNotEmpty) ||
-            (cachedTrending != null && cachedTrending.isNotEmpty)) {
+        final fallbackPopular = cachedPopular ?? await _cacheHelper.getCachedSearchResults('popular');
+        final fallbackNew = cachedNew ?? await _cacheHelper.getCachedSearchResults('new');
+        final fallbackTrending = cachedTrending ?? await _cacheHelper.getCachedSearchResults('trending');
+        final fallbackUser = cachedUser ?? await _getCachedUserInfo();
+
+        if ((fallbackPopular != null && fallbackPopular.isNotEmpty) ||
+            (fallbackNew != null && fallbackNew.isNotEmpty) ||
+            (fallbackTrending != null && fallbackTrending.isNotEmpty)) {
           final pendingActions = await _getPendingActionsCount();
-          print('✅ Données chargées depuis le cache (mode offline) - Popular: ${cachedPopular?.length ?? 0}, New: ${cachedNew?.length ?? 0}, Trending: ${cachedTrending?.length ?? 0}, Pending: $pendingActions');
+          debugPrint('✅ Données chargées depuis le cache (mode offline) - Popular: ${fallbackPopular?.length ?? 0}, New: ${fallbackNew?.length ?? 0}, Trending: ${fallbackTrending?.length ?? 0}, Pending: $pendingActions');
           
           emit(HomePageLoaded(
-            popularMangas: cachedPopular ?? [],
-            newMangas: cachedNew ?? [],
-            trendingMangas: cachedTrending ?? [],
-            user: cachedUser,
+            popularMangas: fallbackPopular ?? const <MangaQuickViewDto>[],
+            newMangas: fallbackNew ?? const <MangaQuickViewDto>[],
+            trendingMangas: fallbackTrending ?? const <MangaQuickViewDto>[],
+            user: fallbackUser,
             isOffline: true,
             pendingActions: pendingActions,
+            stale: true,
           ));
         } else {
           emit(HomePageError(
@@ -256,6 +303,32 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       query: 'trending',
       networkCall: () => _mangaService.getTrendingMangas(),
     );
+  }
+
+  /// Charge les recommandations personnalisées (erreur silencieuse : liste vide)
+  Future<List<MangaQuickViewDto>> _loadRecommendations() async {
+    try {
+      return await _recommendationService.getPersonalizedRecommendations(limit: 30);
+    } catch (e) {
+      debugPrint('⚠️ HomePageBloc: Erreur recommandations (ignorée): $e');
+      return [];
+    }
+  }
+
+  /// Charge les recommandations regroupées par genre (silencieuse : map vide).
+  /// Si la bibliothèque est vide ou si erreur réseau, l'UI n'affichera tout
+  /// simplement pas la section.
+  Future<Map<String, List<MangaQuickViewDto>>>
+      _loadRecommendationsByGenre() async {
+    try {
+      return await _recommendationService.getRecommendationsByGenre(
+        topGenres: 5,
+        perGenre: 10,
+      );
+    } catch (e) {
+      debugPrint('⚠️ HomePageBloc: Erreur reco par genre (ignorée): $e');
+      return const {};
+    }
   }
 
   /// Charge les informations utilisateur

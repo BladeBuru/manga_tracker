@@ -1,18 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
 import 'package:mangatracker/features/home/bloc/homepage_state.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
-import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../../core/components/filter_button.dart';
+import '../../../core/components/verify_email_banner.dart';
 import '../../../core/components/welcome_header.dart';
-import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
-/// Vue réactive de la page d'accueil utilisant BLoC - Design original conservé
+/// Vue réactive de la page d'accueil utilisant BLoC.
 class HomePageBlocView extends StatefulWidget {
   const HomePageBlocView({super.key});
 
@@ -27,16 +30,12 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
   @override
   void initState() {
     super.initState();
-    print('🏠 HomePageBlocView initialisée - Utilisation du BLoC !');
-    // Charger la page d'accueil au démarrage
+    debugPrint('🏠 HomePageBlocView initialisée');
     _homePageBloc.add(const LoadHomePage());
   }
 
   void _redirectToLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.push('/login');
   }
 
   @override
@@ -45,54 +44,60 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       body: BlocConsumer<HomePageBloc, HomePageState>(
         bloc: _homePageBloc,
         listener: (context, state) {
-          // Gérer les erreurs d'authentification
           if (state is HomePageError) {
-            if (state.message.contains('InvalidCredentials') || 
+            if (state.message.contains('InvalidCredentials') ||
                 state.message.contains('Expired session')) {
               _redirectToLoginPage();
             }
           }
         },
         builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.all(25.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                _buildWelcomeHeader(state),
-                
-                // Indicateur de mode hors ligne
-                _buildOfflineIndicator(state),
+          return RefreshIndicator(
+            onRefresh: () async {
+              _homePageBloc.add(const RefreshHomePage());
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(25, 40, 25, 0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildWelcomeHeader(state),
+                      _buildOfflineIndicator(state),
 
-                const SizedBox(height: 20),
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return Row(
-                      children: [
-                        Text(
-                          l10n?.trending ?? 'Tendances',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.add_circle_outline),
-                      ],
-                    );
-                  },
+                      // Banner "Vérifiez votre email" — visible uniquement
+                      // quand l'utilisateur est connecté et que l'email
+                      // n'a pas encore été cliqué via le magic link.
+                      VerifyEmailBanner(
+                        visible: state is HomePageLoaded &&
+                            state.user != null &&
+                            !state.user!.emailVerified,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // ── Recommandé pour toi ──
+                      _buildRecommendationsSection(state),
+
+                      const SizedBox(height: 24),
+
+                      // ── Sections par genre (Action, Romance, etc.) ──
+                      ..._buildGenreSections(state),
+
+                      // ── Filtres + liste paginée ──
+                      _buildFilterButtons(),
+                      const SizedBox(height: 16),
+                    ]),
+                  ),
                 ),
 
-                const SizedBox(height: 20),
-                _buildTrendingSection(state),
-
-                const SizedBox(height: 20),
-                // Boutons filtres
-                _buildFilterButtons(),
-
-                const SizedBox(height: 20),
-                Expanded(
-                  child: _buildFilteredMangaList(state),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  sliver: _buildFilteredMangaSliver(state),
                 ),
+
+                const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
               ],
             ),
           );
@@ -101,32 +106,30 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     );
   }
 
+  // ─── Header ──────────────────────────────────────────────────────────────
+
   Widget _buildWelcomeHeader(HomePageState state) {
     String? displayUsername;
-    
-    if (state is HomePageLoaded) {
-      displayUsername = state.user?.username;
-    }
-    
+    if (state is HomePageLoaded) displayUsername = state.user?.username;
     return WelcomeHeader(username: displayUsername);
   }
 
+  // ─── Offline banner ───────────────────────────────────────────────────────
+
   Widget _buildOfflineIndicator(HomePageState state) {
-    final isOffline = state is HomePageLoaded && state.isOffline ||
-                      state is HomePageError && state.isOffline;
-    
+    final isOffline = (state is HomePageLoaded && state.isOffline) ||
+        (state is HomePageError && state.isOffline);
     if (!isOffline) return const SizedBox.shrink();
-    
+
     final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
-    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(top: 12, bottom: 4),
       decoration: BoxDecoration(
         color: Colors.orange.withValues(alpha: 0.1),
         border: Border.all(color: Colors.orange),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.circularMd,
       ),
       child: Row(
         children: [
@@ -136,12 +139,17 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
             child: Builder(
               builder: (context) {
                 final l10n = AppLocalizations.of(context);
-                final offlineText = pendingActions > 0
-                    ? l10n?.pendingActions(pendingActions) ?? 'Mode hors ligne - Données en cache ($pendingActions actions en attente)'
-                    : l10n?.offlineModeCached ?? 'Mode hors ligne - Données en cache';
+                final text = pendingActions > 0
+                    ? l10n?.pendingActions(pendingActions) ??
+                        'Mode hors ligne ($pendingActions actions en attente)'
+                    : l10n?.offlineModeCached ??
+                        'Mode hors ligne — données en cache';
                 return Text(
-                  offlineText,
-                  style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                  text,
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w500,
+                  ),
                 );
               },
             ),
@@ -151,127 +159,309 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     );
   }
 
-  Widget _buildTrendingSection(HomePageState state) {
+  // ─── Section Recommandé pour toi ─────────────────────────────────────────
+
+  Widget _buildRecommendationsSection(HomePageState state) {
+    final l10n = AppLocalizations.of(context);
+    final title = l10n?.recommendedForYou ?? 'Recommandé pour toi';
+
     if (state is HomePageLoading) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
+      return _buildHorizontalSection(
+        title: title,
+        child: _buildSkeletonRow(),
       );
     }
-    
-    if (state is HomePageError) {
-      return SizedBox(
-        height: 200,
-        child: Center(
-          child: Text('Erreur : ${state.message}'),
+
+    if (state is! HomePageLoaded) return const SizedBox.shrink();
+
+    final recs = state.recommendations;
+    final isOffline = state.isOffline;
+
+    if (recs.isEmpty) {
+      // Si offline + pas de recos en cache → on cache la section pour ne pas
+      // afficher un message décourageant alors que le réseau est en cause.
+      if (isOffline) return const SizedBox.shrink();
+      return _buildHorizontalSection(
+        title: title,
+        child: SizedBox(
+          height: 160,
+          child: Center(
+            child: Text(
+              l10n?.recommendedForYouEmpty ??
+                  'Ajoutez des mangas à votre bibliothèque\npour obtenir des recommandations personnalisées.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Colors.grey),
+            ),
+          ),
         ),
       );
     }
-    
-    if (state is HomePageLoaded) {
-      final mangaList = state.trendingMangas;
-      return SizedBox(
-        height: 200,
-        child: mangaList.isEmpty
-            ? const Center(child: Text('Aucun manga en tendance'))
-            : ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: mangaList.length,
-                itemBuilder: (context, index) {
-                  final manga = mangaList[index];
-                  return MangaCard(
-                    muId: manga.muId.toString(),
-                    mangaTitle: manga.title,
-                    mangaAuthor: manga.year.toString(),
-                    mediumImgPath: manga.mediumCoverUrl,
-                    rating: manga.rating,
-                  );
-                },
-              ),
-      );
-    }
-    
-    return const SizedBox(height: 200);
-  }
 
-  Widget _buildFilterButtons() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return Row(
-                children: [
-                  FilterButton(
-                    label: l10n?.all ?? 'Tous',
-                    selected: indexButtonBar == 0,
-                    onPressed: () => setState(() => indexButtonBar = 0),
-                  ),
-                  const SizedBox(width: 10),
-                  FilterButton(
-                    label: l10n?.popular ?? 'Populaires',
-                    selected: indexButtonBar == 1,
-                    onPressed: () => setState(() => indexButtonBar = 1),
-                  ),
-                  const SizedBox(width: 10),
-                  FilterButton(
-                    label: l10n?.newReleases ?? 'Nouveautés',
-                    selected: indexButtonBar == 2,
-                    onPressed: () => setState(() => indexButtonBar = 2),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
+    final subtitle = isOffline
+        ? l10n?.recommendedForYouCached ??
+            'Recommandations en cache (mode hors ligne)'
+        : l10n?.recommendedForYouCount(recs.length) ?? '${recs.length}';
+
+    return _buildHorizontalSection(
+      title: title,
+      subtitle: subtitle,
+      subtitleColor: isOffline ? Colors.orange : null,
+      child: SizedBox(
+        height: 220,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: recs.length,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          itemBuilder: (context, index) {
+            final manga = recs[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: SizedBox(
+                width: 120,
+                child: MangaCard(
+                  muId: manga.muId.toString(),
+                  mangaTitle: manga.title,
+                  mangaAuthor: manga.year.toString(),
+                  mediumImgPath: manga.mediumCoverUrl,
+                  rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
+                      ? manga.rating
+                      : null,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildFilteredMangaList(HomePageState state) {
-    if (state is HomePageLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    
-    if (state is HomePageError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildHorizontalSection({
+    required String title,
+    String? subtitle,
+    Color? subtitleColor,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Text('Erreur : ${state.message}'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _homePageBloc.add(const LoadHomePage()),
-              child: const Text('Réessayer'),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall,
             ),
+            if (subtitle != null) ...[
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  subtitle,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: subtitleColor ?? Colors.grey),
+                ),
+              ),
+            ],
           ],
+        ),
+        const SizedBox(height: 12),
+        child,
+      ],
+    );
+  }
+
+  /// Construit les sections par genre (Action, Romance, etc.).
+  /// Retourne une liste vide si :
+  /// - L'état n'est pas chargé
+  /// - L'utilisateur n'a pas encore de bibliothèque (pas de reco par genre)
+  /// - L'API a renvoyé une map vide
+  ///
+  /// Chaque section : titre du genre + ListView horizontale de MangaCard.
+  /// Insère un séparateur de 24px entre les sections.
+  List<Widget> _buildGenreSections(HomePageState state) {
+    if (state is! HomePageLoaded) return const [];
+    final byGenre = state.recommendationsByGenre;
+    if (byGenre.isEmpty) return const [];
+
+    final List<Widget> widgets = [];
+    final genreEntries = byGenre.entries.toList();
+
+    for (var i = 0; i < genreEntries.length; i++) {
+      final entry = genreEntries[i];
+      if (entry.value.isEmpty) continue;
+      widgets.add(
+        _buildHorizontalSection(
+          title: entry.key,
+          child: SizedBox(
+            height: 220,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: entry.value.length,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              itemBuilder: (context, index) {
+                final manga = entry.value[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: SizedBox(
+                    width: 120,
+                    child: MangaCard(
+                      muId: manga.muId.toString(),
+                      mangaTitle: manga.title,
+                      mangaAuthor: manga.year.toString(),
+                      mediumImgPath: manga.mediumCoverUrl,
+                      rating:
+                          manga.rating != 'N/A' && manga.rating.isNotEmpty
+                              ? manga.rating
+                              : null,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      if (i < genreEntries.length - 1) {
+        widgets.add(const SizedBox(height: 24));
+      }
+    }
+    if (widgets.isNotEmpty) widgets.add(const SizedBox(height: 24));
+    return widgets;
+  }
+
+  Widget _buildSkeletonRow() {
+    return SizedBox(
+      height: 220,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 6,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        itemBuilder: (_, __) => Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Container(
+            width: 120,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: AppRadius.circularMd,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Filtres ─────────────────────────────────────────────────────────────
+
+  Widget _buildFilterButtons() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return Row(
+            children: [
+              FilterButton(
+                label: l10n?.trending ?? 'Tendances',
+                selected: indexButtonBar == 0,
+                onPressed: () => setState(() => indexButtonBar = 0),
+              ),
+              const SizedBox(width: 10),
+              FilterButton(
+                label: l10n?.popular ?? 'Populaires',
+                selected: indexButtonBar == 1,
+                onPressed: () => setState(() => indexButtonBar = 1),
+              ),
+              const SizedBox(width: 10),
+              FilterButton(
+                label: l10n?.newReleases ?? 'Nouveautés',
+                selected: indexButtonBar == 2,
+                onPressed: () => setState(() => indexButtonBar = 2),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ─── Liste filtrée (Sliver) ───────────────────────────────────────────────
+
+  Widget _buildFilteredMangaSliver(HomePageState state) {
+    final l10n = AppLocalizations.of(context);
+
+    if (state is HomePageLoading) {
+      return const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (state is HomePageError) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n?.errorWithMessage(state.message) ??
+                    'Erreur : ${state.message}',
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _homePageBloc.add(const LoadHomePage()),
+                child: Text(l10n?.retry ?? 'Réessayer'),
+              ),
+            ],
+          ),
         ),
       );
     }
-    
+
     if (state is HomePageLoaded) {
-      late List<MangaQuickViewDto> mangaList;
-      
+      final List<MangaQuickViewDto> mangaList;
       switch (indexButtonBar) {
-        case 0:
-          mangaList = state.trendingMangas;
-          break;
         case 1:
           mangaList = state.popularMangas;
-          break;
         case 2:
           mangaList = state.newMangas;
-          break;
         default:
           mangaList = state.trendingMangas;
       }
-      
-      // Utiliser le widget HomepageMangaList existant pour garder le même rendu
-      return HomepageMangaList(mangas: Future.value(mangaList));
+
+      if (mangaList.isEmpty) {
+        return SliverFillRemaining(
+          child: Center(
+            child: Text(l10n?.noData ?? 'Aucune donnée disponible'),
+          ),
+        );
+      }
+
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final manga = mangaList[index];
+            return MangaRow(
+              mangaName: manga.title,
+              muId: manga.muId.toString(),
+              mangaAuthor: manga.year,
+              mediumImgPath: manga.mediumCoverUrl,
+              lastChapter: manga.totalChapters,
+              readChapter: manga.readChapters,
+              rating: manga.rating,
+            );
+          },
+          childCount: mangaList.length,
+        ),
+      );
     }
-    
-    return const Center(child: Text('Aucune donnée disponible'));
+
+    return SliverFillRemaining(
+      child: Center(
+        child: Text(l10n?.noData ?? 'Aucune donnée disponible'),
+      ),
+    );
   }
 }

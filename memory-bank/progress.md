@@ -7,7 +7,7 @@
 ## 🎯 Vue d'ensemble
 
 **Version actuelle** : `0.3.0+11`  
-**Dernière mise à jour** : 2024
+**Dernière mise à jour** : 2025
 
 ---
 
@@ -118,7 +118,7 @@
 |----------------|--------|---------|
 | Vue de connexion | ✔️ **Complété** | `LoginView` avec validation |
 | Page compte utilisateur | ✔️ **Complété** | `Profile` modernisée avec Material 3, cache intégré |
-| Page détail manga | ✔️ **Complété** | `DetailBlocView` avec toutes les fonctionnalités |
+| Page détail manga | ✔️ **Complété** | `DetailBlocView` avec toutes les fonctionnalités, genres affichés avec chips stylisés, image plein écran avec bordures arrondies |
 | Page tendances/nouveautés | ✔️ **Complété** | `HomePageBlocView` avec filtres |
 | Barre de navigation | ✔️ **Complété** | `BottomNavbar` avec PageView |
 | Thème sombre | 🔴 **À finaliser** | Code préparé, à activer |
@@ -167,12 +167,16 @@
   - Actualisation automatique (cron + cache)
 
 ### 🤖 Recommandations personnalisées
-- **Statut** : 🔴 Modèle LightFM en cours d'intégration
-- **À faire** :
-  - Intégration du service ML
-  - Affichage des recommandations dans l'UI
-  - Cache des scores de recommandation
-  - Option "Ignorer un manga recommandé"
+- **Statut** : ✅ Implémenté (algorithme basé sur MangaUpdates + notes utilisateur)
+- **Complété** :
+  - Entité `MangaRecommendation` (table `manga_recommendation`, TTL 7 jours)
+  - Parsing des recos MU dans `MangaDetailsDto.fromMU()` (poids 1-10)
+  - Sauvegarde en background dans `getMangaDetails()`
+  - Endpoint `GET /mangas/recommendations/:muId` (fix bug dialogue détail)
+  - Endpoint `GET /recommendations` (recommandations personnalisées avec scoring)
+  - `PUT /library/rating` pour noter un manga (1-10)
+  - `RecommendationService` Flutter + section "Recommandé pour toi" sur la home
+  - Fix du dialogue "recommandations communautaires" dans la page détail (Wrap au lieu de ListView horizontal)
 
 ### 💬 Espace communautaire
 - **Statut** : 🔴 À concevoir
@@ -277,6 +281,8 @@
 
 ### Bugs résolus récemment
 
+- ✅ Correction du parsing des recommandations MangaUpdates (structure imbriquée `series_id.series_id` au lieu d'un nombre plat → `NaN` → rien ne se sauvegardait)
+- ✅ Correction du dialogue "recommandations communautaires" sur la page détail (Wrap au lieu de ListView horizontal)
 - ✅ Correction de la gestion du `readChaptersCount` lors de la suppression de la bibliothèque
 - ✅ Correction de la détection du mode offline (basée sur les erreurs réseau)
 - ✅ Correction des race conditions avec `DetailBloc` (factory au lieu de singleton)
@@ -288,6 +294,7 @@
 - ✅ Modernisation de la page Profile avec composants réutilisables
 - ✅ Intégration du changelog dans le profil
 - ✅ Optimisation du cache avec `cached_network_image`
+- ✅ Harmonisation des rayons d'arrondi via `AppRadius` et adoption dans les vues principales
 
 ---
 
@@ -323,5 +330,5 @@
 
 ---
 
-**Dernière mise à jour** : 04/11/2025
+**Dernière mise à jour** : 09/11/2025
 

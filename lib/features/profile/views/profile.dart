@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/services/theme_service.dart';
+import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../auth/services/validator.service.dart';
 import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
@@ -31,6 +36,8 @@ class _ProfileState extends State<Profile> {
   UserInformationDto? _userInfo;
   bool _isLoading = true;
   Locale? _currentLocale;
+  bool? _biometricEnabled;
+  ThemeMode? _currentThemeMode;
   
   Future<void> _loadLanguageService() async {
     final languageService = await getIt.getAsync<LanguageService>();
@@ -44,6 +51,194 @@ class _ProfileState extends State<Profile> {
     super.initState();
     _loadUserInformation();
     _loadLanguageService();
+    _loadBiometricStatus();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    debugPrint('🔐 Profile Debug - Chargement du statut biométrique...');
+    final isEnabled = await _authService.isBiometricEnabled();
+    debugPrint('🔐 Profile Debug - Biométrie activée dans les préférences: $isEnabled');
+    
+    final hasSupport = await _authService.biometricService.hasBiometricSupport();
+    debugPrint('🔐 Profile Debug - Support biométrique disponible: $hasSupport');
+    
+    final availableTypes = await _authService.biometricService.getAvailableBiometrics();
+    debugPrint('🔐 Profile Debug - Types biométriques disponibles: $availableTypes');
+    
+    final hasCreds = await _authService.storageService.hasBiometricCredentials();
+    debugPrint('🔐 Profile Debug - Identifiants biométriques sauvegardés: $hasCreds');
+    
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = isEnabled;
+      });
+    }
+  }
+
+  Future<void> _loadThemeMode() async {
+    try {
+      final themeService = await getIt.getAsync<ThemeService>();
+      if (mounted) {
+        setState(() {
+          _currentThemeMode = themeService.getCurrentThemeMode();
+        });
+      }
+    } catch (e) {
+      // Ignorer les erreurs
+    }
+  }
+
+  Future<void> _showThemeSelector() async {
+    final l10n = AppLocalizations.of(context)!;
+    final themeService = await getIt.getAsync<ThemeService>();
+    final currentMode = _currentThemeMode ?? themeService.getCurrentThemeMode();
+
+    final selectedMode = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                Icons.palette_outlined,
+                color: theme.colorScheme.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(l10n.theme),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.light,
+                currentMode: currentMode,
+                icon: Icons.light_mode,
+                title: l10n.lightMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.light),
+              ),
+              const SizedBox(height: 12),
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.dark,
+                currentMode: currentMode,
+                icon: Icons.dark_mode,
+                title: l10n.darkMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.dark),
+              ),
+              const SizedBox(height: 12),
+              _buildThemeOption(
+                context: context,
+                mode: ThemeMode.system,
+                currentMode: currentMode,
+                icon: Icons.brightness_auto,
+                title: l10n.systemMode,
+                onTap: () => Navigator.of(context).pop(ThemeMode.system),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancel),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedMode != null && selectedMode != currentMode) {
+      await themeService.setThemeMode(selectedMode);
+      if (mounted) {
+        setState(() {
+          _currentThemeMode = selectedMode;
+        });
+      }
+    }
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext context,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isSelected = mode == currentMode;
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.circularXl,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHighest,
+          borderRadius: AppRadius.circularXl,
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: theme.colorScheme.primary,
+                size: 24,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeModeName(ThemeMode mode, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (mode) {
+      case ThemeMode.light:
+        return l10n.lightMode;
+      case ThemeMode.dark:
+        return l10n.darkMode;
+      case ThemeMode.system:
+        return l10n.systemMode;
+    }
   }
 
   Future<void> _loadUserInformation() async {
@@ -67,10 +262,7 @@ class _ProfileState extends State<Profile> {
 
   void _redirectToLoginPage() {
     HapticFeedback.lightImpact();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.go('/login');
   }
 
   void _showConfirmDeleteAccount() {
@@ -167,10 +359,12 @@ class _ProfileState extends State<Profile> {
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            onPressed: () {
-              _authService.logout();
-              Navigator.of(context).pop();
-              _redirectToLoginPage();
+            onPressed: () async {
+              await _authService.logout();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                _redirectToLoginPage();
+              }
             },
             child: Text(l10n.logout),
           ),
@@ -179,7 +373,8 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _getFlagIcon(String languageCode) {
+  // Méthode helper pour obtenir l'icône de drapeau (utilisée uniquement pour l'affichage dans ProfileOptionTile)
+  Widget _getFlagIconForDisplay(String languageCode) {
     String assetPath;
     switch (languageCode) {
       case 'fr':
@@ -208,7 +403,7 @@ class _ProfileState extends State<Profile> {
     }
     
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: AppRadius.circularXs,
       child: Image.asset(
         assetPath,
         width: 32,
@@ -221,7 +416,7 @@ class _ProfileState extends State<Profile> {
             width: 32,
             height: 24,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.circularXs,
               color: Colors.grey.withValues(alpha: 0.3),
               border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 0.5),
             ),
@@ -232,107 +427,108 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Future<void> _showLanguageSelector() async {
+  Future<void> _handleBiometricToggle() async {
     final l10n = AppLocalizations.of(context)!;
-    final languageService = await getIt.getAsync<LanguageService>();
-    final currentLocale = languageService.getCurrentLocale();
-    final supportedLocales = languageService.getSupportedLocales();
+    final currentStatus = _biometricEnabled ?? false;
+    
+    debugPrint('🔐 Profile Debug - Toggle biométrique - Statut actuel: $currentStatus');
+    
+    if (currentStatus) {
+      // Désactiver la biométrie
+      debugPrint('🔐 Profile Debug - Désactivation de la biométrie...');
+      await _authService.setBiometricEnabled(false);
+      setState(() {
+        _biometricEnabled = false;
+      });
+      _notifier.success(l10n.disableBiometricAuth);
+    } else {
+      // Activer la biométrie
+      debugPrint('🔐 Profile Debug - Activation de la biométrie...');
+      
+      // Vérifier d'abord le support biométrique
+      final hasSupport = await _authService.biometricService.hasBiometricSupport();
+      debugPrint('🔐 Profile Debug - Support biométrique: $hasSupport');
+      
+      final availableTypes = await _authService.biometricService.getAvailableBiometrics();
+      debugPrint('🔐 Profile Debug - Types disponibles: $availableTypes');
+      
+      // Si aucune biométrie n'est détectée, tester quand même authenticate() pour voir l'erreur exacte
+      if (availableTypes.isEmpty) {
+        debugPrint('🔐 Profile Debug - Aucune biométrie détectée, test d\'authentification pour diagnostic...');
+        final testResult = await _authService.biometricService.authenticateWithBiometrics(context);
+        debugPrint('🔐 Profile Debug - Résultat test authentification: $testResult');
+        
+        // Si le test échoue, ne pas activer la biométrie
+        // (le message d'erreur a déjà été affiché par authenticateWithBiometrics)
+        if (!testResult) {
+          debugPrint('🔐 Profile Debug - Test échoué, activation annulée');
+          return;
+        }
+        
+        // Si le test réussit malgré la liste vide, continuer l'activation
+        debugPrint('🔐 Profile Debug - Test réussi malgré liste vide, activation autorisée');
+      }
+      
+      // Double vérification : si pas de support ET liste vide, ne pas activer
+      if (!hasSupport && availableTypes.isEmpty) {
+        debugPrint('🔐 Profile Debug - Pas de support biométrique disponible');
+        _notifier.info(l10n.biometricAuthNotAvailable);
+        return;
+      }
+      
+      // Vérifier si des identifiants sont déjà sauvegardés
+      final hasCreds = await _authService.storageService.hasBiometricCredentials();
+      debugPrint('🔐 Profile Debug - Identifiants sauvegardés: $hasCreds');
+      
+      if (!hasCreds) {
+        // Pas d'identifiants disponibles, informer l'utilisateur
+        debugPrint('🔐 Profile Debug - Pas d\'identifiants, demande de reconnexion');
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(l10n.biometricAuthTitle),
+              content: Text(
+                l10n.biometricAuthRequiresReconnect,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _handleLogout();
+                  },
+                  child: Text(l10n.logout),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        // Des identifiants existent, activer directement
+        debugPrint('🔐 Profile Debug - Activation directe de la biométrie');
+        await _authService.setBiometricEnabled(true);
+        setState(() {
+          _biometricEnabled = true;
+        });
+        _notifier.success(l10n.enableBiometricAuth);
+      }
+    }
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Titre
-              Text(
-                l10n.selectLanguage,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Options de langue
-              ...supportedLocales.map((locale) {
-                final isSelected = locale.languageCode == currentLocale.languageCode;
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.withValues(alpha: 0.2),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      await languageService.setLanguage(locale);
-                      if (mounted) {
-                        setState(() {
-                          _currentLocale = locale;
-                        });
-                      }
-                      Navigator.of(context).pop();
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          _getFlagIcon(locale.languageCode),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              languageService.getLanguageName(locale, context),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.primary
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 20,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-              const SizedBox(height: 8),
-              // Bouton annuler
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  l10n.cancel,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+  Future<void> _showLanguageSelector() async {
+    await LanguageSelectorButton.showLanguageSelector(
+      context,
+      onLanguageChanged: (locale) {
+        if (mounted) {
+          setState(() {
+            _currentLocale = locale;
+          });
+        }
+      },
     );
   }
 
@@ -404,7 +600,7 @@ class _ProfileState extends State<Profile> {
                           final languageName = languageService.getLanguageName(currentLocale, context);
                           
                           return ProfileOptionTile(
-                            leadingWidget: _getFlagIcon(currentLocale.languageCode),
+                            leadingWidget: _getFlagIconForDisplay(currentLocale.languageCode),
                             title: l10n.language,
                             subtitle: languageName,
                             onTap: () async {
@@ -420,18 +616,50 @@ class _ProfileState extends State<Profile> {
                         title: l10n.notifications,
                         subtitle: l10n.manageNotifications,
                         onTap: () {
-                          _notifier.info(l10n.comingSoon);
+                          context.push('/notifications-settings');
                         },
                         iconColor: Colors.blue,
                       ),
-                      ProfileOptionTile(
-                        icon: Icons.dark_mode_outlined,
-                        title: l10n.theme,
-                        subtitle: l10n.lightMode,
-                        onTap: () {
-                          _notifier.info(l10n.comingSoon);
+                      Builder(
+                        builder: (context) {
+                          final themeService = getIt<ThemeService>();
+                          final currentMode = _currentThemeMode ?? themeService.getCurrentThemeMode();
+                          
+                          return ProfileOptionTile(
+                            icon: Icons.dark_mode_outlined,
+                            title: l10n.theme,
+                            subtitle: _getThemeModeName(currentMode, context),
+                            onTap: () async {
+                              await _showThemeSelector();
+                            },
+                            iconColor: Colors.indigo,
+                          );
                         },
-                        iconColor: Colors.indigo,
+                      ),
+                      FutureBuilder<bool>(
+                        future: _authService.biometricService.hasBiometricSupport(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data == true) {
+                            return ProfileOptionTile(
+                              icon: Icons.fingerprint,
+                              title: l10n.biometricAuthTitle,
+                              subtitle: _biometricEnabled == true
+                                  ? l10n.biometricAuthEnabled
+                                  : l10n.biometricAuthDisabled,
+                              onTap: () async {
+                                await _handleBiometricToggle();
+                              },
+                              iconColor: Colors.purple,
+                              trailing: Switch(
+                                value: _biometricEnabled ?? false,
+                                onChanged: (value) async {
+                                  await _handleBiometricToggle();
+                                },
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
                     ],
                   ),
@@ -442,6 +670,16 @@ class _ProfileState extends State<Profile> {
                   child: ProfileSection(
                     title: l10n.actions,
                     children: [
+                      ProfileOptionTile(
+                        icon: Icons.shield_outlined,
+                        title: l10n.myDataTitle,
+                        subtitle: l10n.myDataSubtitle,
+                        onTap: () {
+                          context.push('/my-data');
+                        },
+                        iconColor: Colors.teal,
+                        backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                      ),
                       ProfileOptionTile(
                         icon: Icons.logout,
                         title: l10n.logout,
@@ -457,6 +695,65 @@ class _ProfileState extends State<Profile> {
                         onTap: _showConfirmDeleteAccount,
                         iconColor: Colors.red,
                         backgroundColor: Colors.red.withValues(alpha: 0.1),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Nous contacter
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.contactUs,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.chat,
+                        title: l10n.joinDiscord,
+                        subtitle: l10n.joinDiscordSubtitle,
+                        onTap: () async {
+                          final uri = Uri.parse('https://discord.gg/X6sBgFY7');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            _notifier.error(l10n.discordLinkError);
+                          }
+                        },
+                        iconColor: Colors.indigo,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Téléchargements
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.downloads,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.download,
+                        title: l10n.manageDownloads,
+                        subtitle: l10n.manageDownloadsSubtitle,
+                        onTap: () {
+                          context.push('/downloads');
+                        },
+                        iconColor: Colors.blue,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section Sélecteurs personnalisés
+                SliverToBoxAdapter(
+                  child: ProfileSection(
+                    title: l10n.customSelectors,
+                    children: [
+                      ProfileOptionTile(
+                        icon: Icons.code,
+                        title: l10n.manageCustomSelectors,
+                        subtitle: l10n.manageCustomSelectorsSubtitle,
+                        onTap: () {
+                          context.push('/custom-selectors');
+                        },
+                        iconColor: Colors.purple,
                       ),
                     ],
                   ),

@@ -27,6 +27,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get login => 'Anmelden';
 
   @override
+  String get googleLoginFailed => 'Google-Anmeldung fehlgeschlagen';
+
+  @override
+  String get loginWithGoogle => 'Mit Google anmelden';
+
+  @override
+  String get back => 'Zurück';
+
+  @override
   String get signUp => 'Registrieren';
 
   @override
@@ -106,6 +115,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notifications => 'Benachrichtigungen';
 
   @override
+  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+
+  @override
+  String get newChapterNotificationsEnabled => 'Activées';
+
+  @override
+  String get newChapterNotificationsDisabled => 'Désactivées';
+
+  @override
   String get manageNotifications => 'Benachrichtigungen verwalten';
 
   @override
@@ -116,6 +134,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get darkMode => 'Dunkles Design';
+
+  @override
+  String get systemMode => 'System';
 
   @override
   String get language => 'Sprache';
@@ -253,6 +274,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get totalChapters => 'Gesamtkapitel';
+
+  @override
+  String get associatedNames => 'Zugehörige Namen';
+
+  @override
+  String associatedNamesCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Namen',
+      one: '$count Name',
+      zero: 'Keine Namen',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get saveProgress => 'Fortschritt speichern';
@@ -426,4 +462,699 @@ class AppLocalizationsDe extends AppLocalizations {
   String cannotOpenLink(String url) {
     return 'Link kann nicht geöffnet werden: $url';
   }
+
+  @override
+  String get searchHistoryTitle => 'Suchverlauf';
+
+  @override
+  String get searchEmptyStateMessage =>
+      'Suchen Sie nach einem Manga, Manhwa oder Manhua';
+
+  @override
+  String get clear => 'Löschen';
+
+  @override
+  String get biometricAuthTitle => 'Biometrische Authentifizierung';
+
+  @override
+  String get biometricAuthSubtitle =>
+      'Verwenden Sie Fingerabdruck oder Face ID für schnelles Anmelden';
+
+  @override
+  String get enableBiometricAuth => 'Biometrische Authentifizierung aktiviert';
+
+  @override
+  String get disableBiometricAuth =>
+      'Biometrische Authentifizierung deaktiviert';
+
+  @override
+  String get biometricAuthEnabled => 'Aktiviert';
+
+  @override
+  String get biometricAuthDisabled => 'Deaktiviert';
+
+  @override
+  String get biometricAuthFirstTimeTitle =>
+      'Biometrische Authentifizierung aktivieren?';
+
+  @override
+  String get biometricAuthFirstTimeMessage =>
+      'Möchten Sie in Zukunft Ihren Fingerabdruck oder Face ID für schnelles Anmelden verwenden?';
+
+  @override
+  String get biometricAuthNotAvailable =>
+      'Biometrische Authentifizierung ist auf diesem Gerät nicht verfügbar';
+
+  @override
+  String get biometricAuthRequiresReconnect =>
+      'Um die biometrische Authentifizierung zu aktivieren, melden Sie sich bitte erneut an';
+
+  @override
+  String get or => 'Oder';
+
+  @override
+  String get startTrackingNow =>
+      'Beginnen Sie jetzt, Ihre Lektüre zu verfolgen';
+
+  @override
+  String get username => 'Benutzername';
+
+  @override
+  String get confirmPassword => 'Bestätigen';
+
+  @override
+  String get alreadyHaveAccount => 'Haben Sie bereits ein Konto?';
+
+  @override
+  String get newPassword => 'Neues Passwort';
+
+  @override
+  String get validationEmailRequired =>
+      'Bitte geben Sie Ihre E-Mail-Adresse ein';
+
+  @override
+  String get validationEmailInvalid =>
+      'Bitte geben Sie eine gültige E-Mail-Adresse ein';
+
+  @override
+  String get validationPasswordRequired => 'Bitte geben Sie Ihr Passwort ein';
+
+  @override
+  String get validationPasswordLength =>
+      'Ihr Passwort muss zwischen 8 und 64 Zeichen lang sein';
+
+  @override
+  String get validationPasswordComplexity =>
+      'Ihr Passwort muss mindestens einen Kleinbuchstaben, einen Großbuchstaben und ein Sonderzeichen enthalten';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Bitte bestätigen Sie Ihr Passwort';
+
+  @override
+  String get validationPasswordsDoNotMatch =>
+      'Die Passwörter stimmen nicht überein';
+
+  @override
+  String get showPassword => 'Passwort anzeigen';
+
+  @override
+  String get hidePassword => 'Passwort ausblenden';
+
+  @override
+  String get emailAlreadyUsed => 'Diese E-Mail-Adresse ist bereits registriert';
+
+  @override
+  String get networkError => 'Bitte überprüfen Sie Ihre Internetverbindung';
+
+  @override
+  String get timeoutError =>
+      'Der Server benötigt zu lange für die Antwort. Bitte versuchen Sie es erneut.';
+
+  @override
+  String get passwordStrengthLabel => 'Passwortstärke';
+
+  @override
+  String get passwordStrengthWeak => 'Schwach';
+
+  @override
+  String get passwordStrengthMedium => 'Mittel';
+
+  @override
+  String get passwordStrengthStrong => 'Stark';
+
+  @override
+  String get yes => 'Ja';
+
+  @override
+  String get no => 'Nein';
+
+  @override
+  String get yesValidate => 'Ja, bestätigen';
+
+  @override
+  String chapterSkipMessage(String prev, String next) {
+    return 'Sie springen von Kapitel $prev zu $next.\n$prev als gelesen markieren?';
+  }
+
+  @override
+  String validateReadingMessage(String chapter) {
+    return 'Haben Sie Kapitel $chapter beendet?';
+  }
+
+  @override
+  String get validateReadingHint =>
+      'Ihr Fortschritt wird automatisch gespeichert.';
+
+  @override
+  String get adBlockerTitle => 'Werbeblocker';
+
+  @override
+  String get adBlockerDescription =>
+      'Der Werbeblocker blockiert automatisch Werbung auf Leseseiten.\n\nWenn Sie Links hinzufügen oder Verbesserungen für die Werbeblockierung vorschlagen möchten, treten Sie unserem Discord-Server bei!';
+
+  @override
+  String get adBlockerTooltip => 'Informationen zum Werbeblocker';
+
+  @override
+  String get joinDiscord => 'Discord beitreten';
+
+  @override
+  String get joinDiscordSubtitle =>
+      'Teilen Sie Ihre Vorschläge und melden Sie Probleme';
+
+  @override
+  String get contactUs => 'Kontaktieren Sie uns';
+
+  @override
+  String get downloads => 'Téléchargements';
+
+  @override
+  String get manageDownloads => 'Gérer les téléchargements';
+
+  @override
+  String get manageDownloadsSubtitle =>
+      'Voir et supprimer les chapitres téléchargés';
+
+  @override
+  String get discordLinkError => 'Discord-Link kann nicht geöffnet werden';
+
+  @override
+  String get urlCopied => 'URL in Zwischenablage kopiert';
+
+  @override
+  String get urlCopyError => 'Fehler beim Kopieren der URL';
+
+  @override
+  String get copyUrl => 'URL kopieren';
+
+  @override
+  String get progressUpdated => 'Fortschritt aktualisiert';
+
+  @override
+  String get invalidUrl => 'Ungültige URL';
+
+  @override
+  String get webModeProgressTracking => 'Web-Modus - Fortschrittsverfolgung';
+
+  @override
+  String get webModeProgressDescription =>
+      'Um Ihren Fortschritt zu verfolgen, fügen Sie die URL des Kapitels ein, das Sie gerade lesen.';
+
+  @override
+  String get chapterUrlLabel => 'Kapitel-URL';
+
+  @override
+  String get updateProgress => 'Fortschritt aktualisieren';
+
+  @override
+  String get openInNewTab => 'In neuem Tab öffnen';
+
+  @override
+  String get linkUrlLabel => 'Scan-Site-URL';
+
+  @override
+  String get linkFormatInfo => 'Kapitelformat erforderlich';
+
+  @override
+  String get linkFormatDescription =>
+      'Fügen Sie die Kapitelnummer in die URL ein, um das automatische Speichern des Fortschritts zu ermöglichen.\n\nAkzeptierte Formate:\n• /kapitel-23/ oder /chapter-23/\n• /c23/ oder /ch23/\n• /ep-23/ oder /episode-23/\n• ?chapter=23 oder ?num=24';
+
+  @override
+  String get linkFormatWarning =>
+      'Kein Kapitelformat erkannt. Der Link leitet zur Manga-Seite weiter (nicht zu einem bestimmten Kapitel).';
+
+  @override
+  String get linkFormatDetected =>
+      'Kapitelformat erkannt! Der Fortschritt wird automatisch gespeichert.';
+
+  @override
+  String get linkAddCustomPattern =>
+      'Ajouter un pattern personnalisé pour ce format';
+
+  @override
+  String get customSelectors => 'Sélecteurs personnalisés';
+
+  @override
+  String get manageCustomSelectors => 'Gérer les sélecteurs';
+
+  @override
+  String get manageCustomSelectorsSubtitle =>
+      'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu';
+
+  @override
+  String get addCustomSelector => 'Ajouter un sélecteur';
+
+  @override
+  String get selectorDomainLabel => 'Domaine (ex: exemple.com)';
+
+  @override
+  String get selectorCssLabel => 'Sélecteur CSS';
+
+  @override
+  String get selectorTypeLabel => 'Type de sélecteur';
+
+  @override
+  String get selectorTypeUrlPattern => 'Pattern d\'URL';
+
+  @override
+  String get selectorUrlPatternLabel => 'Pattern d\'URL (regex)';
+
+  @override
+  String get selectorUrlPatternHint =>
+      'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22';
+
+  @override
+  String get selectorExamplesUrlPattern => 'Exemples de patterns d\'URL :';
+
+  @override
+  String get selectorExampleUrlPattern => 'Exemple : /chapter-22';
+
+  @override
+  String get selectorExampleUrlPatternExplanation =>
+      'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :';
+
+  @override
+  String get selectorUrlPatternExampleDesc =>
+      'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22';
+
+  @override
+  String get selectorUrlPatternGlobal =>
+      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+
+  @override
+  String get selectorTypeAdBlocker => 'Bloqueur de publicités';
+
+  @override
+  String get selectorTypeChapterContent => 'Contenu du chapitre';
+
+  @override
+  String get selectorDescriptionLabel => 'Description (optionnel)';
+
+  @override
+  String get selectorDescriptionHint => 'Description du sélecteur';
+
+  @override
+  String get selectorRequiredFields => 'Tous les champs sont requis';
+
+  @override
+  String get selectorAdded => 'Sélecteur ajouté';
+
+  @override
+  String get deleteSelector => 'Supprimer le sélecteur';
+
+  @override
+  String get deleteSelectorConfirm =>
+      'Êtes-vous sûr de vouloir supprimer ce sélecteur ?';
+
+  @override
+  String get selectorDeleted => 'Sélecteur supprimé';
+
+  @override
+  String get selectorsExported => 'Sélecteurs exportés dans le presse-papiers';
+
+  @override
+  String get importSelectors => 'Importer des sélecteurs';
+
+  @override
+  String get selectorsJsonLabel => 'JSON des sélecteurs';
+
+  @override
+  String get import => 'Importer';
+
+  @override
+  String selectorsImported(String count) {
+    return '$count sélecteur(s) importé(s)';
+  }
+
+  @override
+  String get selectorsReadyToShare =>
+      'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.';
+
+  @override
+  String get exportSelectors => 'Exporter';
+
+  @override
+  String get shareSelectors => 'Partager';
+
+  @override
+  String get noCustomSelectors => 'Aucun sélecteur personnalisé';
+
+  @override
+  String get addFirstSelector =>
+      'Ajoutez votre premier sélecteur pour commencer';
+
+  @override
+  String get selectorExamples => 'Exemples';
+
+  @override
+  String get selectorExamplesAdBlocker =>
+      'Exemples pour bloquer des publicités :';
+
+  @override
+  String get selectorExampleAd1 => 'Bannière publicitaire';
+
+  @override
+  String get selectorExampleAd2 => 'Publicité par ID';
+
+  @override
+  String get selectorExampleAd3 => 'Iframe publicitaire';
+
+  @override
+  String get selectorExampleAd4 => 'Script publicitaire';
+
+  @override
+  String get selectorExamplesChapter =>
+      'Exemples pour identifier le contenu du chapitre :';
+
+  @override
+  String get selectorExampleChapter1 => 'Conteneur de chapitre';
+
+  @override
+  String get selectorExampleChapter2 => 'Lecteur de manga';
+
+  @override
+  String get selectorExampleChapter3 => 'Images du chapitre';
+
+  @override
+  String get selectorExampleChapter4 => 'Contenu de lecture';
+
+  @override
+  String get selectorExampleChapter5 => 'Format manga/chapitre-22';
+
+  @override
+  String get selectorExampleChapter5Explanation =>
+      'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"';
+
+  @override
+  String get selectorUrlFormatDetected =>
+      '✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+
+  @override
+  String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
+
+  @override
+  String get selectorPracticalExample => 'Exemple pratique :';
+
+  @override
+  String get selectorExampleScenario =>
+      'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"';
+
+  @override
+  String get selectorStep1 =>
+      'Ouvrez la page du chapitre dans votre navigateur';
+
+  @override
+  String get selectorStep2 =>
+      'Appuyez sur F12 pour ouvrir les outils de développement';
+
+  @override
+  String get selectorStep3 =>
+      'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)';
+
+  @override
+  String get selectorStep4 =>
+      'Cliquez sur le conteneur qui contient les images du chapitre';
+
+  @override
+  String get selectorStep5 =>
+      'Dans le code HTML, trouvez la classe ou l\'ID du conteneur';
+
+  @override
+  String get selectorFillForm => 'Remplissez le formulaire :';
+
+  @override
+  String get selectorCssWhenNeededDesc =>
+      '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+
+  @override
+  String get selectorDomainExampleDesc =>
+      'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)';
+
+  @override
+  String get selectorOtherExamples => 'Autres exemples courants :';
+
+  @override
+  String get selectorExampleChapter5Desc =>
+      'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.';
+
+  @override
+  String get selectorExamplesHint =>
+      'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+
+  @override
+  String get captchaDetected =>
+      'Captcha erkannt - Werbeblocker wurde vorübergehend deaktiviert';
+
+  @override
+  String get captchaResolved =>
+      'Captcha gelöst - Werbeblocker wurde wieder aktiviert';
+
+  @override
+  String get scrollPositionSaved => 'Scroll-Position gespeichert';
+
+  @override
+  String get chapterProgressSaved => 'Kapitelfortschritt gespeichert';
+
+  @override
+  String get readingOffline => 'Offline lesen';
+
+  @override
+  String get chapterDownloaded => 'Kapitel heruntergeladen';
+
+  @override
+  String get offlineReadingMode => 'Offline-Lesemodus';
+
+  @override
+  String get deleteChapterTitle => 'Kapitel löschen';
+
+  @override
+  String deleteChapterMessage(int chapterNumber) {
+    return 'Möchten Sie Kapitel $chapterNumber wirklich löschen?';
+  }
+
+  @override
+  String get deleteAllChaptersTitle => 'Alle Kapitel löschen';
+
+  @override
+  String get deleteAllChaptersMessage =>
+      'Möchten Sie wirklich alle heruntergeladenen Kapitel für diesen Manga löschen?';
+
+  @override
+  String get deleteAllDownloadsTitle => 'Alle Downloads löschen';
+
+  @override
+  String get deleteAllDownloadsMessage =>
+      'Möchten Sie wirklich ALLE Downloads löschen? Diese Aktion ist unwiderruflich.';
+
+  @override
+  String get deleteAll => 'Alles löschen';
+
+  @override
+  String get chapterDeleted => 'Kapitel gelöscht';
+
+  @override
+  String get allChaptersDeleted => 'Alle Kapitel gelöscht';
+
+  @override
+  String get allDownloadsDeleted => 'Alle Downloads gelöscht';
+
+  @override
+  String get noChaptersDownloaded => 'Keine Kapitel heruntergeladen';
+
+  @override
+  String chaptersDownloadedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Kapitel heruntergeladen',
+      one: '1 Kapitel heruntergeladen',
+      zero: 'Keine Kapitel heruntergeladen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get readChapter => 'Lesen';
+
+  @override
+  String get deleteAllChaptersAction => 'Alle Kapitel löschen';
+
+  @override
+  String get deleteAllDownloadsTooltip => 'Alle Downloads löschen';
+
+  @override
+  String get recommendedForYou => 'Für dich empfohlen';
+
+  @override
+  String get recommendedForYouEmpty =>
+      'Füge Mangas zu deiner Bibliothek hinzu,\num personalisierte Empfehlungen zu erhalten.';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mangas',
+      one: '1 Manga',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached =>
+      'Empfehlungen aus dem Cache (Offline-Modus)';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'Fehler: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return 'Weil du $titles mochtest';
+  }
+
+  @override
+  String get yourRating => 'Deine Bewertung';
+
+  @override
+  String get myDataTitle => 'Meine Daten';
+
+  @override
+  String get myDataSubtitle =>
+      'Meine Daten anzeigen, exportieren oder löschen (DSGVO)';
+
+  @override
+  String get gdprIntro =>
+      'Gemäß DSGVO haben Sie Rechte an Ihren personenbezogenen Daten. Diese Seite ermöglicht Ihnen die einfache Ausübung dieser Rechte.';
+
+  @override
+  String get gdprAccessTitle => 'Meine Daten anzeigen';
+
+  @override
+  String get gdprAccessSubtitle =>
+      'Artikel 15 — Übersicht der gespeicherten Informationen';
+
+  @override
+  String get gdprExportTitle => 'Meine Daten exportieren';
+
+  @override
+  String get gdprExportSubtitle =>
+      'Artikel 20 — vollständiges JSON in Zwischenablage';
+
+  @override
+  String get gdprLegalDocs => 'Rechtliche Dokumente';
+
+  @override
+  String get gdprDeleteHint =>
+      'Um Ihr Konto endgültig zu löschen, gehen Sie zu Profil → Konto löschen. Diese Aktion ist unwiderruflich.';
+
+  @override
+  String get privacyPolicyTitle => 'Datenschutzerklärung';
+
+  @override
+  String get termsOfServiceTitle => 'Nutzungsbedingungen';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Tracker wird ohne Gewähr bereitgestellt. Der Herausgeber lehnt jegliche Haftung für nicht konforme Nutzung durch den Benutzer ab (illegale Inhalte, Scraping usw.).\n\nVollständiges Dokument auf der offiziellen Website.';
+
+  @override
+  String get privacyShortVersion =>
+      'Erfasste Daten: E-Mail, Passwort (gehasht), Manga-Bibliothek, Einstellungen. Keine Daten werden an Dritte verkauft. Sie können Ihre Daten jederzeit exportieren oder löschen.\n\nVollständiges Dokument auf der offiziellen Website.';
+
+  @override
+  String get iAcceptTos => 'Ich akzeptiere die Nutzungsbedingungen';
+
+  @override
+  String get iAcceptPrivacy => 'Ich akzeptiere die Datenschutzerklärung';
+
+  @override
+  String get iAccept => 'Akzeptieren';
+
+  @override
+  String get consentRequired =>
+      'Sie müssen die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren.';
+
+  @override
+  String get consentRefreshTitle => 'Unsere Bedingungen wurden aktualisiert';
+
+  @override
+  String get consentRefreshIntro =>
+      'Unsere Nutzungsbedingungen und Datenschutzerklärung wurden aktualisiert. Bitte akzeptieren Sie sie, um fortzufahren.';
+
+  @override
+  String get refuseAndLogout => 'Ablehnen und abmelden';
+
+  @override
+  String get versionLabel => 'Version';
+
+  @override
+  String get forgotPasswordTitle => 'Passwort vergessen';
+
+  @override
+  String get forgotPasswordIntro =>
+      'Gib deine E-Mail ein. Wenn ein Konto existiert, erhältst du einen Link, um ein neues Passwort festzulegen.';
+
+  @override
+  String get sendResetLink => 'Link senden';
+
+  @override
+  String get resetEmailSentTitle => 'Prüfe dein Postfach';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return 'Wenn ein Konto für $email existiert, wurde eine E-Mail mit einem Link zur Passwortänderung gesendet.\n\nDer Link läuft in 30 Minuten ab.';
+  }
+
+  @override
+  String get resetPasswordTitle => 'Neues Passwort';
+
+  @override
+  String get resetPasswordIntro =>
+      'Lege ein neues Passwort für dein Konto fest. Nach der Bestätigung wirst du automatisch angemeldet.';
+
+  @override
+  String get confirmReset => 'Bestätigen';
+
+  @override
+  String get resetTokenExpired =>
+      'Ungültiger oder abgelaufener Link. Bitte fordere einen neuen an.';
+
+  @override
+  String get resetPasswordSuccess => 'Passwort geändert';
+
+  @override
+  String get resetPasswordSuccessHint =>
+      'Du bist jetzt angemeldet. Weiterleitung…';
+
+  @override
+  String get verifyingEmail => 'Überprüfung läuft…';
+
+  @override
+  String get emailVerifiedSuccess => 'E-Mail bestätigt!';
+
+  @override
+  String get emailVerifiedHint => 'Anmeldung läuft…';
+
+  @override
+  String get emailVerifyFailedTitle => 'Ungültiger oder abgelaufener Link';
+
+  @override
+  String get emailVerifyFailedHint =>
+      'Der verwendete Link ist nicht mehr gültig. Melde dich an und fordere einen neuen Link aus deinem Profil an.';
+
+  @override
+  String get backToLogin => 'Zurück zur Anmeldung';
+
+  @override
+  String get verifyEmailBannerMessage =>
+      'Bestätige deine E-Mail-Adresse, um alle Funktionen zu aktivieren.';
+
+  @override
+  String get emailSentShort => 'Gesendet';
+
+  @override
+  String get resendEmailShort => 'Erneut senden';
 }

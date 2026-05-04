@@ -1,0 +1,37 @@
+# Build artifacts
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# Platform-specific (uniquement pour le build web)
+ios/
+android/
+linux/
+macos/
+windows/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Tests
+test/
+integration_test/
+coverage/
+
+# Docs
+.claude/
+README.md
+*.md
+
+# Secrets (le .env.production est créé pendant le CI hors contexte Docker)
+*.env
+!assets/env/.env.template

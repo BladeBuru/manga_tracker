@@ -7,6 +7,9 @@
   "password": "Contraseña",
   "forgotPassword": "¿Olvidaste la contraseña?",
   "login": "Iniciar sesión",
+  "googleLoginFailed": "Error al iniciar sesión con Google",
+  "loginWithGoogle": "Iniciar sesión con Google",
+  "back": "Atrás",
   "signUp": "Registrarse",
   "invalidCredentials": "Credenciales inválidas",
   "unknownError": "Error desconocido",
@@ -34,6 +37,10 @@
   "theme": "Tema",
   "lightMode": "Modo claro",
   "darkMode": "Modo oscuro",
+  "systemMode": "Sistema",
+  "@systemMode": {
+    "description": "Etiqueta para el modo sistema (usa las preferencias del teléfono)"
+  },
   "language": "Idioma",
   "selectLanguage": "Seleccionar idioma",
   "french": "Francés",
@@ -79,6 +86,8 @@
   "chapters": "Capítulos",
   "readChapters": "Capítulos leídos",
   "totalChapters": "Total de capítulos",
+  "associatedNames": "Nombres asociados",
+  "associatedNamesCount": "{count, plural, =0{Sin nombres} =1{{count} nombre} other{{count} nombres}}",
   "saveProgress": "Guardar progreso",
   "description": "Descripción",
   "authors": "Autores",
@@ -132,6 +141,329 @@
   "mangaAddedToLibrarySuccess": "¡{title} ha sido añadido a la biblioteca!",
   "errorAddingToLibrary": "Error al añadir a la biblioteca.",
   "errorUpdatingChapter": "Error al actualizar el capítulo.",
-  "cannotOpenLink": "No se puede abrir el enlace: {url}"
-}
+  "cannotOpenLink": "No se puede abrir el enlace: {url}",
+  "searchHistoryTitle": "Historial de búsqueda",
+  "searchEmptyStateMessage": "Busque un manga, manhwa o manhua",
+  "clear": "Borrar",
+  "biometricAuthTitle": "Autenticación biométrica",
+  "biometricAuthSubtitle": "Usar huella dactilar o Face ID para iniciar sesión rápidamente",
+  "enableBiometricAuth": "Autenticación biométrica activada",
+  "disableBiometricAuth": "Autenticación biométrica desactivada",
+  "biometricAuthEnabled": "Activada",
+  "biometricAuthDisabled": "Desactivada",
+  "biometricAuthFirstTimeTitle": "¿Activar la autenticación biométrica?",
+  "biometricAuthFirstTimeMessage": "¿Le gustaría usar su huella dactilar o Face ID para iniciar sesión rápidamente en el futuro?",
+  "biometricAuthNotAvailable": "La autenticación biométrica no está disponible en este dispositivo",
+  "biometricAuthRequiresReconnect": "Para activar la autenticación biométrica, inicie sesión nuevamente",
+  "or": "O",
+  "startTrackingNow": "Comience a seguir su lectura ahora",
+  "username": "Nombre de usuario",
+  "confirmPassword": "Confirmar",
+  "alreadyHaveAccount": "¿Ya tiene una cuenta?",
+  "newPassword": "Nueva contraseña",
+  "validationEmailRequired": "Por favor ingrese su dirección de correo electrónico",
+  "validationEmailInvalid": "Por favor ingrese una dirección de correo electrónico válida",
+  "validationPasswordRequired": "Por favor ingrese su contraseña",
+  "validationPasswordLength": "Su contraseña debe tener entre 8 y 64 caracteres",
+  "validationPasswordComplexity": "Su contraseña debe contener al menos una letra minúscula, una letra mayúscula y un carácter especial",
+  "validationConfirmPasswordRequired": "Por favor confirme su contraseña",
+  "validationPasswordsDoNotMatch": "Las contraseñas no coinciden",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña",
+  "emailAlreadyUsed": "Esta dirección de correo ya está registrada",
+  "networkError": "Por favor, verifica tu conexión a internet",
+  "timeoutError": "El servidor está tardando demasiado en responder. Inténtalo de nuevo.",
+  "passwordStrengthLabel": "Seguridad de la contraseña",
+  "passwordStrengthWeak": "Débil",
+  "passwordStrengthMedium": "Media",
+  "passwordStrengthStrong": "Fuerte",
+  
+  "yes": "Sí",
+  "no": "No",
+  "yesValidate": "Sí, validar",
+  "chapterSkipMessage": "Estás saltando del capítulo {prev} al {next}.\n¿Marcar {prev} como leído?",
+  "validateReadingMessage": "¿Has terminado el capítulo {chapter}?",
+  "validateReadingHint": "Tu progreso se guardará automáticamente.",
+  "adBlockerTitle": "Bloqueador de anuncios",
+  "adBlockerDescription": "El bloqueador de anuncios bloquea automáticamente los anuncios en los sitios de lectura.\n\nSi deseas agregar enlaces o sugerir mejoras para el bloqueo de anuncios, ¡únete a nuestro servidor de Discord!",
+  "adBlockerTooltip": "Información sobre el bloqueador de anuncios",
+  "joinDiscord": "Unirse a Discord",
+  "joinDiscordSubtitle": "Comparte tus sugerencias e informa problemas",
+  "contactUs": "Contáctanos",
+  "discordLinkError": "No se puede abrir el enlace de Discord",
+  "urlCopied": "URL copiada al portapapeles",
+  "urlCopyError": "Error al copiar la URL",
+  "copyUrl": "Copiar URL",
+  "progressUpdated": "Progreso actualizado",
+  "invalidUrl": "URL inválida",
+  "webModeProgressTracking": "Modo Web - Seguimiento de progreso",
+  "webModeProgressDescription": "Para rastrear tu progreso, pega la URL del capítulo que estás leyendo actualmente.",
+  "chapterUrlLabel": "URL del capítulo",
+  "updateProgress": "Actualizar progreso",
+  "openInNewTab": "Abrir en nueva pestaña",
+  "linkUrlLabel": "URL del sitio de escaneo",
+  "linkFormatInfo": "Formato de capítulo requerido",
+  "linkFormatDescription": "Incluya el número de capítulo en la URL para permitir el guardado automático del progreso.\n\nFormatos aceptados:\n• /capítulo-23/ o /chapter-23/\n• /c23/ o /ch23/\n• /ep-23/ o /episode-23/\n• ?chapter=23 o ?num=24",
+  "linkFormatWarning": "No se detectó formato de capítulo. El enlace redirigirá a la página del manga (no a un capítulo específico).",
+  "linkFormatDetected": "¡Formato de capítulo detectado! El progreso se guardará automáticamente.",
+  
+  "captchaDetected": "Captcha detectado - El bloqueador de anuncios ha sido desactivado temporalmente",
+  "@captchaDetected": {
+    "description": "Mensaje cuando se detecta un captcha"
+  },
+  
+  "captchaResolved": "Captcha resuelto - El bloqueador de anuncios ha sido reactivado",
+  "@captchaResolved": {
+    "description": "Mensaje cuando se resuelve un captcha"
+  },
+  
+  "scrollPositionSaved": "Posición de desplazamiento guardada",
+  "@scrollPositionSaved": {
+    "description": "Mensaje de confirmación para guardar la posición de desplazamiento"
+  },
+  
+  "chapterProgressSaved": "Progreso del capítulo guardado",
+  "@chapterProgressSaved": {
+    "description": "Mensaje de confirmación para guardar el progreso"
+  },
+  
+  "readingOffline": "Leyendo sin conexión",
+  "@readingOffline": {
+    "description": "Título para lectura sin conexión"
+  },
+  
+  "chapterDownloaded": "Capítulo descargado",
+  "@chapterDownloaded": {
+    "description": "Mensaje que indica que un capítulo está descargado"
+  },
+  
+  "offlineReadingMode": "Modo de lectura sin conexión",
+  "@offlineReadingMode": {
+    "description": "Descripción del modo de lectura sin conexión"
+  },
+  
+  "deleteChapterTitle": "Eliminar capítulo",
+  "@deleteChapterTitle": {
+    "description": "Título del diálogo para eliminar un capítulo"
+  },
+  
+  "deleteChapterMessage": "¿Realmente desea eliminar el capítulo {chapterNumber}?",
+  "@deleteChapterMessage": {
+    "description": "Mensaje de confirmación para eliminar un capítulo",
+    "placeholders": {
+      "chapterNumber": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "deleteAllChaptersTitle": "Eliminar todos los capítulos",
+  "@deleteAllChaptersTitle": {
+    "description": "Título del diálogo para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllChaptersMessage": "¿Realmente desea eliminar todos los capítulos descargados de este manga?",
+  "@deleteAllChaptersMessage": {
+    "description": "Mensaje de confirmación para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllDownloadsTitle": "Eliminar todos los descargos",
+  "@deleteAllDownloadsTitle": {
+    "description": "Título del diálogo para eliminar todos los descargos"
+  },
+  
+  "deleteAllDownloadsMessage": "¿Realmente desea eliminar TODOS los descargos? Esta acción es irreversible.",
+  "@deleteAllDownloadsMessage": {
+    "description": "Mensaje de confirmación para eliminar todos los descargos"
+  },
+  
+  "delete": "Eliminar",
+  "@delete": {
+    "description": "Botón para eliminar"
+  },
+  
+  "deleteAll": "Eliminar todo",
+  "@deleteAll": {
+    "description": "Botón para eliminar todo"
+  },
+  
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Botón para cancelar"
+  },
+  
+  "chapterDeleted": "Capítulo eliminado",
+  "@chapterDeleted": {
+    "description": "Mensaje de éxito después de eliminar un capítulo"
+  },
+  
+  "allChaptersDeleted": "Todos los capítulos eliminados",
+  "@allChaptersDeleted": {
+    "description": "Mensaje de éxito después de eliminar todos los capítulos de un manga"
+  },
+  
+  "allDownloadsDeleted": "Todos los descargos eliminados",
+  "@allDownloadsDeleted": {
+    "description": "Mensaje de éxito después de eliminar todos los descargos"
+  },
+  
+  "noChaptersDownloaded": "Ningún capítulo descargado",
+  "@noChaptersDownloaded": {
+    "description": "Mensaje mostrado cuando no hay capítulos descargados"
+  },
+  
+  "chaptersDownloadedCount": "{count, plural, =0{Ningún capítulo descargado} =1{1 capítulo descargado} other{{count} capítulos descargados}}",
+  "@chaptersDownloadedCount": {
+    "description": "Número de capítulos descargados",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "readChapter": "Leer",
+  "@readChapter": {
+    "description": "Botón para leer un capítulo"
+  },
+  
+  "deleteAllChaptersAction": "Eliminar todos los capítulos",
+  "@deleteAllChaptersAction": {
+    "description": "Acción para eliminar todos los capítulos de un manga"
+  },
+  
+  "deleteAllDownloadsTooltip": "Eliminar todos los descargos",
+  "@deleteAllDownloadsTooltip": {
+    "description": "Tooltip para el botón de eliminar todos los descargos"
+  },
 
+  "recommendedForYou": "Recomendado para ti",
+  "@recommendedForYou": {
+    "description": "Section of personalized manga recommendations"
+  },
+
+  "recommendedForYouEmpty": "Añade mangas a tu biblioteca\npara obtener recomendaciones personalizadas.",
+  "@recommendedForYouEmpty": {
+    "description": "Message shown in the recommendations section when the library is empty"
+  },
+
+  "recommendedForYouCount": "{count, plural, =1{1 manga} other{{count} mangas}}",
+  "@recommendedForYouCount": {
+    "description": "Subtitle showing the number of recommended manga",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recommendedForYouCached": "Recomendaciones en caché (modo sin conexión)",
+  "@recommendedForYouCached": {
+    "description": "Indicator shown when recommendations are loaded from offline cache"
+  },
+
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "description": "Generic error prefix with a technical message",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "recommendedBecauseOf": "Porque te gustó {titles}",
+  "@recommendedBecauseOf": {
+    "description": "Explanation for a recommendation, listing source manga",
+    "placeholders": {
+      "titles": { "type": "String" }
+    }
+  },
+
+  "yourRating": "Tu valoración",
+  "@yourRating": {
+    "description": "Label next to the user rating widget on the manga detail page"
+  },
+
+  "myDataTitle": "Mis datos",
+  "@myDataTitle": {},
+  "myDataSubtitle": "Ver, exportar o eliminar mis datos (RGPD)",
+  "@myDataSubtitle": {},
+  "gdprIntro": "Conforme al RGPD, tienes derechos sobre tus datos personales. Esta página te permite ejercerlos fácilmente.",
+  "@gdprIntro": {},
+  "gdprAccessTitle": "Ver mis datos",
+  "@gdprAccessTitle": {},
+  "gdprAccessSubtitle": "Artículo 15 — resumen de la información almacenada",
+  "@gdprAccessSubtitle": {},
+  "gdprExportTitle": "Exportar mis datos",
+  "@gdprExportTitle": {},
+  "gdprExportSubtitle": "Artículo 20 — JSON completo copiado al portapapeles",
+  "@gdprExportSubtitle": {},
+  "gdprLegalDocs": "Documentos legales",
+  "@gdprLegalDocs": {},
+  "gdprDeleteHint": "Para eliminar tu cuenta permanentemente, ve a Perfil → Eliminar cuenta. Esta acción es irreversible.",
+  "@gdprDeleteHint": {},
+  "privacyPolicyTitle": "Política de privacidad",
+  "@privacyPolicyTitle": {},
+  "termsOfServiceTitle": "Condiciones de uso",
+  "@termsOfServiceTitle": {},
+  "tosShortVersion": "Manga Tracker se proporciona tal cual, sin garantía. El editor declina toda responsabilidad por el uso no conforme por parte del usuario (contenido ilegal, scraping, etc.).\n\nDocumento completo en el sitio oficial.",
+  "@tosShortVersion": {},
+  "privacyShortVersion": "Datos recopilados: email, contraseña (hash), biblioteca de manga, preferencias. Ningún dato se vende a terceros. Puedes exportar o eliminar tus datos en cualquier momento.\n\nDocumento completo en el sitio oficial.",
+  "@privacyShortVersion": {},
+  "iAcceptTos": "Acepto las Condiciones de uso",
+  "@iAcceptTos": {},
+  "iAcceptPrivacy": "Acepto la Política de privacidad",
+  "@iAcceptPrivacy": {},
+  "iAccept": "Aceptar",
+  "@iAccept": {},
+  "consentRequired": "Debes aceptar las Condiciones de uso y la Política de privacidad.",
+  "@consentRequired": {},
+  "consentRefreshTitle": "Nuestras condiciones se han actualizado",
+  "@consentRefreshTitle": {},
+  "consentRefreshIntro": "Nuestras condiciones de uso y política de privacidad se han actualizado. Acéptalas para continuar.",
+  "@consentRefreshIntro": {},
+  "refuseAndLogout": "Rechazar y cerrar sesión",
+  "@refuseAndLogout": {},
+  "versionLabel": "Versión",
+  "@versionLabel": {},
+
+  "forgotPasswordTitle": "Contraseña olvidada",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIntro": "Introduce tu email. Si existe una cuenta, recibirás un enlace para establecer una nueva contraseña.",
+  "@forgotPasswordIntro": {},
+  "sendResetLink": "Enviar enlace",
+  "@sendResetLink": {},
+  "resetEmailSentTitle": "Revisa tu bandeja",
+  "@resetEmailSentTitle": {},
+  "resetEmailSentMessage": "Si existe una cuenta para {email}, se ha enviado un email con un enlace para establecer una nueva contraseña.\n\nEl enlace expira en 30 minutos.",
+  "@resetEmailSentMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordTitle": "Nueva contraseña",
+  "@resetPasswordTitle": {},
+  "resetPasswordIntro": "Establece una nueva contraseña para tu cuenta. Una vez validada, se iniciará sesión automáticamente.",
+  "@resetPasswordIntro": {},
+  "confirmReset": "Confirmar",
+  "@confirmReset": {},
+  "resetTokenExpired": "Enlace inválido o expirado. Solicita uno nuevo.",
+  "@resetTokenExpired": {},
+  "resetPasswordSuccess": "Contraseña cambiada",
+  "@resetPasswordSuccess": {},
+  "resetPasswordSuccessHint": "Has iniciado sesión. Redirigiendo…",
+  "@resetPasswordSuccessHint": {},
+  "verifyingEmail": "Verificando…",
+  "@verifyingEmail": {},
+  "emailVerifiedSuccess": "¡Email verificado!",
+  "@emailVerifiedSuccess": {},
+  "emailVerifiedHint": "Iniciando sesión…",
+  "@emailVerifiedHint": {},
+  "emailVerifyFailedTitle": "Enlace inválido o expirado",
+  "@emailVerifyFailedTitle": {},
+  "emailVerifyFailedHint": "El enlace que has utilizado ya no es válido. Inicia sesión y solicita uno nuevo desde tu perfil.",
+  "@emailVerifyFailedHint": {},
+  "backToLogin": "Volver al inicio de sesión",
+  "@backToLogin": {},
+  "verifyEmailBannerMessage": "Verifica tu dirección de email para activar todas las funciones.",
+  "@verifyEmailBannerMessage": {},
+  "emailSentShort": "Enviado",
+  "@emailSentShort": {},
+  "resendEmailShort": "Reenviar",
+  "@resendEmailShort": {}
+}

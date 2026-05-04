@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
-import 'package:mangatracker/features/home/views/bottom_navbar.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_markdown/flutter_markdown.dart';
-
 
 import '../../../core/services/app_update_service.dart';
+import '../../../core/services/connectivity_service.dart';
+import '../../../core/components/changelog_dialog.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -20,34 +19,83 @@ class _StartupPageState extends State<StartupPage> {
   // On utilise le bon nom de service pour plus de clarté
   final AuthService authService = getIt<AuthService>();
   final AppUpdateService appUpdateService = getIt<AppUpdateService>();
+  ConnectivityService? _connectivityService;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _attemptAutoLogin();
+      _initializeAndAttemptLogin();
     });
   }
 
+  Future<void> _initializeAndAttemptLogin() async {
+    // Initialiser le service de connectivité si disponible
+    try {
+      _connectivityService = getIt<ConnectivityService>();
+    } catch (e) {
+      debugPrint('⚠️ StartupPage: ConnectivityService non disponible: $e');
+    }
+    
+    await _attemptAutoLogin();
+  }
+
   Future<void> _attemptAutoLogin() async {
-    // La logique d'authentification reste la même
+    // 1. Vérifier si l'access token est valide
     final accessToken = await authService.storageService.readSecureData('accessToken');
     if (accessToken != null && !authService.isTokenExpired(accessToken)) {
-      _onLoginSuccess();
-      return;
-    }
-    final refreshed = await authService.refreshAccessToken();
-    if (refreshed) {
+      debugPrint('✅ StartupPage: Access token valide, connexion automatique');
       _onLoginSuccess();
       return;
     }
 
+    // 2. Vérifier si le refresh token est valide
+    final refreshToken = await authService.storageService.readSecureData('refreshToken');
+    final isRefreshTokenValid = refreshToken != null && !authService.isTokenExpired(refreshToken);
+    
+    // 3. Vérifier la connectivité
+    final isConnected = _connectivityService?.isConnected ?? true; // Par défaut, supposer connecté
+    
+    if (isRefreshTokenValid) {
+      if (isConnected) {
+        // Tentative de refresh si connecté
+        debugPrint('🔄 StartupPage: Tentative de refresh du token...');
+        final refreshed = await authService.refreshAccessToken();
+        if (refreshed) {
+          debugPrint('✅ StartupPage: Token rafraîchi avec succès');
+          _onLoginSuccess();
+          return;
+        } else {
+          // Le refresh a échoué mais le refreshToken est toujours valide
+          // Permettre l'accès en mode hors ligne (le token sera rafraîchi plus tard)
+          debugPrint('⚠️ StartupPage: Échec du refresh mais refreshToken valide, accès autorisé en mode hors ligne');
+          debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
+          _onLoginSuccess();
+          return;
+        }
+      } else {
+        // Mode hors ligne avec refreshToken valide : permettre l'accès
+        debugPrint('📱 StartupPage: Mode hors ligne avec refreshToken valide, accès autorisé');
+        debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
+        _onLoginSuccess();
+        return;
+      }
+    }
+
+    // 4. Tentative de connexion biométrique
+    debugPrint('🔐 StartupPage: Tentative de connexion biométrique...');
     final biometricSuccess = await authService.tryBiometricLogin(context);
     if (!mounted) return;
     if (biometricSuccess) {
+      debugPrint('✅ StartupPage: Connexion biométrique réussie');
       _onLoginSuccess();
       return;
+    } else {
+      debugPrint('⚠️ StartupPage: Échec de la connexion biométrique');
     }
+    
+    // 5. Aucune méthode d'authentification disponible
+    debugPrint('⚠️ StartupPage: Aucune méthode d\'authentification disponible');
     _goToLogin();
   }
 
@@ -82,40 +130,10 @@ class _StartupPageState extends State<StartupPage> {
 
   /// Construit et affiche la boîte de dialogue des notes de version.
   Future<void> _showChangelogDialog(ChangelogInfo changelogInfo) {
-    return showDialog(
-      context: context,
-      barrierDismissible: false, // L'utilisateur doit interagir
-      builder: (ctx) => AlertDialog(
-        title: const Text("Quoi de neuf ?"),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: changelogInfo.newVersions.map((changes) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Version ${cleanVersion(changes.version)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    ...changes.notes.map((note) => MarkdownBody(
-                      data: RegExp(r'^[#\-\*]').hasMatch("$note") ? "$note" : "- $note",
-                      styleSheet: MarkdownStyleSheet(p: const TextStyle(fontSize: 14)),
-                    )),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Super !"),
-          )
-        ],
-      ),
+    return ChangelogDialog.show(
+      context,
+      changelogInfo,
+      barrierDismissible: false,
     );
   }
 
@@ -144,22 +162,15 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   // --- Fonctions de navigation ---
-  String cleanVersion(String v) =>
-      v.replaceFirst(RegExp(r'^[vV]'), '').replaceFirst(RegExp(r'\+.*$'), '');
-
   void _navigateToHome() {
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const BottomNavbar()),
-      );
+      context.go('/home');
     }
   }
 
   void _goToLogin() {
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginView()),
-      );
+      context.go('/login');
     }
   }
 

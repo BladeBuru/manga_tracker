@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
@@ -35,7 +36,7 @@ class UserService {
 
     // Charger depuis le réseau
     try {
-      Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/user/information');
+      Uri url = buildApiUri('/user/information');
       Response response = await httpService.getWithAuthTokens(url);
       Map<String, dynamic> data = jsonDecode(response.body);
       final userInfo = UserInformationDto.fromJson(data);
@@ -47,7 +48,7 @@ class UserService {
     } catch (e) {
       // Si erreur réseau et qu'on a un cache (même expiré), l'utiliser
       if (cachedInfo != null) {
-        print('Erreur réseau, utilisation du cache utilisateur: $e');
+        debugPrint('Erreur réseau, utilisation du cache utilisateur: $e');
         return cachedInfo;
       }
       rethrow;
@@ -57,7 +58,7 @@ class UserService {
   /// Met à jour les informations utilisateur depuis le réseau en arrière-plan
   Future<void> _refreshUserInformationFromNetwork() async {
     try {
-      Uri url = Uri.https(dotenv.env['MT_API_URL']!, '/user/information');
+      Uri url = buildApiUri('/user/information');
       Response response = await httpService.getWithAuthTokens(url);
       Map<String, dynamic> data = jsonDecode(response.body);
       final userInfo = UserInformationDto.fromJson(data);
@@ -66,13 +67,13 @@ class UserService {
       await _cacheService.cacheUserInformation(userInfo);
     } catch (e) {
       // Erreur silencieuse en arrière-plan
-      print('Erreur lors de la mise à jour en arrière-plan des infos utilisateur: $e');
+      debugPrint('Erreur lors de la mise à jour en arrière-plan des infos utilisateur: $e');
     }
   }
 
   Future deleteAccount() async {
     final response = await httpService.deleteWithAuthTokens(
-      Uri.https(dotenv.env['MT_API_URL']!, '/user/delete'),
+      buildApiUri('/user/delete'),
       headers: {HttpHeaders.contentTypeHeader: 'application/json'},
     );
 
@@ -91,7 +92,7 @@ class UserService {
 
   Future changePassword(password) async {
     final response = await httpService.putWithAuthTokens(
-      Uri.https(dotenv.env['MT_API_URL']!, '/user/password'),
+      buildApiUri('/user/password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'password': password}),
     );
@@ -116,7 +117,7 @@ class UserService {
     try {
       await _cacheService.storage.deleteSecureData('cached_user_info');
     } catch (e) {
-      print('Erreur lors de l\'invalidation du cache utilisateur: $e');
+      debugPrint('Erreur lors de l\'invalidation du cache utilisateur: $e');
     }
   }
 }

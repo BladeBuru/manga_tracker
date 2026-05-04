@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -6,8 +7,8 @@ import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../auth/exceptions/invalid_credentials.exception.dart';
-import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class LibraryView extends StatefulWidget {
   const LibraryView({super.key});
@@ -90,7 +91,7 @@ class _LibraryViewState extends State<LibraryView> {
   }
 
   void redirectToLoginPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginView()));
+    context.push('/login');
   }
 
   @override
@@ -105,7 +106,7 @@ class _LibraryViewState extends State<LibraryView> {
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
                 color: Colors.orange,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.circularXl,
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -171,7 +172,7 @@ class _LibraryViewState extends State<LibraryView> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.circularMd,
                 ),
                 child: const Row(
                   children: [

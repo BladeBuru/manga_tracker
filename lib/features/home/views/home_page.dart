@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -10,12 +11,12 @@ import '../../../core/components/filter_button.dart';
 import '../../../core/components/welcome_header.dart';
 import '../../../core/notifier/notifier.dart';
 import '../../auth/services/auth.service.dart';
-import '../../auth/views/login.view.dart';
 import '../../manga/services/manga.service.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:flutter/material.dart';
 
 import '../../manga/widgets/manga_card.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -127,10 +128,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void redirectToLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.push('/login');
   }
 
   get border => null;
@@ -159,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.circularMd,
                 ),
                 child: const Row(
                   children: [
@@ -189,7 +187,7 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: 220,
               child: FutureBuilder<List<MangaQuickViewDto>>(
                 future: trendingMangas,
                 builder: (context, snapshot) {
@@ -198,14 +196,21 @@ class _HomePageState extends State<HomePage> {
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: mangaList.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       itemBuilder: (context, index) {
                         final manga = mangaList[index];
-                        return MangaCard(
-                          muId: manga.muId.toString(),
-                          mangaTitle: manga.title,
-                          mangaAuthor: manga.year.toString(),
-                          mediumImgPath: manga.mediumCoverUrl,
-                          rating: manga.rating,
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: SizedBox(
+                            width: 120,
+                            child: MangaCard(
+                              muId: manga.muId.toString(),
+                              mangaTitle: manga.title,
+                              mangaAuthor: manga.year.toString(),
+                              mediumImgPath: manga.mediumCoverUrl,
+                              rating: manga.rating != 'N/A' && manga.rating.isNotEmpty ? manga.rating : null,
+                            ),
+                          ),
                         );
                       },
                     );
