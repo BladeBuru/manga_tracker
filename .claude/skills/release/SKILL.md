@@ -1,6 +1,6 @@
 # Skill : `/release` — Release APK Manga Tracker
 
-Workflow guidé pour créer une release APK depuis `main` sans avoir à passer par une PR.
+Workflow guidé pour créer une release APK depuis `master` sans avoir à passer par une PR.
 
 Déclenche `release_workflow.yml` via `workflow_dispatch` avec les inputs corrects (version_type + changelog).
 
@@ -8,7 +8,7 @@ Déclenche `release_workflow.yml` via `workflow_dispatch` avec les inputs correc
 
 ## Quand utiliser cette skill
 
-- ✅ Tu es sur `main`, ton working tree est clean, tu veux releaser une nouvelle version.
+- ✅ Tu es sur `master`, ton working tree est clean, tu veux releaser une nouvelle version.
 - ✅ Tu veux un changelog propre, structuré, sans avoir à ouvrir GitHub UI.
 
 **À NE PAS faire avec cette skill** :
@@ -25,7 +25,7 @@ L'agent vérifie dans cet ordre :
    ```bash
    git branch --show-current
    ```
-   Doit être `main`. Si non → demander confirmation à l'user (peut-être qu'il release depuis une autre branche volontairement).
+   Doit être `master`. Si non → demander confirmation à l'user (peut-être qu'il release depuis une autre branche volontairement).
 
 2. **Working tree clean** :
    ```bash
@@ -102,7 +102,7 @@ Une fois validé :
 
 ```bash
 gh workflow run release_workflow.yml \
-  --ref main \
+  --ref master \
   -f version_type=<patch|minor|major> \
   -f changelog="$(cat <<'EOF'
 ✨ Nouveautés
@@ -185,7 +185,7 @@ Exemple cible :
 | Symptôme | Cause | Fix |
 |---|---|---|
 | `gh: command not found` | `gh` CLI absent | Installer GitHub CLI (https://cli.github.com/) |
-| `workflow_dispatch` n'apparaît pas dans Actions UI | Le workflow n'est pas sur `main` | Push d'abord la nouvelle version du workflow |
+| `workflow_dispatch` n'apparaît pas dans Actions UI | Le workflow n'est pas sur `master` | Push d'abord la nouvelle version du workflow |
 | Le bump ne se fait pas | Dans le PR flow : pas de label patch/minor/major | Ajouter le label sur la PR |
 | Le keystore décode mal | Secret `KEYSTORE_BASE64` corrompu | Re-exporter avec `base64 -w 0 keystore.jks > keystore.b64` |
 
@@ -195,4 +195,4 @@ Exemple cible :
 
 - `release_workflow.yml` — le workflow lui-même
 - `bin/update_version_json.dart` — script de génération de `version.json`
-- `assets/version.json` — fichier exposé via GitHub Pages depuis `main`
+- `assets/version.json` — fichier exposé via GitHub Pages depuis `master`

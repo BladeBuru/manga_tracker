@@ -1,0 +1,23 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.manga_tracker",
+      "sha256_cert_fingerprints": [
+        "REMPLACE_PAR_LE_SHA256_DU_KEYSTORE_RELEASE",
+        "REMPLACE_PAR_LE_SHA256_GOOGLE_PLAY_APP_SIGNING_SI_APPLICABLE"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.manga_tracker.dev",
+      "sha256_cert_fingerprints": [
+        "REMPLACE_PAR_LE_SHA256_DU_KEYSTORE_DEBUG"
+      ]
+    }
+  }
+]

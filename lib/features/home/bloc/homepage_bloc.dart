@@ -5,6 +5,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
+import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/profile/dto/user.dto.dart';
@@ -14,6 +15,7 @@ import 'homepage_state.dart';
 /// BLoC pour la gestion de la page d'accueil
 class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   final MangaService _mangaService = getIt<MangaService>();
+  final RecommendationService _recommendationService = getIt<RecommendationService>();
   final UserService _userService = getIt<UserService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
@@ -76,21 +78,33 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     }
     
     try {
-      // Charger toutes les données en parallèle
+      // Charger toutes les données en parallèle (recommandations ne bloquent pas)
       final results = await Future.wait([
         _loadPopularMangas(),
         _loadNewMangas(),
         _loadTrendingMangas(),
         _loadUserInfo(),
       ]);
-      
+
+      // Recommandations + segmentation par genre chargées en parallèle
+      // (silencieuses en cas d'erreur — la home n'est pas bloquée).
+      final recoFutures = await Future.wait([
+        _loadRecommendations(),
+        _loadRecommendationsByGenre(),
+      ]);
+      final recommendations = recoFutures[0] as List<MangaQuickViewDto>;
+      final recommendationsByGenre =
+          recoFutures[1] as Map<String, List<MangaQuickViewDto>>;
+
       final pendingActions = await _getPendingActionsCount();
-      
+
       // Si aucune erreur, on est online
       emit(HomePageLoaded(
         popularMangas: results[0] as List<MangaQuickViewDto>,
         newMangas: results[1] as List<MangaQuickViewDto>,
         trendingMangas: results[2] as List<MangaQuickViewDto>,
+        recommendations: recommendations,
+        recommendationsByGenre: recommendationsByGenre,
         user: results[3] as UserDto?,
         isOffline: false,
         pendingActions: pendingActions,
@@ -289,6 +303,32 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       query: 'trending',
       networkCall: () => _mangaService.getTrendingMangas(),
     );
+  }
+
+  /// Charge les recommandations personnalisées (erreur silencieuse : liste vide)
+  Future<List<MangaQuickViewDto>> _loadRecommendations() async {
+    try {
+      return await _recommendationService.getPersonalizedRecommendations(limit: 30);
+    } catch (e) {
+      debugPrint('⚠️ HomePageBloc: Erreur recommandations (ignorée): $e');
+      return [];
+    }
+  }
+
+  /// Charge les recommandations regroupées par genre (silencieuse : map vide).
+  /// Si la bibliothèque est vide ou si erreur réseau, l'UI n'affichera tout
+  /// simplement pas la section.
+  Future<Map<String, List<MangaQuickViewDto>>>
+      _loadRecommendationsByGenre() async {
+    try {
+      return await _recommendationService.getRecommendationsByGenre(
+        topGenres: 5,
+        perGenre: 10,
+      );
+    } catch (e) {
+      debugPrint('⚠️ HomePageBloc: Erreur reco par genre (ignorée): $e');
+      return const {};
+    }
   }
 
   /// Charge les informations utilisateur

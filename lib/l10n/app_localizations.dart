@@ -1847,6 +1847,294 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Supprimer tous les téléchargements'**
   String get deleteAllDownloadsTooltip;
+
+  /// Section de recommandations personnalisées de manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandé pour toi'**
+  String get recommendedForYou;
+
+  /// Message affiché dans la section recommandations quand la bibliothèque est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez des mangas à votre bibliothèque\npour obtenir des recommandations personnalisées.'**
+  String get recommendedForYouEmpty;
+
+  /// Sous-titre indiquant le nombre de mangas recommandés
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 manga} other{{count} mangas}}'**
+  String recommendedForYouCount(int count);
+
+  /// Indicateur affiché quand les recommandations affichées proviennent du cache offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations en cache (mode hors ligne)'**
+  String get recommendedForYouCached;
+
+  /// Préfixe générique d'erreur avec un message technique
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur : {message}'**
+  String errorWithMessage(String message);
+
+  /// Explication d'une recommandation, listant les mangas sources
+  ///
+  /// In fr, this message translates to:
+  /// **'Parce que vous avez aimé {titles}'**
+  String recommendedBecauseOf(String titles);
+
+  /// Label affiché à côté du widget de notation utilisateur dans le détail manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre note'**
+  String get yourRating;
+
+  /// No description provided for @myDataTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes données'**
+  String get myDataTitle;
+
+  /// No description provided for @myDataSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir, exporter ou supprimer mes données (RGPD)'**
+  String get myDataSubtitle;
+
+  /// No description provided for @gdprIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conformément au RGPD, vous disposez de droits sur vos données personnelles. Cette page vous permet de les exercer simplement.'**
+  String get gdprIntro;
+
+  /// No description provided for @gdprAccessTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir mes données'**
+  String get gdprAccessTitle;
+
+  /// No description provided for @gdprAccessSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Article 15 — résumé des informations stockées'**
+  String get gdprAccessSubtitle;
+
+  /// No description provided for @gdprExportTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter mes données'**
+  String get gdprExportTitle;
+
+  /// No description provided for @gdprExportSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Article 20 — JSON complet copié dans le presse-papier'**
+  String get gdprExportSubtitle;
+
+  /// No description provided for @gdprLegalDocs.
+  ///
+  /// In fr, this message translates to:
+  /// **'Documents légaux'**
+  String get gdprLegalDocs;
+
+  /// No description provided for @gdprDeleteHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour supprimer définitivement votre compte, rendez-vous dans Profil → Supprimer mon compte. Cette action est irréversible.'**
+  String get gdprDeleteHint;
+
+  /// No description provided for @privacyPolicyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Politique de confidentialité'**
+  String get privacyPolicyTitle;
+
+  /// No description provided for @termsOfServiceTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions d\'utilisation'**
+  String get termsOfServiceTitle;
+
+  /// No description provided for @tosShortVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Manga Tracker est fourni en l\'état, sans garantie. L\'éditeur décline toute responsabilité pour l\'utilisation non conforme par l\'utilisateur (contenu illégal, scraping, etc.).\n\nDocument complet sur le site officiel.'**
+  String get tosShortVersion;
+
+  /// No description provided for @privacyShortVersion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. Aucune donnée n\'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\nDocument complet sur le site officiel.'**
+  String get privacyShortVersion;
+
+  /// No description provided for @iAcceptTos.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte les Conditions d\'utilisation'**
+  String get iAcceptTos;
+
+  /// No description provided for @iAcceptPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte la Politique de confidentialité'**
+  String get iAcceptPrivacy;
+
+  /// No description provided for @iAccept.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepter'**
+  String get iAccept;
+
+  /// No description provided for @consentRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous devez accepter les CGU et la Politique de confidentialité.'**
+  String get consentRequired;
+
+  /// No description provided for @consentRefreshTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mise à jour de nos conditions'**
+  String get consentRefreshTitle;
+
+  /// No description provided for @consentRefreshIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nos conditions d\'utilisation et notre politique de confidentialité ont été mises à jour. Veuillez les accepter pour continuer.'**
+  String get consentRefreshIntro;
+
+  /// No description provided for @refuseAndLogout.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser et se déconnecter'**
+  String get refuseAndLogout;
+
+  /// No description provided for @versionLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Version'**
+  String get versionLabel;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe oublié'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.'**
+  String get forgotPasswordIntro;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer le lien'**
+  String get sendResetLink;
+
+  /// No description provided for @resetEmailSentTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre boîte mail'**
+  String get resetEmailSentTitle;
+
+  /// No description provided for @resetEmailSentMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Si un compte existe pour {email}, un email contenant un lien pour définir un nouveau mot de passe vient d\'être envoyé.\n\nLe lien expire dans 30 minutes.'**
+  String resetEmailSentMessage(String email);
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordIntro.
+  ///
+  /// In fr, this message translates to:
+  /// **'Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.'**
+  String get resetPasswordIntro;
+
+  /// No description provided for @confirmReset.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer'**
+  String get confirmReset;
+
+  /// No description provided for @resetTokenExpired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien invalide ou expiré. Refaites une demande.'**
+  String get resetTokenExpired;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe modifié'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordSuccessHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous êtes maintenant connecté. Redirection en cours…'**
+  String get resetPasswordSuccessHint;
+
+  /// No description provided for @verifyingEmail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification en cours…'**
+  String get verifyingEmail;
+
+  /// No description provided for @emailVerifiedSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Email vérifié !'**
+  String get emailVerifiedSuccess;
+
+  /// No description provided for @emailVerifiedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion en cours…'**
+  String get emailVerifiedHint;
+
+  /// No description provided for @emailVerifyFailedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien invalide ou expiré'**
+  String get emailVerifyFailedTitle;
+
+  /// No description provided for @emailVerifyFailedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le lien que vous avez utilisé n\'est plus valide. Connectez-vous et demandez un nouveau lien depuis votre profil.'**
+  String get emailVerifyFailedHint;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour à la connexion'**
+  String get backToLogin;
+
+  /// No description provided for @verifyEmailBannerMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre adresse email pour activer toutes les fonctionnalités.'**
+  String get verifyEmailBannerMessage;
+
+  /// No description provided for @emailSentShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyé'**
+  String get emailSentShort;
+
+  /// No description provided for @resendEmailShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Renvoyer'**
+  String get resendEmailShort;
 }
 
 class _AppLocalizationsDelegate

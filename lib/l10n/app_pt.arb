@@ -335,6 +335,135 @@
   "deleteAllDownloadsTooltip": "Excluir todos os downloads",
   "@deleteAllDownloadsTooltip": {
     "description": "Tooltip para o botão de excluir todos os downloads"
-  }
-}
+  },
 
+  "recommendedForYou": "Recomendado para você",
+  "@recommendedForYou": {
+    "description": "Section of personalized manga recommendations"
+  },
+
+  "recommendedForYouEmpty": "Adicione mangás à sua biblioteca\npara obter recomendações personalizadas.",
+  "@recommendedForYouEmpty": {
+    "description": "Message shown in the recommendations section when the library is empty"
+  },
+
+  "recommendedForYouCount": "{count, plural, =1{1 mangá} other{{count} mangás}}",
+  "@recommendedForYouCount": {
+    "description": "Subtitle showing the number of recommended manga",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recommendedForYouCached": "Recomendações em cache (modo offline)",
+  "@recommendedForYouCached": {
+    "description": "Indicator shown when recommendations are loaded from offline cache"
+  },
+
+  "errorWithMessage": "Erro: {message}",
+  "@errorWithMessage": {
+    "description": "Generic error prefix with a technical message",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "recommendedBecauseOf": "Porque você gostou de {titles}",
+  "@recommendedBecauseOf": {
+    "description": "Explanation for a recommendation, listing source manga",
+    "placeholders": {
+      "titles": { "type": "String" }
+    }
+  },
+
+  "yourRating": "Sua avaliação",
+  "@yourRating": {
+    "description": "Label next to the user rating widget on the manga detail page"
+  },
+
+  "myDataTitle": "Meus dados",
+  "@myDataTitle": {},
+  "myDataSubtitle": "Ver, exportar ou excluir meus dados (LGPD/RGPD)",
+  "@myDataSubtitle": {},
+  "gdprIntro": "Conforme o RGPD, você tem direitos sobre seus dados pessoais. Esta página permite exercê-los facilmente.",
+  "@gdprIntro": {},
+  "gdprAccessTitle": "Ver meus dados",
+  "@gdprAccessTitle": {},
+  "gdprAccessSubtitle": "Artigo 15 — resumo das informações armazenadas",
+  "@gdprAccessSubtitle": {},
+  "gdprExportTitle": "Exportar meus dados",
+  "@gdprExportTitle": {},
+  "gdprExportSubtitle": "Artigo 20 — JSON completo copiado para a área de transferência",
+  "@gdprExportSubtitle": {},
+  "gdprLegalDocs": "Documentos legais",
+  "@gdprLegalDocs": {},
+  "gdprDeleteHint": "Para excluir sua conta permanentemente, vá para Perfil → Excluir conta. Esta ação é irreversível.",
+  "@gdprDeleteHint": {},
+  "privacyPolicyTitle": "Política de privacidade",
+  "@privacyPolicyTitle": {},
+  "termsOfServiceTitle": "Termos de uso",
+  "@termsOfServiceTitle": {},
+  "tosShortVersion": "Manga Tracker é fornecido como está, sem garantia. O editor declina qualquer responsabilidade por uso não conforme do usuário (conteúdo ilegal, scraping, etc.).\n\nDocumento completo no site oficial.",
+  "@tosShortVersion": {},
+  "privacyShortVersion": "Dados coletados: email, senha (com hash), biblioteca de mangás, preferências. Nenhum dado é vendido a terceiros. Você pode exportar ou excluir seus dados a qualquer momento.\n\nDocumento completo no site oficial.",
+  "@privacyShortVersion": {},
+  "iAcceptTos": "Aceito os Termos de uso",
+  "@iAcceptTos": {},
+  "iAcceptPrivacy": "Aceito a Política de privacidade",
+  "@iAcceptPrivacy": {},
+  "iAccept": "Aceitar",
+  "@iAccept": {},
+  "consentRequired": "Você deve aceitar os Termos de uso e a Política de privacidade.",
+  "@consentRequired": {},
+  "consentRefreshTitle": "Nossos termos foram atualizados",
+  "@consentRefreshTitle": {},
+  "consentRefreshIntro": "Nossos termos de uso e política de privacidade foram atualizados. Aceite-os para continuar.",
+  "@consentRefreshIntro": {},
+  "refuseAndLogout": "Recusar e sair",
+  "@refuseAndLogout": {},
+  "versionLabel": "Versão",
+  "@versionLabel": {},
+
+  "forgotPasswordTitle": "Senha esquecida",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIntro": "Digite seu email. Se houver uma conta, você receberá um link para definir uma nova senha.",
+  "@forgotPasswordIntro": {},
+  "sendResetLink": "Enviar link",
+  "@sendResetLink": {},
+  "resetEmailSentTitle": "Verifique sua caixa de entrada",
+  "@resetEmailSentTitle": {},
+  "resetEmailSentMessage": "Se houver uma conta para {email}, foi enviado um email com um link para definir uma nova senha.\n\nO link expira em 30 minutos.",
+  "@resetEmailSentMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordTitle": "Nova senha",
+  "@resetPasswordTitle": {},
+  "resetPasswordIntro": "Defina uma nova senha para sua conta. Após a validação, você será conectado automaticamente.",
+  "@resetPasswordIntro": {},
+  "confirmReset": "Confirmar",
+  "@confirmReset": {},
+  "resetTokenExpired": "Link inválido ou expirado. Solicite um novo.",
+  "@resetTokenExpired": {},
+  "resetPasswordSuccess": "Senha alterada",
+  "@resetPasswordSuccess": {},
+  "resetPasswordSuccessHint": "Você está conectado. Redirecionando…",
+  "@resetPasswordSuccessHint": {},
+  "verifyingEmail": "Verificando…",
+  "@verifyingEmail": {},
+  "emailVerifiedSuccess": "Email verificado!",
+  "@emailVerifiedSuccess": {},
+  "emailVerifiedHint": "Conectando…",
+  "@emailVerifiedHint": {},
+  "emailVerifyFailedTitle": "Link inválido ou expirado",
+  "@emailVerifyFailedTitle": {},
+  "emailVerifyFailedHint": "O link que você usou não é mais válido. Faça login e solicite um novo link no seu perfil.",
+  "@emailVerifyFailedHint": {},
+  "backToLogin": "Voltar ao login",
+  "@backToLogin": {},
+  "verifyEmailBannerMessage": "Verifique seu endereço de email para ativar todos os recursos.",
+  "@verifyEmailBannerMessage": {},
+  "emailSentShort": "Enviado",
+  "@emailSentShort": {},
+  "resendEmailShort": "Reenviar",
+  "@resendEmailShort": {}
+}

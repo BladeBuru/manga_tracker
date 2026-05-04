@@ -39,7 +39,8 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     on<SaveChapterProgress>(_onSaveChapterProgress);
     on<UpdateCustomLink>(_onUpdateCustomLink);
     on<DeleteCustomLink>(_onDeleteCustomLink);
-    
+    on<UpdateUserRating>(_onUpdateUserRating);
+
     _initializeConnectivityListener();
   }
 
@@ -692,6 +693,40 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         message: e.toString(),
         isOffline: currentState.isOffline,
         cachedMangaDetail: currentState.mangaDetail,
+      ));
+    }
+  }
+
+  /// Met à jour la note personnelle de l'utilisateur (0-10).
+  /// Mise à jour optimiste : on actualise l'état immédiatement, on roll-back
+  /// si l'API échoue.
+  Future<void> _onUpdateUserRating(
+    UpdateUserRating event,
+    Emitter<DetailState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! DetailLoaded) return;
+
+    if (event.rating < 0 || event.rating > 10) {
+      debugPrint('⚠️ UpdateUserRating: rating hors plage (${event.rating})');
+      return;
+    }
+
+    final previousRating = currentState.mangaDetail.userRating;
+    // 1. Update optimiste UI
+    emit(currentState.copyWith(
+      mangaDetail: currentState.mangaDetail.copyWith(userRating: event.rating),
+    ));
+
+    // 2. Appel API
+    final success = await _libraryService.updateRating(event.muId, event.rating);
+
+    if (!success) {
+      // 3. Rollback si échec
+      debugPrint('⚠️ UpdateUserRating: échec API, rollback à $previousRating');
+      emit(currentState.copyWith(
+        mangaDetail:
+            currentState.mangaDetail.copyWith(userRating: previousRating),
       ));
     }
   }

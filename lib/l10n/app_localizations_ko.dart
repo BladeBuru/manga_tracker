@@ -959,4 +959,168 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get deleteAllDownloadsTooltip => '모든 다운로드 삭제';
+
+  @override
+  String get recommendedForYou => '추천 항목';
+
+  @override
+  String get recommendedForYouEmpty => '라이브러리에 만화를 추가하여\n맞춤 추천을 받아보세요.';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '만화 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached => '캐시된 추천 (오프라인 모드)';
+
+  @override
+  String errorWithMessage(String message) {
+    return '오류: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return '$titles을(를) 좋아했기 때문에';
+  }
+
+  @override
+  String get yourRating => '내 평점';
+
+  @override
+  String get myDataTitle => '내 데이터';
+
+  @override
+  String get myDataSubtitle => '내 데이터 보기, 내보내기 또는 삭제 (GDPR)';
+
+  @override
+  String get gdprIntro =>
+      'GDPR에 따라 귀하는 개인 데이터에 대한 권리를 가집니다. 이 페이지에서 이러한 권리를 쉽게 행사할 수 있습니다.';
+
+  @override
+  String get gdprAccessTitle => '내 데이터 보기';
+
+  @override
+  String get gdprAccessSubtitle => '제15조 — 저장된 정보의 요약';
+
+  @override
+  String get gdprExportTitle => '내 데이터 내보내기';
+
+  @override
+  String get gdprExportSubtitle => '제20조 — 클립보드에 복사된 전체 JSON';
+
+  @override
+  String get gdprLegalDocs => '법적 문서';
+
+  @override
+  String get gdprDeleteHint =>
+      '계정을 영구적으로 삭제하려면 프로필 → 계정 삭제로 이동하세요. 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get privacyPolicyTitle => '개인정보 처리방침';
+
+  @override
+  String get termsOfServiceTitle => '이용 약관';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Tracker는 보증 없이 그대로 제공됩니다. 발행인은 사용자의 비규정 사용(불법 콘텐츠, 스크래핑 등)에 대한 모든 책임을 부인합니다.\n\n전체 문서는 공식 웹사이트에서 확인할 수 있습니다.';
+
+  @override
+  String get privacyShortVersion =>
+      '수집된 데이터: 이메일, 비밀번호(해시화), 만화 라이브러리, 환경 설정. 데이터는 제3자에게 판매되지 않습니다. 언제든지 데이터를 내보내거나 삭제할 수 있습니다.\n\n전체 문서는 공식 웹사이트에서 확인할 수 있습니다.';
+
+  @override
+  String get iAcceptTos => '이용 약관에 동의합니다';
+
+  @override
+  String get iAcceptPrivacy => '개인정보 처리방침에 동의합니다';
+
+  @override
+  String get iAccept => '동의';
+
+  @override
+  String get consentRequired => '이용 약관과 개인정보 처리방침에 동의해야 합니다.';
+
+  @override
+  String get consentRefreshTitle => '약관이 업데이트되었습니다';
+
+  @override
+  String get consentRefreshIntro =>
+      '이용 약관과 개인정보 처리방침이 업데이트되었습니다. 계속하려면 동의해 주세요.';
+
+  @override
+  String get refuseAndLogout => '거부하고 로그아웃';
+
+  @override
+  String get versionLabel => '버전';
+
+  @override
+  String get forgotPasswordTitle => '비밀번호 찾기';
+
+  @override
+  String get forgotPasswordIntro =>
+      '이메일을 입력하세요. 계정이 존재하면 새 비밀번호를 설정할 수 있는 링크를 받게 됩니다.';
+
+  @override
+  String get sendResetLink => '링크 보내기';
+
+  @override
+  String get resetEmailSentTitle => '받은 편지함을 확인하세요';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return '$email 계정이 존재하는 경우 새 비밀번호를 설정할 수 있는 링크가 포함된 이메일이 전송되었습니다.\n\n링크는 30분 후에 만료됩니다.';
+  }
+
+  @override
+  String get resetPasswordTitle => '새 비밀번호';
+
+  @override
+  String get resetPasswordIntro => '계정의 새 비밀번호를 설정하세요. 확인 후 자동으로 로그인됩니다.';
+
+  @override
+  String get confirmReset => '확인';
+
+  @override
+  String get resetTokenExpired => '유효하지 않거나 만료된 링크입니다. 다시 요청해 주세요.';
+
+  @override
+  String get resetPasswordSuccess => '비밀번호가 변경되었습니다';
+
+  @override
+  String get resetPasswordSuccessHint => '로그인되었습니다. 리디렉션 중…';
+
+  @override
+  String get verifyingEmail => '확인 중…';
+
+  @override
+  String get emailVerifiedSuccess => '이메일이 확인되었습니다!';
+
+  @override
+  String get emailVerifiedHint => '로그인 중…';
+
+  @override
+  String get emailVerifyFailedTitle => '유효하지 않거나 만료된 링크';
+
+  @override
+  String get emailVerifyFailedHint =>
+      '사용하신 링크는 더 이상 유효하지 않습니다. 로그인하여 프로필에서 새 링크를 요청하세요.';
+
+  @override
+  String get backToLogin => '로그인으로 돌아가기';
+
+  @override
+  String get verifyEmailBannerMessage => '모든 기능을 활성화하려면 이메일 주소를 확인하세요.';
+
+  @override
+  String get emailSentShort => '전송됨';
+
+  @override
+  String get resendEmailShort => '재전송';
 }

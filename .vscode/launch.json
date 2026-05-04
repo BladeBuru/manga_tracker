@@ -12,11 +12,24 @@
       "deviceId": "chrome"
     },
     {
-      "name": "Flutter Android",
+      "name": "Flutter — Pixel 9 Pro XL (USB)",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
-      "deviceId": "android"
+      "deviceId": "46111FDAS000LL",
+      "args": [
+        "--flavor", "dev"
+      ]
+    },
+    {
+      "name": "Flutter Android (émulateur ou téléphone)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "deviceId": "android",
+      "args": [
+        "--flavor", "dev"
+      ]
     }
   ]
 }

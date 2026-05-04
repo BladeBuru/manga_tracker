@@ -1539,5 +1539,135 @@
   "deleteAllDownloadsTooltip": "Supprimer tous les téléchargements",
   "@deleteAllDownloadsTooltip": {
     "description": "Tooltip pour le bouton de suppression de tous les téléchargements"
-  }
+  },
+
+  "recommendedForYou": "Recommandé pour toi",
+  "@recommendedForYou": {
+    "description": "Section de recommandations personnalisées de manga"
+  },
+
+  "recommendedForYouEmpty": "Ajoutez des mangas à votre bibliothèque\npour obtenir des recommandations personnalisées.",
+  "@recommendedForYouEmpty": {
+    "description": "Message affiché dans la section recommandations quand la bibliothèque est vide"
+  },
+
+  "recommendedForYouCount": "{count, plural, =1{1 manga} other{{count} mangas}}",
+  "@recommendedForYouCount": {
+    "description": "Sous-titre indiquant le nombre de mangas recommandés",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recommendedForYouCached": "Recommandations en cache (mode hors ligne)",
+  "@recommendedForYouCached": {
+    "description": "Indicateur affiché quand les recommandations affichées proviennent du cache offline"
+  },
+
+  "errorWithMessage": "Erreur : {message}",
+  "@errorWithMessage": {
+    "description": "Préfixe générique d'erreur avec un message technique",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "recommendedBecauseOf": "Parce que vous avez aimé {titles}",
+  "@recommendedBecauseOf": {
+    "description": "Explication d'une recommandation, listant les mangas sources",
+    "placeholders": {
+      "titles": { "type": "String" }
+    }
+  },
+
+  "yourRating": "Votre note",
+  "@yourRating": {
+    "description": "Label affiché à côté du widget de notation utilisateur dans le détail manga"
+  },
+
+  "myDataTitle": "Mes données",
+  "@myDataTitle": {},
+  "myDataSubtitle": "Voir, exporter ou supprimer mes données (RGPD)",
+  "@myDataSubtitle": {},
+  "gdprIntro": "Conformément au RGPD, vous disposez de droits sur vos données personnelles. Cette page vous permet de les exercer simplement.",
+  "@gdprIntro": {},
+  "gdprAccessTitle": "Voir mes données",
+  "@gdprAccessTitle": {},
+  "gdprAccessSubtitle": "Article 15 — résumé des informations stockées",
+  "@gdprAccessSubtitle": {},
+  "gdprExportTitle": "Exporter mes données",
+  "@gdprExportTitle": {},
+  "gdprExportSubtitle": "Article 20 — JSON complet copié dans le presse-papier",
+  "@gdprExportSubtitle": {},
+  "gdprLegalDocs": "Documents légaux",
+  "@gdprLegalDocs": {},
+  "gdprDeleteHint": "Pour supprimer définitivement votre compte, rendez-vous dans Profil → Supprimer mon compte. Cette action est irréversible.",
+  "@gdprDeleteHint": {},
+  "privacyPolicyTitle": "Politique de confidentialité",
+  "@privacyPolicyTitle": {},
+  "termsOfServiceTitle": "Conditions d'utilisation",
+  "@termsOfServiceTitle": {},
+  "tosShortVersion": "Manga Tracker est fourni en l'état, sans garantie. L'éditeur décline toute responsabilité pour l'utilisation non conforme par l'utilisateur (contenu illégal, scraping, etc.).\n\nDocument complet sur le site officiel.",
+  "@tosShortVersion": {},
+  "privacyShortVersion": "Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. Aucune donnée n'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\nDocument complet sur le site officiel.",
+  "@privacyShortVersion": {},
+  "iAcceptTos": "J'accepte les Conditions d'utilisation",
+  "@iAcceptTos": {},
+  "iAcceptPrivacy": "J'accepte la Politique de confidentialité",
+  "@iAcceptPrivacy": {},
+  "iAccept": "Accepter",
+  "@iAccept": {},
+  "consentRequired": "Vous devez accepter les CGU et la Politique de confidentialité.",
+  "@consentRequired": {},
+  "consentRefreshTitle": "Mise à jour de nos conditions",
+  "@consentRefreshTitle": {},
+  "consentRefreshIntro": "Nos conditions d'utilisation et notre politique de confidentialité ont été mises à jour. Veuillez les accepter pour continuer.",
+  "@consentRefreshIntro": {},
+  "refuseAndLogout": "Refuser et se déconnecter",
+  "@refuseAndLogout": {},
+  "versionLabel": "Version",
+  "@versionLabel": {},
+
+  "forgotPasswordTitle": "Mot de passe oublié",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIntro": "Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.",
+  "@forgotPasswordIntro": {},
+  "sendResetLink": "Envoyer le lien",
+  "@sendResetLink": {},
+  "resetEmailSentTitle": "Vérifiez votre boîte mail",
+  "@resetEmailSentTitle": {},
+  "resetEmailSentMessage": "Si un compte existe pour {email}, un email contenant un lien pour définir un nouveau mot de passe vient d'être envoyé.\n\nLe lien expire dans 30 minutes.",
+  "@resetEmailSentMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordTitle": "Nouveau mot de passe",
+  "@resetPasswordTitle": {},
+  "resetPasswordIntro": "Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.",
+  "@resetPasswordIntro": {},
+  "confirmReset": "Confirmer",
+  "@confirmReset": {},
+  "resetTokenExpired": "Lien invalide ou expiré. Refaites une demande.",
+  "@resetTokenExpired": {},
+  "resetPasswordSuccess": "Mot de passe modifié",
+  "@resetPasswordSuccess": {},
+  "resetPasswordSuccessHint": "Vous êtes maintenant connecté. Redirection en cours…",
+  "@resetPasswordSuccessHint": {},
+  "verifyingEmail": "Vérification en cours…",
+  "@verifyingEmail": {},
+  "emailVerifiedSuccess": "Email vérifié !",
+  "@emailVerifiedSuccess": {},
+  "emailVerifiedHint": "Connexion en cours…",
+  "@emailVerifiedHint": {},
+  "emailVerifyFailedTitle": "Lien invalide ou expiré",
+  "@emailVerifyFailedTitle": {},
+  "emailVerifyFailedHint": "Le lien que vous avez utilisé n'est plus valide. Connectez-vous et demandez un nouveau lien depuis votre profil.",
+  "@emailVerifyFailedHint": {},
+  "backToLogin": "Retour à la connexion",
+  "@backToLogin": {},
+  "verifyEmailBannerMessage": "Vérifiez votre adresse email pour activer toutes les fonctionnalités.",
+  "@verifyEmailBannerMessage": {},
+  "emailSentShort": "Envoyé",
+  "@emailSentShort": {},
+  "resendEmailShort": "Renvoyer",
+  "@resendEmailShort": {}
 }

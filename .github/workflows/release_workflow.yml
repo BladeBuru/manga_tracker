@@ -1,12 +1,12 @@
 name: Release APK
 
 # Deux modes de déclenchement :
-#  1. PR mergée sur `main` avec label `patch`/`minor`/`major` → ancien flow
+#  1. PR mergée sur `master` avec label `patch`/`minor`/`major` → ancien flow
 #  2. workflow_dispatch (manuel ou via skill `/release`) → flow direct
 on:
   pull_request:
     types: [closed]
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
     inputs:
       version_type:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: true
-          ref: main
+          ref: master
 
       - name: 🔧 Set up Flutter
         uses: subosito/flutter-action@v2

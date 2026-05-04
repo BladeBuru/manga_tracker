@@ -22,18 +22,18 @@ class MangaRecommendationView {
   });
 
   factory MangaRecommendationView.fromJson(Map<String, dynamic> json) {
+    final rawMuId = json['muId'];
+    final rawRating = json['rating'];
     return MangaRecommendationView(
-      muId: num.parse(json['muId'].toString()),
-      title: json['title'],
-      year: json['year'].toString(),
-      smallCoverUrl: json['smallCoverUrl'],
-      mediumCoverUrl: json['mediumCoverUrl'],
-      rating:
-      json['rating'] == null || json['rating'] == 0
+      muId: rawMuId != null ? num.parse(rawMuId.toString()) : 0,
+      title: (json['title'] as String?) ?? '',
+      year: json['year']?.toString() ?? '',
+      smallCoverUrl: json['smallCoverUrl'] as String?,
+      mediumCoverUrl: json['mediumCoverUrl'] as String?,
+      rating: rawRating == null || rawRating == 0
           ? 'N/A'
-          : json['rating'].toString(),
-      readingStatus:
-      json['readingStatus'] != null
+          : rawRating.toString(),
+      readingStatus: json['readingStatus'] != null
           ? ReadingStatusExtension.fromValue(json['readingStatus'])
           : ReadingStatus.readLater,
       inLibrary: json['inLibrary'] as bool? ?? false,

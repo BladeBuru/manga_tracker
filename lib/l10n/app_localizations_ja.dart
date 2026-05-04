@@ -958,4 +958,167 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get deleteAllDownloadsTooltip => 'すべてのダウンロードを削除';
+
+  @override
+  String get recommendedForYou => 'あなたへのおすすめ';
+
+  @override
+  String get recommendedForYouEmpty => 'ライブラリに漫画を追加して\nパーソナライズされたおすすめを取得しましょう。';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached => 'キャッシュされたおすすめ（オフラインモード）';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'エラー: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return '$titles がお気に入りだったため';
+  }
+
+  @override
+  String get yourRating => 'あなたの評価';
+
+  @override
+  String get myDataTitle => 'マイデータ';
+
+  @override
+  String get myDataSubtitle => 'データの表示、エクスポート、削除（GDPR）';
+
+  @override
+  String get gdprIntro =>
+      'GDPRに基づき、あなたは個人データに関する権利を持っています。このページでそれらを簡単に行使できます。';
+
+  @override
+  String get gdprAccessTitle => 'データを表示';
+
+  @override
+  String get gdprAccessSubtitle => '第15条 — 保存された情報の概要';
+
+  @override
+  String get gdprExportTitle => 'データをエクスポート';
+
+  @override
+  String get gdprExportSubtitle => '第20条 — 完全なJSONがクリップボードにコピーされます';
+
+  @override
+  String get gdprLegalDocs => '法的文書';
+
+  @override
+  String get gdprDeleteHint =>
+      'アカウントを完全に削除するには、プロフィール → アカウント削除に移動してください。この操作は元に戻せません。';
+
+  @override
+  String get privacyPolicyTitle => 'プライバシーポリシー';
+
+  @override
+  String get termsOfServiceTitle => '利用規約';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Trackerは現状のまま、保証なしで提供されます。編集者は、ユーザーによる非準拠の使用（違法コンテンツ、スクレイピングなど）に関するすべての責任を否認します。\n\n完全な文書は公式ウェブサイトにあります。';
+
+  @override
+  String get privacyShortVersion =>
+      '収集データ：メール、パスワード（ハッシュ化）、漫画ライブラリ、設定。データは第三者に販売されません。データはいつでもエクスポートまたは削除できます。\n\n完全な文書は公式ウェブサイトにあります。';
+
+  @override
+  String get iAcceptTos => '利用規約に同意します';
+
+  @override
+  String get iAcceptPrivacy => 'プライバシーポリシーに同意します';
+
+  @override
+  String get iAccept => '同意する';
+
+  @override
+  String get consentRequired => '利用規約とプライバシーポリシーに同意する必要があります。';
+
+  @override
+  String get consentRefreshTitle => '規約が更新されました';
+
+  @override
+  String get consentRefreshIntro => '利用規約とプライバシーポリシーが更新されました。続行するには同意してください。';
+
+  @override
+  String get refuseAndLogout => '拒否してログアウト';
+
+  @override
+  String get versionLabel => 'バージョン';
+
+  @override
+  String get forgotPasswordTitle => 'パスワードをお忘れですか';
+
+  @override
+  String get forgotPasswordIntro =>
+      'メールアドレスを入力してください。アカウントが存在する場合、新しいパスワードを設定するリンクをお送りします。';
+
+  @override
+  String get sendResetLink => 'リンクを送信';
+
+  @override
+  String get resetEmailSentTitle => '受信ボックスをご確認ください';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return '$email のアカウントが存在する場合、新しいパスワードを設定するためのリンクを含むメールが送信されました。\n\nリンクは30分で期限切れになります。';
+  }
+
+  @override
+  String get resetPasswordTitle => '新しいパスワード';
+
+  @override
+  String get resetPasswordIntro => 'アカウントの新しいパスワードを設定してください。確認後、自動的にログインされます。';
+
+  @override
+  String get confirmReset => '確認';
+
+  @override
+  String get resetTokenExpired => 'リンクが無効または期限切れです。再度リクエストしてください。';
+
+  @override
+  String get resetPasswordSuccess => 'パスワードが変更されました';
+
+  @override
+  String get resetPasswordSuccessHint => 'ログインしました。リダイレクト中…';
+
+  @override
+  String get verifyingEmail => '確認中…';
+
+  @override
+  String get emailVerifiedSuccess => 'メールが確認されました！';
+
+  @override
+  String get emailVerifiedHint => 'ログイン中…';
+
+  @override
+  String get emailVerifyFailedTitle => 'リンクが無効または期限切れです';
+
+  @override
+  String get emailVerifyFailedHint =>
+      'ご使用のリンクは有効ではありません。ログインしてプロフィールから新しいリンクをリクエストしてください。';
+
+  @override
+  String get backToLogin => 'ログインに戻る';
+
+  @override
+  String get verifyEmailBannerMessage => 'すべての機能を有効にするには、メールアドレスを確認してください。';
+
+  @override
+  String get emailSentShort => '送信済み';
+
+  @override
+  String get resendEmailShort => '再送信';
 }

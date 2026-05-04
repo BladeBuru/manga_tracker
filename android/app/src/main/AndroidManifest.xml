@@ -27,6 +27,35 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- ───────────────────────────────────────────────────────────
+                 App Links pour les magic links email (vérification +
+                 reset password). autoVerify="true" demande à Android
+                 de valider l'association via /.well-known/assetlinks.json
+                 hébergé sur bladeburu.com.
+
+                 Sans validation : l'app apparaît dans le sélecteur
+                 « Ouvrir avec ». Avec validation : capture directe
+                 depuis Gmail/Chrome.
+                 ─────────────────────────────────────────────────────────── -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"
+                      android:host="api.bladeburu.com"
+                      android:pathPrefix="/auth/"/>
+            </intent-filter>
+
+            <!-- Scheme custom pour le dev local (sans hosting d'assetlinks).
+                 Usage : mangatracker://auth/verify?token=XXX -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="mangatracker"
+                      android:host="auth"/>
+            </intent-filter>
         </activity>
 
         <!-- Don't delete the meta-data below.

@@ -105,9 +105,37 @@ class OfflineCacheService {
   static const String _homePageCacheKey = 'cached_homepage';
   static const String _searchCacheKey = 'cached_search_';
   static const String _userInfoCacheKey = 'cached_user_info';
+  static const String _recommendationsCacheKey = 'cached_recommendations';
   static const String _offlineQueueKey = 'offline_queue';
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
+
+  /// Cache la liste de recommandations personnalisées
+  Future<void> cacheRecommendations(List<MangaQuickViewDto> mangas) async {
+    try {
+      final json = mangas.map((m) => m.toJson()).toList();
+      await _storage.writeSecureData(_recommendationsCacheKey, jsonEncode(json));
+      await _updateCacheMetadata('recommendations', DateTime.now());
+    } catch (e) {
+      debugPrint('Erreur lors du cache des recommandations: $e');
+    }
+  }
+
+  /// Récupère les recommandations depuis le cache
+  Future<List<MangaQuickViewDto>?> getCachedRecommendations() async {
+    try {
+      final cached = await _storage.readSecureData(_recommendationsCacheKey);
+      if (cached != null) {
+        final List<dynamic> jsonList = jsonDecode(cached);
+        return jsonList
+            .map((json) => MangaQuickViewDto.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération du cache recommandations: $e');
+    }
+    return null;
+  }
   
   /// Cache la liste de la bibliothèque
   Future<void> cacheLibrary(List<MangaQuickViewDto> mangas) async {

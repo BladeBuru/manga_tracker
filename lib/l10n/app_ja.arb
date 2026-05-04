@@ -335,6 +335,135 @@
   "deleteAllDownloadsTooltip": "すべてのダウンロードを削除",
   "@deleteAllDownloadsTooltip": {
     "description": "すべてのダウンロードを削除するボタンのツールチップ"
-  }
-}
+  },
 
+  "recommendedForYou": "あなたへのおすすめ",
+  "@recommendedForYou": {
+    "description": "Section of personalized manga recommendations"
+  },
+
+  "recommendedForYouEmpty": "ライブラリに漫画を追加して\nパーソナライズされたおすすめを取得しましょう。",
+  "@recommendedForYouEmpty": {
+    "description": "Message shown in the recommendations section when the library is empty"
+  },
+
+  "recommendedForYouCount": "{count, plural, other{{count}件}}",
+  "@recommendedForYouCount": {
+    "description": "Subtitle showing the number of recommended manga",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recommendedForYouCached": "キャッシュされたおすすめ（オフラインモード）",
+  "@recommendedForYouCached": {
+    "description": "Indicator shown when recommendations are loaded from offline cache"
+  },
+
+  "errorWithMessage": "エラー: {message}",
+  "@errorWithMessage": {
+    "description": "Generic error prefix with a technical message",
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "recommendedBecauseOf": "{titles} がお気に入りだったため",
+  "@recommendedBecauseOf": {
+    "description": "Explanation for a recommendation, listing source manga",
+    "placeholders": {
+      "titles": { "type": "String" }
+    }
+  },
+
+  "yourRating": "あなたの評価",
+  "@yourRating": {
+    "description": "Label next to the user rating widget on the manga detail page"
+  },
+
+  "myDataTitle": "マイデータ",
+  "@myDataTitle": {},
+  "myDataSubtitle": "データの表示、エクスポート、削除（GDPR）",
+  "@myDataSubtitle": {},
+  "gdprIntro": "GDPRに基づき、あなたは個人データに関する権利を持っています。このページでそれらを簡単に行使できます。",
+  "@gdprIntro": {},
+  "gdprAccessTitle": "データを表示",
+  "@gdprAccessTitle": {},
+  "gdprAccessSubtitle": "第15条 — 保存された情報の概要",
+  "@gdprAccessSubtitle": {},
+  "gdprExportTitle": "データをエクスポート",
+  "@gdprExportTitle": {},
+  "gdprExportSubtitle": "第20条 — 完全なJSONがクリップボードにコピーされます",
+  "@gdprExportSubtitle": {},
+  "gdprLegalDocs": "法的文書",
+  "@gdprLegalDocs": {},
+  "gdprDeleteHint": "アカウントを完全に削除するには、プロフィール → アカウント削除に移動してください。この操作は元に戻せません。",
+  "@gdprDeleteHint": {},
+  "privacyPolicyTitle": "プライバシーポリシー",
+  "@privacyPolicyTitle": {},
+  "termsOfServiceTitle": "利用規約",
+  "@termsOfServiceTitle": {},
+  "tosShortVersion": "Manga Trackerは現状のまま、保証なしで提供されます。編集者は、ユーザーによる非準拠の使用（違法コンテンツ、スクレイピングなど）に関するすべての責任を否認します。\n\n完全な文書は公式ウェブサイトにあります。",
+  "@tosShortVersion": {},
+  "privacyShortVersion": "収集データ：メール、パスワード（ハッシュ化）、漫画ライブラリ、設定。データは第三者に販売されません。データはいつでもエクスポートまたは削除できます。\n\n完全な文書は公式ウェブサイトにあります。",
+  "@privacyShortVersion": {},
+  "iAcceptTos": "利用規約に同意します",
+  "@iAcceptTos": {},
+  "iAcceptPrivacy": "プライバシーポリシーに同意します",
+  "@iAcceptPrivacy": {},
+  "iAccept": "同意する",
+  "@iAccept": {},
+  "consentRequired": "利用規約とプライバシーポリシーに同意する必要があります。",
+  "@consentRequired": {},
+  "consentRefreshTitle": "規約が更新されました",
+  "@consentRefreshTitle": {},
+  "consentRefreshIntro": "利用規約とプライバシーポリシーが更新されました。続行するには同意してください。",
+  "@consentRefreshIntro": {},
+  "refuseAndLogout": "拒否してログアウト",
+  "@refuseAndLogout": {},
+  "versionLabel": "バージョン",
+  "@versionLabel": {},
+
+  "forgotPasswordTitle": "パスワードをお忘れですか",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIntro": "メールアドレスを入力してください。アカウントが存在する場合、新しいパスワードを設定するリンクをお送りします。",
+  "@forgotPasswordIntro": {},
+  "sendResetLink": "リンクを送信",
+  "@sendResetLink": {},
+  "resetEmailSentTitle": "受信ボックスをご確認ください",
+  "@resetEmailSentTitle": {},
+  "resetEmailSentMessage": "{email} のアカウントが存在する場合、新しいパスワードを設定するためのリンクを含むメールが送信されました。\n\nリンクは30分で期限切れになります。",
+  "@resetEmailSentMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordTitle": "新しいパスワード",
+  "@resetPasswordTitle": {},
+  "resetPasswordIntro": "アカウントの新しいパスワードを設定してください。確認後、自動的にログインされます。",
+  "@resetPasswordIntro": {},
+  "confirmReset": "確認",
+  "@confirmReset": {},
+  "resetTokenExpired": "リンクが無効または期限切れです。再度リクエストしてください。",
+  "@resetTokenExpired": {},
+  "resetPasswordSuccess": "パスワードが変更されました",
+  "@resetPasswordSuccess": {},
+  "resetPasswordSuccessHint": "ログインしました。リダイレクト中…",
+  "@resetPasswordSuccessHint": {},
+  "verifyingEmail": "確認中…",
+  "@verifyingEmail": {},
+  "emailVerifiedSuccess": "メールが確認されました！",
+  "@emailVerifiedSuccess": {},
+  "emailVerifiedHint": "ログイン中…",
+  "@emailVerifiedHint": {},
+  "emailVerifyFailedTitle": "リンクが無効または期限切れです",
+  "@emailVerifyFailedTitle": {},
+  "emailVerifyFailedHint": "ご使用のリンクは有効ではありません。ログインしてプロフィールから新しいリンクをリクエストしてください。",
+  "@emailVerifyFailedHint": {},
+  "backToLogin": "ログインに戻る",
+  "@backToLogin": {},
+  "verifyEmailBannerMessage": "すべての機能を有効にするには、メールアドレスを確認してください。",
+  "@verifyEmailBannerMessage": {},
+  "emailSentShort": "送信済み",
+  "@emailSentShort": {},
+  "resendEmailShort": "再送信",
+  "@resendEmailShort": {}
+}

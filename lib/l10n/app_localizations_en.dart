@@ -965,4 +965,174 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAllDownloadsTooltip => 'Delete all downloads';
+
+  @override
+  String get recommendedForYou => 'Recommended for you';
+
+  @override
+  String get recommendedForYouEmpty =>
+      'Add manga to your library\nto get personalized recommendations.';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count manga',
+      one: '1 manga',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached => 'Cached recommendations (offline mode)';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return 'Because you liked $titles';
+  }
+
+  @override
+  String get yourRating => 'Your rating';
+
+  @override
+  String get myDataTitle => 'My data';
+
+  @override
+  String get myDataSubtitle => 'View, export, or delete my data (GDPR)';
+
+  @override
+  String get gdprIntro =>
+      'Under GDPR, you have rights over your personal data. This page lets you exercise them easily.';
+
+  @override
+  String get gdprAccessTitle => 'View my data';
+
+  @override
+  String get gdprAccessSubtitle => 'Article 15 — summary of stored information';
+
+  @override
+  String get gdprExportTitle => 'Export my data';
+
+  @override
+  String get gdprExportSubtitle => 'Article 20 — full JSON copied to clipboard';
+
+  @override
+  String get gdprLegalDocs => 'Legal documents';
+
+  @override
+  String get gdprDeleteHint =>
+      'To permanently delete your account, go to Profile → Delete my account. This action is irreversible.';
+
+  @override
+  String get privacyPolicyTitle => 'Privacy Policy';
+
+  @override
+  String get termsOfServiceTitle => 'Terms of Service';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Tracker is provided as-is, without warranty. The publisher disclaims all liability for non-compliant use by the user (illegal content, scraping, etc.).\n\nFull document on the official website.';
+
+  @override
+  String get privacyShortVersion =>
+      'Data collected: email, password (hashed), manga library, preferences. No data is sold to third parties. You can export or delete your data at any time.\n\nFull document on the official website.';
+
+  @override
+  String get iAcceptTos => 'I accept the Terms of Service';
+
+  @override
+  String get iAcceptPrivacy => 'I accept the Privacy Policy';
+
+  @override
+  String get iAccept => 'Accept';
+
+  @override
+  String get consentRequired =>
+      'You must accept the Terms of Service and Privacy Policy.';
+
+  @override
+  String get consentRefreshTitle => 'Our terms have been updated';
+
+  @override
+  String get consentRefreshIntro =>
+      'Our terms of service and privacy policy have been updated. Please accept them to continue.';
+
+  @override
+  String get refuseAndLogout => 'Refuse and log out';
+
+  @override
+  String get versionLabel => 'Version';
+
+  @override
+  String get forgotPasswordTitle => 'Forgot password';
+
+  @override
+  String get forgotPasswordIntro =>
+      'Enter your email. If an account exists, you will receive a link to set a new password.';
+
+  @override
+  String get sendResetLink => 'Send link';
+
+  @override
+  String get resetEmailSentTitle => 'Check your inbox';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return 'If an account exists for $email, an email containing a link to set a new password has just been sent.\n\nThe link expires in 30 minutes.';
+  }
+
+  @override
+  String get resetPasswordTitle => 'New password';
+
+  @override
+  String get resetPasswordIntro =>
+      'Set a new password for your account. Once validated, you will be automatically signed in.';
+
+  @override
+  String get confirmReset => 'Confirm';
+
+  @override
+  String get resetTokenExpired =>
+      'Invalid or expired link. Please request a new one.';
+
+  @override
+  String get resetPasswordSuccess => 'Password changed';
+
+  @override
+  String get resetPasswordSuccessHint => 'You are now signed in. Redirecting…';
+
+  @override
+  String get verifyingEmail => 'Verifying…';
+
+  @override
+  String get emailVerifiedSuccess => 'Email verified!';
+
+  @override
+  String get emailVerifiedHint => 'Signing in…';
+
+  @override
+  String get emailVerifyFailedTitle => 'Invalid or expired link';
+
+  @override
+  String get emailVerifyFailedHint =>
+      'The link you used is no longer valid. Sign in and request a new link from your profile.';
+
+  @override
+  String get backToLogin => 'Back to sign in';
+
+  @override
+  String get verifyEmailBannerMessage =>
+      'Verify your email address to activate all features.';
+
+  @override
+  String get emailSentShort => 'Sent';
+
+  @override
+  String get resendEmailShort => 'Resend';
 }

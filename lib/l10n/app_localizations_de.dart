@@ -982,4 +982,179 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deleteAllDownloadsTooltip => 'Alle Downloads löschen';
+
+  @override
+  String get recommendedForYou => 'Für dich empfohlen';
+
+  @override
+  String get recommendedForYouEmpty =>
+      'Füge Mangas zu deiner Bibliothek hinzu,\num personalisierte Empfehlungen zu erhalten.';
+
+  @override
+  String recommendedForYouCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mangas',
+      one: '1 Manga',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recommendedForYouCached =>
+      'Empfehlungen aus dem Cache (Offline-Modus)';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'Fehler: $message';
+  }
+
+  @override
+  String recommendedBecauseOf(String titles) {
+    return 'Weil du $titles mochtest';
+  }
+
+  @override
+  String get yourRating => 'Deine Bewertung';
+
+  @override
+  String get myDataTitle => 'Meine Daten';
+
+  @override
+  String get myDataSubtitle =>
+      'Meine Daten anzeigen, exportieren oder löschen (DSGVO)';
+
+  @override
+  String get gdprIntro =>
+      'Gemäß DSGVO haben Sie Rechte an Ihren personenbezogenen Daten. Diese Seite ermöglicht Ihnen die einfache Ausübung dieser Rechte.';
+
+  @override
+  String get gdprAccessTitle => 'Meine Daten anzeigen';
+
+  @override
+  String get gdprAccessSubtitle =>
+      'Artikel 15 — Übersicht der gespeicherten Informationen';
+
+  @override
+  String get gdprExportTitle => 'Meine Daten exportieren';
+
+  @override
+  String get gdprExportSubtitle =>
+      'Artikel 20 — vollständiges JSON in Zwischenablage';
+
+  @override
+  String get gdprLegalDocs => 'Rechtliche Dokumente';
+
+  @override
+  String get gdprDeleteHint =>
+      'Um Ihr Konto endgültig zu löschen, gehen Sie zu Profil → Konto löschen. Diese Aktion ist unwiderruflich.';
+
+  @override
+  String get privacyPolicyTitle => 'Datenschutzerklärung';
+
+  @override
+  String get termsOfServiceTitle => 'Nutzungsbedingungen';
+
+  @override
+  String get tosShortVersion =>
+      'Manga Tracker wird ohne Gewähr bereitgestellt. Der Herausgeber lehnt jegliche Haftung für nicht konforme Nutzung durch den Benutzer ab (illegale Inhalte, Scraping usw.).\n\nVollständiges Dokument auf der offiziellen Website.';
+
+  @override
+  String get privacyShortVersion =>
+      'Erfasste Daten: E-Mail, Passwort (gehasht), Manga-Bibliothek, Einstellungen. Keine Daten werden an Dritte verkauft. Sie können Ihre Daten jederzeit exportieren oder löschen.\n\nVollständiges Dokument auf der offiziellen Website.';
+
+  @override
+  String get iAcceptTos => 'Ich akzeptiere die Nutzungsbedingungen';
+
+  @override
+  String get iAcceptPrivacy => 'Ich akzeptiere die Datenschutzerklärung';
+
+  @override
+  String get iAccept => 'Akzeptieren';
+
+  @override
+  String get consentRequired =>
+      'Sie müssen die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren.';
+
+  @override
+  String get consentRefreshTitle => 'Unsere Bedingungen wurden aktualisiert';
+
+  @override
+  String get consentRefreshIntro =>
+      'Unsere Nutzungsbedingungen und Datenschutzerklärung wurden aktualisiert. Bitte akzeptieren Sie sie, um fortzufahren.';
+
+  @override
+  String get refuseAndLogout => 'Ablehnen und abmelden';
+
+  @override
+  String get versionLabel => 'Version';
+
+  @override
+  String get forgotPasswordTitle => 'Passwort vergessen';
+
+  @override
+  String get forgotPasswordIntro =>
+      'Gib deine E-Mail ein. Wenn ein Konto existiert, erhältst du einen Link, um ein neues Passwort festzulegen.';
+
+  @override
+  String get sendResetLink => 'Link senden';
+
+  @override
+  String get resetEmailSentTitle => 'Prüfe dein Postfach';
+
+  @override
+  String resetEmailSentMessage(String email) {
+    return 'Wenn ein Konto für $email existiert, wurde eine E-Mail mit einem Link zur Passwortänderung gesendet.\n\nDer Link läuft in 30 Minuten ab.';
+  }
+
+  @override
+  String get resetPasswordTitle => 'Neues Passwort';
+
+  @override
+  String get resetPasswordIntro =>
+      'Lege ein neues Passwort für dein Konto fest. Nach der Bestätigung wirst du automatisch angemeldet.';
+
+  @override
+  String get confirmReset => 'Bestätigen';
+
+  @override
+  String get resetTokenExpired =>
+      'Ungültiger oder abgelaufener Link. Bitte fordere einen neuen an.';
+
+  @override
+  String get resetPasswordSuccess => 'Passwort geändert';
+
+  @override
+  String get resetPasswordSuccessHint =>
+      'Du bist jetzt angemeldet. Weiterleitung…';
+
+  @override
+  String get verifyingEmail => 'Überprüfung läuft…';
+
+  @override
+  String get emailVerifiedSuccess => 'E-Mail bestätigt!';
+
+  @override
+  String get emailVerifiedHint => 'Anmeldung läuft…';
+
+  @override
+  String get emailVerifyFailedTitle => 'Ungültiger oder abgelaufener Link';
+
+  @override
+  String get emailVerifyFailedHint =>
+      'Der verwendete Link ist nicht mehr gültig. Melde dich an und fordere einen neuen Link aus deinem Profil an.';
+
+  @override
+  String get backToLogin => 'Zurück zur Anmeldung';
+
+  @override
+  String get verifyEmailBannerMessage =>
+      'Bestätige deine E-Mail-Adresse, um alle Funktionen zu aktivieren.';
+
+  @override
+  String get emailSentShort => 'Gesendet';
+
+  @override
+  String get resendEmailShort => 'Erneut senden';
 }
