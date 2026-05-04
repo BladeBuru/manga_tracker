@@ -1,8 +1,16 @@
 {
-  "latestVersion": "0.9.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.9.1/MangaTracker.apk",
+  "latestVersion": "0.9.2",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.9.2/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.9.2",
+      "notes": [
+        "⚡ Améliorations",
+        "- L'application vérifie désormais les mises à jour dès le démarrage, sans attendre que vous soyez connecté",
+        "Cette version corrige un cercle vicieux : si jamais l'application avait un bug bloquant la connexion, il devenait impossible d'installer la nouvelle version qui le corrigeait. Vous serez désormais toujours informé d'une mise à jour disponible, peu importe l'état de votre connexion."
+      ]
+    },
     {
       "version": "0.9.1",
       "notes": [
