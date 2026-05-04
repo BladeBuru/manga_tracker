@@ -32,6 +32,11 @@ jobs:
       - name: 🔄 Checkout repo
         uses: actions/checkout@v3
         with:
+          # PAT avec scope `workflow` (RELEASE_PAT) — sans ça, GitHub bloque
+          # le push si le rebase intègre des commits qui modifient
+          # `.github/workflows/*.yml` (le GITHUB_TOKEN par défaut n'a pas
+          # le droit de toucher aux workflows).
+          token: ${{ secrets.RELEASE_PAT }}
           persist-credentials: true
           ref: master
 
