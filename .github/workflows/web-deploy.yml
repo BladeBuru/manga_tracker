@@ -149,13 +149,12 @@ jobs:
                 pull_policy: always
                 restart: unless-stopped
                 ports:
-                  - "8080:80"
-                healthcheck:
-                  test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:80/health"]
-                  interval: 30s
-                  timeout: 5s
-                  retries: 3
-                  start_period: 10s
+                  # 8090 au lieu de 8080 pour éviter collision avec TrueNAS UI
+                  # ou autres services. NPMplus pointera sur ce port.
+                  - "8090:80"
+                # Pas de healthcheck dans le compose : le Dockerfile en
+                # définit déjà un (et il faut qu'il marche avec les binaires
+                # disponibles dans nginx:alpine).
             """
 
             # Liste les apps existantes pour décider entre create vs update

@@ -27,14 +27,19 @@ RUN flutter build web --release --base-href "/"
 # ─────────────────────────────────────────────────────────────
 FROM nginx:1.27-alpine
 
+# wget n'est pas garanti dans nginx:alpine — on l'ajoute explicitement
+# pour le HEALTHCHECK ci-dessous. Sans ça : "wget: not found" au démarrage
+# → unhealthy → docker compose up échoue / restart loop.
+RUN apk add --no-cache wget
+
 # Conf Nginx custom (gzip, SPA fallback, headers sécurité, cache)
 COPY deploy/web/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copie les artefacts Flutter web
 COPY --from=build /app/build/web /usr/share/nginx/html
 
-# Healthcheck sur la racine
+# Healthcheck sur /health (endpoint léger défini dans nginx.conf)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q -O - http://localhost:80/ > /dev/null || exit 1
+  CMD wget -q -O - http://localhost:80/health > /dev/null || exit 1
 
 EXPOSE 80
