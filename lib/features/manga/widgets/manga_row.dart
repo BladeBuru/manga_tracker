@@ -1,10 +1,10 @@
 import 'package:html/parser.dart';
 import '../helpers/image.helper.dart';
-import '../views/detail.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -86,15 +86,9 @@ class MangaRow extends StatelessWidget {
             // En mode téléchargé uniquement, utiliser directement le titre fourni
             // pour éviter toute requête réseau qui pourrait ralentir ou échouer
             if (context.mounted) {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OfflineReaderView(
-                    muId: int.parse(muId),
-                    chapterNumber: targetChapterNumber,
-                    mangaTitle: mangaName, // Utiliser directement le titre fourni
-                  ),
-                ),
+              await context.push(
+                '/manga/$muId/read-offline?chapter=$targetChapterNumber',
+                extra: OfflineReaderExtras(mangaTitle: mangaName),
               );
               if (onDetailReturn != null) {
                 onDetailReturn!();
@@ -103,16 +97,11 @@ class MangaRow extends StatelessWidget {
             }
           }
         }
-        
+
         // Sinon, aller sur le détail normal
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Detail(
-                    muId: muId,
-                    mangaTitle: mangaName,
-                    coverPath: mediumImgPath,
-                  )),
+        await context.push(
+          '/manga/$muId',
+          extra: MangaDetailExtras(title: mangaName, coverPath: mediumImgPath),
         );
         if (onDetailReturn != null) {
           onDetailReturn!();

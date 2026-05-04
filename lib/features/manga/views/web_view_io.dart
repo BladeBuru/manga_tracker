@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
@@ -16,7 +18,6 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/custom_selectors.service.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart';
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
@@ -110,14 +111,9 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         await Future.delayed(const Duration(milliseconds: 100));
         
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => OfflineReaderView(
-                muId: widget.muId,
-                chapterNumber: nextChapterNumber,
-                mangaTitle: widget.mangaTitle!,
-              ),
-            ),
+          context.pushReplacement(
+            '/manga/${widget.muId}/read-offline?chapter=$nextChapterNumber',
+            extra: OfflineReaderExtras(mangaTitle: widget.mangaTitle!),
           );
         }
       }

@@ -2,8 +2,10 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
@@ -12,20 +14,17 @@ import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
-import 'package:mangatracker/features/manga/views/web_view.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/components/user_rating_stars.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
-import '../../auth/views/login.view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import '../services/custom_selectors.service.dart';
-import '../../profile/views/custom_selectors_page.dart';
 import 'chapter_download_dialog.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -50,10 +49,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
   final Notifier _notifier = getIt<Notifier>();
 
   void _redirectToLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.push('/login');
   }
 
   void _refreshLibraryState(BuildContext context) {
@@ -427,12 +423,45 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   ),
                 ),
               ),
+              // Notation utilisateur (visible uniquement si dans la bibliothèque)
+              if (manga.inLibrary) _buildUserRatingRow(manga.userRating),
               // Barre d'action en bas
               _buildBottomActionBar(status),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  /// Affiche le widget de notation 5 étoiles + label "Votre note".
+  /// Mis à jour optimiste via [UpdateUserRating] event.
+  Widget _buildUserRatingRow(int currentRating) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return Text(
+                l10n?.yourRating ?? 'Votre note',
+                style: Theme.of(context).textTheme.labelMedium,
+              );
+            },
+          ),
+          UserRatingStars(
+            rating: currentRating,
+            size: 24,
+            onRatingChanged: (newRating) {
+              context.read<DetailBloc>().add(
+                    UpdateUserRating(widget.muId, newRating),
+                  );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -575,26 +604,19 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 
                 if (isDownloaded && mangaTitle != null) {
                   // Utiliser la version hors ligne
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => OfflineReaderView(
-                        muId: muId,
-                        chapterNumber: nextChapterNumber,
-                        mangaTitle: mangaTitle!,
-                      ),
-                    ),
+                  await context.push(
+                    '/manga/$muId/read-offline?chapter=$nextChapterNumber',
+                    extra: OfflineReaderExtras(mangaTitle: mangaTitle!),
                   );
                 } else {
                   // Utiliser la version en ligne
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ReaderWebView(
-                        muId: muId,
-                        mangaTitle: mangaTitle,
-                        initialLastRead: lastRead,
-                        initialUrl: targetUrl,
-                        baseUserLink: baseLink,
-                      ),
+                  await context.push(
+                    '/manga/$muId/read',
+                    extra: ReaderWebExtras(
+                      mangaTitle: mangaTitle,
+                      initialLastRead: lastRead,
+                      initialUrl: targetUrl,
+                      baseUserLink: baseLink,
                     ),
                   );
                 }
@@ -675,69 +697,79 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             minimumSize: Size.zero,
           ),
           onPressed: () async {
-            _mangaRecommendationsCache ??=
-                await widget.mangaService.getMangaRecommendations(muId.toString());
+            // Chargement des recommandations avec gestion d'erreur
+            if (_mangaRecommendationsCache == null) {
+              try {
+                _mangaRecommendationsCache = await widget.mangaService
+                    .getMangaRecommendations(muId.toString());
+              } catch (e) {
+                _mangaRecommendationsCache = [];
+                debugPrint('❌ Erreur chargement recommandations: $e');
+              }
+            }
             if (!mounted) return;
+
+            final screenSize = MediaQuery.of(context).size;
+            final recos = _mangaRecommendationsCache ?? [];
 
             showDialog(
               context: context,
               builder: (dialogContext) => AlertDialog(
                 title: Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
+                  builder: (ctx) {
+                    final l10n = AppLocalizations.of(ctx);
                     return Text(l10n?.recommendedMangas ?? 'Mangas recommandés');
                   },
                 ),
                 content: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    maxHeight: screenSize.height * 0.6,
                     minHeight: 200,
-                    maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    maxWidth: screenSize.width * 0.9,
                   ),
                   child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    child: (_mangaRecommendationsCache?.isEmpty ?? true)
-                      ? Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context);
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Text(
-                                  l10n?.noRecommendationsAvailable ?? 'Aucune recommandation disponible.',
-                                  textAlign: TextAlign.center,
+                    width: screenSize.width * 0.9,
+                    child: recos.isEmpty
+                        ? Builder(
+                            builder: (ctx) {
+                              final l10n = AppLocalizations.of(ctx);
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: Text(
+                                    l10n?.noRecommendationsAvailable ??
+                                        'Aucune recommandation disponible.',
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        )
-                      : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          itemCount: _mangaRecommendationsCache!.length,
-                          itemBuilder: (_, index) {
-                            final manga = _mangaRecommendationsCache![index];
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12.0),
-                              child: SizedBox(
-                                width: 120,
-                                child: MangaCard(
-                                  muId: manga.muId.toString(),
-                                  mangaTitle: manga.title,
-                                  mangaAuthor: manga.year.toString(),
-                                  mediumImgPath: manga.mediumCoverUrl,
-                                  rating: manga.rating,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: recos.map((manga) {
+                                return SizedBox(
+                                  width: 120,
+                                  child: MangaCard(
+                                    muId: manga.muId.toString(),
+                                    mangaTitle: manga.title,
+                                    mangaAuthor: manga.year,
+                                    mediumImgPath: manga.mediumCoverUrl,
+                                    rating: manga.rating,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                   ),
                 ),
                 actions: [
                   Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
+                    builder: (ctx) {
+                      final l10n = AppLocalizations.of(ctx);
                       return TextButton(
                         child: Text(l10n?.close ?? 'Fermer'),
                         onPressed: () => Navigator.of(dialogContext).pop(),
@@ -1099,11 +1131,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                             InkWell(
                               onTap: () {
                                 Navigator.of(ctx).pop();
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const CustomSelectorsPage(),
-                                  ),
-                                );
+                                context.push('/custom-selectors');
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(8),

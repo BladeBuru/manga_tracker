@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -242,14 +243,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                                       IconButton(
                                         icon: const Icon(Icons.visibility),
                                         onPressed: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (ctx) => OfflineReaderView(
-                                                muId: muId,
-                                                chapterNumber: chapter.chapterNumber,
-                                                mangaTitle: mangaTitle,
-                                              ),
-                                            ),
+                                          context.push(
+                                            '/manga/$muId/read-offline?chapter=${chapter.chapterNumber}',
+                                            extra: OfflineReaderExtras(mangaTitle: mangaTitle),
                                           );
                                         },
                                         tooltip: l10n?.readChapter ?? 'Lire',
@@ -263,14 +259,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                                   ),
                                   onTap: () {
                                     // Ouvrir directement le chapitre au tap
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => OfflineReaderView(
-                                          muId: muId,
-                                          chapterNumber: chapter.chapterNumber,
-                                          mangaTitle: mangaTitle,
-                                        ),
-                                      ),
+                                    context.push(
+                                      '/manga/$muId/read-offline?chapter=${chapter.chapterNumber}',
+                                      extra: OfflineReaderExtras(mangaTitle: mangaTitle),
                                     );
                                   },
                                 )),

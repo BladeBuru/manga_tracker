@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 import '../helpers/image.helper.dart';
-import '../views/detail.dart';
 
 class MangaCard extends StatelessWidget {
   final String mangaTitle;
@@ -81,30 +81,19 @@ class MangaCard extends StatelessWidget {
             // En mode téléchargé uniquement, utiliser directement le titre fourni
             // pour éviter toute requête réseau qui pourrait ralentir ou échouer
             if (context.mounted) {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OfflineReaderView(
-                    muId: int.parse(muId),
-                    chapterNumber: targetChapterNumber,
-                    mangaTitle: mangaTitle, // Utiliser directement le titre fourni
-                  ),
-                ),
+              await context.push(
+                '/manga/$muId/read-offline?chapter=$targetChapterNumber',
+                extra: OfflineReaderExtras(mangaTitle: mangaTitle),
               );
               return;
             }
           }
         }
-        
+
         // Sinon, aller sur le détail normal
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Detail(
-                    muId: muId,
-                    mangaTitle: mangaTitle,
-                    coverPath: mediumImgPath,
-                  )),
+        context.push(
+          '/manga/$muId',
+          extra: MangaDetailExtras(title: mangaTitle, coverPath: mediumImgPath),
         );
       },
       child: SizedBox(

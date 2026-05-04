@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -9,10 +11,9 @@ import '../../../core/components/password_fields.dart';
 import '../services/validator.service.dart';
 import '../../../core/components/intput_textfield.dart';
 import '../../../core/components/auth_button.dart';
-import 'login.view.dart';
 import '../widgets/square_tile.dart';
 import '../services/auth.service.dart';
-import '../../home/views/bottom_navbar.dart';
+import '../../profile/services/gdpr.service.dart';
 import '../presentation/cubit/auth_submission_status.dart';
 import '../presentation/cubit/register_cubit.dart';
 import '../presentation/cubit/register_state.dart';
@@ -43,7 +44,10 @@ class _RegisterViewState extends State<RegisterView> {
     // Créer une clé unique pour chaque instance
     _formKey = GlobalKey<FormState>();
     emailController.text = widget.emailText;
-    _registerCubit = RegisterCubit(authService: authService);
+    _registerCubit = RegisterCubit(
+      authService: authService,
+      gdprService: getIt<GdprService>(),
+    );
   }
 
   @override
@@ -72,9 +76,46 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void redirectToLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
+    context.push('/login');
+  }
+
+  /// Ouvre une dialog résumant le contenu du document légal demandé.
+  /// Le document complet doit être hébergé en ligne (URL publique stable).
+  void _showLegalDoc(
+    BuildContext context,
+    String kind,
+    AppLocalizations? l10n,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          kind == 'tos'
+              ? (l10n?.termsOfServiceTitle ?? "Conditions d'utilisation")
+              : (l10n?.privacyPolicyTitle ?? 'Politique de confidentialité'),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            kind == 'tos'
+                ? (l10n?.tosShortVersion ??
+                    "Manga Tracker est fourni en l'état, sans garantie. "
+                        "L'éditeur décline toute responsabilité pour l'utilisation "
+                        "non conforme par l'utilisateur (contenu illégal, scraping, etc.).\n\n"
+                        "Document complet sur le site officiel.")
+                : (l10n?.privacyShortVersion ??
+                    "Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. "
+                        "Aucune donnée n'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\n"
+                        "Document complet sur le site officiel."),
+            style: const TextStyle(fontSize: 13),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n?.close ?? 'Fermer'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -89,8 +130,7 @@ class _RegisterViewState extends State<RegisterView> {
               previous.status != current.status,
           listener: (context, state) {
             if (state.status == AuthSubmissionStatus.success) {
-              redirectToLoginPage();
-              _registerCubit.reset();
+              context.go('/home');
             }
           },
           child: Container(
@@ -175,10 +215,43 @@ class _RegisterViewState extends State<RegisterView> {
                                       confirmPasswordControler: confirmPasswordController,
                                       validatorService: validatorService,
                                     ),
-                                    const SizedBox(height: 30),
+                                    const SizedBox(height: 20),
+
+                                    // ─── Consentement RGPD obligatoire ───
+                                    _ConsentCheckbox(
+                                      checked: registerState.acceptedTos,
+                                      onChanged: (v) => _registerCubit
+                                          .setAcceptedTos(v ?? false),
+                                      label: l10n?.iAcceptTos ??
+                                          "J'accepte les Conditions d'utilisation",
+                                      onTapLabel: () =>
+                                          _showLegalDoc(context, 'tos', l10n),
+                                    ),
+                                    _ConsentCheckbox(
+                                      checked: registerState.acceptedPrivacy,
+                                      onChanged: (v) => _registerCubit
+                                          .setAcceptedPrivacy(v ?? false),
+                                      label: l10n?.iAcceptPrivacy ??
+                                          "J'accepte la Politique de confidentialité",
+                                      onTapLabel: () => _showLegalDoc(
+                                          context, 'privacy', l10n),
+                                    ),
+                                    const SizedBox(height: 16),
+
                                     AuthButton(
                                       text: l10n?.signUp ?? "S'inscrire",
-                                      onTap: singUpUser,
+                                      onTap: registerState.canSubmit
+                                          ? singUpUser
+                                          : () {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                content: Text(
+                                                  l10n?.consentRequired ??
+                                                      'Vous devez accepter les CGU et la Politique de confidentialité.',
+                                                ),
+                                                backgroundColor: Colors.orange,
+                                              ));
+                                            },
                                       isLoading: registerState.isLoading,
                                     ),
                                     registerState.errorMessage != null
@@ -235,10 +308,7 @@ class _RegisterViewState extends State<RegisterView> {
                                               final success = await authService.loginWithGoogle(context);
                                               if (!context.mounted) return;
                                               if (success) {
-                                                Navigator.of(context).pushAndRemoveUntil(
-                                                  MaterialPageRoute(builder: (_) => const BottomNavbar()),
-                                                  (route) => false,
-                                                );
+                                                context.go('/home');
                                               } else {
                                                 getIt<Notifier>().error(
                                                   l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
@@ -297,5 +367,70 @@ class _RegisterViewState extends State<RegisterView> {
         ),
       ),
     );
+  }
+}
+
+/// Case à cocher de consentement RGPD avec libellé cliquable (ouvre la
+/// dialog d'aperçu du document légal).
+class _ConsentCheckbox extends StatelessWidget {
+  final bool checked;
+  final ValueChanged<bool?> onChanged;
+  final String label;
+  final VoidCallback onTapLabel;
+
+  const _ConsentCheckbox({
+    required this.checked,
+    required this.onChanged,
+    required this.label,
+    required this.onTapLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Checkbox(
+            value: checked,
+            onChanged: onChanged,
+            visualDensity: VisualDensity.compact,
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => onChanged(!checked),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(text: label, style: theme.textTheme.bodySmall),
+                      TextSpan(
+                        text: '  →',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: _OnTap(onTapLabel),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Petit helper pour TextSpan tappable sans dépendance externe.
+class _OnTap extends TapGestureRecognizer {
+  _OnTap(VoidCallback handler) {
+    onTap = handler;
   }
 }

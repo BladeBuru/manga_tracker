@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
@@ -259,14 +261,9 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
   }
 
   void _navigateToChapter(int chapterNumber) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => OfflineReaderView(
-          muId: widget.muId,
-          chapterNumber: chapterNumber,
-          mangaTitle: widget.mangaTitle,
-        ),
-      ),
+    context.pushReplacement(
+      '/manga/${widget.muId}/read-offline?chapter=$chapterNumber',
+      extra: OfflineReaderExtras(mangaTitle: widget.mangaTitle),
     );
   }
 

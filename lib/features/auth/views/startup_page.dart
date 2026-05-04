@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
-import 'package:mangatracker/features/home/views/bottom_navbar.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../core/services/app_update_service.dart';
 import '../../../core/services/connectivity_service.dart';
@@ -165,17 +164,13 @@ class _StartupPageState extends State<StartupPage> {
   // --- Fonctions de navigation ---
   void _navigateToHome() {
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const BottomNavbar()),
-      );
+      context.go('/home');
     }
   }
 
   void _goToLogin() {
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginView()),
-      );
+      context.go('/login');
     }
   }
 

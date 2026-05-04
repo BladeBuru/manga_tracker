@@ -5,17 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/deep_link_handler.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
-import 'package:mangatracker/features/auth/views/startup_page.dart';
 import 'package:mangatracker/features/manga/services/chapter_check_background_service.dart';
 import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 import 'core/theme/app_theme.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+/// Re-export pour rétrocompatibilité — pointe vers le navigatorKey racine
+/// géré par go_router (cf. `core/router/app_router.dart`). Les call sites
+/// `navigatorKey.currentContext` (notifier, app_update_service) continuent
+/// de fonctionner.
+GlobalKey<NavigatorState> get navigatorKey => rootNavigatorKey;
 Future<void> main() async {
   // S'assure que les plugins de plateforme sont initialisés avant toute opération async
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,16 +67,32 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Locale _locale = const Locale('fr', '');
   ThemeMode _themeMode = ThemeMode.system;
+  DeepLinkHandler? _deepLinkHandler;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _router = buildAppRouter();
     _loadLocale();
     _loadTheme();
     // Écouter les changements de langue via un callback global
     _setupLanguageListener();
     // Écouter les changements de thème via un callback global
     _setupThemeListener();
+    // Écouter les deep links (magic link email, reset password)
+    _setupDeepLinks();
+  }
+
+  Future<void> _setupDeepLinks() async {
+    _deepLinkHandler = DeepLinkHandler(navigatorKey: navigatorKey);
+    await _deepLinkHandler!.initialize();
+  }
+
+  @override
+  void dispose() {
+    _deepLinkHandler?.dispose();
+    super.dispose();
   }
 
   void _setupLanguageListener() async {
@@ -149,7 +171,7 @@ class _MyAppState extends State<MyApp> {
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'MangaTracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
@@ -171,13 +193,12 @@ class _MyAppState extends State<MyApp> {
         Locale('pt', ''),
         Locale('es', ''),
       ],
-      home: const StartupPage(),
+      routerConfig: _router,
       scrollBehavior: ScrollConfiguration.of(context).copyWith(
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
       ),
-      navigatorKey: navigatorKey,
     );
   }
 }

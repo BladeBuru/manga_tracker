@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as path;
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/download/services/chapter_download_service.dart';
 import 'package:mangatracker/features/reader/utils/chapter_link_resolver.dart';
-import 'package:mangatracker/features/manga/views/web_view.dart';
 
 /// Dialog pour sélectionner et télécharger des chapitres
 class ChapterDownloadDialog extends StatefulWidget {
@@ -105,22 +106,20 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
             bool downloadCompleted = false;
             
             // Ouvrir la webview et attendre que l'utilisateur télécharge
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ReaderWebView(
-                  muId: widget.muId,
-                  mangaTitle: widget.mangaTitle,
-                  initialLastRead: chapterNumber - 1,
-                  initialUrl: chapterUrl,
-                  baseUserLink: widget.baseUrl,
-                  autoDownload: true, // Mode téléchargement automatique
-                  onDownloadComplete: (success) {
-                    downloadCompleted = success;
-                    if (!completer.isCompleted) {
-                      completer.complete(success);
-                    }
-                  },
-                ),
+            await context.push(
+              '/manga/${widget.muId}/read',
+              extra: ReaderWebExtras(
+                mangaTitle: widget.mangaTitle,
+                initialLastRead: chapterNumber - 1,
+                initialUrl: chapterUrl,
+                baseUserLink: widget.baseUrl,
+                autoDownload: true, // Mode téléchargement automatique
+                onDownloadComplete: (success) {
+                  downloadCompleted = success;
+                  if (!completer.isCompleted) {
+                    completer.complete(success);
+                  }
+                },
               ),
             );
 
@@ -182,10 +181,9 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                 final completer = Completer<bool>();
                 bool downloadCompleted = false;
                 
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ReaderWebView(
-                      muId: widget.muId,
+                await context.push(
+                  '/manga/${widget.muId}/read',
+                  extra: ReaderWebExtras(
                       mangaTitle: widget.mangaTitle,
                       initialLastRead: chapterNumber - 1,
                       initialUrl: chapterUrl,
@@ -197,7 +195,6 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                           completer.complete(success);
                         }
                       },
-                    ),
                   ),
                 );
 

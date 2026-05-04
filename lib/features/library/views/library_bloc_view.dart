@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/components/search_bar.dart' show CustomSearchBar;
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
@@ -11,8 +12,6 @@ import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
-import 'package:mangatracker/features/download/views/downloads_page.dart';
-import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -215,7 +214,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   }
 
   void _redirectToLoginPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginView()));
+    context.push('/login');
   }
 
   @override
@@ -241,9 +240,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           IconButton(
             icon: const Icon(Icons.folder),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const DownloadsPage()),
-              );
+              context.push('/downloads');
             },
             tooltip: 'Gérer les téléchargements',
           ),

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -10,7 +11,6 @@ import '../../../core/components/filter_button.dart';
 import '../../../core/components/welcome_header.dart';
 import '../../../core/notifier/notifier.dart';
 import '../../auth/services/auth.service.dart';
-import '../../auth/views/login.view.dart';
 import '../../manga/services/manga.service.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:flutter/material.dart';
@@ -128,10 +128,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void redirectToLoginPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.push('/login');
   }
 
   get border => null;

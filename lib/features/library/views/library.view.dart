@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -6,7 +7,6 @@ import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../auth/exceptions/invalid_credentials.exception.dart';
-import '../../auth/views/login.view.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 
@@ -91,7 +91,7 @@ class _LibraryViewState extends State<LibraryView> {
   }
 
   void redirectToLoginPage() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginView()));
+    context.push('/login');
   }
 
   @override

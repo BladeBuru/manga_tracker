@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
@@ -10,9 +11,7 @@ import '../presentation/cubit/auth_submission_status.dart';
 import '../presentation/cubit/login_cubit.dart';
 import '../presentation/cubit/login_state.dart';
 import '../services/validator.service.dart';
-import 'register.view.dart';
 import '../widgets/square_tile.dart';
-import '../../home/views/bottom_navbar.dart';
 import '../../../core/components/intput_textfield.dart';
 import '../services/auth.service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -98,12 +97,9 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void redirectToRegisterPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RegisterView(emailText: _emailController.text),
-      ),
-    );
+    final email = _emailController.text;
+    final encoded = Uri.encodeQueryComponent(email);
+    context.push('/register?email=$encoded');
   }
 
   @override
@@ -128,9 +124,7 @@ class _LoginViewState extends State<LoginView> {
               }
 
               if (!context.mounted) return;
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const BottomNavbar()),
-              );
+              context.go('/home');
               _loginCubit.reset();
             }
           },
@@ -245,7 +239,9 @@ class _LoginViewState extends State<LoginView> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    context.push('/forgot-password');
+                                  },
                                   child: Text(
                                     l10n?.forgotPassword ?? "Mot de passe oublié ?",
                                     style: TextStyle(color: Colors.grey[600]),
@@ -283,9 +279,7 @@ class _LoginViewState extends State<LoginView> {
                                         if (!mounted) return;
 
                                         if (success) {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(builder: (_) => const BottomNavbar()),
-                                          );
+                                          context.go('/home');
                                         } else {
                                           final localization = AppLocalizations.of(context);
                                           notifier.error(
@@ -341,9 +335,7 @@ class _LoginViewState extends State<LoginView> {
                                         final success = await authService.loginWithGoogle(context);
                                         if (!context.mounted) return;
                                         if (success) {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(builder: (_) => const BottomNavbar()),
-                                          );
+                                          context.go('/home');
                                         } else {
                                           notifier.error(
                                             l10n?.googleLoginFailed ?? 'Échec de la connexion Google',

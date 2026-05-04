@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -18,10 +18,7 @@ import '../dto/user_information.dto.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/profile_section.dart';
-import 'package:mangatracker/features/download/views/downloads_page.dart';
-import 'notifications_settings_page.dart';
 import '../widgets/changelog_card.dart';
-import 'custom_selectors_page.dart';
 
 /// Page de profil moderne avec Material 3 et composants réutilisables
 class Profile extends StatefulWidget {
@@ -265,10 +262,7 @@ class _ProfileState extends State<Profile> {
 
   void _redirectToLoginPage() {
     HapticFeedback.lightImpact();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
+    context.go('/login');
   }
 
   void _showConfirmDeleteAccount() {
@@ -622,11 +616,7 @@ class _ProfileState extends State<Profile> {
                         title: l10n.notifications,
                         subtitle: l10n.manageNotifications,
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const NotificationsSettingsPage(),
-                            ),
-                          );
+                          context.push('/notifications-settings');
                         },
                         iconColor: Colors.blue,
                       ),
@@ -681,6 +671,16 @@ class _ProfileState extends State<Profile> {
                     title: l10n.actions,
                     children: [
                       ProfileOptionTile(
+                        icon: Icons.shield_outlined,
+                        title: l10n.myDataTitle,
+                        subtitle: l10n.myDataSubtitle,
+                        onTap: () {
+                          context.push('/my-data');
+                        },
+                        iconColor: Colors.teal,
+                        backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                      ),
+                      ProfileOptionTile(
                         icon: Icons.logout,
                         title: l10n.logout,
                         subtitle: l10n.logoutSubtitle,
@@ -733,11 +733,7 @@ class _ProfileState extends State<Profile> {
                         title: l10n.manageDownloads,
                         subtitle: l10n.manageDownloadsSubtitle,
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const DownloadsPage(),
-                            ),
-                          );
+                          context.push('/downloads');
                         },
                         iconColor: Colors.blue,
                       ),
@@ -755,11 +751,7 @@ class _ProfileState extends State<Profile> {
                         title: l10n.manageCustomSelectors,
                         subtitle: l10n.manageCustomSelectorsSubtitle,
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const CustomSelectorsPage(),
-                            ),
-                          );
+                          context.push('/custom-selectors');
                         },
                         iconColor: Colors.purple,
                       ),
