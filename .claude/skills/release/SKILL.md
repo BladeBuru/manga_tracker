@@ -85,14 +85,24 @@ else
 fi
 ```
 
-Présenter à l'user comme draft, en suggérant de :
-- Filtrer les commits techniques (chore, refactor pur, ci/cd)
-- Reformuler en français orienté utilisateur (pas de "feat:", "fix:")
-- Regrouper par catégorie : ✨ Nouveautés / 🐛 Corrections / ⚡ Améliorations
+⚠️ **Le changelog des commits est uniquement une matière première.** Il ne doit
+**PAS** être copié-collé tel quel. La règle absolue : **le changelog visible
+par l'utilisateur final ne contient AUCUN jargon technique**. Voir la section
+"Format du changelog" ci-dessous (règles strictes + exemples avant/après).
+
+L'agent doit :
+1. Lire les commits comme une liste de "qu'est-ce qui change pour l'user".
+2. Filtrer **complètement** : ci/cd, refactoring pur, migrations techniques,
+   compat plateforme interne, etc. → **rien** dans le changelog public.
+3. Pour les nouveautés/corrections user-facing, **réécrire** dans le langage
+   d'un utilisateur qui découvre l'app — pas un dev qui a relu le diff.
 
 ### d. Confirmer le changelog final
 
 Montrer le changelog proposé à l'user, attendre validation ou édition.
+**Toujours demander** explicitement : « Cette release sera vue par les
+utilisateurs finaux dans la GitHub Release et l'écran "Quoi de neuf ?" de
+l'app. Tu valides ce changelog tel quel ? »
 
 ---
 
@@ -154,29 +164,93 @@ Une fois le workflow réussi :
 
 ---
 
-## Format du changelog
+## Format du changelog (règles ABSOLUES)
 
-Exemple cible :
+Le changelog est lu par **les utilisateurs finaux** dans :
+- la **GitHub Release** publique
+- l'écran **« Quoi de neuf ? »** affiché à l'ouverture de l'app après mise à jour
 
-```markdown
-✨ Nouveautés
-- Support Flutter Web : l'app est désormais accessible depuis n'importe quel navigateur
-- Recommendations personnalisées par genre
+Donc on parle **à un utilisateur**, pas à un dev. Comme un message de
+"Updates" sur l'App Store.
 
-🐛 Corrections
-- Fix du refresh token qui se perdait après navigation profonde
-- Correction du crash sur la page profil quand l'avatar est null
+### ✅ Règles à respecter
 
-⚡ Améliorations
-- Démarrage 30% plus rapide (lazy loading des BLoCs)
-- Cache offline étendu à 24h pour les détails manga
+1. **Français**, ton naturel, action-oriented (« Vous pouvez maintenant... »).
+2. **Une bullet = une chose que l'utilisateur va voir/utiliser/sentir**.
+3. **Emoji par catégorie** pour le scan rapide :
+   - ✨ Nouveautés
+   - ⚡ Améliorations
+   - 🐛 Corrections
+4. **3-8 bullets max par catégorie**. Si tu as 15 lignes, c'est qu'il y a du
+   bruit technique à filtrer.
+
+### ❌ Interdits absolus
+
+- **Aucun nom de techno** : pas de Flutter Web, pas de NestJS, pas de
+  go_router, pas de Docker, pas de `dart:io`, pas de "magic link", pas de
+  CI/CD, pas de pipeline, pas de Nginx, pas de Postgres, pas de schéma de
+  routing, pas de "deep-linking", pas de "JWT".
+- **Aucun nom de classe/fichier/commit** : pas de "AuthService", pas de
+  "uri_builder.dart", pas de "fix(release): ...".
+- **Aucun préfixe conventional commits** : pas de `feat:`, `fix:`, `chore:`.
+- **Aucun changement uniquement interne** : refactoring, migration de
+  l'archi, mise à jour CI/CD, garde-fous de sécurité réseau, etc. → **rien**
+  dans le changelog public. Ces changements existent pour préparer le
+  terrain, pas pour être annoncés.
+
+### 📐 Pattern de réécriture
+
+Pour chaque commit ou groupe de commits :
+1. Demande-toi : **« Qu'est-ce que l'utilisateur peut faire / voir / sentir
+   de différent ? »**
+2. Si la réponse est **« rien de visible »** → exclus.
+3. Sinon, écris UN bullet en parlant à l'utilisateur :
+   - « Vous pouvez maintenant... »
+   - « L'inscription accepte désormais... »
+   - « Le mode sombre est disponible... »
+
+### 🪞 Exemples — AVANT (mauvais) / APRÈS (bon)
+
+**AVANT** (jargon dev, à NE PAS faire) :
+```
+- Support Flutter Web complet : auth, bibliothèque, recherche, recommandations
+- Connexion Google OAuth (mobile via idToken + web via OAuth WebView)
+- Migration vers go_router : URL stables et partageables, deep-linking
+- Cubits dédiés pour forgot_password et reset_password
+- Pipeline CI/CD : déploiement web automatisé sur le NAS (Docker + Nginx)
+- Compatibilité Flutter Web : suppression de dart:io dans les services core
+- Pipeline release tourne maintenant sur master au lieu de dev
+- Migration MaterialPageRoute → go_router pour deep-linking web
 ```
 
-**Règles** :
-- Pas de "feat:", "fix:", "chore:" (orienté utilisateur, pas dev)
-- Français
-- Une bullet par changement (pas de paragraphes)
-- Emoji par catégorie pour la lisibilité
+**APRÈS** (orienté utilisateur, ton à utiliser) :
+```
+✨ Nouveautés
+- Vous pouvez maintenant vous connecter avec votre compte Google
+- Mode sombre / clair / automatique selon les réglages système
+- Application disponible dans votre navigateur — plus besoin d'installer l'app
+- Recommandations personnalisées par genre
+
+⚡ Améliorations
+- Mot de passe oublié : vous recevez désormais un mail pour le réinitialiser
+- Confirmation d'adresse email à l'inscription
+- Lecture hors ligne des chapitres téléchargés
+
+🐛 Corrections
+- Le partage d'un lien de manga ouvre désormais directement la bonne fiche
+```
+
+Note : tout ce qui est purement technique (CI/CD, refactoring, compat web
+interne) **a disparu**. C'est volontaire. L'utilisateur s'en fiche.
+
+### 🔧 Cas spéciaux
+
+- **Sécurité importante** : si une faille est corrigée, on l'annonce sobrement
+  (« 🔒 Correctif de sécurité — il est recommandé de mettre à jour »).
+- **Breaking change utilisateur** (ex : doit re-login) : annoncer clairement
+  (« ⚠️ Vous devrez vous reconnecter après cette mise à jour »).
+- **Re-consentement RGPD** : « Nouvelles conditions d'utilisation à accepter
+  au prochain login ».
 
 ---
 

@@ -67,6 +67,33 @@ Voir skill `/cross-platform-audit` pour vérifier un fichier ou feature.
 - ✅ **TOUJOURS** traduire tous les textes visibles
 - ✅ **TOUJOURS** mettre à jour `memory-bank/progress.md` après chaque feature
 - ✅ **TOUJOURS** mettre à jour `memory-bank/roadmap.md` (statut `⏳` → `🔵` ou `✅`) quand une feature avance
+- ✅ **TOUJOURS** invoquer la skill `/release` pour préparer une release (changelog inclus) — voir [.claude/skills/release/SKILL.md](.claude/skills/release/SKILL.md)
+
+---
+
+## 📢 Changelog & messages utilisateur (NON-NÉGOCIABLE)
+
+Les changelogs (GitHub Release + écran « Quoi de neuf ? » dans l'app) sont
+**lus par les utilisateurs finaux**, pas par des devs. Règle absolue :
+
+- ❌ **JAMAIS** de jargon technique : pas de "Flutter Web", "go_router",
+  "JWT", "Docker", "magic link", "deep-linking", "CI/CD", "Nginx",
+  "Postgres", "schéma de routing", `uri_builder.dart`, etc.
+- ❌ **JAMAIS** de noms de techno, de classe, ou de fichier dans le changelog public.
+- ❌ **JAMAIS** de préfixes conventional commits dans le texte affiché
+  (`feat:`, `fix:`, `chore:`).
+- ❌ **JAMAIS** annoncer les refactorings, migrations internes, mises à jour
+  CI/CD ou compat plateforme : invisibles pour l'utilisateur → exclure.
+- ✅ **TOUJOURS** parler à l'utilisateur (« Vous pouvez maintenant... »).
+- ✅ **TOUJOURS** une bullet = une chose visible/utilisable/ressentie.
+- ✅ **TOUJOURS** regrouper par catégorie : ✨ Nouveautés / ⚡ Améliorations /
+  🐛 Corrections (3-8 bullets max par catégorie).
+- ✅ **TOUJOURS** invoquer la skill `/release` qui contient la matrice
+  AVANT/APRÈS et force ce style.
+
+**Exemple correct** : `Vous pouvez maintenant vous connecter avec votre
+compte Google` (et NON `Connexion Google OAuth (mobile via idToken + web
+via OAuth WebView)`).
 
 ---
 
