@@ -1,8 +1,32 @@
 {
-  "latestVersion": "0.8.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.8.0/MangaTracker.apk",
+  "latestVersion": "0.9.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.9.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.9.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Support Flutter Web complet : auth, bibliothèque, recherche, détails manga, recommandations",
+        "- Connexion Google OAuth (mobile via idToken + web via OAuth WebView)",
+        "- Mode sombre / clair / système (avec persistance des préférences)",
+        "- Lecture hors ligne des chapitres téléchargés",
+        "- Réinitialisation de mot de passe par email (magic link)",
+        "- Vérification email à l'inscription (magic link)",
+        "- Recommandations personnalisées par genre + sleeper hits (pépites cachées)",
+        "- Page « Mes données » (RGPD article 15/17/20)",
+        "⚡ Améliorations",
+        "- Migration vers go_router : URL stables et partageables, deep-linking propre sur le web",
+        "- Nouvelle skill /release pour automatiser le bump version + changelog",
+        "- Pipeline CI/CD : déploiement web automatisé sur le NAS (Docker + Nginx)",
+        "- Backup quotidien automatique de la base de données",
+        "- Roadmap mind map intégrée au projet (markdown + mermaid)",
+        "- Pipeline release tourne maintenant sur master au lieu de dev",
+        "🐛 Corrections",
+        "- Compatibilité Flutter Web : suppression de dart:io dans les services core",
+        "- Cubits dédiés pour forgot_password et reset_password"
+      ]
+    },
     {
       "version": "0.8.0",
       "notes": [
