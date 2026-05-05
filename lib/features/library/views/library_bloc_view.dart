@@ -262,14 +262,35 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
         listener: (context, state) {
           // Gérer les erreurs d'authentification
           if (state is LibraryError) {
-            if (state.message.contains('InvalidCredentials') || 
+            if (state.message.contains('InvalidCredentials') ||
                 state.message.contains('Expired session')) {
               _redirectToLoginPage();
             }
           }
         },
         builder: (context, state) {
-          return _buildBody(state);
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth >= 1200) {
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1100),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: _buildBody(state),
+                    ),
+                  ),
+                );
+              }
+              if (constraints.maxWidth >= 600) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _buildBody(state),
+                );
+              }
+              return _buildBody(state);
+            },
+          );
         },
       ),
     );

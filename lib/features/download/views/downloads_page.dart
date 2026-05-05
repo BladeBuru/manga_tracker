@@ -188,29 +188,33 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _downloadedChapters.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.download_outlined,
-                        size: 64,
-                        color: Colors.grey[400],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 1200;
+          final isTablet = constraints.maxWidth >= 600;
+          final body = _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _downloadedChapters.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.download_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n?.noChaptersDownloaded ?? 'Aucun chapitre téléchargé',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n?.noChaptersDownloaded ?? 'Aucun chapitre téléchargé',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
+                    )
+                  : RefreshIndicator(
                   onRefresh: _loadDownloads,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -278,7 +282,27 @@ class _DownloadsPageState extends State<DownloadsPage> {
                       );
                     },
                   ),
+                );
+          if (isDesktop) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: body,
                 ),
+              ),
+            );
+          }
+          if (isTablet) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: body,
+            );
+          }
+          return body;
+        },
+      ),
     );
   }
 }

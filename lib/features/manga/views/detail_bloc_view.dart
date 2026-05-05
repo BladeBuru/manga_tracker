@@ -158,10 +158,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       ),
       body: SafeArea(
         top: false,
-        child: BlocConsumer<DetailBloc, DetailState>(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final inner = BlocConsumer<DetailBloc, DetailState>(
           listener: (context, state) {
             if (state is DetailError) {
-              if (state.message.contains('InvalidCredentials') || 
+              if (state.message.contains('InvalidCredentials') ||
                   state.message.contains('Expired session')) {
                 widget.onRedirectToLogin();
               }
@@ -228,8 +230,19 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             if (state is DetailLoaded) {
               return _buildDetailContent(state);
             }
-            
+
             return const SizedBox.shrink();
+          },
+        );
+            if (constraints.maxWidth >= 900) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: inner,
+                ),
+              );
+            }
+            return inner;
           },
         ),
       ),

@@ -290,28 +290,44 @@ class _RechercheState extends State<Search> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.all(25.0),
-        child: Column(
-          children: [
-            //Espace en haut
-            const SizedBox(height: 80),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 1200;
+          final innerHorizontal = isDesktop ? 32.0 : 25.0;
+          final content = Padding(
+            padding: EdgeInsets.symmetric(horizontal: innerHorizontal, vertical: 25),
+            child: Column(
+              children: [
+                //Espace en haut
+                const SizedBox(height: 80),
 
-            // Search bar harmonisée
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0.0),
-              child: CustomSearchBar(
-                controller: searchController,
-                onChanged: _onChangeHandler,
-                showLogo: true,
-              ),
+                // Search bar harmonisée
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                  child: CustomSearchBar(
+                    controller: searchController,
+                    onChanged: _onChangeHandler,
+                    showLogo: true,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Expanded(child: SizedBox(child: childWidget)),
+              ],
             ),
-            
-            const SizedBox(height: 16),
-            
-            Expanded(child: SizedBox(child: childWidget)),
-          ],
-        ),
+          );
+          if (isDesktop) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: content,
+              ),
+            );
+          }
+          // tablette + mobile : même layout, padding 25 (largeur naturelle)
+          return content;
+        },
       ),
     );
   }

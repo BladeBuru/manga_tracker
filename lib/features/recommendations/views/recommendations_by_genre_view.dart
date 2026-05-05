@@ -51,48 +51,72 @@ class _RecommendationsByGenreViewState
           l10n?.recommendationsByGenreTitle ?? 'Recommandations par genre',
         ),
       ),
-      body: FutureBuilder<Map<String, List<MangaQuickViewDto>>>(
-        future: _byGenreFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final data = snapshot.data ?? const {};
-          final entries =
-              data.entries.where((e) => e.value.isNotEmpty).toList();
-          if (entries.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 80),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      l10n?.recommendationsByGenreEmpty ??
-                          'Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6),
-                          ),
-                    ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 1200;
+          final isTablet = constraints.maxWidth >= 600;
+          final inner = FutureBuilder<Map<String, List<MangaQuickViewDto>>>(
+            future: _byGenreFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final data = snapshot.data ?? const {};
+              final entries =
+                  data.entries.where((e) => e.value.isNotEmpty).toList();
+              if (entries.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    children: [
+                      const SizedBox(height: 80),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          l10n?.recommendationsByGenreEmpty ??
+                              'Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                );
+              }
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  itemCount: entries.length,
+                  itemBuilder: (context, index) =>
+                      _GenreSection(entry: entries[index]),
+                ),
+              );
+            },
+          );
+          if (isDesktop) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: inner,
+                ),
               ),
             );
           }
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: entries.length,
-              itemBuilder: (context, index) =>
-                  _GenreSection(entry: entries[index]),
-            ),
-          );
+          if (isTablet) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: inner,
+            );
+          }
+          return inner;
         },
       ),
     );

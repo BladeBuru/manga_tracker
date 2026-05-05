@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,51 +54,71 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
           }
         },
         builder: (context, state) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              _homePageBloc.add(const RefreshHomePage());
-              await Future.delayed(const Duration(milliseconds: 500));
-            },
-            child: CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(25, 40, 25, 0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildWelcomeHeader(state),
-                      _buildOfflineIndicator(state),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final outerHorizontalPadding = constraints.maxWidth >= 1200
+                  ? math.max(0.0, (constraints.maxWidth - 1100) / 2)
+                  : 0.0;
+              final innerHorizontalPadding = constraints.maxWidth >= 1200
+                  ? 32.0
+                  : (constraints.maxWidth >= 600 ? 25.0 : 25.0);
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _homePageBloc.add(const RefreshHomePage());
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: outerHorizontalPadding),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(
+                          innerHorizontalPadding,
+                          40,
+                          innerHorizontalPadding,
+                          0,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            _buildWelcomeHeader(state),
+                            _buildOfflineIndicator(state),
 
-                      // Banner "Vérifiez votre email" — visible uniquement
-                      // quand l'utilisateur est connecté et que l'email
-                      // n'a pas encore été cliqué via le magic link.
-                      VerifyEmailBanner(
-                        visible: state is HomePageLoaded &&
-                            state.user != null &&
-                            !state.user!.emailVerified,
+                            // Banner "Vérifiez votre email" — visible uniquement
+                            // quand l'utilisateur est connecté et que l'email
+                            // n'a pas encore été cliqué via le magic link.
+                            VerifyEmailBanner(
+                              visible: state is HomePageLoaded &&
+                                  state.user != null &&
+                                  !state.user!.emailVerified,
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // ── Recommandés pour vous (carrousel compact 5 max) ──
+                            _buildRecommendationsSection(state),
+
+                            const SizedBox(height: 24),
+
+                            // ── Filtres + liste paginée ──
+                            _buildFilterButtons(),
+                            const SizedBox(height: 16),
+                          ]),
+                        ),
                       ),
 
-                      const SizedBox(height: 20),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: innerHorizontalPadding,
+                        ),
+                        sliver: _buildFilteredMangaSliver(state),
+                      ),
 
-                      // ── Recommandés pour vous (carrousel compact 5 max) ──
-                      _buildRecommendationsSection(state),
-
-                      const SizedBox(height: 24),
-
-                      // ── Filtres + liste paginée ──
-                      _buildFilterButtons(),
-                      const SizedBox(height: 16),
-                    ]),
+                      const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+                    ],
                   ),
                 ),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  sliver: _buildFilteredMangaSliver(state),
-                ),
-
-                const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-              ],
-            ),
+              );
+            },
           );
         },
       ),
