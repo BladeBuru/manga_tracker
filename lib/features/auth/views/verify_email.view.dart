@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
+import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
+import 'package:mangatracker/features/home/bloc/homepage_event.dart';
+import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Vue intermédiaire qui consomme le token reçu dans le mail de
@@ -44,6 +47,26 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       );
+      // L'API a flippé `emailVerifiedAt` côté serveur. Invalider le cache
+      // local + refetch pour que `UserInformationDto.emailVerified` soit
+      // à jour au prochain `getUserInformation()` (sinon la banner
+      // « Vérifiez votre email » reste affichée jusqu'à expiration cache 7j).
+      try {
+        final userService = getIt<UserService>();
+        await userService.invalidateUserInfoCache();
+        await userService.getUserInformation();
+      } catch (_) {
+        // Erreur réseau silencieuse : si le refetch échoue, la HomePage
+        // refera l'appel à son tour. Le succès de la vérif n'en dépend pas.
+      }
+      // Rafraîchir le HomePageBloc s'il est déjà instancié (lazy singleton),
+      // pour que la banner de vérif disparaisse immédiatement à l'arrivée
+      // sur la home.
+      try {
+        if (getIt.isRegistered<HomePageBloc>()) {
+          getIt<HomePageBloc>().add(const RefreshHomePage());
+        }
+      } catch (_) {}
       return true;
     } on InvalidEmailTokenException {
       return false;

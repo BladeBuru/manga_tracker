@@ -340,6 +340,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         email: userInfo.email,
         avatar: null, // UserInformationDto n'a pas d'avatar
         lastLogin: null, // UserInformationDto n'a pas de lastLogin
+        emailVerified: userInfo.emailVerified,
       );
     } catch (e) {
       return null;
