@@ -1,10 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:html/parser.dart';
 import '../helpers/image.helper.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/router/app_router.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/manga/services/manga.service.dart';
 
 class MangaRow extends StatelessWidget {
   final String mangaName;
@@ -143,8 +146,9 @@ class MangaRow extends StatelessWidget {
                       SizedBox(
                         width: 80,
                         height: 100,
-                        child: ImageHelper.loadMangaImage(
-                          mediumImgPath,
+                        child: _RefreshableRowImage(
+                          muId: muId,
+                          originalUrl: mediumImgPath,
                           width: 80,
                           height: 100,
                           fit: BoxFit.cover,
@@ -274,6 +278,116 @@ class MangaRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Cooldown global (5min par muId) — partagé avec [_RefreshableMangaImage]
+/// dans `manga_card.dart` mais via une instance distincte (pas critique :
+/// un double appel par muId / page reste tolérable et reste throttle côté
+/// API par le cooldown serveur).
+final Map<int, DateTime> _rowCoverRefreshCooldown = {};
+const Duration _rowCoverRefreshCooldownDuration = Duration(minutes: 5);
+
+/// Cf. [_RefreshableMangaImage] dans `manga_card.dart` — version pour le
+/// row qui utilise les mêmes dimensions que la cover row (80×100).
+class _RefreshableRowImage extends StatefulWidget {
+  final String muId;
+  final String? originalUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+
+  const _RefreshableRowImage({
+    required this.muId,
+    required this.originalUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  });
+
+  @override
+  State<_RefreshableRowImage> createState() => _RefreshableRowImageState();
+}
+
+class _RefreshableRowImageState extends State<_RefreshableRowImage> {
+  String? _currentUrl;
+  bool _refreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUrl = widget.originalUrl;
+  }
+
+  @override
+  void didUpdateWidget(covariant _RefreshableRowImage old) {
+    super.didUpdateWidget(old);
+    if (old.originalUrl != widget.originalUrl) {
+      _currentUrl = widget.originalUrl;
+    }
+  }
+
+  Future<void> _attemptRefresh() async {
+    if (_refreshing) return;
+    final muIdInt = int.tryParse(widget.muId);
+    if (muIdInt == null || muIdInt <= 0) return;
+
+    final lastTry = _rowCoverRefreshCooldown[muIdInt];
+    if (lastTry != null &&
+        DateTime.now().difference(lastTry) <
+            _rowCoverRefreshCooldownDuration) {
+      return;
+    }
+    _rowCoverRefreshCooldown[muIdInt] = DateTime.now();
+    _refreshing = true;
+    try {
+      final fresh = await getIt<MangaService>().refreshCover(muIdInt);
+      if (!mounted) return;
+      final newUrl = fresh.mediumCoverUrl ?? fresh.smallCoverUrl;
+      if (newUrl != null && newUrl.isNotEmpty && newUrl != _currentUrl) {
+        setState(() => _currentUrl = newUrl);
+      }
+    } catch (_) {
+      // Silencieux.
+    } finally {
+      _refreshing = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = _currentUrl;
+    if (url == null || url.isEmpty) {
+      return ImageHelper.loadMangaImage(
+        null,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+      );
+    }
+    return CachedNetworkImage(
+      key: ValueKey(url),
+      imageUrl: url,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      cacheKey: url,
+      placeholder: (_, __) => ImageHelper.loadMangaImage(
+        null,
+        width: widget.width,
+        height: widget.height,
+        fit: widget.fit,
+      ),
+      errorWidget: (_, __, ___) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _attemptRefresh());
+        return ImageHelper.loadMangaImage(
+          null,
+          width: widget.width,
+          height: widget.height,
+          fit: widget.fit,
+        );
+      },
     );
   }
 }

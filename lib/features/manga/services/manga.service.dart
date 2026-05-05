@@ -95,6 +95,31 @@ class MangaService {
     return getMangas(url, post: true, body: body);
   }
 
+  /// Demande à l'API de rafraîchir les URLs de cover d'un manga (utile quand
+  /// l'URL externe a expiré → 404). Retourne un [MangaQuickViewDto] avec les
+  /// URLs fraîches.
+  ///
+  /// Endpoint API : `POST /mangas/:muId/refresh-cover`.
+  Future<MangaQuickViewDto> refreshCover(int muId) async {
+    Uri url = buildApiUri('/mangas/$muId/refresh-cover');
+    Response response =
+        await httpService.postWithAuthTokens(url).timeout(
+      const Duration(seconds: 10),
+    );
+    if (response.statusCode == HttpStatus.ok ||
+        response.statusCode == HttpStatus.created) {
+      return MangaQuickViewDto.fromJson(jsonDecode(response.body));
+    }
+    if (response.statusCode == HttpStatus.forbidden) {
+      throw InvalidCredentialsException(
+        "Not authorized to access this resource",
+      );
+    }
+    throw Exception(
+      'refreshCover: HTTP ${response.statusCode}',
+    );
+  }
+
   Future<MangaDetailDto> getMangaDetail(String muId) async {
     Uri url = buildApiUri('/mangas/$muId');
     Response response = await httpService.getWithAuthTokens(url);
