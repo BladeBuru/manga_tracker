@@ -22,51 +22,53 @@ class AuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surfaceColor = theme.colorScheme.surfaceContainerHighest;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0),
       child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
         child: InkWell(
           borderRadius: BorderRadius.circular(borderRadius),
-          highlightColor: Colors.grey[200],
-          splashColor: Colors.grey[300],
-          onTap: isLoading
-              ? null
-              : () {
-                  HapticFeedback.lightImpact();
-                  onTap?.call();
-                },
+          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+          splashColor: theme.colorScheme.primary.withValues(alpha: 0.16),
+          onTap:
+              isLoading
+                  ? null
+                  : () {
+                    HapticFeedback.lightImpact();
+                    onTap?.call();
+                  },
           child: Ink(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: surfaceColor,
               borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                width: 1.5,
-                color: AppColors.primary,
-              ),
+              border: Border.all(width: 1.5, color: AppColors.primary),
             ),
             padding: padding,
             child: SizedBox(
               width: double.infinity,
               child: Center(
-                child: isLoading
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.primary,
+                child:
+                    isLoading
+                        ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primary,
+                            ),
+                          ),
+                        )
+                        : Text(
+                          text,
+                          style: AppTextStyles.authButton.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      )
-                    : Text(
-                        text,
-                        style: AppTextStyles.authButton.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
               ),
             ),
           ),

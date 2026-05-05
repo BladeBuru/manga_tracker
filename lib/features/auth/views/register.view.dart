@@ -159,6 +159,11 @@ class _RegisterViewState extends State<RegisterView> {
                           child: BlocBuilder<RegisterCubit, RegisterState>(
                             builder: (context, registerState) {
                               final l10n = AppLocalizations.of(context);
+                              final theme = Theme.of(context);
+                              final mutedColor = theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6);
+                              final dividerColor = theme.colorScheme.outline
+                                  .withValues(alpha: 0.4);
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,7 +178,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         child: IconButton(
                                           icon: Icon(
                                             Icons.arrow_back,
-                                            color: Colors.grey[600],
+                                            color: mutedColor,
                                           ),
                                           tooltip: l10n?.back ?? 'Retour',
                                           onPressed: redirectToLoginPage,
@@ -197,7 +202,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         "Commencez à suivre votre lecture maintenant",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Colors.grey[600],
+                                      color: mutedColor,
                                       fontSize: 16,
                                     ),
                                   ),
@@ -303,7 +308,7 @@ class _RegisterViewState extends State<RegisterView> {
                                           registerState.errorMessage!,
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: Colors.red[600],
+                                            color: theme.colorScheme.error,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -320,7 +325,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         Expanded(
                                           child: Divider(
                                             thickness: 0.5,
-                                            color: Colors.grey[400],
+                                            color: dividerColor,
                                           ),
                                         ),
                                         Padding(
@@ -329,15 +334,13 @@ class _RegisterViewState extends State<RegisterView> {
                                           ),
                                           child: Text(
                                             l10n?.or ?? 'Ou',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                            ),
+                                            style: TextStyle(color: mutedColor),
                                           ),
                                         ),
                                         Expanded(
                                           child: Divider(
                                             thickness: 0.5,
-                                            color: Colors.grey[400],
+                                            color: dividerColor,
                                           ),
                                         ),
                                       ],
@@ -404,9 +407,7 @@ class _RegisterViewState extends State<RegisterView> {
                                       Text(
                                         l10n?.alreadyHaveAccount ??
                                             "Vous avez déjà un compte ?",
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                        ),
+                                        style: TextStyle(color: mutedColor),
                                       ),
                                       const SizedBox(width: 6),
                                       GestureDetector(
@@ -414,7 +415,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         child: Text(
                                           l10n?.login ?? "Se connecter",
                                           style: TextStyle(
-                                            color: Colors.red[400],
+                                            color: theme.colorScheme.primary,
                                           ),
                                         ),
                                       ),
