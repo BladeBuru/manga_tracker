@@ -139,7 +139,15 @@ class _StartupPageState extends State<StartupPage> {
     // Affichage du changelog si nouvelle version installée depuis le dernier login.
     final changelogInfo = await appUpdateService.getNewChangelog();
     if (changelogInfo != null && changelogInfo.isEmpty == false && mounted) {
-      await _showChangelogDialog(changelogInfo);
+      // Marquer comme vu via `onClose` ET en backup après le `await`.
+      // - `onClose` couvre le clic sur « Super ! » (cas nominal).
+      // - Le `await` garantit le marquage si le dialog est fermé via le
+      //   bouton retour Android (où `onClose` n'est pas déclenché).
+      // Sans ce double appel, le dialog se réaffichait à chaque boot.
+      await _showChangelogDialog(
+        changelogInfo,
+        onClose: () => appUpdateService.markChangelogAsSeen(),
+      );
       await appUpdateService.markChangelogAsSeen();
     }
 
@@ -149,11 +157,15 @@ class _StartupPageState extends State<StartupPage> {
   // --- Fonctions dédiées à l'affichage (UI) ---
 
   /// Construit et affiche la boîte de dialogue des notes de version.
-  Future<void> _showChangelogDialog(ChangelogInfo changelogInfo) {
+  Future<void> _showChangelogDialog(
+    ChangelogInfo changelogInfo, {
+    VoidCallback? onClose,
+  }) {
     return ChangelogDialog.show(
       context,
       changelogInfo,
       barrierDismissible: false,
+      onClose: onClose,
     );
   }
 
