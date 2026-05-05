@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
@@ -108,12 +110,56 @@ class MangaService {
   }
 
 
+  /// Récupère les recommandations détail d'un manga (proxy vers MangaUpdates).
+  ///
+  /// L'API externe MangaUpdates est lente — l'API interne a un timeout de 15s
+  /// et batch les appels. Côté client, on applique :
+  ///  - Timeout de 18s (légèrement > timeout API)
+  ///  - 1 retry avec délai 500ms en cas de TimeoutException ou erreur réseau
+  ///  - Liste vide si tout échoue (graceful degradation, pas de crash)
+  ///
+  /// L'appel API est TOUJOURS effectué (pas de cache local) — l'API externe
+  /// fait foi.
   Future<List<MangaRecommendationView>> getMangaRecommendations(
-      String muId,
-      ) async {
+    String muId,
+  ) async {
+    try {
+      return await _fetchMangaRecommendations(muId);
+    } on TimeoutException catch (e) {
+      debugPrint('⚠️ MangaService.recommendations timeout, retry: $e');
+      await Future.delayed(const Duration(milliseconds: 500));
+      try {
+        return await _fetchMangaRecommendations(muId);
+      } catch (e2) {
+        debugPrint('⚠️ MangaService.recommendations retry failed: $e2');
+        return const [];
+      }
+    } on InvalidCredentialsException {
+      // Auth invalide : on laisse remonter pour que le caller redirect vers login.
+      rethrow;
+    } catch (e) {
+      // Erreur réseau (SocketException, etc.) → 1 retry puis liste vide.
+      debugPrint('⚠️ MangaService.recommendations error, retry: $e');
+      await Future.delayed(const Duration(milliseconds: 500));
+      try {
+        return await _fetchMangaRecommendations(muId);
+      } catch (e2) {
+        debugPrint('⚠️ MangaService.recommendations retry failed: $e2');
+        return const [];
+      }
+    }
+  }
+
+  /// Appel HTTP brut avec timeout, sans retry (utilisé par
+  /// [getMangaRecommendations] qui gère le retry).
+  Future<List<MangaRecommendationView>> _fetchMangaRecommendations(
+    String muId,
+  ) async {
     Uri url = buildApiUri('/mangas/recommendations/$muId');
 
-    Response response = await httpService.getWithAuthTokens(url);
+    Response response = await httpService
+        .getWithAuthTokens(url)
+        .timeout(const Duration(seconds: 18));
 
     if (response.statusCode == HttpStatus.ok) {
       dynamic data = jsonDecode(response.body);
