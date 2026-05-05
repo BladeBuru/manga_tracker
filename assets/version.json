@@ -7,172 +7,64 @@
       "version": "0.9.2",
       "notes": [
         "⚡ Améliorations",
-        "- L'application vérifie désormais les mises à jour dès le démarrage, sans attendre que vous soyez connecté",
-        "Cette version corrige un cercle vicieux : si jamais l'application avait un bug bloquant la connexion, il devenait impossible d'installer la nouvelle version qui le corrigeait. Vous serez désormais toujours informé d'une mise à jour disponible, peu importe l'état de votre connexion."
+        "- Vérification des mises à jour dès le démarrage de l'app"
       ]
     },
     {
       "version": "0.9.1",
       "notes": [
         "🐛 Corrections",
-        "- Le formulaire de connexion s'affiche maintenant correctement en mode sombre (les champs étaient illisibles)",
-        "- L'application se connecte de nouveau au serveur"
+        "- Champs de connexion lisibles en mode sombre",
+        "- Connexion au serveur rétablie"
       ]
     },
     {
       "version": "0.9.0",
       "notes": [
         "✨ Nouveautés",
-        "- Support Flutter Web complet : auth, bibliothèque, recherche, détails manga, recommandations",
-        "- Connexion Google OAuth (mobile via idToken + web via OAuth WebView)",
-        "- Mode sombre / clair / système (avec persistance des préférences)",
-        "- Lecture hors ligne des chapitres téléchargés",
-        "- Réinitialisation de mot de passe par email (magic link)",
-        "- Vérification email à l'inscription (magic link)",
-        "- Recommandations personnalisées par genre + sleeper hits (pépites cachées)",
-        "- Page « Mes données » (RGPD article 15/17/20)",
-        "⚡ Améliorations",
-        "- Migration vers go_router : URL stables et partageables, deep-linking propre sur le web",
-        "- Nouvelle skill /release pour automatiser le bump version + changelog",
-        "- Pipeline CI/CD : déploiement web automatisé sur le NAS (Docker + Nginx)",
-        "- Backup quotidien automatique de la base de données",
-        "- Roadmap mind map intégrée au projet (markdown + mermaid)",
-        "- Pipeline release tourne maintenant sur master au lieu de dev",
-        "🐛 Corrections",
-        "- Compatibilité Flutter Web : suppression de dart:io dans les services core",
-        "- Cubits dédiés pour forgot_password et reset_password"
+        "- L'app est désormais accessible depuis un navigateur web",
+        "- Connexion avec un compte Google",
+        "- Mode sombre / clair",
+        "- Mot de passe oublié par email",
+        "- Vérification de l'email à l'inscription",
+        "- Recommandations par genre",
+        "- Page « Mes données » (export et suppression du compte)"
       ]
     },
     {
       "version": "0.8.0",
       "notes": [
-        "### Ajouts",
-        "- Vous pouvez maintenant télécharger des chapitres pour les lire hors ligne",
-        "- Les chapitres téléchargés sont accessibles depuis une page dédiée dans les téléchargements",
-        "- Un bloqueur de publicités intégré bloque automatiquement les publicités pendant la lecture",
-        "- Vous pouvez bloquer manuellement des éléments indésirables pendant la lecture",
-        "- Les descriptions de mangas sont automatiquement traduites dans votre langue préférée",
-        "- Les notes de mise à jour sont traduites automatiquement dans votre langue",
-        "- L'application sauvegarde automatiquement votre position de lecture dans chaque chapitre pour reprendre où vous vous êtes arrêté",
-        "- Vous pouvez personnaliser les sélecteurs de chapitres selon vos préférences",
-        "- Des liens vers notre serveur Discord ont été ajoutés dans les paramètres"
-      ]
-    },
-    {
-      "version": "0.7.1",
-      "notes": [
-        "### Ajouts",
-        "- Vous pouvez choisir la langue de l'application directement depuis les paramètres",
-        "- Les formulaires de connexion et d'inscription affichent des messages d'erreur plus clairs et traduits",
-        "### Améliorations",
-        "- Les liens de connexion sont plus lisibles",
-        "- La bibliothèque mémorise votre vue préférée et se recharge plus vite"
+        "✨ Nouveautés",
+        "- Téléchargement de chapitres pour la lecture hors ligne",
+        "- Bloqueur de publicités intégré pendant la lecture",
+        "- Descriptions de mangas traduites dans votre langue",
+        "- Reprise de la lecture là où vous vous êtes arrêté",
+        "- Sélecteurs de chapitres personnalisables"
       ]
     },
     {
       "version": "0.7.0",
       "notes": [
-        "### Ajouts",
-        "- Vous pouvez activer ou désactiver l'authentification biométrique dans les paramètres",
-        "- L'application vous propose d'activer l'authentification biométrique lors de votre première connexion si votre appareil le supporte",
-        "- L'historique de recherche est sauvegardé et persiste entre les sessions",
-        "- Vous pouvez supprimer des éléments de l'historique de recherche",
-        "- Les textes de l'application sont traduits dans toutes les langues supportées",
-        "### Améliorations",
-        "- Amélioration de l'interface de recherche",
-        "- Harmonisation des barres de recherche entre les différentes pages"
+        "✨ Nouveautés",
+        "- Connexion par empreinte digitale (biométrie)",
+        "- Choix de la langue dans les paramètres",
+        "- Historique de recherche conservé entre les sessions"
       ]
     },
     {
       "version": "0.6.0",
       "notes": [
-        "### Ajouts",
-        "- Organisation des chapitres par saisons avec sections repliables",
-        "- Affichage des titres alternatifs des mangas",
-        "- Image de couverture agrandissable au clic avec zoom",
-        "- Design modernisé avec informations principales en badges",
-        "### Améliorations",
-        "- Interface plus compacte et lisible"
-      ]
-    },
-    {
-      "version": "0.5.0",
-      "notes": [
-        "### Ajouts",
-        "- Vous pouvez choisir la langue de l'application dans les paramètres de votre profil",
-        "- L'application se charge plus rapidement grâce à l'amélioration du cache",
-        "### Améliorations",
-        "- Les messages d'erreur sont plus clairs lors des mises à jour"
-      ]
-    },
-    {
-      "version": "0.4.0",
-      "notes": [
-        "### Ajouts",
-        "- Nouvelle page de profil avec interface moderne et intuitive",
-        "- Affichage automatique des nouvelles fonctionnalités avec possibilité de consulter toutes les améliorations précédentes",
-        "- Confirmations claires pour les actions importantes",
-        "### Améliorations",
-        "- Amélioration de l'affichage des informations de votre compte",
-        "- Amélioration de l'expérience lors de la modification du mot de passe"
-      ]
-    },
-    {
-      "version": "0.3.0",
-      "notes": [
-        "### Ajouts",
-        "- Mode hors ligne amélioré avec indicateurs visuels sur toutes les pages",
-        "- Les couvertures de mangas s'affichent même sans connexion internet",
-        "- Toutes les actions sont instantanées sans rechargement de page",
-        "- L'application détecte automatiquement quand vous êtes hors ligne",
-        "### Améliorations",
-        "- Amélioration de la fiabilité de la détection du mode hors ligne"
-      ]
-    },
-    {
-      "version": "0.2.4",
-      "notes": [
-        "### Ajouts",
-        "- Lecture en ligne avec bloqueur de publicités",
-        "- Suivi automatique des chapitres avec mise à jour du lien vers le chapitre suivant",
-        "- Ouverture dans un nouvel onglet avec validation rapide du dernier chapitre lu",
-        "### Améliorations",
-        "- Actualisation automatique de la page de détail après la lecture"
-      ]
-    },
-    {
-      "version": "0.1.3",
-      "notes": [
-        "### Améliorations",
-        "- Amélioration de l'affichage des images",
-        "- Amélioration de l'affichage des genres, types et recommandations"
-      ]
-    },
-    {
-      "version": "0.1.2",
-      "notes": [
-        "### Ajouts",
-        "- Nouveau bouton de statut sur la page de détail pour gérer vos mangas plus facilement",
-        "- Les notifications peuvent être fermées manuellement",
-        "### Améliorations",
-        "- Optimisation du temps de chargement de la page de détail",
-        "- Améliorations de la stabilité"
-      ]
-    },
-    {
-      "version": "0.1.1",
-      "notes": [
-        "### Ajouts",
-        "- Connexion par empreinte digitale avec authentification biométrique",
-        "- Vous pouvez ajouter des mangas à votre bibliothèque pour suivre votre progression",
-        "- Nouveaux statuts de lecture : 'En cours', 'À lire plus tard' et 'Terminé'"
+        "✨ Nouveautés",
+        "- Chapitres organisés par saisons",
+        "- Titres alternatifs des mangas affichés",
+        "- Couverture agrandissable au clic"
       ]
     },
     {
       "version": "0.1.0",
       "notes": [
-        "Lancement initial de Manga Tracker",
-        "Recherche et consultation des détails des mangas"
+        "Lancement initial",
+        "- Bibliothèque personnelle, recherche, détails des mangas, suivi de lecture"
       ]
     }
   ]
