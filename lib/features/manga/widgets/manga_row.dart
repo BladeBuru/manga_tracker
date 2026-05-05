@@ -246,7 +246,7 @@ class MangaRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (rating != null)
+                if (rating != null && rating!.isNotEmpty && rating != 'N/A' && rating != '0' && rating != '0.0')
                   Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: Column(

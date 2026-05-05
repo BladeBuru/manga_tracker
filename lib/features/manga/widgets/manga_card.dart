@@ -185,7 +185,7 @@ class MangaCard extends StatelessWidget {
                       maxLines: 1,
                     ),
                   ),
-                  if (rating != null && rating!.isNotEmpty) ...[
+                  if (rating != null && rating!.isNotEmpty && rating != 'N/A' && rating != '0' && rating != '0.0') ...[
                     const SizedBox(width: 4),
                     Icon(
                       Icons.star,

@@ -368,10 +368,28 @@ class OfflineCacheService {
     return {};
   }
   
-  /// Vérifie si un cache spécifique est expiré.
-  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
+  /// Vérifie si un cache spécifique est expiré au-delà de [maxHours].
+  ///
+  /// Lit le timestamp dans `cache_metadata` (renseigné par
+  /// [_updateCacheMetadata] à chaque écriture). Si pas de metadata, le cache
+  /// est considéré expiré (premier lancement / cache pré-metadata).
+  ///
+  /// Sans expiration réelle, les vieux caches (ex: recos avec `rating: 0`,
+  /// covers `thumb` périmées) restaient indéfiniment car les services
+  /// fallbackaient toujours sur le cache existant.
   Future<bool> isCacheExpiredFor(String cacheType, {int maxHours = 24}) async {
-    return false;
+    try {
+      final metadata = await getCacheMetadata();
+      final raw = metadata[cacheType];
+      if (raw == null || raw.isEmpty) return true;
+      final lastUpdate = DateTime.tryParse(raw);
+      if (lastUpdate == null) return true;
+      final age = DateTime.now().difference(lastUpdate);
+      return age.inHours >= maxHours;
+    } catch (e) {
+      debugPrint('Erreur isCacheExpiredFor($cacheType): $e');
+      return true; // En cas d'erreur de lecture, considérer expiré (refetch).
+    }
   }
   
   /// Nettoie les caches expirés (sauf bibliothèque et détails de manga de la bibliothèque)

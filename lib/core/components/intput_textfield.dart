@@ -37,6 +37,14 @@ class IntputTexteField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Tokens du thème pour rester lisible en light & dark.
+    final fillColor = isDark
+        ? colorScheme.surfaceContainerHigh
+        : colorScheme.surfaceContainerLow;
+    final textColor = colorScheme.onSurface;
+    final hintColor = colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30.0),
       child: TextFormField(
@@ -47,36 +55,33 @@ class IntputTexteField extends StatelessWidget {
         textInputAction: textInputAction,
         focusNode: focusNode,
         onFieldSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
-        // Couleur du texte saisi forcée en sombre car le fillColor est gris
-        // clair fixe — sans cette ligne, en dark mode système, le texte
-        // saisi prend la couleur blanche du theme et devient illisible.
-        style: const TextStyle(color: Color(0xFF1A1A1A)),
+        style: TextStyle(color: textColor),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),
+          hintStyle: TextStyle(color: hintColor),
           labelText: labelText,
-          labelStyle: TextStyle(color: Colors.grey[700]),
+          labelStyle: TextStyle(color: hintColor),
           helperText: helperText,
-          helperStyle: TextStyle(color: Colors.grey[600]),
+          helperStyle: TextStyle(color: hintColor),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: fillColor,
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           errorMaxLines: 3,
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
           borderRadius: AppRadius.circularXxl,
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderSide: BorderSide(color: colorScheme.primary),
           borderRadius: AppRadius.circularXxl,
         ),
         errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: BorderSide(color: colorScheme.error),
           borderRadius: AppRadius.circularXxl,
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: BorderSide(color: colorScheme.error),
           borderRadius: AppRadius.circularXxl,
         ),
         ),

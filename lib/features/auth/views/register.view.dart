@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
+import 'package:mangatracker/core/components/theme_toggle_button.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 
@@ -184,16 +185,20 @@ class _RegisterViewState extends State<RegisterView> {
                                           onPressed: redirectToLoginPage,
                                         ),
                                       ),
+                                      const ThemeToggleButton(),
                                       const LanguageSelectorButton(),
                                     ],
                                   ),
                                   const SizedBox(height: 20),
                                   Align(
-                                    child: Image.asset(
-                                      'assets/images/mask_logo.png',
-                                      height: 150,
-                                      semanticLabel:
-                                          l10n?.appTitle ?? 'MangaTracker',
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.asset(
+                                        'assets/images/mask_logo-backgroud-white.png',
+                                        height: 150,
+                                        semanticLabel:
+                                            l10n?.appTitle ?? 'MangaTracker',
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 30),

@@ -47,14 +47,13 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       );
-      // L'API a flippé `emailVerifiedAt` côté serveur. Invalider le cache
-      // local + refetch pour que `UserInformationDto.emailVerified` soit
-      // à jour au prochain `getUserInformation()` (sinon la banner
-      // « Vérifiez votre email » reste affichée jusqu'à expiration cache 7j).
+      // L'API a flippé `emailVerifiedAt` côté serveur. Force un fetch réseau
+      // (forceRefresh) pour que `UserInformationDto.emailVerified` soit
+      // à jour. Sans `forceRefresh`, le cache 7j retournait l'ancienne valeur
+      // et la banner « Vérifiez votre email » restait affichée.
       try {
         final userService = getIt<UserService>();
-        await userService.invalidateUserInfoCache();
-        await userService.getUserInformation();
+        await userService.getUserInformation(forceRefresh: true);
       } catch (_) {
         // Erreur réseau silencieuse : si le refetch échoue, la HomePage
         // refera l'appel à son tour. Le succès de la vérif n'en dépend pas.

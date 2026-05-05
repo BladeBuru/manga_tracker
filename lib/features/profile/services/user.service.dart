@@ -21,9 +21,23 @@ class UserService {
     return this;
   }
 
-  Future<UserInformationDto> getUserInformation() async {
-    // Essayer d'abord depuis le cache
-    final cachedInfo = await _cacheService.getCachedUserInformation();
+  /// Récupère les informations utilisateur.
+  ///
+  /// Si [forceRefresh] est `true`, ignore le cache local et force un fetch
+  /// réseau (utile après vérification d'email, changement de profil, etc.
+  /// sinon on continue à servir un cache potentiellement obsolète pendant
+  /// 7 jours et le badge « Vérifiez votre email » reste affiché).
+  Future<UserInformationDto> getUserInformation({bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      // Invalide le cache + ses metadata avant de rappeler le réseau, sinon
+      // un fetch raté retomberait sur l'ancien cache.
+      await invalidateUserInfoCache();
+    }
+
+    // Essayer d'abord depuis le cache (sauf en forceRefresh)
+    final cachedInfo = forceRefresh
+        ? null
+        : await _cacheService.getCachedUserInformation();
     if (cachedInfo != null) {
       // Vérifier si le cache est expiré (plus de 7 jours pour les infos utilisateur)
       final isExpired = await _cacheService.isCacheExpiredFor('user_info', maxHours: 7 * 24);
@@ -40,10 +54,10 @@ class UserService {
       Response response = await httpService.getWithAuthTokens(url);
       Map<String, dynamic> data = jsonDecode(response.body);
       final userInfo = UserInformationDto.fromJson(data);
-      
+
       // Mettre en cache
       await _cacheService.cacheUserInformation(userInfo);
-      
+
       return userInfo;
     } catch (e) {
       // Si erreur réseau et qu'on a un cache (même expiré), l'utiliser

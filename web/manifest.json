@@ -1,11 +1,11 @@
 {
-    "name": "manga_tracker",
-    "short_name": "manga_tracker",
+    "name": "Manga Tracker",
+    "short_name": "Manga Tracker",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "description": "Suivez votre lecture de mangas, gérez votre bibliothèque et téléchargez vos chapitres préférés.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

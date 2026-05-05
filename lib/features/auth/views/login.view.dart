@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
+import 'package:mangatracker/core/components/theme_toggle_button.dart';
 import 'package:mangatracker/features/profile/helpers/user.helper.dart';
 import '../../../core/notifier/notifier.dart';
 import '../../../core/service_locator/service_locator.dart';
@@ -157,22 +158,29 @@ class _LoginViewState extends State<LoginView> {
                               const Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
+                                  ThemeToggleButton(),
                                   LanguageSelectorButton(),
                                 ],
                               ),
                               const SizedBox(height: 20),
                               Align(
-                                child: Image.asset(
-                                  'assets/images/mask_logo.png',
-                                  height: 150,
-                                  semanticLabel: l10n?.appTitle ?? 'MangaTracker',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    'assets/images/mask_logo-backgroud-white.png',
+                                    height: 150,
+                                    semanticLabel: l10n?.appTitle ?? 'MangaTracker',
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 24),
                               Text(
                                 l10n?.welcomeBack ?? "Content de vous revoir",
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  fontSize: 16,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -181,7 +189,7 @@ class _LoginViewState extends State<LoginView> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xff1f1f39),
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 32),

@@ -80,9 +80,19 @@ class LanguageSelectorButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xxxl),
         ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.all(20),
+        // Responsive : 85% de la largeur sur mobile/tablette, max 560 sur web
+        // (sinon le dialog prenait toute la largeur écran et rendait moche).
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final dialogWidth = screenWidth >= 700
+                ? 560.0
+                : screenWidth * 0.85;
+            return ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: dialogWidth),
+              child: Container(
+                width: dialogWidth,
+                padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -162,6 +172,9 @@ class LanguageSelectorButton extends StatelessWidget {
               ),
             ],
           ),
+        ),
+            );
+          },
         ),
       ),
     );
