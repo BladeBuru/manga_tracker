@@ -465,5 +465,13 @@
   "emailSentShort": "Gesendet",
   "@emailSentShort": {},
   "resendEmailShort": "Erneut senden",
-  "@resendEmailShort": {}
+  "@resendEmailShort": {},
+  "recommendedForYouHome": "Für dich empfohlen",
+  "@recommendedForYouHome": {},
+  "seeMoreByGenre": "Mehr nach Genre anzeigen",
+  "@seeMoreByGenre": {},
+  "recommendationsByGenreTitle": "Empfehlungen nach Genre",
+  "@recommendationsByGenreTitle": {},
+  "recommendationsByGenreEmpty": "Noch keine Empfehlungen. Füge Mangas zu deiner Bibliothek hinzu, um persönliche Vorschläge zu erhalten.",
+  "@recommendationsByGenreEmpty": {}
 }

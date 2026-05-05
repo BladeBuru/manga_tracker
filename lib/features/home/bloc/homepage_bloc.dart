@@ -86,15 +86,10 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         _loadUserInfo(),
       ]);
 
-      // Recommandations + segmentation par genre chargées en parallèle
-      // (silencieuses en cas d'erreur — la home n'est pas bloquée).
-      final recoFutures = await Future.wait([
-        _loadRecommendations(),
-        _loadRecommendationsByGenre(),
-      ]);
-      final recommendations = recoFutures[0] as List<MangaQuickViewDto>;
-      final recommendationsByGenre =
-          recoFutures[1] as Map<String, List<MangaQuickViewDto>>;
+      // Recommandations personnalisées (carrousel court de 5) — silencieuses
+      // en cas d'erreur. Les recos par genre sont chargées dans la page
+      // dédiée `/recommendations/by-genre` (voir bouton « Voir plus »).
+      final recommendations = await _loadRecommendations();
 
       final pendingActions = await _getPendingActionsCount();
 
@@ -104,7 +99,6 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         newMangas: results[1] as List<MangaQuickViewDto>,
         trendingMangas: results[2] as List<MangaQuickViewDto>,
         recommendations: recommendations,
-        recommendationsByGenre: recommendationsByGenre,
         user: results[3] as UserDto?,
         isOffline: false,
         pendingActions: pendingActions,
@@ -305,29 +299,15 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     );
   }
 
-  /// Charge les recommandations personnalisées (erreur silencieuse : liste vide)
+  /// Charge les recommandations personnalisées — limite 5 pour le carrousel
+  /// compact de la home. La page « Voir plus par genre » charge sa propre
+  /// liste plus large depuis `/recommendations/by-genre`.
   Future<List<MangaQuickViewDto>> _loadRecommendations() async {
     try {
-      return await _recommendationService.getPersonalizedRecommendations(limit: 30);
+      return await _recommendationService.getPersonalizedRecommendations(limit: 5);
     } catch (e) {
       debugPrint('⚠️ HomePageBloc: Erreur recommandations (ignorée): $e');
       return [];
-    }
-  }
-
-  /// Charge les recommandations regroupées par genre (silencieuse : map vide).
-  /// Si la bibliothèque est vide ou si erreur réseau, l'UI n'affichera tout
-  /// simplement pas la section.
-  Future<Map<String, List<MangaQuickViewDto>>>
-      _loadRecommendationsByGenre() async {
-    try {
-      return await _recommendationService.getRecommendationsByGenre(
-        topGenres: 5,
-        perGenre: 10,
-      );
-    } catch (e) {
-      debugPrint('⚠️ HomePageBloc: Erreur reco par genre (ignorée): $e');
-      return const {};
     }
   }
 

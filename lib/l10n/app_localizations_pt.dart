@@ -1155,4 +1155,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get resendEmailShort => 'Reenviar';
+
+  @override
+  String get recommendedForYouHome => 'Recomendados para você';
+
+  @override
+  String get seeMoreByGenre => 'Ver mais por gênero';
+
+  @override
+  String get recommendationsByGenreTitle => 'Recomendações por gênero';
+
+  @override
+  String get recommendationsByGenreEmpty =>
+      'Ainda não há recomendações. Adicione mangás à sua biblioteca para receber sugestões personalizadas.';
 }

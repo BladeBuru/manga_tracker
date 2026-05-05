@@ -1669,5 +1669,21 @@
   "emailSentShort": "Envoyé",
   "@emailSentShort": {},
   "resendEmailShort": "Renvoyer",
-  "@resendEmailShort": {}
+  "@resendEmailShort": {},
+  "recommendedForYouHome": "Recommandés pour vous",
+  "@recommendedForYouHome": {
+    "description": "Titre du carrousel court de recommandations sur la home"
+  },
+  "seeMoreByGenre": "Voir plus par genre",
+  "@seeMoreByGenre": {
+    "description": "Bouton sur la home qui ouvre la page de recommandations par genre"
+  },
+  "recommendationsByGenreTitle": "Recommandations par genre",
+  "@recommendationsByGenreTitle": {
+    "description": "Titre de la page listant les recommandations regroupées par genre"
+  },
+  "recommendationsByGenreEmpty": "Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.",
+  "@recommendationsByGenreEmpty": {
+    "description": "Message d'état vide sur la page de recommandations par genre"
+  }
 }

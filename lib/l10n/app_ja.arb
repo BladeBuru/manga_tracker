@@ -465,5 +465,13 @@
   "emailSentShort": "送信済み",
   "@emailSentShort": {},
   "resendEmailShort": "再送信",
-  "@resendEmailShort": {}
+  "@resendEmailShort": {},
+  "recommendedForYouHome": "あなたへのおすすめ",
+  "@recommendedForYouHome": {},
+  "seeMoreByGenre": "ジャンル別にもっと見る",
+  "@seeMoreByGenre": {},
+  "recommendationsByGenreTitle": "ジャンル別のおすすめ",
+  "@recommendationsByGenreTitle": {},
+  "recommendationsByGenreEmpty": "まだおすすめがありません。ライブラリに漫画を追加してパーソナライズされた候補を取得してください。",
+  "@recommendationsByGenreEmpty": {}
 }

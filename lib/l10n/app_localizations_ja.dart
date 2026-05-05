@@ -1121,4 +1121,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get resendEmailShort => '再送信';
+
+  @override
+  String get recommendedForYouHome => 'あなたへのおすすめ';
+
+  @override
+  String get seeMoreByGenre => 'ジャンル別にもっと見る';
+
+  @override
+  String get recommendationsByGenreTitle => 'ジャンル別のおすすめ';
+
+  @override
+  String get recommendationsByGenreEmpty =>
+      'まだおすすめがありません。ライブラリに漫画を追加してパーソナライズされた候補を取得してください。';
 }

@@ -1123,4 +1123,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get resendEmailShort => '재전송';
+
+  @override
+  String get recommendedForYouHome => '추천 작품';
+
+  @override
+  String get seeMoreByGenre => '장르별로 더 보기';
+
+  @override
+  String get recommendationsByGenreTitle => '장르별 추천';
+
+  @override
+  String get recommendationsByGenreEmpty =>
+      '아직 추천이 없습니다. 라이브러리에 만화를 추가하여 맞춤 추천을 받아보세요.';
 }

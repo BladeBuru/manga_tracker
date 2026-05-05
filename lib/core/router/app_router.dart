@@ -41,6 +41,9 @@ import 'package:mangatracker/features/profile/views/my_data_view.dart';
 import 'package:mangatracker/features/profile/views/notifications_settings_page.dart';
 import 'package:mangatracker/features/profile/views/custom_selectors_page.dart';
 
+// Recommendations
+import 'package:mangatracker/features/recommendations/views/recommendations_by_genre_view.dart';
+
 /// Clé globale du Navigator racine — utilisée par DeepLinkHandler et
 /// SystemChrome (overlay style).
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -230,6 +233,15 @@ GoRouter buildAppRouter() {
         path: '/custom-selectors',
         name: 'custom-selectors',
         builder: (context, state) => const CustomSelectorsPage(),
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Recommendations
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/recommendations/by-genre',
+        name: 'recommendations-by-genre',
+        builder: (context, state) => const RecommendationsByGenreView(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

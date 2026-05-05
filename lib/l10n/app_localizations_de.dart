@@ -1157,4 +1157,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get resendEmailShort => 'Erneut senden';
+
+  @override
+  String get recommendedForYouHome => 'Für dich empfohlen';
+
+  @override
+  String get seeMoreByGenre => 'Mehr nach Genre anzeigen';
+
+  @override
+  String get recommendationsByGenreTitle => 'Empfehlungen nach Genre';
+
+  @override
+  String get recommendationsByGenreEmpty =>
+      'Noch keine Empfehlungen. Füge Mangas zu deiner Bibliothek hinzu, um persönliche Vorschläge zu erhalten.';
 }

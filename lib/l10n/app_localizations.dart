@@ -2135,6 +2135,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Renvoyer'**
   String get resendEmailShort;
+
+  /// Titre du carrousel court de recommandations sur la home
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandés pour vous'**
+  String get recommendedForYouHome;
+
+  /// Bouton sur la home qui ouvre la page de recommandations par genre
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir plus par genre'**
+  String get seeMoreByGenre;
+
+  /// Titre de la page listant les recommandations regroupées par genre
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations par genre'**
+  String get recommendationsByGenreTitle;
+
+  /// Message d'état vide sur la page de recommandations par genre
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.'**
+  String get recommendationsByGenreEmpty;
 }
 
 class _AppLocalizationsDelegate

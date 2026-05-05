@@ -77,13 +77,10 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
 
                       const SizedBox(height: 20),
 
-                      // ── Recommandé pour toi ──
+                      // ── Recommandés pour vous (carrousel compact 5 max) ──
                       _buildRecommendationsSection(state),
 
                       const SizedBox(height: 24),
-
-                      // ── Sections par genre (Action, Romance, etc.) ──
-                      ..._buildGenreSections(state),
 
                       // ── Filtres + liste paginée ──
                       _buildFilterButtons(),
@@ -161,9 +158,11 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
 
   // ─── Section Recommandé pour toi ─────────────────────────────────────────
 
+  /// Carrousel court (5 mangas max) avec bouton « Voir plus par genre » qui
+  /// navigue vers la page dédiée `/recommendations/by-genre`.
   Widget _buildRecommendationsSection(HomePageState state) {
     final l10n = AppLocalizations.of(context);
-    final title = l10n?.recommendedForYou ?? 'Recommandé pour toi';
+    final title = l10n?.recommendedForYouHome ?? 'Recommandés pour vous';
 
     if (state is HomePageLoading) {
       return _buildHorizontalSection(
@@ -174,7 +173,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
 
     if (state is! HomePageLoaded) return const SizedBox.shrink();
 
-    final recs = state.recommendations;
+    final recs = state.recommendations.take(5).toList();
     final isOffline = state.isOffline;
 
     if (recs.isEmpty) {
@@ -200,15 +199,13 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       );
     }
 
-    final subtitle = isOffline
-        ? l10n?.recommendedForYouCached ??
-            'Recommandations en cache (mode hors ligne)'
-        : l10n?.recommendedForYouCount(recs.length) ?? '${recs.length}';
-
     return _buildHorizontalSection(
       title: title,
-      subtitle: subtitle,
-      subtitleColor: isOffline ? Colors.orange : null,
+      trailing: TextButton.icon(
+        onPressed: () => context.push('/recommendations/by-genre'),
+        icon: const Icon(Icons.add, size: 18),
+        label: Text(l10n?.seeMoreByGenre ?? 'Voir plus par genre'),
+      ),
       child: SizedBox(
         height: 220,
         child: ListView.builder(
@@ -240,8 +237,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
 
   Widget _buildHorizontalSection({
     required String title,
-    String? subtitle,
-    Color? subtitleColor,
+    Widget? trailing,
     required Widget child,
   }) {
     return Column(
@@ -249,23 +245,13 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       children: [
         Row(
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  subtitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: subtitleColor ?? Colors.grey),
-                ),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
-            ],
+            ),
+            if (trailing != null) trailing,
           ],
         ),
         const SizedBox(height: 12),
@@ -274,71 +260,12 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     );
   }
 
-  /// Construit les sections par genre (Action, Romance, etc.).
-  /// Retourne une liste vide si :
-  /// - L'état n'est pas chargé
-  /// - L'utilisateur n'a pas encore de bibliothèque (pas de reco par genre)
-  /// - L'API a renvoyé une map vide
-  ///
-  /// Chaque section : titre du genre + ListView horizontale de MangaCard.
-  /// Insère un séparateur de 24px entre les sections.
-  List<Widget> _buildGenreSections(HomePageState state) {
-    if (state is! HomePageLoaded) return const [];
-    final byGenre = state.recommendationsByGenre;
-    if (byGenre.isEmpty) return const [];
-
-    final List<Widget> widgets = [];
-    final genreEntries = byGenre.entries.toList();
-
-    for (var i = 0; i < genreEntries.length; i++) {
-      final entry = genreEntries[i];
-      if (entry.value.isEmpty) continue;
-      widgets.add(
-        _buildHorizontalSection(
-          title: entry.key,
-          child: SizedBox(
-            height: 220,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: entry.value.length,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              itemBuilder: (context, index) {
-                final manga = entry.value[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(
-                    width: 120,
-                    child: MangaCard(
-                      muId: manga.muId.toString(),
-                      mangaTitle: manga.title,
-                      mangaAuthor: manga.year.toString(),
-                      mediumImgPath: manga.mediumCoverUrl,
-                      rating:
-                          manga.rating != 'N/A' && manga.rating.isNotEmpty
-                              ? manga.rating
-                              : null,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      );
-      if (i < genreEntries.length - 1) {
-        widgets.add(const SizedBox(height: 24));
-      }
-    }
-    if (widgets.isNotEmpty) widgets.add(const SizedBox(height: 24));
-    return widgets;
-  }
-
   Widget _buildSkeletonRow() {
     return SizedBox(
       height: 220,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 6,
+        itemCount: 5,
         padding: const EdgeInsets.symmetric(horizontal: 4),
         itemBuilder: (_, __) => Padding(
           padding: const EdgeInsets.only(right: 12),
