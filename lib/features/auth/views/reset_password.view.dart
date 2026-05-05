@@ -93,77 +93,97 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
   }
 
   Widget _buildForm(ResetPasswordState state, AppLocalizations? l10n) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 16),
-            Text(
-              l10n?.resetPasswordIntro ??
-                  'Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            PasswordFields(
-              passwordControler: _passwordController,
-              confirmPasswordControler: _confirmController,
-              validatorService: _validator,
-            ),
-            const SizedBox(height: 24),
-            AuthButton(
-              text: l10n?.confirmReset ?? 'Confirmer',
-              onTap: state.isLoading ? () {} : _submit,
-              isLoading: state.isLoading,
-            ),
-            if (state.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                state.tokenExpired
-                    ? (l10n?.resetTokenExpired ??
-                        'Lien invalide ou expiré. Refaites une demande.')
-                    : (l10n?.networkError ?? 'Erreur réseau. Réessayez plus tard.'),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red[600], fontSize: 13),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n?.resetPasswordIntro ??
+                          'Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    PasswordFields(
+                      passwordControler: _passwordController,
+                      confirmPasswordControler: _confirmController,
+                      validatorService: _validator,
+                    ),
+                    const SizedBox(height: 24),
+                    AuthButton(
+                      text: l10n?.confirmReset ?? 'Confirmer',
+                      onTap: state.isLoading ? () {} : _submit,
+                      isLoading: state.isLoading,
+                    ),
+                    if (state.errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        state.tokenExpired
+                            ? (l10n?.resetTokenExpired ??
+                                'Lien invalide ou expiré. Refaites une demande.')
+                            : (l10n?.networkError ?? 'Erreur réseau. Réessayez plus tard.'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red[600], fontSize: 13),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ],
-          ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSuccessView(AppLocalizations? l10n) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 72,
-            color: Theme.of(context).colorScheme.primary,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 72,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n?.resetPasswordSuccess ?? 'Mot de passe modifié',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n?.resetPasswordSuccessHint ??
+                        'Vous êtes maintenant connecté. Redirection en cours…',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.grey[700]),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            l10n?.resetPasswordSuccess ?? 'Mot de passe modifié',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l10n?.resetPasswordSuccessHint ??
-                'Vous êtes maintenant connecté. Redirection en cours…',
-            textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Colors.grey[700]),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

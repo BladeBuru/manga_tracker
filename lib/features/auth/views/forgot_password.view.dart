@@ -68,82 +68,102 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   }
 
   Widget _buildForm(ForgotPasswordState state, AppLocalizations? l10n) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 16),
-            Text(
-              l10n?.forgotPasswordIntro ??
-                  'Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            IntputTexteField(
-              controller: _emailController,
-              hintText: l10n?.email ?? 'Email',
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              validator: (v) => _validator.validateEmailAddress(v, context),
-              textInputAction: TextInputAction.done,
-              onSubmitted: _submit,
-            ),
-            const SizedBox(height: 24),
-            AuthButton(
-              text: l10n?.sendResetLink ?? 'Envoyer le lien',
-              onTap: state.isLoading ? () {} : _submit,
-              isLoading: state.isLoading,
-            ),
-            if (state.errorMessage != null && !state.isSuccess) ...[
-              const SizedBox(height: 12),
-              Text(
-                l10n?.networkError ?? 'Erreur réseau. Réessayez plus tard.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red[600], fontSize: 13),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n?.forgotPasswordIntro ??
+                          'Entrez votre email. Si un compte existe, vous recevrez un lien pour définir un nouveau mot de passe.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    IntputTexteField(
+                      controller: _emailController,
+                      hintText: l10n?.email ?? 'Email',
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      validator: (v) => _validator.validateEmailAddress(v, context),
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: _submit,
+                    ),
+                    const SizedBox(height: 24),
+                    AuthButton(
+                      text: l10n?.sendResetLink ?? 'Envoyer le lien',
+                      onTap: state.isLoading ? () {} : _submit,
+                      isLoading: state.isLoading,
+                    ),
+                    if (state.errorMessage != null && !state.isSuccess) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n?.networkError ?? 'Erreur réseau. Réessayez plus tard.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red[600], fontSize: 13),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ],
-          ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSuccessView(String email, AppLocalizations? l10n) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.mark_email_read_outlined,
-            size: 72,
-            color: Theme.of(context).colorScheme.primary,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.mark_email_read_outlined,
+                    size: 72,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n?.resetEmailSentTitle ?? 'Vérifiez votre boîte mail',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n?.resetEmailSentMessage(email) ??
+                        'Si un compte existe pour $email, un email contenant un lien pour définir un nouveau mot de passe vient d\'être envoyé.\n\nLe lien expire dans 30 minutes.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[700],
+                        ),
+                  ),
+                  const SizedBox(height: 32),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n?.back ?? 'Retour'),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            l10n?.resetEmailSentTitle ?? 'Vérifiez votre boîte mail',
-            style: Theme.of(context).textTheme.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l10n?.resetEmailSentMessage(email) ??
-                'Si un compte existe pour $email, un email contenant un lien pour définir un nouveau mot de passe vient d\'être envoyé.\n\nLe lien expire dans 30 minutes.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[700],
-                ),
-          ),
-          const SizedBox(height: 32),
-          OutlinedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n?.back ?? 'Retour'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

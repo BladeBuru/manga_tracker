@@ -108,8 +108,25 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     );
   }
 
+  Widget _buildConstrained({required Widget child}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildLoading(AppLocalizations? l10n) {
-    return Center(
+    return _buildConstrained(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -125,7 +142,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   }
 
   Widget _buildSuccess(AppLocalizations? l10n) {
-    return Center(
+    return _buildConstrained(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -153,8 +170,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   }
 
   Widget _buildError(AppLocalizations? l10n) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
+    return _buildConstrained(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
