@@ -99,9 +99,18 @@ class _MyDataViewState extends State<MyDataView> {
       appBar: AppBar(
         title: Text(l10n?.myDataTitle ?? 'Mes données'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: 16,
+                ),
+                children: [
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -186,7 +195,11 @@ class _MyDataViewState extends State<MyDataView> {
               ],
             ),
           ),
-        ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

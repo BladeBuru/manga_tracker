@@ -543,7 +543,16 @@ class _ProfileState extends State<Profile> {
       backgroundColor: theme.colorScheme.surface,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 700;
+                final horizontalPadding = isWide ? 24.0 : 0.0;
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 700),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: CustomScrollView(
               slivers: [
                 // Header avec informations utilisateur
                 SliverToBoxAdapter(
@@ -764,6 +773,11 @@ class _ProfileState extends State<Profile> {
                   child: SizedBox(height: 24),
                 ),
               ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
     );
   }

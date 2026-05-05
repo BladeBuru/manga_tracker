@@ -55,24 +55,35 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
       appBar: AppBar(
         title: Text(l10n.notifications),
       ),
-      body: ListView(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.new_releases, color: Colors.orange),
-            title: Text(l10n.newChapterNotifications),
-            subtitle: Text(
-              _newChapterNotificationsEnabled == true
-                  ? l10n.newChapterNotificationsEnabled
-                  : l10n.newChapterNotificationsDisabled,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 0.0;
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.new_releases, color: Colors.orange),
+                    title: Text(l10n.newChapterNotifications),
+                    subtitle: Text(
+                      _newChapterNotificationsEnabled == true
+                          ? l10n.newChapterNotificationsEnabled
+                          : l10n.newChapterNotificationsDisabled,
+                    ),
+                    trailing: Switch(
+                      value: _newChapterNotificationsEnabled ?? true,
+                      onChanged: (value) async {
+                        await _handleNotificationToggle();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            trailing: Switch(
-              value: _newChapterNotificationsEnabled ?? true,
-              onChanged: (value) async {
-                await _handleNotificationToggle();
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

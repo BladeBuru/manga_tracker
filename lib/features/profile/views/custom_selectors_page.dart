@@ -836,8 +836,10 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
           ),
         ],
       ),
-      body:
-          _isLoading
+      body: LayoutBuilder(
+        builder: (context, layoutConstraints) {
+          final horizontalPadding = layoutConstraints.maxWidth >= 600 ? 24.0 : 0.0;
+          final content = _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _selectors.isEmpty
               ? Builder(
@@ -868,6 +870,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                 },
               )
               : ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 itemCount: _selectors.length,
                 itemBuilder: (context, index) {
                   final selector = _selectors[index];
@@ -942,7 +945,15 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                     ),
                   );
                 },
-              ),
+              );
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: content,
+            ),
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addSelector,
         icon: const Icon(Icons.add),
