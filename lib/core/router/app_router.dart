@@ -40,9 +40,25 @@ import 'package:mangatracker/features/download/views/downloads_page.dart';
 import 'package:mangatracker/features/profile/views/my_data_view.dart';
 import 'package:mangatracker/features/profile/views/notifications_settings_page.dart';
 import 'package:mangatracker/features/profile/views/custom_selectors_page.dart';
+import 'package:mangatracker/features/profile/views/profile_edit.view.dart';
+import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 
 // Recommendations
+import 'package:mangatracker/features/recommendations/views/paginated_recommendations_view.dart';
 import 'package:mangatracker/features/recommendations/views/recommendations_by_genre_view.dart';
+
+// Stats (Phase 2)
+import 'package:mangatracker/features/stats/views/stats_view.dart';
+
+// Friends (Phase 6.1)
+import 'package:mangatracker/features/friends/views/friends_list_page.dart';
+
+// Inbox (Phase 8.1)
+import 'package:mangatracker/features/sharing/views/inbox_page.dart';
+
+// Reading Groups (Phase 8.3 UI)
+import 'package:mangatracker/features/sharing/views/reading_groups_list_page.dart';
+import 'package:mangatracker/features/sharing/views/reading_group_detail_page.dart';
 
 /// Clé globale du Navigator racine — utilisée par DeepLinkHandler et
 /// SystemChrome (overlay style).
@@ -239,9 +255,76 @@ GoRouter buildAppRouter() {
       // Recommendations
       // ──────────────────────────────────────────────────────────────
       GoRoute(
+        path: '/recommendations',
+        name: 'recommendations',
+        builder: (context, state) => const PaginatedRecommendationsView(),
+      ),
+      GoRoute(
         path: '/recommendations/by-genre',
         name: 'recommendations-by-genre',
         builder: (context, state) => const RecommendationsByGenreView(),
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Stats (Phase 2) — page de statistiques du profil
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/stats',
+        name: 'stats',
+        builder: (context, state) => const StatsView(),
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Profil étendu (Phase 3) — formulaire d'édition
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/profile/edit',
+        name: 'profile-edit',
+        builder: (context, state) {
+          final extras = state.extra as UserInformationDto?;
+          if (extras == null) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Profile')),
+              body: const Center(child: Text('Données utilisateur manquantes')),
+            );
+          }
+          return ProfileEditView(currentUser: extras);
+        },
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Amis (Phase 6.1) — liste amis + demandes + recherche
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/friends',
+        name: 'friends',
+        builder: (context, state) => const FriendsListPage(),
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Inbox (Phase 8.1) — notifications de partage reçues
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/inbox',
+        name: 'inbox',
+        builder: (context, state) => const InboxPage(),
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Reading Groups (Phase 8.3 UI) — lecture à deux
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/reading-groups',
+        name: 'reading-groups',
+        builder: (context, state) => const ReadingGroupsListPage(),
+      ),
+      GoRoute(
+        path: '/reading-groups/:groupId',
+        name: 'reading-group-detail',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['groupId'] ?? '') ?? 0;
+          return ReadingGroupDetailPage(groupId: id);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

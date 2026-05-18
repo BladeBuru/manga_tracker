@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/changelog_dialog.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/app_update_service.dart';
+import 'package:mangatracker/core/services/connectivity_service.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
-
-import '../../../core/services/app_update_service.dart';
-import '../../../core/services/connectivity_service.dart';
-import '../../../core/components/changelog_dialog.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -67,7 +69,7 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   Future<void> _attemptAutoLogin() async {
-    // 1. Vérifier si l'access token est valide
+    // 1. Access token encore valide → fast path, pas besoin d'aller plus loin.
     final accessToken = await authService.storageService.readSecureData('accessToken');
     if (accessToken != null && !authService.isTokenExpired(accessToken)) {
       debugPrint('✅ StartupPage: Access token valide, connexion automatique');
@@ -75,40 +77,58 @@ class _StartupPageState extends State<StartupPage> {
       return;
     }
 
-    // 2. Vérifier si le refresh token est valide
+    // 2. Access expiré → on regarde le refresh token.
     final refreshToken = await authService.storageService.readSecureData('refreshToken');
-    final isRefreshTokenValid = refreshToken != null && !authService.isTokenExpired(refreshToken);
-    
-    // 3. Vérifier la connectivité
-    final isConnected = _connectivityService?.isConnected ?? true; // Par défaut, supposer connecté
-    
+    final isRefreshTokenValid =
+        refreshToken != null && !authService.isTokenExpired(refreshToken);
+
+    // 3. Connectivité (par défaut : on suppose connecté si le service n'est pas dispo)
+    final isConnected = _connectivityService?.isConnected ?? true;
+
     if (isRefreshTokenValid) {
       if (isConnected) {
-        // Tentative de refresh si connecté
+        // En ligne + refresh token valide → on tente le refresh.
         debugPrint('🔄 StartupPage: Tentative de refresh du token...');
-        final refreshed = await authService.refreshAccessToken();
-        if (refreshed) {
-          debugPrint('✅ StartupPage: Token rafraîchi avec succès');
-          _onLoginSuccess();
-          return;
-        } else {
-          // Le refresh a échoué mais le refreshToken est toujours valide
-          // Permettre l'accès en mode hors ligne (le token sera rafraîchi plus tard)
-          debugPrint('⚠️ StartupPage: Échec du refresh mais refreshToken valide, accès autorisé en mode hors ligne');
-          debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
-          _onLoginSuccess();
-          return;
+        final result = await authService.refreshAccessToken();
+        switch (result) {
+          case RefreshResult.success:
+            debugPrint('✅ StartupPage: Token rafraîchi avec succès');
+            _onLoginSuccess();
+            return;
+          case RefreshResult.networkError:
+            // Le réseau a flanché entre le check connectivity et l'appel HTTP,
+            // ou le serveur a renvoyé un 5xx transitoire. On tolère et on
+            // laisse passer en cache — le prochain appel HTTP retentera.
+            debugPrint('⚠️ StartupPage: Refresh impossible (réseau), accès cache toléré');
+            _onLoginSuccess();
+            return;
+          case RefreshResult.rejected:
+            // 401/403 explicite du serveur : la session est morte (purge DB,
+            // secret JWT changé, etc.). Pas la peine de naviguer dans le cache,
+            // l'user n'est PAS authentifié — on purge et on renvoie au login.
+            debugPrint('❌ StartupPage: Refresh rejeté par le serveur → logout + login');
+            await authService.logout();
+            // Avant de pousser vers /login, on tente quand même la biométrie
+            // (si l'user l'a configurée, ça lui évite de retaper son mdp).
+            await _tryBiometricThenGoToLogin();
+            return;
         }
       } else {
-        // Mode hors ligne avec refreshToken valide : permettre l'accès
-        debugPrint('📱 StartupPage: Mode hors ligne avec refreshToken valide, accès autorisé');
-        debugPrint('   Le token sera rafraîchi automatiquement à la reconnexion');
+        // Hors ligne + refresh token valide localement : on tolère l'accès
+        // au cache. Le refresh sera retenté à la reconnexion par http_service.
+        debugPrint('📱 StartupPage: Hors ligne, accès cache autorisé');
         _onLoginSuccess();
         return;
       }
     }
 
-    // 4. Tentative de connexion biométrique
+    // 4. Pas de refresh token valide → tentative biométrique puis login.
+    await _tryBiometricThenGoToLogin();
+  }
+
+  /// Essaie la connexion biométrique, sinon redirige vers /login.
+  /// Factorisation pour éviter de dupliquer le pattern dans 2 branches.
+  Future<void> _tryBiometricThenGoToLogin() async {
     debugPrint('🔐 StartupPage: Tentative de connexion biométrique...');
     final biometricSuccess = await authService.tryBiometricLogin(context);
     if (!mounted) return;
@@ -116,12 +136,8 @@ class _StartupPageState extends State<StartupPage> {
       debugPrint('✅ StartupPage: Connexion biométrique réussie');
       _onLoginSuccess();
       return;
-    } else {
-      debugPrint('⚠️ StartupPage: Échec de la connexion biométrique');
     }
-    
-    // 5. Aucune méthode d'authentification disponible
-    debugPrint('⚠️ StartupPage: Aucune méthode d\'authentification disponible');
+    debugPrint('⚠️ StartupPage: Aucune méthode d\'authentification → /login');
     _goToLogin();
   }
 
@@ -174,19 +190,21 @@ class _StartupPageState extends State<StartupPage> {
     return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Mise à jour disponible"),
-        content: const Text("Une nouvelle version de l'application est disponible."),
+        title: const Text('Mise à jour disponible'),
+        content: const Text(
+          "Une nouvelle version de l'application est disponible.",
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(), // On ferme juste la dialog
-            child: const Text("Plus tard"),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Plus tard'),
           ),
           TextButton(
             onPressed: () {
               appUpdateService.downloadAndInstallUpdate();
-              Navigator.of(ctx).pop(); // On ferme la dialog
+              Navigator.of(ctx).pop();
             },
-            child: const Text("Mettre à jour"),
+            child: const Text('Mettre à jour'),
           ),
         ],
       ),
@@ -208,8 +226,62 @@ class _StartupPageState extends State<StartupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+    final brightness = Theme.of(context).brightness;
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: brightness == Brightness.dark
+          ? AppColors.dsBgDark
+          : AppColors.dsBgLight,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.dsBgInset(brightness),
+                  border: Border.all(
+                    color: AppColors.dsHairline(brightness),
+                    width: 1,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Image.asset(
+                    'assets/images/mask_logo.png',
+                    semanticLabel: l10n?.appTitle ?? 'MangaTracker',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: scheme.primary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.m),
+              Text(
+                l10n?.loadingApp ?? 'Chargement…',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.dsText2(brightness),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -114,16 +114,63 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notifications => '通知';
 
   @override
-  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+  String get newChapterNotifications => '新しい章の通知';
 
   @override
-  String get newChapterNotificationsEnabled => 'Activées';
+  String get newChapterNotificationsEnabled => '有効';
 
   @override
-  String get newChapterNotificationsDisabled => 'Désactivées';
+  String get newChapterNotificationsDisabled => '無効';
 
   @override
   String get manageNotifications => '通知を管理';
+
+  @override
+  String get notifSectionApp => 'アプリの通知';
+
+  @override
+  String get notifSectionInfo => '情報';
+
+  @override
+  String get notifNewChaptersTitle => '新しい章';
+
+  @override
+  String get notifNewChaptersSubtitle => 'フォロー中の漫画が新しい章を公開したときに通知を受け取ります';
+
+  @override
+  String get notifFriendReqTitle => '友達リクエスト';
+
+  @override
+  String get notifFriendReqSubtitle => '誰かがあなたを友達に追加したいと言っています';
+
+  @override
+  String get notifSharesTitle => '受け取ったおすすめ';
+
+  @override
+  String get notifSharesSubtitle => '友達があなたに漫画を共有します';
+
+  @override
+  String get notifPermissionExplanation =>
+      '通知はアプリがシステム権限を持っている場合にのみ表示されます。受け取れない場合は、電話の設定から有効にしてください。';
+
+  @override
+  String get notifOpenSystemSettings => 'システム設定を開く';
+
+  @override
+  String get pushNotifFriendRequestTitle => '新しい友達リクエスト';
+
+  @override
+  String pushNotifFriendRequestBody(String senderUsername) {
+    return '$senderUsernameがあなたを友達に追加したいと思っています';
+  }
+
+  @override
+  String get pushNotifShareTitle => '新しい漫画が共有されました';
+
+  @override
+  String pushNotifShareBody(String senderUsername, String mangaTitle) {
+    return '$senderUsernameが$mangaTitleをおすすめしています';
+  }
 
   @override
   String get theme => 'テーマ';
@@ -467,6 +514,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get clear => 'クリア';
+
+  @override
+  String get searchTitle => '検索';
+
+  @override
+  String get searchEmptyHistory => '最近の検索はありません';
+
+  @override
+  String get searchPopularGenres => '人気のジャンル';
 
   @override
   String get biometricAuthTitle => '生体認証';
@@ -1027,6 +1083,48 @@ class AppLocalizationsJa extends AppLocalizations {
   String get termsOfServiceTitle => '利用規約';
 
   @override
+  String get myDataInfoBanner => 'GDPRに基づき、データへのアクセス、エクスポート、削除を要求する権利があります。';
+
+  @override
+  String get myDataSectionPersonalData => '個人データ';
+
+  @override
+  String get myDataSectionMyRights => '私の権利';
+
+  @override
+  String get myDataSectionDeletion => '削除';
+
+  @override
+  String get myDataSummaryTitle => 'データの概要';
+
+  @override
+  String get myDataSummarySubtitle => '保存されたデータの概要を表示';
+
+  @override
+  String get myDataExportSubtitle => '完全なJSONファイルをダウンロード（第20条）';
+
+  @override
+  String get privacyPolicySubtitle => '完全な文書を読む';
+
+  @override
+  String get termsOfServiceSubtitle => '利用規約を表示';
+
+  @override
+  String get myDataDeleteAccountSubtitle => 'この操作は元に戻せません';
+
+  @override
+  String get gdprExportSuccessSnack => 'データがクリップボードにコピーされました（JSON）。';
+
+  @override
+  String get gdprExportFailedSnack => 'エクスポートに失敗しました';
+
+  @override
+  String get gdprSummaryLoadFailed => '読み込みエラー';
+
+  @override
+  String get myDataBackLabel => 'プロフィール';
+
+  @override
   String get tosShortVersion =>
       'Manga Trackerは現状のまま、保証なしで提供されます。編集者は、ユーザーによる非準拠の使用（違法コンテンツ、スクレイピングなど）に関するすべての責任を否認します。\n\n完全な文書は公式ウェブサイトにあります。';
 
@@ -1057,6 +1155,30 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get versionLabel => 'バージョン';
+
+  @override
+  String get welcomeTitle => 'ようこそ！';
+
+  @override
+  String get loginSubtitle => 'アカウントにサインインしてください';
+
+  @override
+  String get createAccountTitle => 'アカウントを作成';
+
+  @override
+  String get registerSubtitle => '読書の記録を始めましょう';
+
+  @override
+  String get orLoginWith => '別の方法でサインイン';
+
+  @override
+  String get orSignUpWith => '別の方法で登録';
+
+  @override
+  String get continueWithApple => 'Appleで続行';
+
+  @override
+  String get loadingApp => '読み込み中…';
 
   @override
   String get forgotPasswordTitle => 'パスワードをお忘れですか';
@@ -1134,4 +1256,665 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get recommendationsByGenreEmpty =>
       'まだおすすめがありません。ライブラリに漫画を追加してパーソナライズされた候補を取得してください。';
+
+  @override
+  String get recommendationsAllTitle => 'すべてのおすすめ';
+
+  @override
+  String get recommendationsAllEmpty => 'まだあなたへのおすすめはありません。';
+
+  @override
+  String get seeAllRecommendations => 'すべて見る';
+
+  @override
+  String get browseByGenre => 'ジャンル別';
+
+  @override
+  String get recommendationsTabAll => 'すべて';
+
+  @override
+  String get recommendationsTabByGenre => 'ジャンル別';
+
+  @override
+  String get statsTitle => 'マイ統計';
+
+  @override
+  String get statsTotalMangas => '冊がライブラリにあります';
+
+  @override
+  String statsMemberSince(String date) {
+    return '$dateからのメンバー';
+  }
+
+  @override
+  String get statsTotalChapters => '読了話数';
+
+  @override
+  String get statsReadingTime => '推定読書時間';
+
+  @override
+  String get statsCompletionRate => '完了率';
+
+  @override
+  String get statsLastRead => '最後に読んだ作品';
+
+  @override
+  String get statsByStatusTitle => 'ステータス別';
+
+  @override
+  String get statsByStatusEmpty => 'ライブラリに漫画がまだありません。';
+
+  @override
+  String get statsTopGenresTitle => '好きなジャンル';
+
+  @override
+  String get statsTopGenresEmpty => '漫画を追加して、お気に入りのジャンルを見つけましょう。';
+
+  @override
+  String statsMinutesShort(int count) {
+    return '$count分';
+  }
+
+  @override
+  String statsHoursAndMinutesShort(int hours, int minutes) {
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String statsDaysAndHoursShort(int days, int hours) {
+    return '$days日$hours時間';
+  }
+
+  @override
+  String get statusReadLater => 'あとで読む';
+
+  @override
+  String get statusReading => '読書中';
+
+  @override
+  String get statusCaughtUp => '最新まで';
+
+  @override
+  String get statusCompleted => '完結済み';
+
+  @override
+  String get statsSectionOverview => '概要';
+
+  @override
+  String get statsSectionBreakdown => 'ステータス別マンガ';
+
+  @override
+  String get statsSectionGenres => 'お気に入りのジャンル';
+
+  @override
+  String get statsLibraryTotal => 'ライブラリのマンガ';
+
+  @override
+  String statsMonthsSinceJoin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '登録から$countヶ月',
+      zero: '登録から1ヶ月未満',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsHeroBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count冊',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyStats => 'マイ統計';
+
+  @override
+  String get profileEditTitle => 'プロフィールを編集';
+
+  @override
+  String get profileEditBackLabel => 'プロフィール';
+
+  @override
+  String get profileEditMenuTitle => 'プロフィール編集';
+
+  @override
+  String get profileEditMenuSubtitle => '写真、表示名、自己紹介、プライバシー';
+
+  @override
+  String get profileFieldAvatarUrl => 'アバターURL';
+
+  @override
+  String get profileFieldDisplayName => '表示名';
+
+  @override
+  String get profileFieldBio => '自己紹介';
+
+  @override
+  String get profileFieldDateOfBirth => '生年月日';
+
+  @override
+  String get profileFieldGender => '性別';
+
+  @override
+  String get profileGenderNotSet => '未設定';
+
+  @override
+  String get profileGenderMale => '男性';
+
+  @override
+  String get profileGenderFemale => '女性';
+
+  @override
+  String get profileGenderNonBinary => 'ノンバイナリー';
+
+  @override
+  String get profileGenderPreferNotToSay => '回答しない';
+
+  @override
+  String get profileFieldIsPublic => '公開プロフィール';
+
+  @override
+  String get profileFieldIsPublicSubtitle => '他のユーザーに表示されます';
+
+  @override
+  String get profileSaved => 'プロフィールを保存しました';
+
+  @override
+  String get profileSaveFailed => '保存に失敗しました';
+
+  @override
+  String get friendsTitle => 'フレンド';
+
+  @override
+  String get friendsTabAccepted => 'フレンド';
+
+  @override
+  String get friendsTabPending => 'リクエスト';
+
+  @override
+  String get friendsSearchLabel => 'フレンドを検索';
+
+  @override
+  String get friendsSearchHint => 'ユーザー名を入力（2文字以上）';
+
+  @override
+  String get friendsAddRequest => 'リクエストを送信';
+
+  @override
+  String get friendsAccept => '承認';
+
+  @override
+  String get friendsReject => '拒否';
+
+  @override
+  String get friendsRemove => '削除';
+
+  @override
+  String get friendsRequestSent => 'リクエストを送信しました';
+
+  @override
+  String get friendsError => 'エラー';
+
+  @override
+  String get friendsEmptyAccepted => 'フレンドがいません';
+
+  @override
+  String get friendsEmptyAcceptedSubtitle => '上の検索でユーザーを追加しましょう。';
+
+  @override
+  String get friendsEmptyPending => '保留中のリクエストはありません';
+
+  @override
+  String get friendsEmptyPendingSubtitle => '受信したリクエストはここに表示されます。';
+
+  @override
+  String get friendsSectionAccepted => 'マイフレンド';
+
+  @override
+  String get friendsSectionPending => '受信したリクエスト';
+
+  @override
+  String get friendsSearchClear => 'クリア';
+
+  @override
+  String get friendsSearchResults => '検索結果';
+
+  @override
+  String get friendsSearchEmpty => 'ユーザーが見つかりません。';
+
+  @override
+  String get profileMyFriends => 'マイフレンド';
+
+  @override
+  String get commentsTitle => 'コメント';
+
+  @override
+  String get commentsEmpty => 'まだコメントがありません。最初に投稿しましょう！';
+
+  @override
+  String get commentsSortRecent => '新着';
+
+  @override
+  String get commentsSortTop => '人気';
+
+  @override
+  String get commentsInputHint => '感想を書きましょう（3〜2000文字）';
+
+  @override
+  String get commentsPost => '投稿';
+
+  @override
+  String get commentsDelete => '削除';
+
+  @override
+  String get commentsLoadMore => 'もっと見る';
+
+  @override
+  String commentsReplyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件の返信',
+      one: '1件の返信',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeJustNow => 'たった今';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return '$count分前';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return '$count時間前';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return '$count日前';
+  }
+
+  @override
+  String get shareTitle => 'この漫画を共有';
+
+  @override
+  String get shareMessageHint => 'メッセージを追加（任意）';
+
+  @override
+  String get shareCancel => 'キャンセル';
+
+  @override
+  String get shareSend => '送信';
+
+  @override
+  String get shareSuccess => '共有しました';
+
+  @override
+  String get shareFailed => '共有に失敗しました';
+
+  @override
+  String get shareLoadError => 'フレンドを読み込めませんでした';
+
+  @override
+  String get shareNoFriends => 'まだ共有できるフレンドがいません。フレンドページから追加してください。';
+
+  @override
+  String get inboxTitle => '受信箱';
+
+  @override
+  String get inboxEmpty => 'まだおすすめはありません。';
+
+  @override
+  String get inboxBadgeNew => '新着';
+
+  @override
+  String inboxSenderRecommends(String sender) {
+    return '$senderさんがおすすめしています';
+  }
+
+  @override
+  String inboxSharedYouLabel(String sender) {
+    return '$senderさんがシェアしました';
+  }
+
+  @override
+  String get inboxFilterAll => 'すべて';
+
+  @override
+  String get inboxFilterUnread => '未読';
+
+  @override
+  String get inboxFilterRead => '既読';
+
+  @override
+  String get inboxGroupToday => '今日';
+
+  @override
+  String get inboxGroupYesterday => '昨日';
+
+  @override
+  String get inboxGroupThisWeek => '今週';
+
+  @override
+  String get inboxGroupOlder => 'それ以前';
+
+  @override
+  String get inboxEmptyTitle => 'おすすめはありません';
+
+  @override
+  String get inboxEmptySubtitle => '友達にお気に入りの作品を共有してもらいましょう。';
+
+  @override
+  String get inboxEmptyFilteredUnread => '未読のおすすめはありません。';
+
+  @override
+  String get inboxEmptyFilteredRead => '既読のおすすめはありません。';
+
+  @override
+  String get profileMyInbox => '受信箱';
+
+  @override
+  String get readingGroupsTitle => '一緒に読む';
+
+  @override
+  String get readingGroupsEmpty => 'まだ読書グループがありません。漫画の詳細ページから作成しましょう。';
+
+  @override
+  String get readingGroupDetailTitle => '読書グループ';
+
+  @override
+  String get readingGroupMembersTitle => 'メンバー';
+
+  @override
+  String get readingGroupOwnerBadge => 'オーナー';
+
+  @override
+  String get readingGroupOpenManga => '漫画を開く';
+
+  @override
+  String get readingGroupNotStarted => '未開始';
+
+  @override
+  String readingGroupChaptersRead(int count) {
+    return '第$count話';
+  }
+
+  @override
+  String get readingGroupChaptersReadLabel => '読了';
+
+  @override
+  String readingGroupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人のメンバー',
+      one: '1人のメンバー',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyReadingGroups => '一緒に読む';
+
+  @override
+  String get profileSectionPublicInfo => '公開情報';
+
+  @override
+  String get profileSectionAbout => 'あなたについて';
+
+  @override
+  String get profileSectionPrivacy => 'プライバシー';
+
+  @override
+  String get profileNotSet => '未設定';
+
+  @override
+  String get profileSectionAvatar => 'アバター';
+
+  @override
+  String get profileEditAvatarHeroHint => '画像URLを貼り付けるとプレビューが更新されます。';
+
+  @override
+  String get profileEditPickPhoto => '写真を選ぶ';
+
+  @override
+  String get profileEditClearAvatar => 'クリア';
+
+  @override
+  String get profileEditPhotoPickFailed => '写真を選択できませんでした';
+
+  @override
+  String get profileGenderClear => 'クリア';
+
+  @override
+  String get avatarUrlLabel => 'アバターのURL';
+
+  @override
+  String get avatarUrlInvalid => 'URLはhttp://またはhttps://で始まる必要があります';
+
+  @override
+  String get profileSectionAccount => 'アカウント';
+
+  @override
+  String get profileFieldUsername => 'ユーザー名';
+
+  @override
+  String get profileFieldEmail => 'メールアドレス';
+
+  @override
+  String get profileFieldReadOnly => '変更不可';
+
+  @override
+  String get profileChangePhoto => '写真を変更';
+
+  @override
+  String get changelogCardTitle => 'リリースノート';
+
+  @override
+  String get readingGroupCreateTitle => '一緒に読む';
+
+  @override
+  String get readingGroupCreateNameLabel => 'グループ名（任意）';
+
+  @override
+  String get readingGroupCreateNameHint => '例：Berserk とレア';
+
+  @override
+  String get readingGroupCreateInviteSection => 'フレンドを招待';
+
+  @override
+  String get readingGroupCreateConfirm => 'グループを作成';
+
+  @override
+  String get readingGroupCreateFailed => 'グループ作成に失敗しました';
+
+  @override
+  String get readingGroupCreateInviteRequired =>
+      'グループを作成するには少なくとも1人のフレンドを選択してください';
+
+  @override
+  String get readingGroupDelete => 'グループを削除';
+
+  @override
+  String get readingGroupDeleteConfirmTitle => 'このグループを削除しますか？';
+
+  @override
+  String get readingGroupDeleteConfirm =>
+      'この操作は取り消せません。すべてのメンバーがグループへのアクセスを失います。';
+
+  @override
+  String get readingGroupDeleteSuccess => 'グループを削除しました';
+
+  @override
+  String get readingGroupDeleteFailed => 'グループの削除に失敗しました';
+
+  @override
+  String get readingGroupSharedReading => '共有読書';
+
+  @override
+  String get readingGroupViewGroup => 'グループを見る';
+
+  @override
+  String get readingGroupChapterShort => '話';
+
+  @override
+  String get profileHighlightTitle => '新機能';
+
+  @override
+  String get profileNewBadge => '新着';
+
+  @override
+  String get profileFooterBrand => 'MANGA TRACKER';
+
+  @override
+  String get readingGroupListSectionTitle => 'マイグループ';
+
+  @override
+  String readingGroupWithLabel(String name) {
+    return '$name と';
+  }
+
+  @override
+  String get readingGroupYouLabel => 'あなた';
+
+  @override
+  String readingGroupProgressYouVsFriend(
+    String you,
+    String friend,
+    String their,
+  ) {
+    return 'あなた：$you話 ・ $friend：$their話';
+  }
+
+  @override
+  String get readingGroupChapterDash => '—';
+
+  @override
+  String get readingGroupSectionHero => '読書中';
+
+  @override
+  String get readingGroupSectionProgress => '進捗';
+
+  @override
+  String get readingGroupSectionActions => '操作';
+
+  @override
+  String get readingGroupActionsMarkProgress => '自分の進捗を更新';
+
+  @override
+  String get readingGroupActionsMarkProgressSubtitle => 'マンガページを開いて続きを読む';
+
+  @override
+  String get readingGroupActionsInvite => '友達を招待';
+
+  @override
+  String readingGroupActionsCopyFriendLink(String friend) {
+    return '$friendのリンクをコピー';
+  }
+
+  @override
+  String readingGroupActionsCopyFriendLinkSubtitle(int chapter) {
+    return '第$chapter話に調整済み';
+  }
+
+  @override
+  String readingGroupApplyLinkSuccess(int chapter) {
+    return '第$chapter話のリンクを保存しました';
+  }
+
+  @override
+  String readingGroupCopyLinkSuccess(int chapter) {
+    return 'リンクをコピーしました — 第$chapter話';
+  }
+
+  @override
+  String get readingGroupCopyLinkFailed => 'このリンクを調整できません（不明な形式）';
+
+  @override
+  String get readingGroupActionsInviteSubtitle => 'グループに人を追加';
+
+  @override
+  String get readingGroupActionsLeave => 'グループを退会';
+
+  @override
+  String get readingGroupActionsLeaveSubtitle => '共有された進捗が見えなくなります';
+
+  @override
+  String get readingGroupActionsDeleteSubtitle => '全メンバーに対して完全削除します';
+
+  @override
+  String get readingGroupLeaveConfirmTitle => 'このグループを退会しますか？';
+
+  @override
+  String get readingGroupLeaveConfirm => '共有された進捗にアクセスできなくなります。';
+
+  @override
+  String get readingGroupLeaveSuccess => 'グループを退会しました';
+
+  @override
+  String get readingGroupLeaveFailed => 'グループを退会できませんでした';
+
+  @override
+  String get readingGroupEmptyTitle => '共有読書はまだありません';
+
+  @override
+  String get readingGroupEmptySubtitle => '友達と一緒にマンガを始めて、進捗を共有しましょう。';
+
+  @override
+  String get readingGroupEmptyAction => 'マンガを探す';
+
+  @override
+  String get readingGroupTotalLabel => '合計';
+
+  @override
+  String readingGroupChaptersTotal(int count) {
+    return '$count 話';
+  }
+
+  @override
+  String get readingGroupInviteSoonTitle => '近日公開';
+
+  @override
+  String get readingGroupInviteSoonMessage =>
+      'グループからの招待機能はもうすぐ登場します。現時点ではマンガページから新しいグループを作成してください。';
+
+  @override
+  String get libraryToggleListView => 'リスト表示';
+
+  @override
+  String get libraryToggleCardView => 'カード表示';
+
+  @override
+  String get libraryShowDownloadedOnly => 'ダウンロード済みのみ表示';
+
+  @override
+  String get libraryShowAllMangas => 'すべてのマンガを表示';
+
+  @override
+  String libraryProgressLabel(int read, int total) {
+    return '$total話中$read話を読了';
+  }
+
+  @override
+  String votesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count票',
+      zero: '投票なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get detailSectionSimilar => '類似の漫画';
 }

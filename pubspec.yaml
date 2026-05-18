@@ -53,6 +53,12 @@ dependencies:
   auto_size_text: ^3.0.0
   device_info_plus: ^11.4.0
   permission_handler: ^11.3.1
+  # Picker galerie + appareil photo (Android/iOS/Web). Utilisé sur la page
+  # `profile_edit.view.dart` pour permettre à l'utilisateur de choisir une
+  # photo d'avatar depuis sa galerie. L'image est compressée + encodée
+  # base64 → data URL → stockée dans `user.avatarUrl` (colonne `text` côté
+  # API depuis migration `1746231600000`).
+  image_picker: ^1.0.7
   shared_preferences: ^2.2.3
   flutter_markdown: ^0.7.1
   url_launcher: ^6.3.1

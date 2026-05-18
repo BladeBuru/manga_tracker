@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -24,6 +25,15 @@ class RefreshableMangaImage extends StatefulWidget {
   final double? height;
   final BoxFit fit;
 
+  /// Phase 4 : utilise le proxy stable `/mangas/:muId/cover` côté API
+  /// plutôt que l'URL MangaUpdates directe. Zéro placeholder (auto-refresh
+  /// côté serveur), cache CDN 30j via NPMplus. Quand `true`, [originalUrl]
+  /// est ignoré.
+  final bool useProxy;
+
+  /// Taille demandée au proxy (`small` thumb, `medium` full size).
+  final String proxySize;
+
   const RefreshableMangaImage({
     super.key,
     required this.muId,
@@ -31,7 +41,23 @@ class RefreshableMangaImage extends StatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
+    this.useProxy = false,
+    this.proxySize = 'medium',
   });
+
+  /// Résout l'URL à utiliser : proxy si `useProxy = true`, sinon l'URL
+  /// originale. Helper interne factorisé pour init + didUpdateWidget.
+  String? _resolvedUrl() {
+    if (useProxy) {
+      final muIdInt = int.tryParse(muId);
+      if (muIdInt == null || muIdInt <= 0) return originalUrl;
+      return buildApiUri(
+        '/mangas/$muIdInt/cover',
+        {'size': proxySize},
+      ).toString();
+    }
+    return originalUrl;
+  }
 
   /// Cooldown global (5min par muId) — partagé entre TOUS les call sites
   /// pour throttle proprement les retries quand la même URL périmée est
@@ -50,14 +76,16 @@ class _RefreshableMangaImageState extends State<RefreshableMangaImage> {
   @override
   void initState() {
     super.initState();
-    _currentUrl = widget.originalUrl;
+    _currentUrl = widget._resolvedUrl();
   }
 
   @override
   void didUpdateWidget(covariant RefreshableMangaImage old) {
     super.didUpdateWidget(old);
-    if (old.originalUrl != widget.originalUrl) {
-      _currentUrl = widget.originalUrl;
+    if (old.originalUrl != widget.originalUrl ||
+        old.useProxy != widget.useProxy ||
+        old.proxySize != widget.proxySize) {
+      _currentUrl = widget._resolvedUrl();
     }
   }
 
@@ -99,6 +127,11 @@ class _RefreshableMangaImageState extends State<RefreshableMangaImage> {
   Widget build(BuildContext context) {
     final url = _currentUrl;
     if (url == null || url.isEmpty) {
+      // URL vide = stub minimal en BDD (cas typique des recommandations
+      // synced sans détail). On déclenche un refresh-cover en background
+      // pour que la prochaine lecture ait la cover. Sans ça, le placeholder
+      // resterait à vie car on ne tape jamais 404 sur une URL vide.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _attemptRefresh());
       return _placeholder();
     }
     return CachedNetworkImage(

@@ -52,9 +52,23 @@ class HomePageDataLoader {
   }
 
   /// Charge les informations utilisateur depuis le service.
+  ///
+  /// Si le cache dit `emailVerified=false`, on refait un fetch réseau pour
+  /// détecter une vérification effectuée hors de la VerifyEmailView (lien
+  /// cliqué depuis un navigateur PC, validation manuelle, etc.). Sans ça,
+  /// le cache 7j garde l'ancienne valeur et la banner « Vérifiez votre
+  /// email » reste affichée même après vérif côté serveur.
   Future<UserDto?> loadUserInfo() async {
     try {
-      final userInfo = await _userService.getUserInformation();
+      var userInfo = await _userService.getUserInformation();
+      if (!userInfo.emailVerified) {
+        try {
+          userInfo =
+              await _userService.getUserInformation(forceRefresh: true);
+        } catch (_) {
+          // Erreur réseau silencieuse : on garde la valeur du cache
+        }
+      }
       return UserDto(
         username: userInfo.username,
         email: userInfo.email,

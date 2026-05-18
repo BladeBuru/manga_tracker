@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
-import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Page « Recommandations par genre ».
@@ -55,6 +56,11 @@ class _RecommendationsByGenreViewState
         builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 1200;
           final isTablet = constraints.maxWidth >= 600;
+          // **Fix 2026-05-19** : segmented toggle V1 en tête de page (au lieu
+          // d'un IconButton dans l'AppBar) pour switcher entre Tout / Par genre.
+          const toggle = RecommendationsSegmentedToggle(
+            current: RecommendationsMode.byGenre,
+          );
           final inner = FutureBuilder<Map<String, List<MangaQuickViewDto>>>(
             future: _byGenreFuture,
             builder: (context, snapshot) {
@@ -105,7 +111,9 @@ class _RecommendationsByGenreViewState
                 constraints: const BoxConstraints(maxWidth: 1100),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: inner,
+                  child: Column(
+                    children: [toggle, Expanded(child: inner)],
+                  ),
                 ),
               ),
             );
@@ -113,10 +121,14 @@ class _RecommendationsByGenreViewState
           if (isTablet) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: inner,
+              child: Column(
+                children: [toggle, Expanded(child: inner)],
+              ),
             );
           }
-          return inner;
+          return Column(
+            children: [toggle, Expanded(child: inner)],
+          );
         },
       ),
     );
@@ -129,18 +141,27 @@ class _GenreSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            entry.key,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+          // **Fix 2026-05-19** : label uppercase tracké V1 (au lieu d'un
+          // titleMedium nu) pour rester cohérent avec ProfileEditSection +
+          // les autres labels de section de l'app.
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            child: Text(
+              entry.key.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.88,
+                color: AppColors.dsText2(brightness),
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
           SizedBox(
             height: 220,
             child: ListView.builder(
@@ -164,15 +185,6 @@ class _GenreSection extends StatelessWidget {
                   ),
                 );
               },
-            ),
-          ),
-          // Padding visuel entre les sections.
-          const SizedBox(height: 4),
-          Container(
-            height: 1,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: AppRadius.circularSm,
             ),
           ),
         ],

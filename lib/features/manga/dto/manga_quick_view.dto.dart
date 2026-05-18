@@ -1,5 +1,6 @@
 
 
+import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 
 class MangaQuickViewDto {
@@ -28,6 +29,15 @@ class MangaQuickViewDto {
     this.associated,
     this.hasNewChapters = false,
   });
+
+  /// URL proxy stable côté API (Phase 4) — auto-refresh côté serveur si
+  /// MangaUpdates retourne 404. Préférer cette URL à `mediumCoverUrl` /
+  /// `smallCoverUrl` dans tous les widgets : zéro placeholder, cache CDN
+  /// 30j via NPMplus, et un seul endpoint à invalider en cas de problème.
+  ///
+  /// [size] : `small` (thumb) ou `medium` (full size, défaut).
+  String coverProxyUrl({String size = 'medium'}) =>
+      buildApiUri('/mangas/$muId/cover', {'size': size}).toString();
 
   factory MangaQuickViewDto.fromJson(Map<String, dynamic> json) {
     return MangaQuickViewDto(

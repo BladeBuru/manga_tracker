@@ -324,6 +324,90 @@ abstract class AppLocalizations {
   /// **'Gérer les notifications'**
   String get manageNotifications;
 
+  /// No description provided for @notifSectionApp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notifications de l\'application'**
+  String get notifSectionApp;
+
+  /// No description provided for @notifSectionInfo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations'**
+  String get notifSectionInfo;
+
+  /// No description provided for @notifNewChaptersTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveaux chapitres'**
+  String get notifNewChaptersTitle;
+
+  /// No description provided for @notifNewChaptersSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Soyez alerté quand vos mangas suivis publient de nouveaux chapitres'**
+  String get notifNewChaptersSubtitle;
+
+  /// No description provided for @notifFriendReqTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes d\'ami'**
+  String get notifFriendReqTitle;
+
+  /// No description provided for @notifFriendReqSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelqu\'un veut vous ajouter en ami'**
+  String get notifFriendReqSubtitle;
+
+  /// No description provided for @notifSharesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations reçues'**
+  String get notifSharesTitle;
+
+  /// No description provided for @notifSharesSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un ami vous partage un manga'**
+  String get notifSharesSubtitle;
+
+  /// No description provided for @notifPermissionExplanation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les notifications s\'affichent uniquement quand l\'application a la permission système. Si vous n\'en recevez aucune, activez-les depuis les réglages de votre téléphone.'**
+  String get notifPermissionExplanation;
+
+  /// No description provided for @notifOpenSystemSettings.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir les réglages système'**
+  String get notifOpenSystemSettings;
+
+  /// No description provided for @pushNotifFriendRequestTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle demande d\'ami'**
+  String get pushNotifFriendRequestTitle;
+
+  /// No description provided for @pushNotifFriendRequestBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'{senderUsername} veut vous ajouter en ami'**
+  String pushNotifFriendRequestBody(String senderUsername);
+
+  /// No description provided for @pushNotifShareTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau manga partagé'**
+  String get pushNotifShareTitle;
+
+  /// No description provided for @pushNotifShareBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'{senderUsername} vous recommande {mangaTitle}'**
+  String pushNotifShareBody(String senderUsername, String mangaTitle);
+
   /// Option pour gérer le thème
   ///
   /// In fr, this message translates to:
@@ -959,6 +1043,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Effacer'**
   String get clear;
+
+  /// Titre de la page Recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher'**
+  String get searchTitle;
+
+  /// Message affiché quand l'historique de recherche est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune recherche récente'**
+  String get searchEmptyHistory;
+
+  /// Titre de la section des genres populaires sur la page Recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Genres populaires'**
+  String get searchPopularGenres;
 
   /// Titre pour l'authentification biométrique
   ///
@@ -1956,6 +2058,90 @@ abstract class AppLocalizations {
   /// **'Conditions d\'utilisation'**
   String get termsOfServiceTitle;
 
+  /// No description provided for @myDataInfoBanner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conformément au RGPD, vous avez le droit d\'accéder à vos données, de les exporter et de demander leur suppression.'**
+  String get myDataInfoBanner;
+
+  /// No description provided for @myDataSectionPersonalData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données personnelles'**
+  String get myDataSectionPersonalData;
+
+  /// No description provided for @myDataSectionMyRights.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes droits'**
+  String get myDataSectionMyRights;
+
+  /// No description provided for @myDataSectionDeletion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suppression'**
+  String get myDataSectionDeletion;
+
+  /// No description provided for @myDataSummaryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumé de mes données'**
+  String get myDataSummaryTitle;
+
+  /// No description provided for @myDataSummarySubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir un aperçu de mes données stockées'**
+  String get myDataSummarySubtitle;
+
+  /// No description provided for @myDataExportSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger un fichier JSON complet (article 20)'**
+  String get myDataExportSubtitle;
+
+  /// No description provided for @privacyPolicySubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire le document complet'**
+  String get privacyPolicySubtitle;
+
+  /// No description provided for @termsOfServiceSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir les CGU'**
+  String get termsOfServiceSubtitle;
+
+  /// No description provided for @myDataDeleteAccountSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Action irréversible'**
+  String get myDataDeleteAccountSubtitle;
+
+  /// No description provided for @gdprExportSuccessSnack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos données ont été copiées dans le presse-papier (JSON).'**
+  String get gdprExportSuccessSnack;
+
+  /// No description provided for @gdprExportFailedSnack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de l\'export'**
+  String get gdprExportFailedSnack;
+
+  /// No description provided for @gdprSummaryLoadFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur de chargement'**
+  String get gdprSummaryLoadFailed;
+
+  /// No description provided for @myDataBackLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get myDataBackLabel;
+
   /// No description provided for @tosShortVersion.
   ///
   /// In fr, this message translates to:
@@ -2015,6 +2201,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Version'**
   String get versionLabel;
+
+  /// Titre de la hero sur la page de login
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue !'**
+  String get welcomeTitle;
+
+  /// Sous-titre de la hero sur la page de login
+  ///
+  /// In fr, this message translates to:
+  /// **'Connectez-vous à votre compte'**
+  String get loginSubtitle;
+
+  /// Titre de la hero sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un compte'**
+  String get createAccountTitle;
+
+  /// Sous-titre de la hero sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencez à suivre vos lectures'**
+  String get registerSubtitle;
+
+  /// Texte du séparateur avant les boutons OAuth sur la page de login
+  ///
+  /// In fr, this message translates to:
+  /// **'ou se connecter avec'**
+  String get orLoginWith;
+
+  /// Texte du séparateur avant les boutons OAuth sur la page d'inscription
+  ///
+  /// In fr, this message translates to:
+  /// **'ou s\'inscrire avec'**
+  String get orSignUpWith;
+
+  /// Label du bouton de connexion Apple
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer avec Apple'**
+  String get continueWithApple;
+
+  /// Label affiché sur la page de démarrage pendant le chargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Chargement…'**
+  String get loadingApp;
 
   /// No description provided for @forgotPasswordTitle.
   ///
@@ -2159,6 +2393,1168 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.'**
   String get recommendationsByGenreEmpty;
+
+  /// Titre de la page paginée listant toutes les recommandations
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les recommandations'**
+  String get recommendationsAllTitle;
+
+  /// Message d'état vide sur la page paginée des recommandations
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de recommandations pour vous.'**
+  String get recommendationsAllEmpty;
+
+  /// Bouton sur la home qui ouvre la page paginée des recommandations
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get seeAllRecommendations;
+
+  /// Action AppBar de la page paginée qui ouvre la vue par genre
+  ///
+  /// In fr, this message translates to:
+  /// **'Par genre'**
+  String get browseByGenre;
+
+  /// No description provided for @recommendationsTabAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout'**
+  String get recommendationsTabAll;
+
+  /// No description provided for @recommendationsTabByGenre.
+  ///
+  /// In fr, this message translates to:
+  /// **'Par genre'**
+  String get recommendationsTabByGenre;
+
+  /// Titre de la page Statistiques (Phase 2)
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes statistiques'**
+  String get statsTitle;
+
+  /// Label sous le compteur total de mangas
+  ///
+  /// In fr, this message translates to:
+  /// **'mangas dans votre bibliothèque'**
+  String get statsTotalMangas;
+
+  /// Date de création du compte
+  ///
+  /// In fr, this message translates to:
+  /// **'Membre depuis {date}'**
+  String statsMemberSince(String date);
+
+  /// No description provided for @statsTotalChapters.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitres lus'**
+  String get statsTotalChapters;
+
+  /// No description provided for @statsReadingTime.
+  ///
+  /// In fr, this message translates to:
+  /// **'Temps de lecture estimé'**
+  String get statsReadingTime;
+
+  /// No description provided for @statsCompletionRate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Taux de complétion'**
+  String get statsCompletionRate;
+
+  /// No description provided for @statsLastRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernière lecture'**
+  String get statsLastRead;
+
+  /// No description provided for @statsByStatusTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Répartition par statut'**
+  String get statsByStatusTitle;
+
+  /// No description provided for @statsByStatusEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun manga dans votre bibliothèque pour le moment.'**
+  String get statsByStatusEmpty;
+
+  /// No description provided for @statsTopGenresTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Genres préférés'**
+  String get statsTopGenresTitle;
+
+  /// No description provided for @statsTopGenresEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez des mangas pour découvrir vos genres préférés.'**
+  String get statsTopGenresEmpty;
+
+  /// No description provided for @statsMinutesShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} min'**
+  String statsMinutesShort(int count);
+
+  /// No description provided for @statsHoursAndMinutesShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String statsHoursAndMinutesShort(int hours, int minutes);
+
+  /// No description provided for @statsDaysAndHoursShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'{days} j {hours} h'**
+  String statsDaysAndHoursShort(int days, int hours);
+
+  /// No description provided for @statusReadLater.
+  ///
+  /// In fr, this message translates to:
+  /// **'À lire'**
+  String get statusReadLater;
+
+  /// No description provided for @statusReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get statusReading;
+
+  /// No description provided for @statusCaughtUp.
+  ///
+  /// In fr, this message translates to:
+  /// **'À jour'**
+  String get statusCaughtUp;
+
+  /// No description provided for @statusCompleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminé'**
+  String get statusCompleted;
+
+  /// Titre section résumé chiffré (page Stats V1)
+  ///
+  /// In fr, this message translates to:
+  /// **'Vue d\'ensemble'**
+  String get statsSectionOverview;
+
+  /// Titre section répartition par statut (page Stats V1)
+  ///
+  /// In fr, this message translates to:
+  /// **'Mangas par statut'**
+  String get statsSectionBreakdown;
+
+  /// Titre section genres préférés (page Stats V1)
+  ///
+  /// In fr, this message translates to:
+  /// **'Genres préférés'**
+  String get statsSectionGenres;
+
+  /// Label ligne total de mangas (page Stats V1)
+  ///
+  /// In fr, this message translates to:
+  /// **'Mangas dans la bibliothèque'**
+  String get statsLibraryTotal;
+
+  /// Texte hero indiquant l'ancienneté du compte en mois
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Membre depuis moins d\'\'un mois} =1{Membre depuis 1 mois} other{Membre depuis {count} mois}}'**
+  String statsMonthsSinceJoin(int count);
+
+  /// Badge à droite du hero (page Stats V1)
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 manga} other{{count} mangas}}'**
+  String statsHeroBadge(int count);
+
+  /// Bouton accédant à la page Stats depuis Profile
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes statistiques'**
+  String get profileMyStats;
+
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier mon profil'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileEditBackLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil'**
+  String get profileEditBackLabel;
+
+  /// No description provided for @profileEditMenuTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le profil'**
+  String get profileEditMenuTitle;
+
+  /// No description provided for @profileEditMenuSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photo, pseudo, bio, confidentialité'**
+  String get profileEditMenuSubtitle;
+
+  /// No description provided for @profileFieldAvatarUrl.
+  ///
+  /// In fr, this message translates to:
+  /// **'URL de l\'avatar'**
+  String get profileFieldAvatarUrl;
+
+  /// No description provided for @profileFieldDisplayName.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom à afficher'**
+  String get profileFieldDisplayName;
+
+  /// No description provided for @profileFieldBio.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bio'**
+  String get profileFieldBio;
+
+  /// No description provided for @profileFieldDateOfBirth.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de naissance'**
+  String get profileFieldDateOfBirth;
+
+  /// No description provided for @profileFieldGender.
+  ///
+  /// In fr, this message translates to:
+  /// **'Genre'**
+  String get profileFieldGender;
+
+  /// No description provided for @profileGenderNotSet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non renseigné'**
+  String get profileGenderNotSet;
+
+  /// No description provided for @profileGenderMale.
+  ///
+  /// In fr, this message translates to:
+  /// **'Homme'**
+  String get profileGenderMale;
+
+  /// No description provided for @profileGenderFemale.
+  ///
+  /// In fr, this message translates to:
+  /// **'Femme'**
+  String get profileGenderFemale;
+
+  /// No description provided for @profileGenderNonBinary.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non-binaire'**
+  String get profileGenderNonBinary;
+
+  /// No description provided for @profileGenderPreferNotToSay.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préfère ne pas dire'**
+  String get profileGenderPreferNotToSay;
+
+  /// No description provided for @profileFieldIsPublic.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil public'**
+  String get profileFieldIsPublic;
+
+  /// No description provided for @profileFieldIsPublicSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Visible par les autres utilisateurs'**
+  String get profileFieldIsPublicSubtitle;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Profil enregistré'**
+  String get profileSaved;
+
+  /// No description provided for @profileSaveFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de l\'enregistrement'**
+  String get profileSaveFailed;
+
+  /// No description provided for @friendsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Amis'**
+  String get friendsTitle;
+
+  /// No description provided for @friendsTabAccepted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Amis'**
+  String get friendsTabAccepted;
+
+  /// No description provided for @friendsTabPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes'**
+  String get friendsTabPending;
+
+  /// No description provided for @friendsSearchLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trouver un ami'**
+  String get friendsSearchLabel;
+
+  /// No description provided for @friendsSearchHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tapez un pseudo (min 2 caractères)'**
+  String get friendsSearchHint;
+
+  /// No description provided for @friendsAddRequest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer une demande'**
+  String get friendsAddRequest;
+
+  /// No description provided for @friendsAccept.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepter'**
+  String get friendsAccept;
+
+  /// No description provided for @friendsReject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refuser'**
+  String get friendsReject;
+
+  /// No description provided for @friendsRemove.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get friendsRemove;
+
+  /// No description provided for @friendsRequestSent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande envoyée'**
+  String get friendsRequestSent;
+
+  /// No description provided for @friendsError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur'**
+  String get friendsError;
+
+  /// No description provided for @friendsEmptyAccepted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun ami pour l\'instant'**
+  String get friendsEmptyAccepted;
+
+  /// No description provided for @friendsEmptyAcceptedSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recherche des utilisateurs pour les ajouter.'**
+  String get friendsEmptyAcceptedSubtitle;
+
+  /// No description provided for @friendsEmptyPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune demande en attente'**
+  String get friendsEmptyPending;
+
+  /// No description provided for @friendsEmptyPendingSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les demandes reçues s\'afficheront ici.'**
+  String get friendsEmptyPendingSubtitle;
+
+  /// No description provided for @friendsSectionAccepted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes amis'**
+  String get friendsSectionAccepted;
+
+  /// No description provided for @friendsSectionPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes reçues'**
+  String get friendsSectionPending;
+
+  /// No description provided for @friendsSearchClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get friendsSearchClear;
+
+  /// No description provided for @friendsSearchResults.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultats'**
+  String get friendsSearchResults;
+
+  /// No description provided for @friendsSearchEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun utilisateur trouvé.'**
+  String get friendsSearchEmpty;
+
+  /// No description provided for @profileMyFriends.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes amis'**
+  String get profileMyFriends;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Commentaires'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun commentaire pour le moment. Soyez le premier !'**
+  String get commentsEmpty;
+
+  /// No description provided for @commentsSortRecent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récent'**
+  String get commentsSortRecent;
+
+  /// No description provided for @commentsSortTop.
+  ///
+  /// In fr, this message translates to:
+  /// **'Populaire'**
+  String get commentsSortTop;
+
+  /// No description provided for @commentsInputHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partagez votre avis (3-2000 caractères)'**
+  String get commentsInputHint;
+
+  /// No description provided for @commentsPost.
+  ///
+  /// In fr, this message translates to:
+  /// **'Publier'**
+  String get commentsPost;
+
+  /// No description provided for @commentsDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get commentsDelete;
+
+  /// No description provided for @commentsLoadMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir plus'**
+  String get commentsLoadMore;
+
+  /// No description provided for @commentsReplyCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 réponse} other{{count} réponses}}'**
+  String commentsReplyCount(int count);
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'à l\'instant'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} min'**
+  String timeMinutesAgo(int count);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} h'**
+  String timeHoursAgo(int count);
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} j'**
+  String timeDaysAgo(int count);
+
+  /// No description provided for @shareTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager ce manga'**
+  String get shareTitle;
+
+  /// No description provided for @shareMessageHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un message (optionnel)'**
+  String get shareMessageHint;
+
+  /// No description provided for @shareCancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get shareCancel;
+
+  /// No description provided for @shareSend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer'**
+  String get shareSend;
+
+  /// No description provided for @shareSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Manga partagé'**
+  String get shareSuccess;
+
+  /// No description provided for @shareFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec du partage'**
+  String get shareFailed;
+
+  /// No description provided for @shareLoadError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger vos amis'**
+  String get shareLoadError;
+
+  /// No description provided for @shareNoFriends.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous n\'avez pas encore d\'amis avec qui partager. Ajoutez-en depuis la page Amis.'**
+  String get shareNoFriends;
+
+  /// No description provided for @inboxTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations reçues'**
+  String get inboxTitle;
+
+  /// No description provided for @inboxEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune recommandation pour l\'instant.'**
+  String get inboxEmpty;
+
+  /// No description provided for @inboxBadgeNew.
+  ///
+  /// In fr, this message translates to:
+  /// **'NOUVEAU'**
+  String get inboxBadgeNew;
+
+  /// No description provided for @inboxSenderRecommends.
+  ///
+  /// In fr, this message translates to:
+  /// **'{sender} vous recommande'**
+  String inboxSenderRecommends(String sender);
+
+  /// No description provided for @inboxSharedYouLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'{sender} vous a partagé'**
+  String inboxSharedYouLabel(String sender);
+
+  /// No description provided for @inboxFilterAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes'**
+  String get inboxFilterAll;
+
+  /// No description provided for @inboxFilterUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non lues'**
+  String get inboxFilterUnread;
+
+  /// No description provided for @inboxFilterRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lues'**
+  String get inboxFilterRead;
+
+  /// No description provided for @inboxGroupToday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aujourd\'hui'**
+  String get inboxGroupToday;
+
+  /// No description provided for @inboxGroupYesterday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hier'**
+  String get inboxGroupYesterday;
+
+  /// No description provided for @inboxGroupThisWeek.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette semaine'**
+  String get inboxGroupThisWeek;
+
+  /// No description provided for @inboxGroupOlder.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tôt'**
+  String get inboxGroupOlder;
+
+  /// No description provided for @inboxEmptyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune recommandation'**
+  String get inboxEmptyTitle;
+
+  /// No description provided for @inboxEmptySubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande à tes amis de te partager leurs lectures préférées.'**
+  String get inboxEmptySubtitle;
+
+  /// No description provided for @inboxEmptyFilteredUnread.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune recommandation non lue.'**
+  String get inboxEmptyFilteredUnread;
+
+  /// No description provided for @inboxEmptyFilteredRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune recommandation lue.'**
+  String get inboxEmptyFilteredRead;
+
+  /// No description provided for @profileMyInbox.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations reçues'**
+  String get profileMyInbox;
+
+  /// No description provided for @readingGroupsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lectures à deux'**
+  String get readingGroupsTitle;
+
+  /// No description provided for @readingGroupsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun groupe de lecture pour le moment. Crée-en un depuis la fiche d\'un manga.'**
+  String get readingGroupsEmpty;
+
+  /// No description provided for @readingGroupDetailTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe de lecture'**
+  String get readingGroupDetailTitle;
+
+  /// No description provided for @readingGroupMembersTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Membres'**
+  String get readingGroupMembersTitle;
+
+  /// No description provided for @readingGroupOwnerBadge.
+  ///
+  /// In fr, this message translates to:
+  /// **'OWNER'**
+  String get readingGroupOwnerBadge;
+
+  /// No description provided for @readingGroupOpenManga.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir le manga'**
+  String get readingGroupOpenManga;
+
+  /// No description provided for @readingGroupNotStarted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas commencé'**
+  String get readingGroupNotStarted;
+
+  /// No description provided for @readingGroupChaptersRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chap. {count}'**
+  String readingGroupChaptersRead(int count);
+
+  /// No description provided for @readingGroupChaptersReadLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'lus'**
+  String get readingGroupChaptersReadLabel;
+
+  /// No description provided for @readingGroupMembersCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 membre} other{{count} membres}}'**
+  String readingGroupMembersCount(int count);
+
+  /// No description provided for @profileMyReadingGroups.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lectures à deux'**
+  String get profileMyReadingGroups;
+
+  /// No description provided for @profileSectionPublicInfo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Informations publiques'**
+  String get profileSectionPublicInfo;
+
+  /// No description provided for @profileSectionAbout.
+  ///
+  /// In fr, this message translates to:
+  /// **'À propos de vous'**
+  String get profileSectionAbout;
+
+  /// No description provided for @profileSectionPrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confidentialité'**
+  String get profileSectionPrivacy;
+
+  /// No description provided for @profileNotSet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non renseigné'**
+  String get profileNotSet;
+
+  /// No description provided for @profileSectionAvatar.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avatar'**
+  String get profileSectionAvatar;
+
+  /// No description provided for @profileEditAvatarHeroHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'aperçu se met à jour quand tu colles une URL d\'image.'**
+  String get profileEditAvatarHeroHint;
+
+  /// No description provided for @profileEditPickPhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir une photo'**
+  String get profileEditPickPhoto;
+
+  /// No description provided for @profileEditClearAvatar.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get profileEditClearAvatar;
+
+  /// No description provided for @profileEditPhotoPickFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de sélectionner la photo'**
+  String get profileEditPhotoPickFailed;
+
+  /// No description provided for @profileGenderClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer'**
+  String get profileGenderClear;
+
+  /// No description provided for @avatarUrlLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'URL de l\'avatar'**
+  String get avatarUrlLabel;
+
+  /// No description provided for @avatarUrlInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'URL doit commencer par http:// ou https://'**
+  String get avatarUrlInvalid;
+
+  /// No description provided for @profileSectionAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'Compte'**
+  String get profileSectionAccount;
+
+  /// No description provided for @profileFieldUsername.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom d\'utilisateur'**
+  String get profileFieldUsername;
+
+  /// No description provided for @profileFieldEmail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse e-mail'**
+  String get profileFieldEmail;
+
+  /// No description provided for @profileFieldReadOnly.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non modifiable'**
+  String get profileFieldReadOnly;
+
+  /// No description provided for @profileChangePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier la photo'**
+  String get profileChangePhoto;
+
+  /// No description provided for @changelogCardTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notes de version'**
+  String get changelogCardTitle;
+
+  /// No description provided for @readingGroupCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire à deux'**
+  String get readingGroupCreateTitle;
+
+  /// No description provided for @readingGroupCreateNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du groupe (optionnel)'**
+  String get readingGroupCreateNameLabel;
+
+  /// No description provided for @readingGroupCreateNameHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'ex: Berserk avec Léa'**
+  String get readingGroupCreateNameHint;
+
+  /// No description provided for @readingGroupCreateInviteSection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inviter des amis'**
+  String get readingGroupCreateInviteSection;
+
+  /// No description provided for @readingGroupCreateConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer le groupe'**
+  String get readingGroupCreateConfirm;
+
+  /// No description provided for @readingGroupCreateFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Création du groupe échouée'**
+  String get readingGroupCreateFailed;
+
+  /// No description provided for @readingGroupCreateInviteRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionne au moins un ami pour créer le groupe'**
+  String get readingGroupCreateInviteRequired;
+
+  /// No description provided for @readingGroupDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le groupe'**
+  String get readingGroupDelete;
+
+  /// No description provided for @readingGroupDeleteConfirmTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer ce groupe ?'**
+  String get readingGroupDeleteConfirmTitle;
+
+  /// No description provided for @readingGroupDeleteConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette action est irréversible. Tous les membres perdront l\'accès au groupe.'**
+  String get readingGroupDeleteConfirm;
+
+  /// No description provided for @readingGroupDeleteSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe supprimé'**
+  String get readingGroupDeleteSuccess;
+
+  /// No description provided for @readingGroupDeleteFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suppression du groupe échouée'**
+  String get readingGroupDeleteFailed;
+
+  /// No description provided for @readingGroupSharedReading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture partagée'**
+  String get readingGroupSharedReading;
+
+  /// No description provided for @readingGroupViewGroup.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le groupe'**
+  String get readingGroupViewGroup;
+
+  /// No description provided for @readingGroupChapterShort.
+  ///
+  /// In fr, this message translates to:
+  /// **'ch.'**
+  String get readingGroupChapterShort;
+
+  /// No description provided for @profileHighlightTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelles fonctionnalités'**
+  String get profileHighlightTitle;
+
+  /// No description provided for @profileNewBadge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau'**
+  String get profileNewBadge;
+
+  /// No description provided for @profileFooterBrand.
+  ///
+  /// In fr, this message translates to:
+  /// **'MANGA TRACKER'**
+  String get profileFooterBrand;
+
+  /// No description provided for @readingGroupListSectionTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes groupes'**
+  String get readingGroupListSectionTitle;
+
+  /// No description provided for @readingGroupWithLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Avec {name}'**
+  String readingGroupWithLabel(String name);
+
+  /// No description provided for @readingGroupYouLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toi'**
+  String get readingGroupYouLabel;
+
+  /// No description provided for @readingGroupProgressYouVsFriend.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toi : ch. {you} · {friend} : ch. {their}'**
+  String readingGroupProgressYouVsFriend(
+    String you,
+    String friend,
+    String their,
+  );
+
+  /// No description provided for @readingGroupChapterDash.
+  ///
+  /// In fr, this message translates to:
+  /// **'—'**
+  String get readingGroupChapterDash;
+
+  /// No description provided for @readingGroupSectionHero.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture en cours'**
+  String get readingGroupSectionHero;
+
+  /// No description provided for @readingGroupSectionProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression'**
+  String get readingGroupSectionProgress;
+
+  /// No description provided for @readingGroupSectionActions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actions'**
+  String get readingGroupSectionActions;
+
+  /// No description provided for @readingGroupActionsMarkProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Marquer ma progression'**
+  String get readingGroupActionsMarkProgress;
+
+  /// No description provided for @readingGroupActionsMarkProgressSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir la fiche du manga pour avancer'**
+  String get readingGroupActionsMarkProgressSubtitle;
+
+  /// No description provided for @readingGroupActionsInvite.
+  ///
+  /// In fr, this message translates to:
+  /// **'Inviter un ami'**
+  String get readingGroupActionsInvite;
+
+  /// No description provided for @readingGroupActionsCopyFriendLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien de {friend}'**
+  String readingGroupActionsCopyFriendLink(String friend);
+
+  /// No description provided for @readingGroupActionsCopyFriendLinkSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adapté au chapitre {chapter}'**
+  String readingGroupActionsCopyFriendLinkSubtitle(int chapter);
+
+  /// No description provided for @readingGroupApplyLinkSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien enregistré sur le chapitre {chapter}'**
+  String readingGroupApplyLinkSuccess(int chapter);
+
+  /// No description provided for @readingGroupCopyLinkSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien copié — chapitre {chapter}'**
+  String readingGroupCopyLinkSuccess(int chapter);
+
+  /// No description provided for @readingGroupCopyLinkFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'adapter ce lien (format non reconnu)'**
+  String get readingGroupCopyLinkFailed;
+
+  /// No description provided for @readingGroupActionsInviteSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une personne au groupe'**
+  String get readingGroupActionsInviteSubtitle;
+
+  /// No description provided for @readingGroupActionsLeave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter le groupe'**
+  String get readingGroupActionsLeave;
+
+  /// No description provided for @readingGroupActionsLeaveSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu ne verras plus la progression partagée'**
+  String get readingGroupActionsLeaveSubtitle;
+
+  /// No description provided for @readingGroupActionsDeleteSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer définitivement pour tous les membres'**
+  String get readingGroupActionsDeleteSubtitle;
+
+  /// No description provided for @readingGroupLeaveConfirmTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter ce groupe ?'**
+  String get readingGroupLeaveConfirmTitle;
+
+  /// No description provided for @readingGroupLeaveConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu n\'auras plus accès à la progression partagée.'**
+  String get readingGroupLeaveConfirm;
+
+  /// No description provided for @readingGroupLeaveSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as quitté le groupe'**
+  String get readingGroupLeaveSuccess;
+
+  /// No description provided for @readingGroupLeaveFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de quitter le groupe'**
+  String get readingGroupLeaveFailed;
+
+  /// No description provided for @readingGroupEmptyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune lecture à deux'**
+  String get readingGroupEmptyTitle;
+
+  /// No description provided for @readingGroupEmptySubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Démarre un manga avec un ami et suivez votre progression ensemble.'**
+  String get readingGroupEmptySubtitle;
+
+  /// No description provided for @readingGroupEmptyAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Découvrir un manga'**
+  String get readingGroupEmptyAction;
+
+  /// No description provided for @readingGroupTotalLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Total'**
+  String get readingGroupTotalLabel;
+
+  /// No description provided for @readingGroupChaptersTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} ch.'**
+  String readingGroupChaptersTotal(int count);
+
+  /// No description provided for @readingGroupInviteSoonTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bientôt disponible'**
+  String get readingGroupInviteSoonTitle;
+
+  /// No description provided for @readingGroupInviteSoonMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'invitation depuis le groupe arrive très bientôt. Pour l\'instant, recrée un groupe depuis la fiche d\'un manga.'**
+  String get readingGroupInviteSoonMessage;
+
+  /// Tooltip du bouton qui passe en vue liste dans la bibliothèque
+  ///
+  /// In fr, this message translates to:
+  /// **'Vue liste'**
+  String get libraryToggleListView;
+
+  /// Tooltip du bouton qui passe en vue carte dans la bibliothèque
+  ///
+  /// In fr, this message translates to:
+  /// **'Vue carte'**
+  String get libraryToggleCardView;
+
+  /// Tooltip du filtre Téléchargés uniquement
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher uniquement les téléchargés'**
+  String get libraryShowDownloadedOnly;
+
+  /// Tooltip pour revenir à l'affichage complet (filtre Téléchargés désactivé)
+  ///
+  /// In fr, this message translates to:
+  /// **'Afficher tous les mangas'**
+  String get libraryShowAllMangas;
+
+  /// Label d'accessibilité de la barre de progression de lecture
+  ///
+  /// In fr, this message translates to:
+  /// **'{read} sur {total} chapitres lus'**
+  String libraryProgressLabel(int read, int total);
+
+  /// Nombre de votes communautaires sur un manga
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun vote} =1{1 vote} other{{count} votes}}'**
+  String votesCount(int count);
+
+  /// Titre de section des recommandations / mangas similaires
+  ///
+  /// In fr, this message translates to:
+  /// **'Mangas similaires'**
+  String get detailSectionSimilar;
 }
 
 class _AppLocalizationsDelegate

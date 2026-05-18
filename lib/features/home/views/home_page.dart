@@ -16,7 +16,8 @@ import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:flutter/material.dart';
 
 import '../../manga/widgets/manga_card.dart';
-import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/utils/responsive_layout.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,7 +26,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with ResponsiveLayoutMixin {
   final MangaService mangaService = getIt<MangaService>();
   final UserService userService = getIt<UserService>();
   final AuthService authService = getIt<AuthService>();
@@ -139,39 +140,23 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 9 : padding adaptatif via ResponsiveLayoutMixin.
+    final hPad = horizontalPadding(context);
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(25.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxContentWidth(context)),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(hPad, 25, hPad, 25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             const SizedBox(height: 20),
             WelcomeHeader(username: displayUsername),
             
-            // Indicateur de mode hors ligne
-            if (_isOffline)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  border: Border.all(color: Colors.orange),
-                  borderRadius: AppRadius.circularMd,
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.cloud_off, color: Colors.orange, size: 20),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Mode hors ligne - Données en cache',
-                        style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // Indicateur de mode hors ligne (refactor 2026-05-18 vers
+            // primitive OfflineBanner du design system, plus de Colors.orange).
+            if (_isOffline) const OfflineBanner(),
 
             const SizedBox(height: 20),
             Row(
@@ -267,7 +252,9 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

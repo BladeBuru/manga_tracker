@@ -10,6 +10,7 @@ import 'package:mangatracker/features/library/views/library_bloc_view.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 class BottomNavbar extends StatefulWidget {
@@ -25,6 +26,11 @@ class BottomNavbarState extends State<BottomNavbar> {
 
   final Color unselectedColor = const Color(0xffb8b8d2);
 
+  /// Phase 6.2 + 8.2 : service de polling pour le badge notifs (demandes
+  /// d'amis pending + shares non-vues). Récupéré dans initState pour
+  /// démarrer le polling au mount du shell principal.
+  NotificationCountsService? _notifService;
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +38,25 @@ class BottomNavbarState extends State<BottomNavbar> {
     // re-accepter les CGU/Privacy (versions courantes vs versions stockées).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkConsentRefresh();
+      _startNotificationsPolling();
     });
+  }
+
+  Future<void> _startNotificationsPolling() async {
+    try {
+      _notifService = await getIt.getAsync<NotificationCountsService>();
+      await _notifService!.start();
+    } catch (e) {
+      // Si l'instance n'est pas encore prête (race au boot), on laisse
+      // tomber silencieusement : le badge reste à 0 jusqu'au prochain mount.
+    }
+  }
+
+  @override
+  void dispose() {
+    _notifService?.stop();
+    pageCont.dispose();
+    super.dispose();
   }
 
   Future<void> _checkConsentRefresh() async {
@@ -79,17 +103,17 @@ class BottomNavbarState extends State<BottomNavbar> {
   }
 
   @override
-  void dispose() {
-    pageCont.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      // **Fix 2026-05-19** : passé de `false` à `true` (défaut Scaffold).
+      // Avec `false`, le PageView gardait sa taille pleine quand le clavier
+      // s'ouvre → l'inner Scaffold (Library) avait un espace blanc inutile
+      // entre la fin du contenu et le clavier (~1/3 d'écran perdu). Avec
+      // `true`, le PageView resize correctement → la bottom nav remonte
+      // au-dessus du clavier ET la liste prend tout l'espace dispo.
+      resizeToAvoidBottomInset: true,
       body: PageView(
         onPageChanged: (index) {
           setState(() => currntIndex = index);
@@ -145,9 +169,12 @@ class BottomNavbarState extends State<BottomNavbar> {
             label: l10n?.search ?? 'Recherche',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.person,
-              color: currntIndex == 3 ? Theme.of(context).colorScheme.primary : unselectedColor,
+            icon: _NotifBadgedIcon(
+              icon: Icons.person,
+              color: currntIndex == 3
+                  ? Theme.of(context).colorScheme.primary
+                  : unselectedColor,
+              service: _notifService,
             ),
             label: l10n?.myAccount ?? 'Mon compte',
           ),
@@ -252,6 +279,44 @@ class _ConsentRefreshDialogState extends State<_ConsentRefreshDialog> {
           child: Text(l10n?.iAccept ?? 'Accepter'),
         ),
       ],
+    );
+  }
+}
+
+/// Icône avec badge rouge pour le nombre de notifications non lues (Phase
+/// 6.2 + 8.2). S'abonne au `Stream<int>` du `NotificationCountsService`
+/// pour auto-rafraîchir sans rebuild manuel du parent.
+///
+/// Le badge utilise `Material 3 Badge`, qui se positionne automatiquement
+/// en haut à droite de l'icône.
+class _NotifBadgedIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final NotificationCountsService? service;
+
+  const _NotifBadgedIcon({
+    required this.icon,
+    required this.color,
+    required this.service,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return Icon(icon, color: color);
+    }
+    return StreamBuilder<int>(
+      stream: service!.countStream,
+      initialData: service!.lastValue,
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        final iconWidget = Icon(icon, color: color);
+        if (count <= 0) return iconWidget;
+        return Badge.count(
+          count: count,
+          child: iconWidget,
+        );
+      },
     );
   }
 }

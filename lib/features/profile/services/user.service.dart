@@ -134,4 +134,74 @@ class UserService {
       debugPrint('Erreur lors de l\'invalidation du cache utilisateur: $e');
     }
   }
+
+  /// Met à jour les champs de profil étendu (Phase 3).
+  ///
+  /// Envoie un PATCH `/user/profile` avec uniquement les champs non-null
+  /// du paramètre. Invalide le cache local après succès pour que le
+  /// prochain `getUserInformation` reflète les changements.
+  Future<UserInformationDto> updateProfile({
+    String? displayName,
+    String? bio,
+    String? avatarUrl,
+    String? dateOfBirth,
+    String? gender,
+    bool? isProfilePublic,
+  }) async {
+    // L'API valide `@Length(1, N)` sur les champs string → on n'envoie PAS
+    // les chaînes vides (sinon 400 Bad Request "must be longer than 1
+    // character"). Pour "vider" un champ côté serveur, il faudrait un
+    // endpoint dédié — pas implémenté pour MVP.
+    final body = <String, dynamic>{};
+    if (displayName != null && displayName.isNotEmpty) {
+      body['displayName'] = displayName;
+    }
+    if (bio != null && bio.isNotEmpty) body['bio'] = bio;
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      // **2026-05-18** : l'API accepte désormais data URLs ET URLs http(s)
+      // (regex `update-profile.dto.ts` ligne 67). La colonne est `text`
+      // (cap 200 000 chars) depuis la migration ChangeAvatarUrlToText.
+      // → on relaie ce que la view a déjà validé via `_validAvatarUrl`.
+      if (avatarUrl.startsWith('http://') ||
+          avatarUrl.startsWith('https://') ||
+          avatarUrl.startsWith('data:image/')) {
+        body['avatarUrl'] = avatarUrl;
+      } else {
+        debugPrint(
+          '[updateProfile] avatarUrl format invalide (ni http(s) ni data:image/): ${avatarUrl.substring(0, avatarUrl.length.clamp(0, 60))}…',
+        );
+      }
+    }
+    if (dateOfBirth != null && dateOfBirth.isNotEmpty) {
+      body['dateOfBirth'] = dateOfBirth;
+    }
+    if (gender != null && gender.isNotEmpty) body['gender'] = gender;
+    if (isProfilePublic != null) body['isProfilePublic'] = isProfilePublic;
+
+    // Debug : trace exacte de ce qui part vers l'API pour identifier les
+    // mismatches DTO (champs inconnus, formats, casing enum…).
+    debugPrint('[updateProfile] PATCH /user/profile body=${jsonEncode(body)}');
+
+    final response = await httpService.patchWithAuthTokens(
+      buildApiUri('/user/profile'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != HttpStatus.ok) {
+      // Trace le response body pour voir les violations class-validator
+      // (avec enableDebugMessages côté NestJS, on récupère le détail).
+      debugPrint(
+        '[updateProfile] FAILED ${response.statusCode} body=${response.body}',
+      );
+      throw Exception(
+        'Mise à jour du profil échouée : ${response.statusCode} ${response.body}',
+      );
+    }
+    final updated = UserInformationDto.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+    await _cacheService.cacheUserInformation(updated);
+    return updated;
+  }
 }

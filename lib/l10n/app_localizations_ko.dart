@@ -114,16 +114,63 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notifications => '알림';
 
   @override
-  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+  String get newChapterNotifications => '새 챕터 알림';
 
   @override
-  String get newChapterNotificationsEnabled => 'Activées';
+  String get newChapterNotificationsEnabled => '사용';
 
   @override
-  String get newChapterNotificationsDisabled => 'Désactivées';
+  String get newChapterNotificationsDisabled => '사용 안 함';
 
   @override
   String get manageNotifications => '알림 관리';
+
+  @override
+  String get notifSectionApp => '앱 알림';
+
+  @override
+  String get notifSectionInfo => '정보';
+
+  @override
+  String get notifNewChaptersTitle => '새 챕터';
+
+  @override
+  String get notifNewChaptersSubtitle => '팔로우 중인 만화에 새 챕터가 게시되면 알림을 받습니다';
+
+  @override
+  String get notifFriendReqTitle => '친구 요청';
+
+  @override
+  String get notifFriendReqSubtitle => '누군가가 당신을 친구로 추가하고 싶어합니다';
+
+  @override
+  String get notifSharesTitle => '받은 추천';
+
+  @override
+  String get notifSharesSubtitle => '친구가 만화를 공유합니다';
+
+  @override
+  String get notifPermissionExplanation =>
+      '알림은 앱에 시스템 권한이 있을 때만 표시됩니다. 받지 못한다면 휴대전화 설정에서 활성화하세요.';
+
+  @override
+  String get notifOpenSystemSettings => '시스템 설정 열기';
+
+  @override
+  String get pushNotifFriendRequestTitle => '새 친구 요청';
+
+  @override
+  String pushNotifFriendRequestBody(String senderUsername) {
+    return '$senderUsername님이 친구로 추가하고 싶어합니다';
+  }
+
+  @override
+  String get pushNotifShareTitle => '새 만화 공유됨';
+
+  @override
+  String pushNotifShareBody(String senderUsername, String mangaTitle) {
+    return '$senderUsername님이 $mangaTitle을(를) 추천합니다';
+  }
 
   @override
   String get theme => '테마';
@@ -467,6 +514,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get clear => '지우기';
+
+  @override
+  String get searchTitle => '검색';
+
+  @override
+  String get searchEmptyHistory => '최근 검색 없음';
+
+  @override
+  String get searchPopularGenres => '인기 장르';
 
   @override
   String get biometricAuthTitle => '생체 인증';
@@ -1028,6 +1084,49 @@ class AppLocalizationsKo extends AppLocalizations {
   String get termsOfServiceTitle => '이용 약관';
 
   @override
+  String get myDataInfoBanner =>
+      'GDPR에 따라 귀하는 데이터에 접근하고, 내보내고, 삭제를 요청할 권리가 있습니다.';
+
+  @override
+  String get myDataSectionPersonalData => '개인 데이터';
+
+  @override
+  String get myDataSectionMyRights => '내 권리';
+
+  @override
+  String get myDataSectionDeletion => '삭제';
+
+  @override
+  String get myDataSummaryTitle => '내 데이터 요약';
+
+  @override
+  String get myDataSummarySubtitle => '저장된 데이터의 개요 보기';
+
+  @override
+  String get myDataExportSubtitle => '전체 JSON 파일 다운로드 (제20조)';
+
+  @override
+  String get privacyPolicySubtitle => '전체 문서 읽기';
+
+  @override
+  String get termsOfServiceSubtitle => '이용 약관 보기';
+
+  @override
+  String get myDataDeleteAccountSubtitle => '이 작업은 되돌릴 수 없습니다';
+
+  @override
+  String get gdprExportSuccessSnack => '데이터가 클립보드에 복사되었습니다 (JSON).';
+
+  @override
+  String get gdprExportFailedSnack => '내보내기 실패';
+
+  @override
+  String get gdprSummaryLoadFailed => '로딩 오류';
+
+  @override
+  String get myDataBackLabel => '프로필';
+
+  @override
   String get tosShortVersion =>
       'Manga Tracker는 보증 없이 그대로 제공됩니다. 발행인은 사용자의 비규정 사용(불법 콘텐츠, 스크래핑 등)에 대한 모든 책임을 부인합니다.\n\n전체 문서는 공식 웹사이트에서 확인할 수 있습니다.';
 
@@ -1059,6 +1158,30 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get versionLabel => '버전';
+
+  @override
+  String get welcomeTitle => '환영합니다!';
+
+  @override
+  String get loginSubtitle => '계정에 로그인하세요';
+
+  @override
+  String get createAccountTitle => '계정 만들기';
+
+  @override
+  String get registerSubtitle => '독서 기록을 시작하세요';
+
+  @override
+  String get orLoginWith => '또는 다음으로 로그인';
+
+  @override
+  String get orSignUpWith => '또는 다음으로 가입';
+
+  @override
+  String get continueWithApple => 'Apple로 계속하기';
+
+  @override
+  String get loadingApp => '로딩 중…';
 
   @override
   String get forgotPasswordTitle => '비밀번호 찾기';
@@ -1136,4 +1259,664 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get recommendationsByGenreEmpty =>
       '아직 추천이 없습니다. 라이브러리에 만화를 추가하여 맞춤 추천을 받아보세요.';
+
+  @override
+  String get recommendationsAllTitle => '전체 추천';
+
+  @override
+  String get recommendationsAllEmpty => '아직 추천이 없습니다.';
+
+  @override
+  String get seeAllRecommendations => '전체 보기';
+
+  @override
+  String get browseByGenre => '장르별';
+
+  @override
+  String get recommendationsTabAll => '모두';
+
+  @override
+  String get recommendationsTabByGenre => '장르별';
+
+  @override
+  String get statsTitle => '내 통계';
+
+  @override
+  String get statsTotalMangas => '권이 라이브러리에 있습니다';
+
+  @override
+  String statsMemberSince(String date) {
+    return '$date부터 가입';
+  }
+
+  @override
+  String get statsTotalChapters => '읽은 화 수';
+
+  @override
+  String get statsReadingTime => '예상 독서 시간';
+
+  @override
+  String get statsCompletionRate => '완독률';
+
+  @override
+  String get statsLastRead => '마지막으로 읽은 작품';
+
+  @override
+  String get statsByStatusTitle => '상태별 분포';
+
+  @override
+  String get statsByStatusEmpty => '아직 라이브러리에 만화가 없습니다.';
+
+  @override
+  String get statsTopGenresTitle => '좋아하는 장르';
+
+  @override
+  String get statsTopGenresEmpty => '만화를 추가해 좋아하는 장르를 알아보세요.';
+
+  @override
+  String statsMinutesShort(int count) {
+    return '$count분';
+  }
+
+  @override
+  String statsHoursAndMinutesShort(int hours, int minutes) {
+    return '$hours시간 $minutes분';
+  }
+
+  @override
+  String statsDaysAndHoursShort(int days, int hours) {
+    return '$days일 $hours시간';
+  }
+
+  @override
+  String get statusReadLater => '나중에 읽기';
+
+  @override
+  String get statusReading => '읽는 중';
+
+  @override
+  String get statusCaughtUp => '최신화까지';
+
+  @override
+  String get statusCompleted => '완결';
+
+  @override
+  String get statsSectionOverview => '개요';
+
+  @override
+  String get statsSectionBreakdown => '상태별 만화';
+
+  @override
+  String get statsSectionGenres => '선호 장르';
+
+  @override
+  String get statsLibraryTotal => '라이브러리의 만화';
+
+  @override
+  String statsMonthsSinceJoin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '가입한 지 $count개월',
+      zero: '가입한 지 1개월 미만',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsHeroBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '만화 $count권',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyStats => '내 통계';
+
+  @override
+  String get profileEditTitle => '프로필 편집';
+
+  @override
+  String get profileEditBackLabel => '프로필';
+
+  @override
+  String get profileEditMenuTitle => '프로필 편집';
+
+  @override
+  String get profileEditMenuSubtitle => '사진, 표시 이름, 소개, 공개 설정';
+
+  @override
+  String get profileFieldAvatarUrl => '아바타 URL';
+
+  @override
+  String get profileFieldDisplayName => '표시 이름';
+
+  @override
+  String get profileFieldBio => '소개';
+
+  @override
+  String get profileFieldDateOfBirth => '생년월일';
+
+  @override
+  String get profileFieldGender => '성별';
+
+  @override
+  String get profileGenderNotSet => '미설정';
+
+  @override
+  String get profileGenderMale => '남성';
+
+  @override
+  String get profileGenderFemale => '여성';
+
+  @override
+  String get profileGenderNonBinary => '논바이너리';
+
+  @override
+  String get profileGenderPreferNotToSay => '답변하지 않음';
+
+  @override
+  String get profileFieldIsPublic => '공개 프로필';
+
+  @override
+  String get profileFieldIsPublicSubtitle => '다른 사용자에게 표시됩니다';
+
+  @override
+  String get profileSaved => '프로필이 저장되었습니다';
+
+  @override
+  String get profileSaveFailed => '저장에 실패했습니다';
+
+  @override
+  String get friendsTitle => '친구';
+
+  @override
+  String get friendsTabAccepted => '친구';
+
+  @override
+  String get friendsTabPending => '요청';
+
+  @override
+  String get friendsSearchLabel => '친구 찾기';
+
+  @override
+  String get friendsSearchHint => '사용자 이름 입력 (최소 2자)';
+
+  @override
+  String get friendsAddRequest => '요청 보내기';
+
+  @override
+  String get friendsAccept => '수락';
+
+  @override
+  String get friendsReject => '거절';
+
+  @override
+  String get friendsRemove => '삭제';
+
+  @override
+  String get friendsRequestSent => '요청을 보냈습니다';
+
+  @override
+  String get friendsError => '오류';
+
+  @override
+  String get friendsEmptyAccepted => '아직 친구가 없습니다';
+
+  @override
+  String get friendsEmptyAcceptedSubtitle => '위의 검색에서 사용자를 추가하세요.';
+
+  @override
+  String get friendsEmptyPending => '대기 중인 요청이 없습니다';
+
+  @override
+  String get friendsEmptyPendingSubtitle => '받은 요청이 여기에 표시됩니다.';
+
+  @override
+  String get friendsSectionAccepted => '내 친구';
+
+  @override
+  String get friendsSectionPending => '받은 요청';
+
+  @override
+  String get friendsSearchClear => '지우기';
+
+  @override
+  String get friendsSearchResults => '검색 결과';
+
+  @override
+  String get friendsSearchEmpty => '사용자를 찾을 수 없습니다.';
+
+  @override
+  String get profileMyFriends => '내 친구';
+
+  @override
+  String get commentsTitle => '댓글';
+
+  @override
+  String get commentsEmpty => '아직 댓글이 없습니다. 첫 댓글을 남겨보세요!';
+
+  @override
+  String get commentsSortRecent => '최신순';
+
+  @override
+  String get commentsSortTop => '인기';
+
+  @override
+  String get commentsInputHint => '감상평을 남겨주세요 (3-2000자)';
+
+  @override
+  String get commentsPost => '게시';
+
+  @override
+  String get commentsDelete => '삭제';
+
+  @override
+  String get commentsLoadMore => '더 보기';
+
+  @override
+  String commentsReplyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개의 답글',
+      one: '1개의 답글',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeJustNow => '방금 전';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return '$count분 전';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return '$count시간 전';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return '$count일 전';
+  }
+
+  @override
+  String get shareTitle => '이 만화 공유';
+
+  @override
+  String get shareMessageHint => '메시지 추가 (선택)';
+
+  @override
+  String get shareCancel => '취소';
+
+  @override
+  String get shareSend => '보내기';
+
+  @override
+  String get shareSuccess => '공유되었습니다';
+
+  @override
+  String get shareFailed => '공유 실패';
+
+  @override
+  String get shareLoadError => '친구 목록을 불러올 수 없습니다';
+
+  @override
+  String get shareNoFriends => '아직 공유할 친구가 없습니다. 친구 페이지에서 추가하세요.';
+
+  @override
+  String get inboxTitle => '받은 추천';
+
+  @override
+  String get inboxEmpty => '아직 추천이 없습니다.';
+
+  @override
+  String get inboxBadgeNew => 'NEW';
+
+  @override
+  String inboxSenderRecommends(String sender) {
+    return '$sender님이 추천합니다';
+  }
+
+  @override
+  String inboxSharedYouLabel(String sender) {
+    return '$sender님이 공유했습니다';
+  }
+
+  @override
+  String get inboxFilterAll => '전체';
+
+  @override
+  String get inboxFilterUnread => '읽지 않음';
+
+  @override
+  String get inboxFilterRead => '읽음';
+
+  @override
+  String get inboxGroupToday => '오늘';
+
+  @override
+  String get inboxGroupYesterday => '어제';
+
+  @override
+  String get inboxGroupThisWeek => '이번 주';
+
+  @override
+  String get inboxGroupOlder => '그 이전';
+
+  @override
+  String get inboxEmptyTitle => '추천이 없습니다';
+
+  @override
+  String get inboxEmptySubtitle => '친구들에게 즐겨 읽는 작품을 공유해 달라고 요청해 보세요.';
+
+  @override
+  String get inboxEmptyFilteredUnread => '읽지 않은 추천이 없습니다.';
+
+  @override
+  String get inboxEmptyFilteredRead => '읽은 추천이 없습니다.';
+
+  @override
+  String get profileMyInbox => '받은 추천';
+
+  @override
+  String get readingGroupsTitle => '함께 읽기';
+
+  @override
+  String get readingGroupsEmpty => '아직 독서 그룹이 없습니다. 만화 상세 페이지에서 만들어보세요.';
+
+  @override
+  String get readingGroupDetailTitle => '독서 그룹';
+
+  @override
+  String get readingGroupMembersTitle => '멤버';
+
+  @override
+  String get readingGroupOwnerBadge => 'OWNER';
+
+  @override
+  String get readingGroupOpenManga => '만화 열기';
+
+  @override
+  String get readingGroupNotStarted => '시작 안 함';
+
+  @override
+  String readingGroupChaptersRead(int count) {
+    return '$count화';
+  }
+
+  @override
+  String get readingGroupChaptersReadLabel => '읽음';
+
+  @override
+  String readingGroupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count명',
+      one: '1명',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyReadingGroups => '함께 읽기';
+
+  @override
+  String get profileSectionPublicInfo => '공개 정보';
+
+  @override
+  String get profileSectionAbout => '내 정보';
+
+  @override
+  String get profileSectionPrivacy => '개인 정보 보호';
+
+  @override
+  String get profileNotSet => '미설정';
+
+  @override
+  String get profileSectionAvatar => '아바타';
+
+  @override
+  String get profileEditAvatarHeroHint => '이미지 URL을 붙여넣으면 미리보기가 업데이트됩니다.';
+
+  @override
+  String get profileEditPickPhoto => '사진 선택';
+
+  @override
+  String get profileEditClearAvatar => '지우기';
+
+  @override
+  String get profileEditPhotoPickFailed => '사진을 선택할 수 없습니다';
+
+  @override
+  String get profileGenderClear => '지우기';
+
+  @override
+  String get avatarUrlLabel => '아바타 URL';
+
+  @override
+  String get avatarUrlInvalid => 'URL은 http:// 또는 https://로 시작해야 합니다';
+
+  @override
+  String get profileSectionAccount => '계정';
+
+  @override
+  String get profileFieldUsername => '사용자 이름';
+
+  @override
+  String get profileFieldEmail => '이메일';
+
+  @override
+  String get profileFieldReadOnly => '변경 불가';
+
+  @override
+  String get profileChangePhoto => '사진 변경';
+
+  @override
+  String get changelogCardTitle => '릴리스 노트';
+
+  @override
+  String get readingGroupCreateTitle => '함께 읽기';
+
+  @override
+  String get readingGroupCreateNameLabel => '그룹 이름 (선택)';
+
+  @override
+  String get readingGroupCreateNameHint => '예: Berserk 레아와';
+
+  @override
+  String get readingGroupCreateInviteSection => '친구 초대';
+
+  @override
+  String get readingGroupCreateConfirm => '그룹 만들기';
+
+  @override
+  String get readingGroupCreateFailed => '그룹 만들기에 실패했습니다';
+
+  @override
+  String get readingGroupCreateInviteRequired => '그룹을 만들려면 친구를 한 명 이상 선택하세요';
+
+  @override
+  String get readingGroupDelete => '그룹 삭제';
+
+  @override
+  String get readingGroupDeleteConfirmTitle => '이 그룹을 삭제하시겠습니까?';
+
+  @override
+  String get readingGroupDeleteConfirm =>
+      '이 작업은 되돌릴 수 없습니다. 모든 멤버가 그룹 접근 권한을 잃게 됩니다.';
+
+  @override
+  String get readingGroupDeleteSuccess => '그룹을 삭제했습니다';
+
+  @override
+  String get readingGroupDeleteFailed => '그룹 삭제에 실패했습니다';
+
+  @override
+  String get readingGroupSharedReading => '공유 독서';
+
+  @override
+  String get readingGroupViewGroup => '그룹 보기';
+
+  @override
+  String get readingGroupChapterShort => '화';
+
+  @override
+  String get profileHighlightTitle => '새로운 기능';
+
+  @override
+  String get profileNewBadge => '새로움';
+
+  @override
+  String get profileFooterBrand => 'MANGA TRACKER';
+
+  @override
+  String get readingGroupListSectionTitle => '내 그룹';
+
+  @override
+  String readingGroupWithLabel(String name) {
+    return '$name 와(과) 함께';
+  }
+
+  @override
+  String get readingGroupYouLabel => '나';
+
+  @override
+  String readingGroupProgressYouVsFriend(
+    String you,
+    String friend,
+    String their,
+  ) {
+    return '나: $you화 · $friend: $their화';
+  }
+
+  @override
+  String get readingGroupChapterDash => '—';
+
+  @override
+  String get readingGroupSectionHero => '현재 읽는 중';
+
+  @override
+  String get readingGroupSectionProgress => '진행도';
+
+  @override
+  String get readingGroupSectionActions => '작업';
+
+  @override
+  String get readingGroupActionsMarkProgress => '내 진행도 업데이트';
+
+  @override
+  String get readingGroupActionsMarkProgressSubtitle => '만화 페이지를 열어 계속 읽기';
+
+  @override
+  String get readingGroupActionsInvite => '친구 초대하기';
+
+  @override
+  String readingGroupActionsCopyFriendLink(String friend) {
+    return '$friend의 링크 복사';
+  }
+
+  @override
+  String readingGroupActionsCopyFriendLinkSubtitle(int chapter) {
+    return '$chapter화에 맞춰 조정됨';
+  }
+
+  @override
+  String readingGroupApplyLinkSuccess(int chapter) {
+    return '$chapter화의 링크가 저장되었습니다';
+  }
+
+  @override
+  String readingGroupCopyLinkSuccess(int chapter) {
+    return '링크 복사됨 — $chapter화';
+  }
+
+  @override
+  String get readingGroupCopyLinkFailed => '이 링크를 조정할 수 없습니다(알 수 없는 형식)';
+
+  @override
+  String get readingGroupActionsInviteSubtitle => '그룹에 사람 추가';
+
+  @override
+  String get readingGroupActionsLeave => '그룹 나가기';
+
+  @override
+  String get readingGroupActionsLeaveSubtitle => '공유된 진행도를 더 이상 볼 수 없습니다';
+
+  @override
+  String get readingGroupActionsDeleteSubtitle => '모든 멤버에게서 영구적으로 삭제';
+
+  @override
+  String get readingGroupLeaveConfirmTitle => '이 그룹에서 나가시겠습니까?';
+
+  @override
+  String get readingGroupLeaveConfirm => '공유된 진행도에 더 이상 접근할 수 없습니다.';
+
+  @override
+  String get readingGroupLeaveSuccess => '그룹에서 나왔습니다';
+
+  @override
+  String get readingGroupLeaveFailed => '그룹을 나갈 수 없습니다';
+
+  @override
+  String get readingGroupEmptyTitle => '아직 함께 읽는 만화가 없습니다';
+
+  @override
+  String get readingGroupEmptySubtitle => '친구와 함께 만화를 시작하고 진행도를 함께 추적하세요.';
+
+  @override
+  String get readingGroupEmptyAction => '만화 탐색';
+
+  @override
+  String get readingGroupTotalLabel => '전체';
+
+  @override
+  String readingGroupChaptersTotal(int count) {
+    return '$count화';
+  }
+
+  @override
+  String get readingGroupInviteSoonTitle => '곧 제공 예정';
+
+  @override
+  String get readingGroupInviteSoonMessage =>
+      '그룹에서 친구를 초대하는 기능이 곧 추가됩니다. 지금은 만화 페이지에서 새 그룹을 만들어 주세요.';
+
+  @override
+  String get libraryToggleListView => '목록 보기';
+
+  @override
+  String get libraryToggleCardView => '카드 보기';
+
+  @override
+  String get libraryShowDownloadedOnly => '다운로드한 항목만 표시';
+
+  @override
+  String get libraryShowAllMangas => '모든 만화 표시';
+
+  @override
+  String libraryProgressLabel(int read, int total) {
+    return '$total화 중 $read화 읽음';
+  }
+
+  @override
+  String votesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count표',
+      zero: '투표 없음',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get detailSectionSimilar => '비슷한 만화';
 }

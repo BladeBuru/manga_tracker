@@ -17,6 +17,22 @@ class IntputTexteField extends StatelessWidget {
   final String? labelText;
   final String? helperText;
 
+  /// Nombre max de caractères affiché en compteur (`maxLength` natif).
+  final int? maxLength;
+
+  /// Nombre de lignes pour les champs multi-lignes (bio, description...).
+  /// Défaut 1.
+  final int? maxLines;
+
+  /// Padding externe autour du `TextFormField`.
+  ///
+  /// Par défaut `EdgeInsets.symmetric(horizontal: 30)` — c'est le pattern
+  /// des pages d'auth (login/register) où les champs sont en pleine
+  /// largeur d'écran centrée. Quand utilisé **dans une `AppCard`** (page
+  /// d'édition de profil, etc.) il faut passer `EdgeInsets.zero` pour
+  /// éviter un double padding visuel.
+  final EdgeInsetsGeometry padding;
+
   const IntputTexteField({
     super.key,
     required this.controller,
@@ -33,20 +49,26 @@ class IntputTexteField extends StatelessWidget {
     this.suffixIcon,
     this.labelText,
     this.helperText,
+    this.maxLength,
+    this.maxLines = 1,
+    this.padding = const EdgeInsets.symmetric(horizontal: 30.0),
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Tokens du thème pour rester lisible en light & dark.
-    final fillColor = isDark
-        ? colorScheme.surfaceContainerHigh
-        : colorScheme.surfaceContainerLow;
+    // **Refactor 2026-05-18** : `fillColor: surfaceContainerHighest` (au
+    // lieu de `surfaceContainerLow`) → en light mode `Low` était quasi-
+    // blanc, indistinguable du fond → seule la bordure outline noire
+    // ressortait, look "form HTML 2018". `Highest` est gris moyen lisible
+    // en light ET dark. La bordure outline est supprimée (`BorderSide.none`
+    // en enabled/error), seul le focus garde un ring `primary 0.5` 2px.
+    // Look Material 3 "filled chip input" moderne — Gmail, Tasks, Drive.
+    final fillColor = colorScheme.surfaceContainerHighest;
     final textColor = colorScheme.onSurface;
     final hintColor = colorScheme.onSurfaceVariant;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+      padding: padding,
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
@@ -54,13 +76,20 @@ class IntputTexteField extends StatelessWidget {
         autofillHints: autofillHints,
         textInputAction: textInputAction,
         focusNode: focusNode,
+        maxLength: maxLength,
+        maxLines: maxLines,
         onFieldSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
         style: TextStyle(color: textColor),
+        textAlignVertical: TextAlignVertical.top,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: hintColor),
           labelText: labelText,
           labelStyle: TextStyle(color: hintColor),
+          // Fix Material 3 multi-line : sans ça le label "Bio" flotte au
+          // milieu vertical du champ multi-ligne au lieu de rester en
+          // haut (UX vraiment moche pour une textarea).
+          alignLabelWithHint: true,
           helperText: helperText,
           helperStyle: TextStyle(color: hintColor),
           filled: true,
@@ -68,22 +97,25 @@ class IntputTexteField extends StatelessWidget {
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           errorMaxLines: 3,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colorScheme.outlineVariant),
-          borderRadius: AppRadius.circularXxl,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colorScheme.primary),
-          borderRadius: AppRadius.circularXxl,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colorScheme.error),
-          borderRadius: AppRadius.circularXxl,
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: colorScheme.error),
-          borderRadius: AppRadius.circularXxl,
-        ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: AppRadius.circularXxl,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: colorScheme.primary.withValues(alpha: 0.6),
+              width: 2,
+            ),
+            borderRadius: AppRadius.circularXxl,
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: colorScheme.error),
+            borderRadius: AppRadius.circularXxl,
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: colorScheme.error, width: 2),
+            borderRadius: AppRadius.circularXxl,
+          ),
         ),
         validator: validator,
         onChanged: onChanged,

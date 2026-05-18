@@ -68,6 +68,17 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!--
+        Permissions galerie pour image_picker (avatar de profil — feature
+        ajoutée 2026-05-18). Android 13+ utilise `READ_MEDIA_IMAGES`,
+        avant 13 c'était `READ_EXTERNAL_STORAGE`. On déclare les deux
+        avec `maxSdkVersion` sur l'ancienne pour ne pas en faire trop sur
+        les nouvelles versions (Play Store le pénalise).
+    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission
+            android:name="android.permission.READ_EXTERNAL_STORAGE"
+            android:maxSdkVersion="32"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

@@ -1,409 +1,317 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mangatracker/core/components/auth_button.dart';
-import 'package:mangatracker/core/components/language_selector_button.dart';
-import 'package:mangatracker/core/components/theme_toggle_button.dart';
-import 'package:mangatracker/features/profile/helpers/user.helper.dart';
-import '../../../core/notifier/notifier.dart';
-import '../../../core/service_locator/service_locator.dart';
-import '../presentation/cubit/auth_submission_status.dart';
-import '../presentation/cubit/login_cubit.dart';
-import '../presentation/cubit/login_state.dart';
-import '../services/validator.service.dart';
-import '../widgets/square_tile.dart';
-import '../../../core/components/intput_textfield.dart';
-import '../services/auth.service.dart';
+import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/auth_submission_status.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/login_cubit.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/login_state.dart';
+import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/auth/services/validator.service.dart';
+import 'package:mangatracker/features/auth/widgets/auth_divider_with_label.dart';
+import 'package:mangatracker/features/auth/widgets/auth_footer_link.dart';
+import 'package:mangatracker/features/auth/widgets/auth_form_card.dart';
+import 'package:mangatracker/features/auth/widgets/auth_form_field.dart';
+import 'package:mangatracker/features/auth/widgets/auth_hero.dart';
+import 'package:mangatracker/features/auth/widgets/auth_password_field.dart';
+import 'package:mangatracker/features/auth/widgets/auth_scaffold.dart';
+import 'package:mangatracker/features/auth/widgets/auth_submit_button.dart';
+import 'package:mangatracker/features/auth/widgets/auth_top_bar.dart';
+import 'package:mangatracker/features/auth/widgets/biometric_login_button.dart';
+import 'package:mangatracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
+/// Page de connexion — design V1 « Refined Classic ».
+///
+/// Préserve l'intégralité des comportements :
+/// - `LoginCubit` avec submit / requiresBiometricPrompt
+/// - `ValidatorService` pour validation email
+/// - Activation biométrique au premier login réussi (dialog)
+/// - Google OAuth (mobile + web idToken/WebView via `AuthService`)
+/// - Biometric login si activé
+/// - Navigation vers `/register` et `/forgot-password`
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
   @override
-  State<StatefulWidget> createState() => _LoginViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
 class _LoginViewState extends State<LoginView> {
   late final GlobalKey<FormState> _formKey;
-  bool _obscurePassword = true;
-  late final String _callname;
   final _emailController = TextEditingController();
-  final _passwordControler = TextEditingController();
+  final _passwordController = TextEditingController();
   late final LoginCubit _loginCubit;
-  final authService = getIt<AuthService>();
-  final ValidatorService validatorService = getIt<ValidatorService>();
-  final Notifier notifier = Notifier();
+  final AuthService _authService = getIt<AuthService>();
+  final ValidatorService _validatorService = getIt<ValidatorService>();
+  final Notifier _notifier = Notifier();
 
   @override
   void initState() {
     super.initState();
-    // Créer une clé unique pour chaque instance
     _formKey = GlobalKey<FormState>();
-    _callname = UserHelper.getRandomCallname();
-    _loginCubit = LoginCubit(authService: authService);
+    _loginCubit = LoginCubit(authService: _authService);
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordControler.dispose();
+    _passwordController.dispose();
     _loginCubit.close();
     super.dispose();
   }
 
-  Future<void> onPressed() async {
-    final email = _emailController.text.toLowerCase();
-    final password = _passwordControler.text;
-
-    if (!context.mounted) return;
-
-    // Fermer le clavier pour afficher les messages d'erreur
+  Future<void> _onSubmit() async {
     FocusManager.instance.primaryFocus?.unfocus();
-
     if (!_formKey.currentState!.validate()) return;
-
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-    await _loginCubit.submit(email, password, l10n);
-  }
-
-  Future<bool?> _showBiometricActivationDialog(AppLocalizations? l10n) async {
-    if (!context.mounted) return false;
-
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            l10n?.biometricAuthFirstTimeTitle ?? 'Activer l\'authentification biométrique ?',
-          ),
-          content: Text(
-            l10n?.biometricAuthFirstTimeMessage ??
-                'Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l\'avenir ?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n?.cancel ?? 'Annuler'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l10n?.save ?? 'Activer'),
-            ),
-          ],
-        );
-      },
+    await _loginCubit.submit(
+      _emailController.text.toLowerCase(),
+      _passwordController.text,
+      l10n,
     );
   }
 
-  void redirectToRegisterPage() {
+  Future<bool?> _showBiometricActivationDialog(AppLocalizations? l10n) async {
+    if (!mounted) return false;
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          l10n?.biometricAuthFirstTimeTitle ??
+              "Activer l'authentification biométrique ?",
+        ),
+        content: Text(
+          l10n?.biometricAuthFirstTimeMessage ??
+              "Souhaitez-vous utiliser votre empreinte digitale ou Face ID pour vous connecter rapidement à l'avenir ?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n?.cancel ?? 'Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n?.save ?? 'Activer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _goToRegister() {
     final email = _emailController.text;
     final encoded = Uri.encodeQueryComponent(email);
     context.push('/register?email=$encoded');
   }
 
+  Future<void> _onBiometricLogin() async {
+    final success = await _authService.tryBiometricLogin(context);
+    if (!mounted) return;
+    if (success) {
+      context.go('/home');
+    } else {
+      final l10n = AppLocalizations.of(context);
+      _notifier.error(
+        l10n?.biometricAuthFailed ??
+            "Echec de l'authentification biométrique",
+      );
+    }
+  }
+
+  Future<void> _onGoogleLogin(AppLocalizations? l10n) async {
+    final success = await _authService.loginWithGoogle(context);
+    if (!mounted) return;
+    if (success) {
+      context.go('/home');
+    } else {
+      _notifier.error(
+        l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
+      );
+    }
+  }
+
+  void _onAppleLogin(AppLocalizations? l10n) {
+    _notifier.info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: BlocProvider<LoginCubit>.value(
-        value: _loginCubit,
-        child: BlocListener<LoginCubit, LoginState>(
-          listenWhen: (previous, current) =>
-              previous.status != current.status ||
-              previous.requiresBiometricPrompt !=
-                  current.requiresBiometricPrompt,
-          listener: (context, state) async {
-            if (state.status == AuthSubmissionStatus.success) {
-              final l10n = AppLocalizations.of(context);
-
-              if (state.requiresBiometricPrompt) {
-                final choice = await _showBiometricActivationDialog(l10n);
-                await _loginCubit.completeBiometricPrompt(choice ?? false);
-                return;
-              }
-
-              if (!context.mounted) return;
-              context.go('/home');
-              _loginCubit.reset();
+    return BlocProvider<LoginCubit>.value(
+      value: _loginCubit,
+      child: BlocListener<LoginCubit, LoginState>(
+        listenWhen: (prev, curr) =>
+            prev.status != curr.status ||
+            prev.requiresBiometricPrompt != curr.requiresBiometricPrompt,
+        listener: (context, state) async {
+          if (state.status == AuthSubmissionStatus.success) {
+            final l10n = AppLocalizations.of(context);
+            if (state.requiresBiometricPrompt) {
+              final choice = await _showBiometricActivationDialog(l10n);
+              await _loginCubit.completeBiometricPrompt(choice ?? false);
+              return;
             }
-          },
-          child: Scaffold(
-            backgroundColor: Colors.grey[200],
-            resizeToAvoidBottomInset: true,
-            body: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-                  final horizontalPadding = _horizontalPadding(constraints.maxWidth);
-                  final l10n = AppLocalizations.of(context);
-                  final loginState = context.watch<LoginCubit>().state;
-
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      24,
-                      horizontalPadding,
-                      24 + bottomInset,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  ThemeToggleButton(),
-                                  LanguageSelectorButton(),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              Align(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Image.asset(
-                                    'assets/images/mask_logo-backgroud-white.png',
-                                    height: 150,
-                                    semanticLabel: l10n?.appTitle ?? 'MangaTracker',
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                l10n?.welcomeBack ?? "Content de vous revoir",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _callname,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              IntputTexteField(
-                                controller: _emailController,
-                                hintText: l10n?.emailAddress ?? "Adresse e-mail",
-                                labelText: l10n?.emailAddress ?? "Adresse e-mail",
-                                obscureText: false,
-                                autofillHints: const [AutofillHints.email],
-                                validator: (value) => validatorService.validateEmailAddress(value, context),
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                              ),
-                              const SizedBox(height: 20),
-                              IntputTexteField(
-                                controller: _passwordControler,
-                                hintText: l10n?.password ?? "Mot de passe",
-                                labelText: l10n?.password ?? "Mot de passe",
-                                obscureText: _obscurePassword,
-                                autofillHints: const [AutofillHints.password],
-                                validator: validatorService.noValidation,
-                                textInputAction: TextInputAction.done,
-                                onSubmitted: onPressed,
-                                suffixIcon: Semantics(
-                                  button: true,
-                                  label: _obscurePassword
-                                      ? (l10n?.showPassword ?? 'Afficher le mot de passe')
-                                      : (l10n?.hidePassword ?? 'Masquer le mot de passe'),
-                                  child: GestureDetector(
-                                    onLongPressStart: (_) {
-                                      setState(() {
-                                        _obscurePassword = false;
-                                      });
-                                    },
-                                    onLongPressEnd: (_) {
-                                      setState(() {
-                                        _obscurePassword = true;
-                                      });
-                                    },
-                                    child: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                        color: Colors.grey[600],
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () {
-                                    context.push('/forgot-password');
-                                  },
-                                  child: Text(
-                                    l10n?.forgotPassword ?? "Mot de passe oublié ?",
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              AuthButton(
-                                text: l10n?.login ?? "Se connecter",
-                                onTap: onPressed,
-                                isLoading: loginState.isLoading,
-                              ),
-                              loginState.errorMessage != null
-                                   ? Padding(
-                                       padding: const EdgeInsets.only(top: 12.0),
-                                       child: Text(
-                                         loginState.errorMessage!,
-                                         textAlign: TextAlign.center,
-                                         style: TextStyle(
-                                           color: Colors.red[600],
-                                           fontSize: 13,
-                                           fontWeight: FontWeight.w500,
-                                         ),
-                                       ),
-                                     )
-                                   : const SizedBox(height: 8),
-                              const SizedBox(height: 20),
-                              FutureBuilder<bool>(
-                                future: authService.isBiometricEnabled(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData && snapshot.data == true) {
-                                    return TextButton.icon(
-                                      onPressed: () async {
-                                        final success = await authService.tryBiometricLogin(context);
-                                        if (!mounted) return;
-
-                                        if (success) {
-                                          context.go('/home');
-                                        } else {
-                                          final localization = AppLocalizations.of(context);
-                                          notifier.error(
-                                            localization?.biometricAuthFailed ??
-                                                'Echec de l\'authentification biométrique',
-                                          );
-                                        }
-                                      },
-                                      icon: const Icon(Icons.fingerprint, color: Colors.grey),
-                                      label: Text(
-                                        l10n?.biometricAuth ?? "Connexion biométrique",
-                                        style: const TextStyle(color: Colors.grey),
-                                      ),
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Divider(
-                                      thickness: 0.5,
-                                      color: Colors.grey[400],
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                    child: Text(
-                                      l10n?.or ?? 'Ou',
-                                      style: const TextStyle(color: Colors.grey),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Divider(
-                                      thickness: 0.5,
-                                      color: Colors.grey[400],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Semantics(
-                                    button: true,
-                                    label: 'Se connecter avec Google',
-                                    child: SquareTile(
-                                      imagePath: 'assets/images/google_logo.png',
-                                      onTap: loginState.isLoading ? null : () async {
-                                        final success = await authService.loginWithGoogle(context);
-                                        if (!context.mounted) return;
-                                        if (success) {
-                                          context.go('/home');
-                                        } else {
-                                          notifier.error(
-                                            l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  Semantics(
-                                    button: true,
-                                    label: l10n?.comingSoon ?? 'Fonctionnalité à venir',
-                                    child: SquareTile(
-                                      imagePath: 'assets/images/apple_logo.png',
-                                      onTap: () {
-                                        notifier.info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    l10n?.noAccount ?? "Vous n'avez pas de compte ?",
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  GestureDetector(
-                                    onTap: redirectToRegisterPage,
-                                    child: Text(
-                                      l10n?.signUp ?? "S'inscrire",
-                                      style: TextStyle(
-                                        color: Colors.red[400],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+            if (!context.mounted) return;
+            context.go('/home');
+            _loginCubit.reset();
+          }
+        },
+        child: AuthScaffold(
+          canPop: false,
+          child: Form(
+            key: _formKey,
+            child: _LoginContent(
+              emailController: _emailController,
+              passwordController: _passwordController,
+              validatorService: _validatorService,
+              onSubmit: _onSubmit,
+              onRegister: _goToRegister,
+              onForgotPassword: () => context.push('/forgot-password'),
+              onBiometric: _onBiometricLogin,
+              onGoogle: _onGoogleLogin,
+              onApple: _onAppleLogin,
+              authService: _authService,
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  double _horizontalPadding(double maxWidth) {
-    if (maxWidth >= 1200) return (maxWidth - 640) / 2;
-    if (maxWidth >= 900) return 96;
-    if (maxWidth >= 600) return 48;
-    return 24;
+/// Contenu de la page de connexion — extrait pour rester sous 150 lignes.
+class _LoginContent extends StatelessWidget {
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final ValidatorService validatorService;
+  final Future<void> Function() onSubmit;
+  final VoidCallback onRegister;
+  final VoidCallback onForgotPassword;
+  final Future<void> Function() onBiometric;
+  final Future<void> Function(AppLocalizations?) onGoogle;
+  final void Function(AppLocalizations?) onApple;
+  final AuthService authService;
+
+  const _LoginContent({
+    required this.emailController,
+    required this.passwordController,
+    required this.validatorService,
+    required this.onSubmit,
+    required this.onRegister,
+    required this.onForgotPassword,
+    required this.onBiometric,
+    required this.onGoogle,
+    required this.onApple,
+    required this.authService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final state = context.watch<LoginCubit>().state;
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AuthTopBar(),
+        const SizedBox(height: AppSpacing.s),
+        AuthHero(
+          title: l10n?.welcomeTitle ?? 'Bienvenue !',
+          subtitle: l10n?.loginSubtitle ?? 'Connectez-vous à votre compte',
+          logoSemanticLabel: l10n?.appTitle ?? 'MangaTracker',
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthFormCard(
+          children: [
+            AuthFormField(
+              label: l10n?.emailAddress ?? 'Adresse e-mail',
+              controller: emailController,
+              hintText: 'vous@example.com',
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.next,
+              validator: (v) =>
+                  validatorService.validateEmailAddress(v, context),
+            ),
+            AuthPasswordField(
+              label: l10n?.password ?? 'Mot de passe',
+              controller: passwordController,
+              validator: validatorService.noValidation,
+              textInputAction: TextInputAction.done,
+              onSubmitted: onSubmit,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.s),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: onForgotPassword,
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.primary,
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            child: Text(l10n?.forgotPassword ?? 'Mot de passe oublié ?'),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.m),
+        AuthSubmitButton(
+          text: l10n?.login ?? 'Se connecter',
+          onPressed: state.isLoading ? null : onSubmit,
+          isLoading: state.isLoading,
+        ),
+        if (state.errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.s),
+          Text(
+            state.errorMessage!,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scheme.error,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+        FutureBuilder<bool>(
+          future: authService.isBiometricEnabled(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data == true) {
+              return Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.m),
+                child: BiometricLoginButton(
+                  label: l10n?.biometricAuth ?? 'Connexion biométrique',
+                  onTap: onBiometric,
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthDividerWithLabel(label: l10n?.orLoginWith ?? 'ou se connecter avec'),
+        const SizedBox(height: AppSpacing.l),
+        SocialLoginButtons(
+          googleLabel: l10n?.loginWithGoogle ?? 'Se connecter avec Google',
+          appleLabel: l10n?.continueWithApple ?? 'Continuer avec Apple',
+          onGoogle: state.isLoading ? null : () => onGoogle(l10n),
+          onApple: () => onApple(l10n),
+          disabled: state.isLoading,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthFooterLink(
+          message: l10n?.noAccount ?? "Vous n'avez pas de compte ?",
+          actionLabel: l10n?.signUp ?? "S'inscrire",
+          onTap: onRegister,
+        ),
+        const SizedBox(height: AppSpacing.s),
+      ],
+    );
   }
 }

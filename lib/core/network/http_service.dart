@@ -28,6 +28,8 @@ class HttpService {
         return http.put(url, headers: headers, body: body);
       case 'DELETE':
         return http.delete(url, headers: headers, body: body);
+      case 'PATCH':
+        return http.patch(url, headers: headers, body: body);
       default:
         throw UnsupportedError('Method $method is not supported');
     }
@@ -56,29 +58,32 @@ class HttpService {
       final refreshToken = await _storage.readSecureData('refreshToken');
       if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
         debugPrint('❌ HttpService: Les deux tokens sont expirés');
+        await _auth.logout(); // purge pour éviter de retenter au prochain boot
         throw InvalidCredentialsException('Both tokens expired');
       }
 
-      final refreshed = await _auth.refreshAccessToken();
-      if (!refreshed) {
-        debugPrint('❌ HttpService: Impossible de rafraîchir le access token');
-        throw InvalidCredentialsException('Could not refresh access token');
+      final result = await _auth.refreshAccessToken();
+      switch (result) {
+        case RefreshResult.success:
+          debugPrint('🔄 HttpService: Réessai de la requête avec le nouveau token...');
+          headers = await _addAuthHeaders(null);
+          res = await _performRequest(method, url, headers: headers, body: body);
+          if (res.statusCode == HttpStatus.unauthorized) {
+            debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');
+            await _auth.logout();
+            throw InvalidCredentialsException('Invalid credentials');
+          }
+          debugPrint('✅ HttpService: Requête réussie après refresh');
+        case RefreshResult.networkError:
+          // Pas une erreur d'auth — laisser le caller (BLoC) basculer en cache.
+          debugPrint('⚠️ HttpService: Refresh impossible (réseau), propage SocketException');
+          throw const SocketException('Refresh impossible (réseau)');
+        case RefreshResult.rejected:
+          // Le serveur a dit non : tokens morts, on purge et on force login.
+          debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
+          await _auth.logout();
+          throw InvalidCredentialsException('Refresh rejected by server');
       }
-
-      debugPrint('🔄 HttpService: Réessai de la requête avec le nouveau token...');
-      headers = await _addAuthHeaders(null);
-
-      res = await _performRequest(
-        method,
-        url,
-        headers: headers,
-        body: body,
-      );
-      if (res.statusCode == HttpStatus.unauthorized) {
-        debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');
-        throw InvalidCredentialsException('Invalid credentials');
-      }
-      debugPrint('✅ HttpService: Requête réussie après refresh');
     }
 
     return res;
@@ -130,10 +135,19 @@ class HttpService {
       // ConnectivityService non disponible → on continue
     }
 
-    final ok = await _auth.refreshAccessToken();
-    if (!ok) {
-      debugPrint('❌ HttpService: Échec du refresh du access token');
-      throw InvalidCredentialsException('Could not refresh access token');
+    final result = await _auth.refreshAccessToken();
+    switch (result) {
+      case RefreshResult.success:
+        break; // continue ci-dessous pour relire le nouveau token
+      case RefreshResult.networkError:
+        // Le caller (BLoC) traitera ça comme un fallback cache.
+        debugPrint('⚠️ HttpService: Refresh impossible (réseau)');
+        throw const SocketException('Refresh impossible (réseau)');
+      case RefreshResult.rejected:
+        // Tokens morts côté serveur → purge locale et force login.
+        debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
+        await _auth.logout();
+        throw InvalidCredentialsException('Refresh rejected by server');
     }
 
     accessToken = await _storage.readSecureData('accessToken');
@@ -162,4 +176,8 @@ class HttpService {
   Future<Response> deleteWithAuthTokens(Uri url,
       {Map<String, String>? headers, Object? body}) =>
       _requestWithAuthTokens('DELETE', url, headers: headers, body: body);
+
+  Future<Response> patchWithAuthTokens(Uri url,
+      {Map<String, String>? headers, Object? body}) =>
+      _requestWithAuthTokens('PATCH', url, headers: headers, body: body);
 }

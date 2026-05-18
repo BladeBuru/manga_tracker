@@ -17,6 +17,8 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/services/translation_service.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/features/comments/widgets/comments_section.dart';
+import 'package:mangatracker/features/sharing/widgets/shared_reading_section.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -37,6 +39,12 @@ class LateDetailView extends StatefulWidget {
   final List<SeasonChapter>? bonusChapters;
   final List<String>? associated;
 
+  /// Slot optionnel pour injecter du contenu (généralement
+  /// `DetailRatingSection`) **avant** la section "Noms associés" — permet
+  /// au parent de placer le widget de notation dans le flux scrollable
+  /// au lieu de le coller en bas en hors-scroll.
+  final Widget? inlineRatingSlot;
+
   const LateDetailView({
     super.key,
     required this.muId,
@@ -56,6 +64,7 @@ class LateDetailView extends StatefulWidget {
     this.seasonChapters,
     this.bonusChapters,
     this.associated,
+    this.inlineRatingSlot,
   });
 
   @override
@@ -429,6 +438,9 @@ class _LateDetailViewState extends State<LateDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Phase 8.3 (2026-05-18) : section "Lecture partagée" si l'user
+            // fait partie d'un reading group pour ce manga (sinon invisible).
+            SharedReadingSection(muId: int.tryParse(widget.muId) ?? 0),
             // Informations principales (Chapitres, Note, Statut, Année) - Layout 2x2
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -742,6 +754,15 @@ class _LateDetailViewState extends State<LateDetailView> {
               ),
 
             const SizedBox(height: 8),
+
+            // **Slot inline rating (2026-05-19)** : si le parent fournit un
+            // widget de notation utilisateur, on l'injecte ICI dans le flux
+            // scrollable (entre stats grid et Noms associés). Avant on
+            // l'avait collé en bas hors-scroll → ça pinnait l'écran.
+            if (widget.inlineRatingSlot != null) ...[
+              widget.inlineRatingSlot!,
+              const SizedBox(height: 8),
+            ],
 
             // Noms associés (ExpansionTile)
             if (widget.associated != null && widget.associated!.isNotEmpty)
@@ -1142,6 +1163,11 @@ class _LateDetailViewState extends State<LateDetailView> {
                   }
                 },
               ),
+            ),
+            // Phase 7.1 : section commentaires en bas du détail manga.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+              child: CommentsSection(muId: int.tryParse(widget.muId) ?? 0),
             ),
           ],
         ),

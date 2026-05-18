@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -14,17 +13,29 @@ import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
 import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
-import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
-import 'package:mangatracker/core/components/user_rating_stars.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../dto/manga_recommendation_view.dto.dart';
+import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
+import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
+import 'package:mangatracker/features/manga/widgets/detail_read_online_button.dart';
+import 'package:mangatracker/features/manga/widgets/detail_recommendations_section.dart';
+// `DetailStatusSelector` et `DetailStatusButton` ne sont plus utilisés —
+// le statut est désormais une icône dans l'action bar (`_StatusIconButton`).
+// `DetailAddToLibraryButton` est encore utilisé (CTA "Ajouter à la
+// bibliothèque" pleine largeur quand le manga n'est pas encore ajouté).
+import 'package:mangatracker/features/manga/widgets/detail_status_selector.dart'
+    show DetailAddToLibraryButton;
 import 'package:mangatracker/l10n/app_localizations.dart';
 import '../services/custom_selectors.service.dart';
 import 'chapter_download_dialog.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
+import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -121,18 +132,66 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          // Phase 8.3 UI : bouton "Lire à deux" (créer un reading group)
+          BlocBuilder<DetailBloc, DetailState>(
+            builder: (context, state) {
+              final mangaTitle = state is DetailLoaded
+                  ? state.mangaDetail.title
+                  : (widget.mangaTitle ?? '');
+              return IconButton(
+                icon: const Icon(Icons.groups_outlined,
+                    color: Colors.white, size: 26),
+                tooltip: AppLocalizations.of(context)?.readingGroupCreateTitle ??
+                    'Lire à deux',
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    showDragHandle: false,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (_) => CreateReadingGroupSheet(
+                      muId: widget.muId,
+                      mangaTitle: mangaTitle,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          // Phase 8.1 : bouton "Partager avec un ami"
+          IconButton(
+            icon: const Icon(Icons.share_outlined,
+                color: Colors.white, size: 26),
+            tooltip: AppLocalizations.of(context)?.shareTitle ?? 'Partager',
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                showDragHandle: false,
+                shape: const RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (_) => ShareMangaSheet(muId: widget.muId),
+              );
+            },
+          ),
           BlocBuilder<DetailBloc, DetailState>(
             builder: (context, state) {
               final isOffline = state is DetailLoaded && state.isOffline ||
                                state is DetailError && state.isOffline;
-              
+
               if (!isOffline) return const SizedBox.shrink();
               
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: Colors.orange,
+                  // Refactor 2026-05-18 : errorContainer au lieu de Colors.orange
+                  color: Theme.of(context).colorScheme.error,
                   borderRadius: AppRadius.circularXl,
                 ),
                 child: Row(
@@ -198,7 +257,8 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     Icon(
                       state.isOffline ? Icons.cloud_off : Icons.error,
                       size: 64,
-                      color: state.isOffline ? Colors.orange : Colors.red,
+                      // Refactor 2026-05-18 : utilise le theme au lieu de Colors.orange/red
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(height: 16),
                     Builder(
@@ -355,45 +415,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     if (manga.genres != null && manga.genres!.isNotEmpty)
                       Positioned(
                         bottom: 14,
-                        left: 16,
-                        right: 16,
+                        left: AppSpacing.m,
+                        right: AppSpacing.m,
                         child: GestureDetector(
-                          onTap: () {}, // Empêcher le clic de remonter au GestureDetector parent
-                          child: SizedBox(
-                            height: 32,
-                            child: Scrollbar(
-                              thumbVisibility: true,
-                              thickness: 4,
-                              radius: const Radius.circular(2),
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: manga.genres!
-                                    .map((g) => Padding(
-                                          padding: const EdgeInsets.only(right: 8),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.9),
-                                              borderRadius: AppRadius.circularXl,
-                                              border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.3),
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              g,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                          ),
-                                        ))
-                                    .toList(),
-                              ),
-                            ),
-                          ),
+                          // Empêcher le clic de remonter au GestureDetector parent
+                          onTap: () {},
+                          child: DetailGenreChips(genres: manga.genres!),
                         ),
                       ),
                   ],
@@ -433,12 +460,25 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       // Dispatcher l'événement au BLoC
                       context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
                     },
+                    // **Fix 2026-05-19** : la notation utilisateur est désormais
+                    // injectée dans le flux scrollable de LateDetailView (entre
+                    // stats grid et Noms associés) au lieu d'être pinnée en bas.
+                    // Libère de la place verticale fixe pour voir + de contenu.
+                    inlineRatingSlot: manga.inLibrary
+                        ? DetailRatingSection(
+                            muId: widget.muId,
+                            userRating: manga.userRating,
+                            communityRating: manga.communityRating,
+                            communityRatingCount: manga.communityRatingCount,
+                          )
+                        : null,
                   ),
                 ),
               ),
-              // Notation utilisateur (visible uniquement si dans la bibliothèque)
-              if (manga.inLibrary) _buildUserRatingRow(manga.userRating),
-              // Barre d'action en bas
+              // **Fix 2026-05-19 v2** : le bouton de statut a été déplacé
+              // dans l'action bar (à gauche de "Lire en ligne") sous forme
+              // d'icône 48px, pour libérer de la hauteur fixe. Cf. l'icône
+              // `_StatusIconButton` dans `_buildBottomActionBar`.
               _buildBottomActionBar(status),
             ],
           ),
@@ -447,475 +487,311 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     );
   }
 
-  /// Affiche le widget de notation 5 étoiles + label "Votre note".
-  /// Mis à jour optimiste via [UpdateUserRating] event.
-  Widget _buildUserRatingRow(int currentRating) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context);
-              return Text(
-                l10n?.yourRating ?? 'Votre note',
-                style: Theme.of(context).textTheme.labelMedium,
-              );
-            },
-          ),
-          UserRatingStars(
-            rating: currentRating,
-            size: 24,
-            onRatingChanged: (newRating) {
-              context.read<DetailBloc>().add(
-                    UpdateUserRating(widget.muId, newRating),
-                  );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomActionBar(ReadingStatus? status) {
     final muId = widget.muId;
-    final buttonShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppRadius.xxl),
-    );
+    final brightness = Theme.of(context).brightness;
 
+    // Pas dans la bibliothèque → CTA full-width "Ajouter à la bibliothèque"
+    // + petit bouton recos circulaire à droite.
     if (status == null) {
       return Container(
-        height: 70,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.m,
+          AppSpacing.s,
+          AppSpacing.m,
+          AppSpacing.m,
+        ),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: AppColors.dsHairline(brightness),
+              width: 1,
+            ),
+          ),
+        ),
         child: Row(
           children: [
             Expanded(
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: Icon(ReadingStatus.readLater.icon),
-                  label: Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return Text(l10n?.addToLibrary ?? 'Ajouter à "À lire plus tard"');
-                    },
-                  ),
-                  onPressed: () {
-                    final l10n = AppLocalizations.of(context);
-                    context.read<DetailBloc>().add(AddToLibrary(muId));
-                    widget.notifier.info(l10n?.addToLibrary ?? "Manga ajouté à 'À lire plus tard'");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: buttonShape,
-                    textStyle: const TextStyle(fontSize: 17),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _buildRecommendationButton(buttonShape, muId),
-          ],
-        ),
-      );
-    }
-
-    final leftButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: status.color.withAlpha(50),
-        foregroundColor: status.color,
-        elevation: 0,
-        shape: buttonShape,
-      ),
-      onPressed: () => _showManageLibrarySheet(status),
-      child: Icon(status.icon),
-    );
-
-    if (customLink == null) {
-      final rightButton = ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          shape: buttonShape,
-        ),
-        onPressed: _addCustomLink,
-        icon: const Icon(Icons.link_off),
-        label: Builder(
-          builder: (context) {
-            final l10n = AppLocalizations.of(context);
-            return Text(
-              l10n?.addLink ?? 'Ajouter un lien',
-              style: const TextStyle(fontSize: 17),
-            );
-          },
-        ),
-      );
-
-      return Container(
-        height: 70,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-        child: Row(
-          children: [
-            Flexible(
-              flex: 3,
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: leftButton,
-              ),
-            ),
-            const SizedBox(width: 15),
-            Flexible(
-              flex: 5,
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: rightButton,
-              ),
-            ),
-            const SizedBox(width: 12),
-            _buildRecommendationButton(buttonShape, muId),
-          ],
-        ),
-      );
-    }
-
-    final rightButton = SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: buttonShape,
-              ),
-              onPressed: () async {
-                final lastRead = lastReadChapters;
-                final nextChapterNumber = lastRead + 1;
-                final baseLink = customLink ?? '';
-                final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
-                        baseLink, nextChapterNumber) ?? baseLink;
-                
-                // Récupérer le titre du manga depuis le state
-                final currentState = context.read<DetailBloc>().state;
-                String? mangaTitle;
-                if (currentState is DetailLoaded) {
-                  mangaTitle = currentState.mangaDetail.title;
-                } else {
-                  mangaTitle = widget.mangaTitle;
-                }
-
-                // Vérifier si le chapitre est téléchargé
-                final downloadManager = DownloadManagerService();
-                final isDownloaded = await downloadManager.isChapterDownloaded(muId, nextChapterNumber);
-                
-                if (isDownloaded && mangaTitle != null) {
-                  // Utiliser la version hors ligne
-                  await context.push(
-                    '/manga/$muId/read-offline?chapter=$nextChapterNumber',
-                    extra: OfflineReaderExtras(mangaTitle: mangaTitle!),
-                  );
-                } else {
-                  // Utiliser la version en ligne
-                  await context.push(
-                    '/manga/$muId/read',
-                    extra: ReaderWebExtras(
-                      mangaTitle: mangaTitle,
-                      initialLastRead: lastRead,
-                      initialUrl: targetUrl,
-                      baseUserLink: baseLink,
-                    ),
-                  );
-                }
-                if (mounted) widget.onRefreshLibraryState(context);
-              },
-              icon: const Icon(Icons.link),
-              label: const Padding(
-                padding: EdgeInsets.only(right: 24),
-                child: Text('Lire en ligne', style: TextStyle(fontSize: 17)),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            bottom: 0,
-            right: 8,
-            child: Center(
-              child: IconButton(
-                icon: const Icon(Icons.more_vert, size: 20),
-                color: Theme.of(context).colorScheme.onPrimary,
-                onPressed: _showCustomLinkMenu,
-                tooltip: (() {
+              child: DetailAddToLibraryButton(
+                muId: muId,
+                onAdded: () {
                   final l10n = AppLocalizations.of(context);
-                  return l10n?.manageLink ?? 'Gérer le lien';
-                })(),
+                  widget.notifier.info(
+                    l10n?.addToLibrary ?? "Manga ajouté à la bibliothèque",
+                  );
+                },
               ),
             ),
-          ),
-        ],
-      ),
-    );
+            const SizedBox(width: AppSpacing.s),
+            _RecommendationsIconButton(
+              onTap: () => _showRecommendationsSheet(muId),
+            ),
+          ],
+        ),
+      );
+    }
 
+    // Dans la bibliothèque → action bar V1 :
+    //   [status icon] [Lire en ligne / Ajouter un lien] [recos icon]
+    // **Fix 2026-05-19** : ajout du status icon à gauche (avant on avait un
+    // bouton large au-dessus de l'action bar qui mangeait de la hauteur).
     return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+      padding: const EdgeInsets.fromLTRB(
+        0,
+        AppSpacing.xs,
+        0,
+        AppSpacing.s,
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.dsHairline(brightness),
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         children: [
-          Flexible(
-            flex: 3,
-            child: SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: leftButton,
+          // status est garanti non-null ici (branch atteinte uniquement
+          // quand le manga est dans la bibliothèque, cf. early return ligne ~499)
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.m),
+            child: _StatusIconButton(
+              status: status,
+              onTap: () => _showManageLibrarySheet(status),
             ),
           ),
-          const SizedBox(width: 15),
-          Flexible(
-            flex: 5,
-            child: SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: rightButton,
+          Expanded(
+            child: DetailReadOnlineButton(
+              hasCustomLink: customLink != null,
+              onReadOnline: () => _handleReadOnline(muId),
+              onAddLink: _addCustomLink,
+              onOpenMenu: _showCustomLinkMenu,
             ),
           ),
-          const SizedBox(width: 12),
-          _buildRecommendationButton(buttonShape, muId),
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.m),
+            child: _RecommendationsIconButton(
+              onTap: () => _showRecommendationsSheet(muId),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildRecommendationButton(RoundedRectangleBorder buttonShape, int muId) {
-    return SizedBox(
-      width: 52,
-      height: double.infinity,
-      child: Tooltip(
-        message: (() {
-          final l10n = AppLocalizations.of(context);
-          return l10n?.recommendations ?? 'Recommandations';
-        })(),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            padding: EdgeInsets.zero,
-            elevation: 0,
-            shape: buttonShape,
-            minimumSize: Size.zero,
-          ),
-          onPressed: () async {
-            // Chargement des recommandations avec gestion d'erreur
-            if (_mangaRecommendationsCache == null) {
-              try {
-                _mangaRecommendationsCache = await widget.mangaService
-                    .getMangaRecommendations(muId.toString());
-              } catch (e) {
-                _mangaRecommendationsCache = [];
-                debugPrint('❌ Erreur chargement recommandations: $e');
-              }
-            }
-            if (!mounted) return;
+  Future<void> _handleReadOnline(int muId) async {
+    final lastRead = lastReadChapters;
+    final nextChapterNumber = lastRead + 1;
+    final baseLink = customLink ?? '';
+    final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
+            baseLink, nextChapterNumber) ?? baseLink;
 
-            final screenSize = MediaQuery.of(context).size;
-            final recos = _mangaRecommendationsCache ?? [];
+    // Récupérer le titre du manga depuis le state
+    if (!mounted) return;
+    final currentState = context.read<DetailBloc>().state;
+    String? mangaTitle;
+    if (currentState is DetailLoaded) {
+      mangaTitle = currentState.mangaDetail.title;
+    } else {
+      mangaTitle = widget.mangaTitle;
+    }
 
-            showDialog(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: Builder(
-                  builder: (ctx) {
-                    final l10n = AppLocalizations.of(ctx);
-                    return Text(l10n?.recommendedMangas ?? 'Mangas recommandés');
-                  },
-                ),
-                content: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: screenSize.height * 0.6,
-                    minHeight: 200,
-                    maxWidth: screenSize.width * 0.9,
-                  ),
-                  child: SizedBox(
-                    width: screenSize.width * 0.9,
-                    child: recos.isEmpty
-                        ? Builder(
-                            builder: (ctx) {
-                              final l10n = AppLocalizations.of(ctx);
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(32.0),
-                                  child: Text(
-                                    l10n?.noRecommendationsAvailable ??
-                                        'Aucune recommandation disponible.',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: recos.map((manga) {
-                                return SizedBox(
-                                  width: 120,
-                                  child: MangaCard(
-                                    muId: manga.muId.toString(),
-                                    mangaTitle: manga.title,
-                                    mangaAuthor: manga.year,
-                                    mediumImgPath: manga.mediumCoverUrl,
-                                    rating: manga.rating,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                  ),
-                ),
-                actions: [
-                  Builder(
-                    builder: (ctx) {
-                      final l10n = AppLocalizations.of(ctx);
-                      return TextButton(
-                        child: Text(l10n?.close ?? 'Fermer'),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-          child: const Icon(Icons.auto_awesome, size: 22),
+    // Vérifier si le chapitre est téléchargé
+    final downloadManager = DownloadManagerService();
+    final isDownloaded = await downloadManager.isChapterDownloaded(
+      muId,
+      nextChapterNumber,
+    );
+    if (!mounted) return;
+
+    if (isDownloaded && mangaTitle != null) {
+      await context.push(
+        '/manga/$muId/read-offline?chapter=$nextChapterNumber',
+        extra: OfflineReaderExtras(mangaTitle: mangaTitle),
+      );
+    } else {
+      await context.push(
+        '/manga/$muId/read',
+        extra: ReaderWebExtras(
+          mangaTitle: mangaTitle,
+          initialLastRead: lastRead,
+          initialUrl: targetUrl,
+          baseUserLink: baseLink,
         ),
+      );
+    }
+    if (mounted) widget.onRefreshLibraryState(context);
+  }
+
+  Future<void> _showRecommendationsSheet(int muId) async {
+    // Chargement des recommandations avec gestion d'erreur
+    if (_mangaRecommendationsCache == null) {
+      try {
+        _mangaRecommendationsCache =
+            await widget.mangaService.getMangaRecommendations(muId.toString());
+      } catch (e) {
+        _mangaRecommendationsCache = [];
+        debugPrint('❌ Erreur chargement recommandations: $e');
+      }
+    }
+    if (!mounted) return;
+
+    final recos = _mangaRecommendationsCache ?? [];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.7,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.s),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.m,
+                        AppSpacing.s,
+                        AppSpacing.m,
+                        0,
+                      ),
+                      child: Text(
+                        l10n?.recommendedMangas ?? 'Mangas recommandés',
+                        style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                    DetailRecommendationsSection(
+                      recommendations: recos,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
+  /// Sheet de gestion de bibliothèque V1 (refactor 2026-05-19).
+  ///
+  /// Affiche les 4 statuts disponibles sous forme de rows tappables
+  /// (style ProfileEditField focused = primary border + bg primary léger
+  /// pour le statut actif). En bas : bouton "Retirer de la bibliothèque"
+  /// (action destructive isolée, OutlinedButton rouge).
   void _showManageLibrarySheet(ReadingStatus status) {
     final muId = widget.muId;
     final detailBloc = context.read<DetailBloc>();
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) {
+        final scheme = Theme.of(ctx).colorScheme;
+        final sheetBrightness = Theme.of(ctx).brightness;
         return BlocProvider.value(
           value: detailBloc,
           child: SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                // Titre de la section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Builder(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.m,
+                AppSpacing.m,
+                AppSpacing.m,
+                AppSpacing.s,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Builder(
                     builder: (context) {
                       final l10n = AppLocalizations.of(context);
                       return Text(
                         l10n?.changeStatus ?? 'Changer le statut',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  // 4 statuts tappables
+                  for (final entry in const [
+                    ReadingStatus.reading,
+                    ReadingStatus.readLater,
+                    ReadingStatus.caughtUp,
+                    ReadingStatus.completed,
+                  ])
+                    _StatusSheetRow(
+                      value: entry,
+                      isActive: entry == status,
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        if (entry == status) return;
+                        final l10n = AppLocalizations.of(context);
+                        context
+                            .read<DetailBloc>()
+                            .add(UpdateReadingStatus(entry));
+                        widget.notifier.info(
+                          "${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${entry.getLabel(context)}'",
+                        );
+                      },
+                    ),
+                  const SizedBox(height: AppSpacing.m),
+                  Divider(color: AppColors.dsHairline(sheetBrightness)),
+                  const SizedBox(height: AppSpacing.m),
+                  Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          context
+                              .read<DetailBloc>()
+                              .add(RemoveFromLibrary(muId));
+                          widget.notifier.info(
+                            l10n?.mangaRemovedFromLibrary ??
+                                "Manga retiré de la bibliothèque",
+                          );
+                        },
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: Text(
+                          l10n?.removeFromLibrary ??
+                              'Retirer de la bibliothèque',
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: scheme.error,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          side: BorderSide(
+                            color: scheme.error.withValues(alpha: 0.5),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       );
                     },
                   ),
-                ),
-                const Divider(height: 1),
-                
-                // En cours
-                if (status != ReadingStatus.reading)
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return ListTile(
-                        leading: Icon(ReadingStatus.reading.icon, color: ReadingStatus.reading.color),
-                        title: Text(ReadingStatus.reading.getLabel(context)),
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.reading));
-                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.reading.getLabel(context)}'");
-                        },
-                      );
-                    },
-                  ),
-                
-                // À lire plus tard
-                if (status != ReadingStatus.readLater)
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return ListTile(
-                        leading: Icon(ReadingStatus.readLater.icon, color: ReadingStatus.readLater.color),
-                        title: Text(ReadingStatus.readLater.getLabel(context)),
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.readLater));
-                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.readLater.getLabel(context)}'");
-                        },
-                      );
-                    },
-                  ),
-                
-                // À jour
-                if (status != ReadingStatus.caughtUp)
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return ListTile(
-                        leading: Icon(ReadingStatus.caughtUp.icon, color: ReadingStatus.caughtUp.color),
-                        title: Text(ReadingStatus.caughtUp.getLabel(context)),
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.caughtUp));
-                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.caughtUp.getLabel(context)}'");
-                        },
-                      );
-                    },
-                  ),
-                
-                // Terminé
-                if (status != ReadingStatus.completed)
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return ListTile(
-                        leading: Icon(ReadingStatus.completed.icon, color: ReadingStatus.completed.color),
-                        title: Text(ReadingStatus.completed.getLabel(context)),
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          context.read<DetailBloc>().add(const UpdateReadingStatus(ReadingStatus.completed));
-                          widget.notifier.info("${l10n?.mangaMarkedAs ?? 'Manga marqué comme'} '${ReadingStatus.completed.getLabel(context)}'");
-                        },
-                      );
-                    },
-                  ),
-                
-                const Divider(height: 1),
-                
-                // Retirer de la bibliothèque
-                Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context);
-                    return ListTile(
-                      leading: const Icon(Icons.delete_outline, color: Colors.red),
-                      title: Text(
-                        l10n?.removeFromLibrary ?? 'Retirer de la bibliothèque',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                      onTap: () {
-                        Navigator.of(ctx).pop();
-                        context.read<DetailBloc>().add(RemoveFromLibrary(muId));
-                        widget.notifier.info(l10n?.mangaRemovedFromLibrary ?? "Manga retiré de la bibliothèque");
-                      },
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -1240,7 +1116,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       },
     );
 
-    if (link != null) {
+    if (link != null && mounted) {
       await _saveCustomLink(link, context);
     }
   }
@@ -1275,6 +1151,159 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         baseUrl: manga.customLink!,
         totalChapters: manga.totalChapters,
         readChapters: manga.readChaptersCount,
+      ),
+    );
+  }
+}
+
+/// Bouton icône "Recommandations" V1 — pill circulaire hairline + icône sparkles.
+class _RecommendationsIconButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _RecommendationsIconButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
+    return Tooltip(
+      message: l10n?.recommendations ?? 'Recommandations',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.dsSurfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.dsBorder(brightness),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            Icons.auto_awesome_outlined,
+            size: 22,
+            color: scheme.primary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bouton icône "Changer le statut" V1 — 48×48 hairline, icône du statut
+/// courant en `primary`. Tap → ouvre la sheet de gestion. Placé à gauche
+/// de "Lire en ligne" dans l'action bar (refactor 2026-05-19).
+class _StatusIconButton extends StatelessWidget {
+  final ReadingStatus status;
+  final VoidCallback onTap;
+
+  const _StatusIconButton({required this.status, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
+    return Tooltip(
+      message: l10n?.changeStatus ?? 'Changer le statut',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.dsSurfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.dsBorder(brightness),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            status.icon,
+            size: 22,
+            color: scheme.primary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Row tappable d'un statut dans la sheet de gestion (V1 2026-05-19).
+///
+/// Affiche : icône du statut + label, avec un style mis en valeur si actif :
+///   - actif : bg `dsRedSoft`, border primary, check icon à droite
+///   - inactif : transparent, border hairline
+class _StatusSheetRow extends StatelessWidget {
+  final ReadingStatus value;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _StatusSheetRow({
+    required this.value,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final scheme = Theme.of(context).colorScheme;
+    final bg = isActive
+        ? AppColors.dsRedSoft(brightness)
+        : Colors.transparent;
+    final borderColor = isActive
+        ? scheme.primary
+        : AppColors.dsHairline(brightness);
+    final fg = isActive ? scheme.primary : scheme.onSurface;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: bg,
+              border: Border.all(color: borderColor, width: 1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(value.icon, size: 18, color: fg),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    value.getLabel(context),
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: isActive
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: fg,
+                    ),
+                  ),
+                ),
+                if (isActive)
+                  Icon(Icons.check, size: 18, color: scheme.primary),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

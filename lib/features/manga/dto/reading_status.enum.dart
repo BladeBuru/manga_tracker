@@ -43,7 +43,11 @@ extension ReadingStatusExtension on ReadingStatus {
     }
   }
 
-  /// Retourne la couleur sémantique associée au statut
+  /// Retourne la couleur sémantique associée au statut.
+  ///
+  /// **Refactor 2026-05-18** : `caughtUp` était `AppColors.accent` (orange vif
+  /// #FF9800), perçu comme moche. Remplacé par un teal (#00897B) qui exprime
+  /// mieux la sémantique "à jour, tranquille" tout en restant lisible.
   Color get color {
     switch (this) {
       case ReadingStatus.reading:
@@ -51,9 +55,9 @@ extension ReadingStatusExtension on ReadingStatus {
       case ReadingStatus.readLater:
         return AppColors.info; // Bleu
       case ReadingStatus.caughtUp:
-        return AppColors.accent; // Orange/Ambre
+        return const Color(0xFF00897B); // Teal — moderne, lisible
       case ReadingStatus.completed:
-        return const Color(0xFF673AB7); // Un violet pour "complété"
+        return const Color(0xFF673AB7); // Violet pour "complété"
     }
   }
 

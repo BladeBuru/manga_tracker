@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 
+/// Tuile carrée (ou arrondie) pour les boutons OAuth (Google, Apple…).
+///
+/// Theme-aware : la surface et la bordure suivent le `ColorScheme` actif
+/// (light / dark) pour rester lisibles dans les deux modes.
 class SquareTile extends StatelessWidget {
   final String imagePath;
   final VoidCallback? onTap;
@@ -16,7 +21,9 @@ class SquareTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(isRounded ? size : 16);
+    final scheme = Theme.of(context).colorScheme;
+    final borderRadius =
+        BorderRadius.circular(isRounded ? size : AppRadius.xxxl);
 
     return Material(
       color: Colors.transparent,
@@ -26,9 +33,11 @@ class SquareTile extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.white),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6),
+            ),
             borderRadius: borderRadius,
-            color: Colors.grey[100],
+            color: scheme.surfaceContainerHighest,
           ),
           child: Image.asset(
             imagePath,

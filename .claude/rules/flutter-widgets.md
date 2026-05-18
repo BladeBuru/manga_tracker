@@ -159,22 +159,94 @@ ListView(
 )
 ```
 
-## Composants réutilisables existants
+## Composants réutilisables existants — DESIGN SYSTEM CENTRAL
 
-Vérifier ces composants avant d'en créer un nouveau (`lib/core/components/`) :
+> **🚨 RÈGLE DURE** : avant de créer un widget visuel (card, tile, button,
+> empty state, error state, chip, badge…), tu DOIS d'abord vérifier
+> `lib/core/components/` et **réutiliser** un primitive existant. Si
+> aucun primitive ne couvre le besoin, **CRÉER** le primitive dans
+> `core/components/` (PAS dans `features/X/widgets/`) pour qu'il soit
+> réutilisable par toutes les futures pages.
+>
+> **Interdit** : recréer un widget visuel ad-hoc dans `features/X/widgets/`
+> alors qu'il pourrait être un primitive du design system. Cela mène à
+> 5 versions différentes de "Card" dans l'app et brise la cohérence.
 
-| Composant | Usage |
-|-----------|-------|
-| `AuthButton` | Bouton auth |
-| `FilterButton` | Bouton filtre activable |
-| `SearchBar` | Barre de recherche |
-| `PasswordFields` | Champs mot de passe |
-| `LanguageSelectorButton` | Sélecteur de langue |
-| `ChangelogDialog` | Dialog changelog |
-| `WelcomeHeader` | En-tête de bienvenue |
-| `IntputTextfield` | Champ texte stylisé |
+### Primitives du design system (`lib/core/components/`)
 
-→ **Toujours vérifier** avant d'en créer un nouveau. Si manque → utiliser skill `/add-component`.
+| Composant | Usage | Style "Google Material 3 modern" |
+|-----------|-------|-----------------------------------|
+| **Buttons** | | |
+| `AuthButton` | CTA auth (login, register) | Filled + radius lg |
+| `FilterButton` | Filtre activable | Tonal + chip-like quand selected |
+| **Inputs** | | |
+| `SearchBar` | Barre de recherche globale | Pill shape (radius full) |
+| `PasswordFields` | Champs password + validation | Outlined + show/hide |
+| `IntputTextfield` | Champ texte stylisé | Outlined + radius lg |
+| `LanguageSelectorButton` | Sélecteur de langue | Pill avec drapeau |
+| **Sections/Cards** | | |
+| `AppCard` *(à créer)* | Carte de contenu standard | surfaceContainerLow + radius xxxl + padding m |
+| `AppListSection` *(à créer)* | Section titrée avec children | Titre + Container + tiles intérieures |
+| `AppListTile` *(à créer)* | Item de liste avec leading/title/sub/trailing | Card tonal + radius md |
+| **States** | | |
+| `AppEmptyState` *(à créer)* | Icône + message + CTA optionnel centré | Icon 64px + bodyLarge + tonal button |
+| `AppErrorState` *(à créer)* | Erreur avec bouton Retry | error color + retry tonal button |
+| **Indicateurs (Google look)** | | |
+| `AppChip` *(à créer)* | Pastille couleur (badge/tag/status) | secondaryContainer + radius xl + border outlineVariant |
+| `AppCountBadge` *(à créer)* | Compteur rond (notifs, "12 mangas") | primary + onPrimary + radius xs + 11px bold |
+| `AppStatusPill` *(à créer)* | Indicateur de statut (status reading, status group) | primaryContainer + radius full + 4-8px padding |
+| **Composés** | | |
+| `ChangelogDialog` | Dialog changelog | M3 AlertDialog |
+| `WelcomeHeader` | Hero de bienvenue | Material 3 |
+
+→ **Workflow obligatoire avant d'écrire `class _MaCard extends StatelessWidget`** :
+> 1. **Chercher** dans `core/components/` un composant similaire.
+> 2. Si trouvé → **utiliser** directement.
+> 3. Si pas trouvé → vérifier que le besoin est suffisamment générique → **créer dans `core/components/`**.
+> 4. Si vraiment spécifique à la feature (ex: `MangaCard` avec download dialog) → mettre dans `features/X/widgets/`.
+
+## 🎨 Modern Material 3 "Google look" — règles esthétiques
+
+L'objectif est un design moderne inspiré des dernières apps Google (Wallet,
+Tasks, Files) — caractérisé par :
+
+- **Surfaces empilées** : `surface` → `surfaceContainerLow` → `surfaceContainerHigh` (jamais blanc cassé pur)
+- **Pastilles (chips/pills) partout** : pour status, count, tag, filter — pas de texte nu
+- **Radii généreux** : `AppRadius.xxxl` (16px) pour cards, `xl` (12px) pour pills, `lg` (10px) pour inputs
+- **Containers tonals** : `primaryContainer`/`onPrimaryContainer`, `secondaryContainer`/`onSecondaryContainer` pour les blocs colorés
+- **Padding 16-20px** dans les cards (jamais 8 ou < 12)
+- **Outline subtile** : `outlineVariant` pour séparer sans agresser
+- **Icônes "outlined"** par défaut : `Icons.person_outline`, `Icons.inbox_outlined`, `Icons.groups_outlined`
+- **Tonal buttons** plutôt que Elevated pour les actions secondaires : `FilledButton.tonal` > `OutlinedButton`
+- **Badge.count** Material 3 pour les compteurs sur icônes
+- **SegmentedButton** pour les choix mutuellement exclusifs (sort, filter)
+
+### Exemple : convertir un "ancien" widget en "Google look"
+
+```dart
+// ❌ AVANT (Material 2-ish, ad-hoc)
+Container(
+  padding: const EdgeInsets.all(8),
+  decoration: BoxDecoration(
+    color: Colors.grey[200],
+    borderRadius: BorderRadius.circular(6),
+  ),
+  child: Row(
+    children: [
+      Icon(Icons.person, color: Colors.grey),
+      Text('Username'),
+    ],
+  ),
+)
+
+// ✅ APRÈS (Material 3 + design system primitives)
+AppListTile(
+  leadingIcon: Icons.person_outline,
+  title: 'Username',
+  trailing: AppCountBadge(count: 3),
+)
+// (avec couleurs `scheme.surfaceContainerLow`, radius `xxxl`, padding 16)
+```
 
 ## Indicateur offline (obligatoire si `state.isOffline`)
 

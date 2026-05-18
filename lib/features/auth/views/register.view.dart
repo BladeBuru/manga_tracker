@@ -1,24 +1,37 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangatracker/core/service_locator/service_locator.dart';
-import 'package:mangatracker/core/components/language_selector_button.dart';
-import 'package:mangatracker/core/components/theme_toggle_button.dart';
-import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/auth_submission_status.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/register_cubit.dart';
+import 'package:mangatracker/features/auth/presentation/cubit/register_state.dart';
+import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/auth/services/validator.service.dart';
+import 'package:mangatracker/features/auth/widgets/auth_divider_with_label.dart';
+import 'package:mangatracker/features/auth/widgets/auth_footer_link.dart';
+import 'package:mangatracker/features/auth/widgets/auth_form_card.dart';
+import 'package:mangatracker/features/auth/widgets/auth_form_field.dart';
+import 'package:mangatracker/features/auth/widgets/auth_hero.dart';
+import 'package:mangatracker/features/auth/widgets/auth_password_section.dart';
+import 'package:mangatracker/features/auth/widgets/auth_scaffold.dart';
+import 'package:mangatracker/features/auth/widgets/auth_submit_button.dart';
+import 'package:mangatracker/features/auth/widgets/auth_top_bar.dart';
+import 'package:mangatracker/features/auth/widgets/consent_checkbox.dart';
+import 'package:mangatracker/features/auth/widgets/social_login_buttons.dart';
+import 'package:mangatracker/features/profile/services/gdpr.service.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
-import '../../../core/components/password_fields.dart';
-import '../services/validator.service.dart';
-import '../../../core/components/intput_textfield.dart';
-import '../../../core/components/auth_button.dart';
-import '../widgets/square_tile.dart';
-import '../services/auth.service.dart';
-import '../../profile/services/gdpr.service.dart';
-import '../presentation/cubit/auth_submission_status.dart';
-import '../presentation/cubit/register_cubit.dart';
-import '../presentation/cubit/register_state.dart';
-
+/// Page d'inscription — design V1 « Refined Classic ».
+///
+/// Préserve l'intégralité des comportements :
+/// - `RegisterCubit` : submit + setAcceptedTos / setAcceptedPrivacy
+/// - Validation email / mot de passe / confirmation via `ValidatorService`
+/// - GDPR consent obligatoire (les deux checkboxes bloquent submit)
+/// - `GdprService.recordConsent` après succès (via Cubit)
+/// - Google OAuth (mobile + web idToken/WebView via `AuthService`)
+/// - Navigation vers `/login` et `/home`
 class RegisterView extends StatefulWidget {
   final String emailText;
 
@@ -30,489 +43,287 @@ class RegisterView extends StatefulWidget {
 
 class _RegisterViewState extends State<RegisterView> {
   late final GlobalKey<FormState> _formKey;
-  final authService = getIt<AuthService>();
-  final emailController = TextEditingController();
-  final usernameController = TextEditingController();
-  final passwordControler = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
-
-  final ValidatorService validatorService = getIt<ValidatorService>();
+  final AuthService _authService = getIt<AuthService>();
+  final ValidatorService _validatorService = getIt<ValidatorService>();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   late final RegisterCubit _registerCubit;
 
   @override
   void initState() {
     super.initState();
-    // Créer une clé unique pour chaque instance
     _formKey = GlobalKey<FormState>();
-    emailController.text = widget.emailText;
+    _emailController.text = widget.emailText;
     _registerCubit = RegisterCubit(
-      authService: authService,
+      authService: _authService,
       gdprService: getIt<GdprService>(),
     );
   }
 
   @override
   void dispose() {
-    emailController.dispose();
-    usernameController.dispose();
-    passwordControler.dispose();
-    confirmPasswordController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _registerCubit.close();
     super.dispose();
   }
 
-  void singUpUser() async {
+  Future<void> _onSubmit() async {
     FocusManager.instance.primaryFocus?.unfocus();
-
     if (!_formKey.currentState!.validate()) return;
-
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-
     await _registerCubit.submit(
-      username: usernameController.text.trim().toLowerCase(),
-      email: emailController.text.trim(),
-      password: passwordControler.text,
+      username: _usernameController.text.trim().toLowerCase(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
       l10n: l10n,
     );
   }
 
-  void redirectToLoginPage() {
-    context.push('/login');
+  void _goToLogin() => context.push('/login');
+
+  void _onConsentRefused(AppLocalizations? l10n) {
+    final theme = Theme.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n?.consentRequired ??
+              'Vous devez accepter les CGU et la Politique de confidentialité.',
+          style: TextStyle(color: theme.colorScheme.onTertiaryContainer),
+        ),
+        backgroundColor: theme.colorScheme.tertiaryContainer,
+      ),
+    );
   }
 
-  /// Ouvre une dialog résumant le contenu du document légal demandé.
-  /// Le document complet doit être hébergé en ligne (URL publique stable).
-  void _showLegalDoc(
-    BuildContext context,
-    String kind,
-    AppLocalizations? l10n,
-  ) {
+  void _showLegalDoc(String kind, AppLocalizations? l10n) {
     showDialog(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(
-              kind == 'tos'
-                  ? (l10n?.termsOfServiceTitle ?? "Conditions d'utilisation")
-                  : (l10n?.privacyPolicyTitle ??
-                      'Politique de confidentialité'),
-            ),
-            content: SingleChildScrollView(
-              child: Text(
-                kind == 'tos'
-                    ? (l10n?.tosShortVersion ??
-                        "Manga Tracker est fourni en l'état, sans garantie. "
-                            "L'éditeur décline toute responsabilité pour l'utilisation "
-                            "non conforme par l'utilisateur (contenu illégal, scraping, etc.).\n\n"
-                            "Document complet sur le site officiel.")
-                    : (l10n?.privacyShortVersion ??
-                        "Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. "
-                            "Aucune donnée n'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\n"
-                            "Document complet sur le site officiel."),
-                style: const TextStyle(fontSize: 13),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n?.close ?? 'Fermer'),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          kind == 'tos'
+              ? (l10n?.termsOfServiceTitle ?? "Conditions d'utilisation")
+              : (l10n?.privacyPolicyTitle ?? 'Politique de confidentialité'),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            kind == 'tos'
+                ? (l10n?.tosShortVersion ?? '')
+                : (l10n?.privacyShortVersion ?? ''),
+            style: const TextStyle(fontSize: 13),
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n?.close ?? 'Fermer'),
+          ),
+        ],
+      ),
     );
+  }
+
+  Future<void> _onGoogleLogin(AppLocalizations? l10n) async {
+    final success = await _authService.loginWithGoogle(context);
+    if (!mounted) return;
+    if (success) {
+      context.go('/home');
+    } else {
+      getIt<Notifier>().error(
+        l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
+      );
+    }
+  }
+
+  void _onAppleLogin(AppLocalizations? l10n) {
+    getIt<Notifier>().info(l10n?.comingSoon ?? 'Fonctionnalité à venir');
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: BlocProvider<RegisterCubit>.value(
-        value: _registerCubit,
-        child: BlocListener<RegisterCubit, RegisterState>(
-          listenWhen: (previous, current) => previous.status != current.status,
-          listener: (context, state) {
-            if (state.status == AuthSubmissionStatus.success) {
-              context.go('/home');
-            }
-          },
-          child: Scaffold(
-            resizeToAvoidBottomInset: true,
-            body: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-                  final horizontalPadding = _horizontalPadding(
-                    constraints.maxWidth,
-                  );
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      0,
-                      horizontalPadding,
-                      bottomInset,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: Form(
-                          key: _formKey,
-                          child: BlocBuilder<RegisterCubit, RegisterState>(
-                            builder: (context, registerState) {
-                              final l10n = AppLocalizations.of(context);
-                              final theme = Theme.of(context);
-                              final mutedColor = theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6);
-                              final dividerColor = theme.colorScheme.outline
-                                  .withValues(alpha: 0.4);
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Semantics(
-                                        button: true,
-                                        label: l10n?.back ?? 'Retour',
-                                        child: IconButton(
-                                          icon: Icon(
-                                            Icons.arrow_back,
-                                            color: mutedColor,
-                                          ),
-                                          tooltip: l10n?.back ?? 'Retour',
-                                          onPressed: redirectToLoginPage,
-                                        ),
-                                      ),
-                                      const ThemeToggleButton(),
-                                      const LanguageSelectorButton(),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Align(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Image.asset(
-                                        'assets/images/mask_logo-backgroud-white.png',
-                                        height: 150,
-                                        semanticLabel:
-                                            l10n?.appTitle ?? 'MangaTracker',
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 30),
-                                  Text(
-                                    l10n?.startTrackingNow ??
-                                        "Commencez à suivre votre lecture maintenant",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: mutedColor,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 50),
-                                  IntputTexteField(
-                                    controller: emailController,
-                                    hintText:
-                                        l10n?.emailAddress ?? "Adresse e-mail",
-                                    labelText:
-                                        l10n?.emailAddress ?? "Adresse e-mail",
-                                    obscureText: false,
-                                    keyboardType: TextInputType.emailAddress,
-                                    validator:
-                                        (value) => validatorService
-                                            .validateEmailAddress(
-                                              value,
-                                              context,
-                                            ),
-                                    autofillHints: const [AutofillHints.email],
-                                    textInputAction: TextInputAction.next,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  IntputTexteField(
-                                    controller: usernameController,
-                                    hintText:
-                                        l10n?.username ?? "Nom d'utilisateur",
-                                    labelText:
-                                        l10n?.username ?? "Nom d'utilisateur",
-                                    obscureText: false,
-                                    validator: validatorService.noValidation,
-                                    autofillHints: const [
-                                      AutofillHints.username,
-                                    ],
-                                    textInputAction: TextInputAction.next,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  PasswordFields(
-                                    passwordControler: passwordControler,
-                                    confirmPasswordControler:
-                                        confirmPasswordController,
-                                    validatorService: validatorService,
-                                  ),
-                                  const SizedBox(height: 20),
-
-                                  // ─── Consentement RGPD obligatoire ───
-                                  _ConsentCheckbox(
-                                    checked: registerState.acceptedTos,
-                                    onChanged:
-                                        (v) => _registerCubit.setAcceptedTos(
-                                          v ?? false,
-                                        ),
-                                    label:
-                                        l10n?.iAcceptTos ??
-                                        "J'accepte les Conditions d'utilisation",
-                                    onTapLabel:
-                                        () =>
-                                            _showLegalDoc(context, 'tos', l10n),
-                                  ),
-                                  _ConsentCheckbox(
-                                    checked: registerState.acceptedPrivacy,
-                                    onChanged:
-                                        (v) => _registerCubit
-                                            .setAcceptedPrivacy(v ?? false),
-                                    label:
-                                        l10n?.iAcceptPrivacy ??
-                                        "J'accepte la Politique de confidentialité",
-                                    onTapLabel:
-                                        () => _showLegalDoc(
-                                          context,
-                                          'privacy',
-                                          l10n,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  AuthButton(
-                                    text: l10n?.signUp ?? "S'inscrire",
-                                    onTap:
-                                        registerState.canSubmit
-                                            ? singUpUser
-                                            : () {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    l10n?.consentRequired ??
-                                                        'Vous devez accepter les CGU et la Politique de confidentialité.',
-                                                  ),
-                                                  backgroundColor:
-                                                      Colors.orange,
-                                                ),
-                                              );
-                                            },
-                                    isLoading: registerState.isLoading,
-                                  ),
-                                  registerState.errorMessage != null
-                                      ? Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 12.0,
-                                        ),
-                                        child: Text(
-                                          registerState.errorMessage!,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: theme.colorScheme.error,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      )
-                                      : const SizedBox(height: 8),
-                                  const SizedBox(height: 40),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 40.0,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Divider(
-                                            thickness: 0.5,
-                                            color: dividerColor,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10.0,
-                                          ),
-                                          child: Text(
-                                            l10n?.or ?? 'Ou',
-                                            style: TextStyle(color: mutedColor),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Divider(
-                                            thickness: 0.5,
-                                            color: dividerColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 40),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Semantics(
-                                        button: true,
-                                        label:
-                                            l10n?.loginWithGoogle ??
-                                            'Se connecter avec Google',
-                                        child: SquareTile(
-                                          imagePath:
-                                              'assets/images/google_logo.png',
-                                          onTap:
-                                              registerState.isLoading
-                                                  ? null
-                                                  : () async {
-                                                    final success =
-                                                        await authService
-                                                            .loginWithGoogle(
-                                                              context,
-                                                            );
-                                                    if (!context.mounted) {
-                                                      return;
-                                                    }
-                                                    if (success) {
-                                                      context.go('/home');
-                                                    } else {
-                                                      getIt<Notifier>().error(
-                                                        l10n?.googleLoginFailed ??
-                                                            'Échec de la connexion Google',
-                                                      );
-                                                    }
-                                                  },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 20),
-                                      Semantics(
-                                        button: true,
-                                        label:
-                                            l10n?.comingSoon ??
-                                            'Fonctionnalité à venir',
-                                        child: SquareTile(
-                                          imagePath:
-                                              'assets/images/apple_logo.png',
-                                          onTap: () {
-                                            getIt<Notifier>().info(
-                                              l10n?.comingSoon ??
-                                                  'Fonctionnalité à venir',
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 40),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        l10n?.alreadyHaveAccount ??
-                                            "Vous avez déjà un compte ?",
-                                        style: TextStyle(color: mutedColor),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      GestureDetector(
-                                        onTap: redirectToLoginPage,
-                                        child: Text(
-                                          l10n?.login ?? "Se connecter",
-                                          style: TextStyle(
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+    return BlocProvider<RegisterCubit>.value(
+      value: _registerCubit,
+      child: BlocListener<RegisterCubit, RegisterState>(
+        listenWhen: (prev, curr) => prev.status != curr.status,
+        listener: (context, state) {
+          if (state.status == AuthSubmissionStatus.success) {
+            context.go('/home');
+          }
+        },
+        child: AuthScaffold(
+          canPop: false,
+          child: Form(
+            key: _formKey,
+            child: BlocBuilder<RegisterCubit, RegisterState>(
+              builder: (context, state) {
+                final l10n = AppLocalizations.of(context);
+                return _RegisterContent(
+                  state: state,
+                  emailController: _emailController,
+                  usernameController: _usernameController,
+                  passwordController: _passwordController,
+                  confirmController: _confirmPasswordController,
+                  validatorService: _validatorService,
+                  onBack: _goToLogin,
+                  onSubmit: _onSubmit,
+                  onConsentRefused: () => _onConsentRefused(l10n),
+                  onToggleTos: (v) => _registerCubit.setAcceptedTos(v),
+                  onTogglePrivacy: (v) =>
+                      _registerCubit.setAcceptedPrivacy(v),
+                  onTapTos: () => _showLegalDoc('tos', l10n),
+                  onTapPrivacy: () => _showLegalDoc('privacy', l10n),
+                  onGoogle: (l10n) => _onGoogleLogin(l10n),
+                  onApple: _onAppleLogin,
+                );
+              },
             ),
           ),
         ),
       ),
     );
   }
-
-  double _horizontalPadding(double maxWidth) {
-    if (maxWidth >= 1200) return (maxWidth - 640) / 2;
-    if (maxWidth >= 900) return 96;
-    if (maxWidth >= 600) return 48;
-    return 24;
-  }
 }
 
-/// Case à cocher de consentement RGPD avec libellé cliquable (ouvre la
-/// dialog d'aperçu du document légal).
-class _ConsentCheckbox extends StatelessWidget {
-  final bool checked;
-  final ValueChanged<bool?> onChanged;
-  final String label;
-  final VoidCallback onTapLabel;
+/// Contenu du formulaire d'inscription — extrait pour rester sous 150 lignes.
+class _RegisterContent extends StatelessWidget {
+  final RegisterState state;
+  final TextEditingController emailController;
+  final TextEditingController usernameController;
+  final TextEditingController passwordController;
+  final TextEditingController confirmController;
+  final ValidatorService validatorService;
+  final VoidCallback onBack;
+  final Future<void> Function() onSubmit;
+  final VoidCallback onConsentRefused;
+  final ValueChanged<bool> onToggleTos;
+  final ValueChanged<bool> onTogglePrivacy;
+  final VoidCallback onTapTos;
+  final VoidCallback onTapPrivacy;
+  final Future<void> Function(AppLocalizations?) onGoogle;
+  final void Function(AppLocalizations?) onApple;
 
-  const _ConsentCheckbox({
-    required this.checked,
-    required this.onChanged,
-    required this.label,
-    required this.onTapLabel,
+  const _RegisterContent({
+    required this.state,
+    required this.emailController,
+    required this.usernameController,
+    required this.passwordController,
+    required this.confirmController,
+    required this.validatorService,
+    required this.onBack,
+    required this.onSubmit,
+    required this.onConsentRefused,
+    required this.onToggleTos,
+    required this.onTogglePrivacy,
+    required this.onTapTos,
+    required this.onTapPrivacy,
+    required this.onGoogle,
+    required this.onApple,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            value: checked,
-            onChanged: onChanged,
-            visualDensity: VisualDensity.compact,
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => onChanged(!checked),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(text: label, style: theme.textTheme.bodySmall),
-                      TextSpan(
-                        text: '  →',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
-                        recognizer: _OnTap(onTapLabel),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AuthTopBar(
+          onBack: onBack,
+          backTooltip: l10n?.back ?? 'Retour',
+        ),
+        const SizedBox(height: AppSpacing.s),
+        AuthHero(
+          title: l10n?.createAccountTitle ?? 'Créer un compte',
+          subtitle:
+              l10n?.registerSubtitle ?? 'Commencez à suivre vos lectures',
+          logoSemanticLabel: l10n?.appTitle ?? 'MangaTracker',
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthFormCard(
+          children: [
+            AuthFormField(
+              label: l10n?.username ?? "Nom d'utilisateur",
+              controller: usernameController,
+              autofillHints: const [AutofillHints.username],
+              textInputAction: TextInputAction.next,
+              validator: validatorService.noValidation,
+            ),
+            AuthFormField(
+              label: l10n?.emailAddress ?? 'Adresse e-mail',
+              controller: emailController,
+              hintText: 'vous@example.com',
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.next,
+              validator: (v) =>
+                  validatorService.validateEmailAddress(v, context),
+            ),
+            AuthPasswordSection(
+              passwordController: passwordController,
+              confirmController: confirmController,
+              validatorService: validatorService,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.m),
+        ConsentCheckbox(
+          checked: state.acceptedTos,
+          onChanged: (v) => onToggleTos(v ?? false),
+          label: l10n?.iAcceptTos ?? "J'accepte les Conditions d'utilisation",
+          onTapLabel: onTapTos,
+        ),
+        const SizedBox(height: 4),
+        ConsentCheckbox(
+          checked: state.acceptedPrivacy,
+          onChanged: (v) => onTogglePrivacy(v ?? false),
+          label: l10n?.iAcceptPrivacy ??
+              "J'accepte la Politique de confidentialité",
+          onTapLabel: onTapPrivacy,
+        ),
+        const SizedBox(height: AppSpacing.m),
+        AuthSubmitButton(
+          text: l10n?.signUp ?? "S'inscrire",
+          onPressed: state.isLoading
+              ? null
+              : (state.canSubmit ? onSubmit : onConsentRefused),
+          isLoading: state.isLoading,
+        ),
+        if (state.errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.s),
+          Text(
+            state.errorMessage!,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scheme.error,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
-      ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthDividerWithLabel(label: l10n?.orSignUpWith ?? "ou s'inscrire avec"),
+        const SizedBox(height: AppSpacing.l),
+        SocialLoginButtons(
+          googleLabel: l10n?.loginWithGoogle ?? 'Se connecter avec Google',
+          appleLabel: l10n?.continueWithApple ?? 'Continuer avec Apple',
+          onGoogle: state.isLoading ? null : () => onGoogle(l10n),
+          onApple: () => onApple(l10n),
+          disabled: state.isLoading,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthFooterLink(
+          message: l10n?.alreadyHaveAccount ?? 'Vous avez déjà un compte ?',
+          actionLabel: l10n?.login ?? 'Se connecter',
+          onTap: onBack,
+        ),
+        const SizedBox(height: AppSpacing.s),
+      ],
     );
-  }
-}
-
-/// Petit helper pour TextSpan tappable sans dépendance externe.
-class _OnTap extends TapGestureRecognizer {
-  _OnTap(VoidCallback handler) {
-    onTap = handler;
   }
 }

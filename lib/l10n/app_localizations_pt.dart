@@ -121,16 +121,64 @@ class AppLocalizationsPt extends AppLocalizations {
   String get notifications => 'Notificações';
 
   @override
-  String get newChapterNotifications => 'Notifications nouveaux chapitres';
+  String get newChapterNotifications => 'Notificações de novos capítulos';
 
   @override
-  String get newChapterNotificationsEnabled => 'Activées';
+  String get newChapterNotificationsEnabled => 'Ativadas';
 
   @override
-  String get newChapterNotificationsDisabled => 'Désactivées';
+  String get newChapterNotificationsDisabled => 'Desativadas';
 
   @override
   String get manageNotifications => 'Gerenciar notificações';
+
+  @override
+  String get notifSectionApp => 'Notificações do aplicativo';
+
+  @override
+  String get notifSectionInfo => 'Informações';
+
+  @override
+  String get notifNewChaptersTitle => 'Novos capítulos';
+
+  @override
+  String get notifNewChaptersSubtitle =>
+      'Seja notificado quando seus mangás seguidos publicarem novos capítulos';
+
+  @override
+  String get notifFriendReqTitle => 'Pedidos de amizade';
+
+  @override
+  String get notifFriendReqSubtitle => 'Alguém quer adicioná-lo como amigo';
+
+  @override
+  String get notifSharesTitle => 'Recomendações recebidas';
+
+  @override
+  String get notifSharesSubtitle => 'Um amigo compartilha um mangá com você';
+
+  @override
+  String get notifPermissionExplanation =>
+      'As notificações aparecem apenas quando o aplicativo tem permissão do sistema. Se você não receber nenhuma, ative-as nas configurações do telefone.';
+
+  @override
+  String get notifOpenSystemSettings => 'Abrir configurações do sistema';
+
+  @override
+  String get pushNotifFriendRequestTitle => 'Novo pedido de amizade';
+
+  @override
+  String pushNotifFriendRequestBody(String senderUsername) {
+    return '$senderUsername quer adicioná-lo como amigo';
+  }
+
+  @override
+  String get pushNotifShareTitle => 'Novo mangá compartilhado';
+
+  @override
+  String pushNotifShareBody(String senderUsername, String mangaTitle) {
+    return '$senderUsername recomenda $mangaTitle';
+  }
 
   @override
   String get theme => 'Tema';
@@ -477,6 +525,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get clear => 'Limpar';
+
+  @override
+  String get searchTitle => 'Pesquisar';
+
+  @override
+  String get searchEmptyHistory => 'Nenhuma pesquisa recente';
+
+  @override
+  String get searchPopularGenres => 'Géneros populares';
 
   @override
   String get biometricAuthTitle => 'Autenticação biométrica';
@@ -1056,6 +1113,52 @@ class AppLocalizationsPt extends AppLocalizations {
   String get termsOfServiceTitle => 'Termos de uso';
 
   @override
+  String get myDataInfoBanner =>
+      'Conforme o RGPD, você tem o direito de acessar seus dados, exportá-los e solicitar sua exclusão.';
+
+  @override
+  String get myDataSectionPersonalData => 'Dados pessoais';
+
+  @override
+  String get myDataSectionMyRights => 'Meus direitos';
+
+  @override
+  String get myDataSectionDeletion => 'Exclusão';
+
+  @override
+  String get myDataSummaryTitle => 'Resumo dos meus dados';
+
+  @override
+  String get myDataSummarySubtitle =>
+      'Ver uma visão geral dos seus dados armazenados';
+
+  @override
+  String get myDataExportSubtitle =>
+      'Baixar um arquivo JSON completo (artigo 20)';
+
+  @override
+  String get privacyPolicySubtitle => 'Ler o documento completo';
+
+  @override
+  String get termsOfServiceSubtitle => 'Ver os Termos';
+
+  @override
+  String get myDataDeleteAccountSubtitle => 'Esta ação é irreversível';
+
+  @override
+  String get gdprExportSuccessSnack =>
+      'Seus dados foram copiados para a área de transferência (JSON).';
+
+  @override
+  String get gdprExportFailedSnack => 'Falha na exportação';
+
+  @override
+  String get gdprSummaryLoadFailed => 'Erro de carregamento';
+
+  @override
+  String get myDataBackLabel => 'Perfil';
+
+  @override
   String get tosShortVersion =>
       'Manga Tracker é fornecido como está, sem garantia. O editor declina qualquer responsabilidade por uso não conforme do usuário (conteúdo ilegal, scraping, etc.).\n\nDocumento completo no site oficial.';
 
@@ -1088,6 +1191,30 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get versionLabel => 'Versão';
+
+  @override
+  String get welcomeTitle => 'Bem-vindo!';
+
+  @override
+  String get loginSubtitle => 'Entre na sua conta';
+
+  @override
+  String get createAccountTitle => 'Criar uma conta';
+
+  @override
+  String get registerSubtitle => 'Comece a acompanhar suas leituras';
+
+  @override
+  String get orLoginWith => 'ou entre com';
+
+  @override
+  String get orSignUpWith => 'ou registe-se com';
+
+  @override
+  String get continueWithApple => 'Continuar com a Apple';
+
+  @override
+  String get loadingApp => 'A carregar…';
 
   @override
   String get forgotPasswordTitle => 'Senha esquecida';
@@ -1168,4 +1295,683 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get recommendationsByGenreEmpty =>
       'Ainda não há recomendações. Adicione mangás à sua biblioteca para receber sugestões personalizadas.';
+
+  @override
+  String get recommendationsAllTitle => 'Todas as recomendações';
+
+  @override
+  String get recommendationsAllEmpty => 'Ainda não há recomendações para você.';
+
+  @override
+  String get seeAllRecommendations => 'Ver tudo';
+
+  @override
+  String get browseByGenre => 'Por gênero';
+
+  @override
+  String get recommendationsTabAll => 'Tudo';
+
+  @override
+  String get recommendationsTabByGenre => 'Por gênero';
+
+  @override
+  String get statsTitle => 'Minhas estatísticas';
+
+  @override
+  String get statsTotalMangas => 'mangás na sua biblioteca';
+
+  @override
+  String statsMemberSince(String date) {
+    return 'Membro desde $date';
+  }
+
+  @override
+  String get statsTotalChapters => 'Capítulos lidos';
+
+  @override
+  String get statsReadingTime => 'Tempo de leitura estimado';
+
+  @override
+  String get statsCompletionRate => 'Taxa de conclusão';
+
+  @override
+  String get statsLastRead => 'Última leitura';
+
+  @override
+  String get statsByStatusTitle => 'Distribuição por status';
+
+  @override
+  String get statsByStatusEmpty => 'Ainda não há mangás na sua biblioteca.';
+
+  @override
+  String get statsTopGenresTitle => 'Gêneros favoritos';
+
+  @override
+  String get statsTopGenresEmpty =>
+      'Adicione mangás para descobrir seus gêneros favoritos.';
+
+  @override
+  String statsMinutesShort(int count) {
+    return '$count min';
+  }
+
+  @override
+  String statsHoursAndMinutesShort(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String statsDaysAndHoursShort(int days, int hours) {
+    return '$days d $hours h';
+  }
+
+  @override
+  String get statusReadLater => 'Para ler';
+
+  @override
+  String get statusReading => 'Lendo';
+
+  @override
+  String get statusCaughtUp => 'Em dia';
+
+  @override
+  String get statusCompleted => 'Concluído';
+
+  @override
+  String get statsSectionOverview => 'Visão geral';
+
+  @override
+  String get statsSectionBreakdown => 'Mangás por status';
+
+  @override
+  String get statsSectionGenres => 'Gêneros favoritos';
+
+  @override
+  String get statsLibraryTotal => 'Mangás na sua biblioteca';
+
+  @override
+  String statsMonthsSinceJoin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Membro há $count meses',
+      one: 'Membro há 1 mês',
+      zero: 'Membro há menos de um mês',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsHeroBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mangás',
+      one: '1 mangá',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyStats => 'Minhas estatísticas';
+
+  @override
+  String get profileEditTitle => 'Editar meu perfil';
+
+  @override
+  String get profileEditBackLabel => 'Perfil';
+
+  @override
+  String get profileEditMenuTitle => 'Editar perfil';
+
+  @override
+  String get profileEditMenuSubtitle =>
+      'Foto, nome de exibição, bio, privacidade';
+
+  @override
+  String get profileFieldAvatarUrl => 'URL do avatar';
+
+  @override
+  String get profileFieldDisplayName => 'Nome de exibição';
+
+  @override
+  String get profileFieldBio => 'Bio';
+
+  @override
+  String get profileFieldDateOfBirth => 'Data de nascimento';
+
+  @override
+  String get profileFieldGender => 'Gênero';
+
+  @override
+  String get profileGenderNotSet => 'Não informado';
+
+  @override
+  String get profileGenderMale => 'Masculino';
+
+  @override
+  String get profileGenderFemale => 'Feminino';
+
+  @override
+  String get profileGenderNonBinary => 'Não-binário';
+
+  @override
+  String get profileGenderPreferNotToSay => 'Prefiro não dizer';
+
+  @override
+  String get profileFieldIsPublic => 'Perfil público';
+
+  @override
+  String get profileFieldIsPublicSubtitle => 'Visível para outros usuários';
+
+  @override
+  String get profileSaved => 'Perfil salvo';
+
+  @override
+  String get profileSaveFailed => 'Falha ao salvar';
+
+  @override
+  String get friendsTitle => 'Amigos';
+
+  @override
+  String get friendsTabAccepted => 'Amigos';
+
+  @override
+  String get friendsTabPending => 'Solicitações';
+
+  @override
+  String get friendsSearchLabel => 'Encontrar um amigo';
+
+  @override
+  String get friendsSearchHint =>
+      'Digite um nome de usuário (min 2 caracteres)';
+
+  @override
+  String get friendsAddRequest => 'Enviar solicitação';
+
+  @override
+  String get friendsAccept => 'Aceitar';
+
+  @override
+  String get friendsReject => 'Recusar';
+
+  @override
+  String get friendsRemove => 'Remover';
+
+  @override
+  String get friendsRequestSent => 'Solicitação enviada';
+
+  @override
+  String get friendsError => 'Erro';
+
+  @override
+  String get friendsEmptyAccepted => 'Sem amigos ainda';
+
+  @override
+  String get friendsEmptyAcceptedSubtitle =>
+      'Pesquise usuários acima para adicioná-los.';
+
+  @override
+  String get friendsEmptyPending => 'Nenhuma solicitação pendente';
+
+  @override
+  String get friendsEmptyPendingSubtitle =>
+      'Solicitações recebidas aparecerão aqui.';
+
+  @override
+  String get friendsSectionAccepted => 'Meus amigos';
+
+  @override
+  String get friendsSectionPending => 'Solicitações recebidas';
+
+  @override
+  String get friendsSearchClear => 'Limpar';
+
+  @override
+  String get friendsSearchResults => 'Resultados';
+
+  @override
+  String get friendsSearchEmpty => 'Nenhum usuário encontrado.';
+
+  @override
+  String get profileMyFriends => 'Meus amigos';
+
+  @override
+  String get commentsTitle => 'Comentários';
+
+  @override
+  String get commentsEmpty => 'Sem comentários ainda. Seja o primeiro!';
+
+  @override
+  String get commentsSortRecent => 'Recentes';
+
+  @override
+  String get commentsSortTop => 'Popular';
+
+  @override
+  String get commentsInputHint => 'Compartilhe sua opinião (3-2000 caracteres)';
+
+  @override
+  String get commentsPost => 'Publicar';
+
+  @override
+  String get commentsDelete => 'Excluir';
+
+  @override
+  String get commentsLoadMore => 'Carregar mais';
+
+  @override
+  String commentsReplyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count respostas',
+      one: '1 resposta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timeJustNow => 'agora mesmo';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return 'há $count min';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return 'há $count h';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return 'há $count d';
+  }
+
+  @override
+  String get shareTitle => 'Compartilhar este mangá';
+
+  @override
+  String get shareMessageHint => 'Adicionar uma mensagem (opcional)';
+
+  @override
+  String get shareCancel => 'Cancelar';
+
+  @override
+  String get shareSend => 'Enviar';
+
+  @override
+  String get shareSuccess => 'Mangá compartilhado';
+
+  @override
+  String get shareFailed => 'Falha ao compartilhar';
+
+  @override
+  String get shareLoadError => 'Não foi possível carregar seus amigos';
+
+  @override
+  String get shareNoFriends =>
+      'Você ainda não tem amigos para compartilhar. Adicione na página Amigos.';
+
+  @override
+  String get inboxTitle => 'Recomendações recebidas';
+
+  @override
+  String get inboxEmpty => 'Nenhuma recomendação ainda.';
+
+  @override
+  String get inboxBadgeNew => 'NOVO';
+
+  @override
+  String inboxSenderRecommends(String sender) {
+    return '$sender recomenda';
+  }
+
+  @override
+  String inboxSharedYouLabel(String sender) {
+    return '$sender compartilhou com você';
+  }
+
+  @override
+  String get inboxFilterAll => 'Todas';
+
+  @override
+  String get inboxFilterUnread => 'Não lidas';
+
+  @override
+  String get inboxFilterRead => 'Lidas';
+
+  @override
+  String get inboxGroupToday => 'Hoje';
+
+  @override
+  String get inboxGroupYesterday => 'Ontem';
+
+  @override
+  String get inboxGroupThisWeek => 'Esta semana';
+
+  @override
+  String get inboxGroupOlder => 'Antes';
+
+  @override
+  String get inboxEmptyTitle => 'Sem recomendações';
+
+  @override
+  String get inboxEmptySubtitle =>
+      'Peça aos seus amigos para compartilharem as leituras favoritas deles.';
+
+  @override
+  String get inboxEmptyFilteredUnread => 'Sem recomendações não lidas.';
+
+  @override
+  String get inboxEmptyFilteredRead => 'Sem recomendações lidas.';
+
+  @override
+  String get profileMyInbox => 'Recomendações recebidas';
+
+  @override
+  String get readingGroupsTitle => 'Leituras em dupla';
+
+  @override
+  String get readingGroupsEmpty =>
+      'Ainda não há grupos de leitura. Crie um a partir da página de um mangá.';
+
+  @override
+  String get readingGroupDetailTitle => 'Grupo de leitura';
+
+  @override
+  String get readingGroupMembersTitle => 'Membros';
+
+  @override
+  String get readingGroupOwnerBadge => 'OWNER';
+
+  @override
+  String get readingGroupOpenManga => 'Abrir mangá';
+
+  @override
+  String get readingGroupNotStarted => 'Não iniciado';
+
+  @override
+  String readingGroupChaptersRead(int count) {
+    return 'Cap. $count';
+  }
+
+  @override
+  String get readingGroupChaptersReadLabel => 'lidos';
+
+  @override
+  String readingGroupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count membros',
+      one: '1 membro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMyReadingGroups => 'Leituras em dupla';
+
+  @override
+  String get profileSectionPublicInfo => 'Informações públicas';
+
+  @override
+  String get profileSectionAbout => 'Sobre você';
+
+  @override
+  String get profileSectionPrivacy => 'Privacidade';
+
+  @override
+  String get profileNotSet => 'Não informado';
+
+  @override
+  String get profileSectionAvatar => 'Avatar';
+
+  @override
+  String get profileEditAvatarHeroHint =>
+      'A pré-visualização atualiza quando colares um URL de imagem.';
+
+  @override
+  String get profileEditPickPhoto => 'Escolher uma foto';
+
+  @override
+  String get profileEditClearAvatar => 'Limpar';
+
+  @override
+  String get profileEditPhotoPickFailed => 'Não foi possível selecionar a foto';
+
+  @override
+  String get profileGenderClear => 'Limpar';
+
+  @override
+  String get avatarUrlLabel => 'URL do avatar';
+
+  @override
+  String get avatarUrlInvalid => 'A URL deve começar com http:// ou https://';
+
+  @override
+  String get profileSectionAccount => 'Conta';
+
+  @override
+  String get profileFieldUsername => 'Nome de usuário';
+
+  @override
+  String get profileFieldEmail => 'E-mail';
+
+  @override
+  String get profileFieldReadOnly => 'Somente leitura';
+
+  @override
+  String get profileChangePhoto => 'Alterar foto';
+
+  @override
+  String get changelogCardTitle => 'Notas de versão';
+
+  @override
+  String get readingGroupCreateTitle => 'Ler em dupla';
+
+  @override
+  String get readingGroupCreateNameLabel => 'Nome do grupo (opcional)';
+
+  @override
+  String get readingGroupCreateNameHint => 'ex: Berserk com Lea';
+
+  @override
+  String get readingGroupCreateInviteSection => 'Convidar amigos';
+
+  @override
+  String get readingGroupCreateConfirm => 'Criar grupo';
+
+  @override
+  String get readingGroupCreateFailed => 'Falha ao criar grupo';
+
+  @override
+  String get readingGroupCreateInviteRequired =>
+      'Seleciona ao menos um amigo para criar o grupo';
+
+  @override
+  String get readingGroupDelete => 'Excluir grupo';
+
+  @override
+  String get readingGroupDeleteConfirmTitle => 'Excluir este grupo?';
+
+  @override
+  String get readingGroupDeleteConfirm =>
+      'Esta ação é irreversível. Todos os membros perderão o acesso ao grupo.';
+
+  @override
+  String get readingGroupDeleteSuccess => 'Grupo excluído';
+
+  @override
+  String get readingGroupDeleteFailed => 'Falha ao excluir o grupo';
+
+  @override
+  String get readingGroupSharedReading => 'Leitura compartilhada';
+
+  @override
+  String get readingGroupViewGroup => 'Ver grupo';
+
+  @override
+  String get readingGroupChapterShort => 'cap.';
+
+  @override
+  String get profileHighlightTitle => 'Novas funcionalidades';
+
+  @override
+  String get profileNewBadge => 'Novo';
+
+  @override
+  String get profileFooterBrand => 'MANGA TRACKER';
+
+  @override
+  String get readingGroupListSectionTitle => 'Os meus grupos';
+
+  @override
+  String readingGroupWithLabel(String name) {
+    return 'Com $name';
+  }
+
+  @override
+  String get readingGroupYouLabel => 'Tu';
+
+  @override
+  String readingGroupProgressYouVsFriend(
+    String you,
+    String friend,
+    String their,
+  ) {
+    return 'Tu: cap. $you · $friend: cap. $their';
+  }
+
+  @override
+  String get readingGroupChapterDash => '—';
+
+  @override
+  String get readingGroupSectionHero => 'A ler atualmente';
+
+  @override
+  String get readingGroupSectionProgress => 'Progresso';
+
+  @override
+  String get readingGroupSectionActions => 'Ações';
+
+  @override
+  String get readingGroupActionsMarkProgress => 'Atualizar o meu progresso';
+
+  @override
+  String get readingGroupActionsMarkProgressSubtitle =>
+      'Abrir a página do manga para avançar';
+
+  @override
+  String get readingGroupActionsInvite => 'Convidar um amigo';
+
+  @override
+  String readingGroupActionsCopyFriendLink(String friend) {
+    return 'Copiar o link de $friend';
+  }
+
+  @override
+  String readingGroupActionsCopyFriendLinkSubtitle(int chapter) {
+    return 'Adaptado ao capítulo $chapter';
+  }
+
+  @override
+  String readingGroupApplyLinkSuccess(int chapter) {
+    return 'Link salvo no capítulo $chapter';
+  }
+
+  @override
+  String readingGroupCopyLinkSuccess(int chapter) {
+    return 'Link copiado — capítulo $chapter';
+  }
+
+  @override
+  String get readingGroupCopyLinkFailed =>
+      'Não é possível adaptar este link (formato desconhecido)';
+
+  @override
+  String get readingGroupActionsInviteSubtitle => 'Adicionar alguém ao grupo';
+
+  @override
+  String get readingGroupActionsLeave => 'Sair do grupo';
+
+  @override
+  String get readingGroupActionsLeaveSubtitle =>
+      'Deixarás de ver o progresso partilhado';
+
+  @override
+  String get readingGroupActionsDeleteSubtitle =>
+      'Eliminar definitivamente para todos os membros';
+
+  @override
+  String get readingGroupLeaveConfirmTitle => 'Sair deste grupo?';
+
+  @override
+  String get readingGroupLeaveConfirm =>
+      'Perderás o acesso ao progresso partilhado.';
+
+  @override
+  String get readingGroupLeaveSuccess => 'Saíste do grupo';
+
+  @override
+  String get readingGroupLeaveFailed => 'Não foi possível sair do grupo';
+
+  @override
+  String get readingGroupEmptyTitle => 'Ainda sem leituras a dois';
+
+  @override
+  String get readingGroupEmptySubtitle =>
+      'Começa um manga com um amigo e acompanhem o progresso juntos.';
+
+  @override
+  String get readingGroupEmptyAction => 'Descobrir um manga';
+
+  @override
+  String get readingGroupTotalLabel => 'Total';
+
+  @override
+  String readingGroupChaptersTotal(int count) {
+    return '$count cap.';
+  }
+
+  @override
+  String get readingGroupInviteSoonTitle => 'Em breve';
+
+  @override
+  String get readingGroupInviteSoonMessage =>
+      'Convidar a partir do grupo chega muito em breve. Por agora, cria um novo grupo na página do manga.';
+
+  @override
+  String get libraryToggleListView => 'Vista em lista';
+
+  @override
+  String get libraryToggleCardView => 'Vista em cartões';
+
+  @override
+  String get libraryShowDownloadedOnly => 'Mostrar apenas transferidos';
+
+  @override
+  String get libraryShowAllMangas => 'Mostrar todos os mangas';
+
+  @override
+  String libraryProgressLabel(int read, int total) {
+    return '$read de $total capítulos lidos';
+  }
+
+  @override
+  String votesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count votos',
+      one: '1 voto',
+      zero: 'Sem votos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get detailSectionSimilar => 'Mangas semelhantes';
 }

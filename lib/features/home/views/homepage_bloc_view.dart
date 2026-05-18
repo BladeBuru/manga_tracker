@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
@@ -139,42 +140,11 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     final isOffline = (state is HomePageLoaded && state.isOffline) ||
         (state is HomePageError && state.isOffline);
     if (!isOffline) return const SizedBox.shrink();
-
     final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(top: 12, bottom: 4),
-      decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.1),
-        border: Border.all(color: Colors.orange),
-        borderRadius: AppRadius.circularMd,
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.cloud_off, color: Colors.orange, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context);
-                final text = pendingActions > 0
-                    ? l10n?.pendingActions(pendingActions) ??
-                        'Mode hors ligne ($pendingActions actions en attente)'
-                    : l10n?.offlineModeCached ??
-                        'Mode hors ligne — données en cache';
-                return Text(
-                  text,
-                  style: const TextStyle(
-                    color: Colors.orange,
-                    fontWeight: FontWeight.w500,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+    // Refactor 2026-05-18 : utilise OfflineBanner du design system.
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      child: OfflineBanner(pendingActions: pendingActions),
     );
   }
 
@@ -224,9 +194,9 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     return _buildHorizontalSection(
       title: title,
       trailing: TextButton.icon(
-        onPressed: () => context.push('/recommendations/by-genre'),
-        icon: const Icon(Icons.add, size: 18),
-        label: Text(l10n?.seeMoreByGenre ?? 'Voir plus par genre'),
+        onPressed: () => context.push('/recommendations'),
+        icon: const Icon(Icons.arrow_forward, size: 18),
+        label: Text(l10n?.seeAllRecommendations ?? 'Tout voir'),
       ),
       child: SizedBox(
         height: 220,

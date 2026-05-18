@@ -8,6 +8,12 @@ import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
+import 'package:mangatracker/features/stats/services/stats.service.dart';
+import 'package:mangatracker/features/friends/services/friends.service.dart';
+import 'package:mangatracker/features/comments/services/comments.service.dart';
+import 'package:mangatracker/features/sharing/services/sharing.service.dart';
+import 'package:mangatracker/features/sharing/services/reading_groups.service.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 
 import '../../features/auth/services/biometric.service.dart';
@@ -52,6 +58,23 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<BiometricService>(() => BiometricService());
   getIt.registerSingletonWithDependencies<UserService>(() => UserService(),
       dependsOn: [HttpService]);
+  getIt.registerSingletonWithDependencies<StatsService>(() => StatsService(),
+      dependsOn: [HttpService, StorageService]);
+  getIt.registerSingletonWithDependencies<FriendsService>(
+      () => FriendsService(),
+      dependsOn: [HttpService, StorageService]);
+  getIt.registerSingletonWithDependencies<CommentsService>(
+      () => CommentsService(),
+      dependsOn: [HttpService]);
+  getIt.registerSingletonWithDependencies<SharingService>(
+      () => SharingService(),
+      dependsOn: [HttpService]);
+  getIt.registerSingletonWithDependencies<ReadingGroupsService>(
+      () => ReadingGroupsService(),
+      dependsOn: [HttpService]);
+  getIt.registerSingletonWithDependencies<NotificationCountsService>(
+      () => NotificationCountsService(),
+      dependsOn: [FriendsService, SharingService]);
   getIt.registerSingletonWithDependencies<GdprService>(() => GdprService(),
       dependsOn: [HttpService]);
   getIt.registerSingletonWithDependencies<EmailAuthService>(

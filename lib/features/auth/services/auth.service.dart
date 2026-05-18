@@ -19,13 +19,28 @@ import '../../../core/storage/services/storage.service.dart';
 import '../../../core/services/connectivity_service.dart';
 import 'biometric.service.dart';
 
+/// Résultat d'un appel à `refreshAccessToken()`.
+///
+/// On distingue trois cas pour permettre au caller (`startup_page`,
+/// `http_service`) d'agir différemment :
+///
+/// - [success] : nouveau token reçu, l'user est authentifié.
+/// - [networkError] : on n'a pas pu joindre le serveur (timeout, hors ligne,
+///   SocketException). L'authentification est probablement encore valide,
+///   l'user peut continuer en mode hors ligne (cache).
+/// - [rejected] : le serveur a explicitement répondu 401/403/4xx — la
+///   session est morte (purgée, JWT_REFRESH_SECRET changé, etc.). L'user
+///   DOIT être renvoyé vers login, sinon il va naviguer dans le cache
+///   avec l'illusion d'être connecté.
+enum RefreshResult { success, networkError, rejected }
+
 class AuthService {
   StorageService storageService = getIt<StorageService>();
   BiometricService biometricService = getIt<BiometricService>();
-  
+
   // Verrou pour éviter les race conditions lors du refresh
   bool _isRefreshing = false;
-  Completer<bool>? _refreshCompleter;
+  Completer<RefreshResult>? _refreshCompleter;
 
   Future<AuthService> init() async {
     return this;
@@ -123,9 +138,18 @@ class AuthService {
     return payloadMap;
   }
 
-  /// Rafraîchit le token d'accès en utilisant le refresh token
-  /// Gère les race conditions et vérifie la connectivité
-  Future<bool> refreshAccessToken({String? token}) async {
+  /// Rafraîchit le token d'accès en utilisant le refresh token.
+  ///
+  /// Retourne un [RefreshResult] qui permet au caller de distinguer :
+  ///  - `success` : nouveau token reçu → user authentifié.
+  ///  - `networkError` : pas pu joindre le serveur → mode hors ligne OK.
+  ///  - `rejected` : le serveur a refusé (401/403) → session morte, login
+  ///    obligatoire (sinon l'user navigue dans le cache en croyant être
+  ///    connecté — c'est exactement le bug "j'ai relancé l'app, je suis
+  ///    pas connecté mais je vois mes données").
+  ///
+  /// Compat : si tu as juste besoin d'un bool, utilise [refreshOk].
+  Future<RefreshResult> refreshAccessToken({String? token}) async {
     // Si un refresh est déjà en cours, attendre son résultat
     if (_isRefreshing && _refreshCompleter != null) {
       debugPrint('🔄 AuthService: Refresh déjà en cours, attente du résultat...');
@@ -134,16 +158,18 @@ class AuthService {
 
     final refreshToken = token ?? await storageService.readSecureData('refreshToken');
     if (refreshToken == null || isTokenExpired(refreshToken)) {
-      debugPrint('⚠️ AuthService: Refresh token est null ou expiré');
-      return false;
+      debugPrint('⚠️ AuthService: Refresh token est null ou expiré localement');
+      // Le token est cassé côté client (pas reçu, ou expiré localement) → c'est
+      // un "rejet" effectif : impossible de retenter, il faut se reconnecter.
+      return RefreshResult.rejected;
     }
 
     // Vérifier la connectivité avant de tenter le refresh
     try {
       final connectivityService = getIt<ConnectivityService>();
       if (!connectivityService.isConnected) {
-        debugPrint('⚠️ AuthService: Pas de connexion réseau, impossible de rafraîchir le token');
-        return false; // Ne pas considérer comme une erreur d'authentification
+        debugPrint('⚠️ AuthService: Pas de connexion réseau, refresh impossible');
+        return RefreshResult.networkError; // ≠ rejet : l'auth reste plausible
       }
     } catch (e) {
       debugPrint('⚠️ AuthService: Erreur lors de la vérification de connectivité: $e');
@@ -152,7 +178,7 @@ class AuthService {
 
     // Créer un completer pour partager le résultat avec les autres appels simultanés
     _isRefreshing = true;
-    _refreshCompleter = Completer<bool>();
+    _refreshCompleter = Completer<RefreshResult>();
 
     try {
       final url = buildApiUri('/auth/refresh');
@@ -171,37 +197,58 @@ class AuthService {
       if (res.statusCode == HttpStatus.created) {
         final data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
-        
+
         // Si le backend renvoie un nouveau refreshToken (rotation), le sauvegarder
         if (data.containsKey('refreshToken') && data['refreshToken'] != null) {
           debugPrint('✅ AuthService: Nouveau refreshToken reçu, sauvegarde...');
           await storageService.writeSecureData('refreshToken', data['refreshToken']);
         }
-        
+
         debugPrint('✅ AuthService: Access token rafraîchi avec succès');
-        _refreshCompleter!.complete(true);
-        return true;
+        _refreshCompleter!.complete(RefreshResult.success);
+        return RefreshResult.success;
+      } else if (res.statusCode == HttpStatus.unauthorized ||
+          res.statusCode == HttpStatus.forbidden) {
+        // 401/403 = le serveur a explicitement rejeté le refresh token.
+        // Causes typiques : session purgée (DB reset en dev), JWT_REFRESH_SECRET
+        // changé côté serveur, ou refresh token signé par une autre instance API.
+        // → il FAUT renvoyer l'user vers login, pas le laisser dans le cache.
+        debugPrint('❌ AuthService: Refresh rejeté par le serveur (${res.statusCode}): ${res.body}');
+        _refreshCompleter!.complete(RefreshResult.rejected);
+        return RefreshResult.rejected;
       } else {
-        debugPrint('⚠️ AuthService: Échec du refresh - Status: ${res.statusCode}, Body: ${res.body}');
-        _refreshCompleter!.complete(false);
-        return false;
+        // 5xx ou autre : on traite ça comme une erreur réseau temporaire,
+        // l'user pourra retenter au prochain boot ou à la reconnexion.
+        debugPrint('⚠️ AuthService: Échec du refresh (transitoire) - Status: ${res.statusCode}, Body: ${res.body}');
+        _refreshCompleter!.complete(RefreshResult.networkError);
+        return RefreshResult.networkError;
       }
     } on SocketException catch (e) {
       debugPrint('⚠️ AuthService: Erreur réseau lors du refresh: $e');
-      _refreshCompleter!.complete(false);
-      return false; // Erreur réseau, pas d'authentification
+      _refreshCompleter!.complete(RefreshResult.networkError);
+      return RefreshResult.networkError;
     } on TimeoutException catch (e) {
       debugPrint('⚠️ AuthService: Timeout lors du refresh: $e');
-      _refreshCompleter!.complete(false);
-      return false; // Timeout, pas d'authentification
+      _refreshCompleter!.complete(RefreshResult.networkError);
+      return RefreshResult.networkError;
     } catch (e) {
-      debugPrint('❌ AuthService: Erreur lors du refresh: $e');
-      _refreshCompleter!.complete(false);
-      return false;
+      debugPrint('❌ AuthService: Erreur inattendue lors du refresh: $e');
+      // Erreur inattendue : on prend l'option safe = rejet (force login).
+      _refreshCompleter!.complete(RefreshResult.rejected);
+      return RefreshResult.rejected;
     } finally {
       _isRefreshing = false;
       _refreshCompleter = null;
     }
+  }
+
+  /// Wrapper boolean conservé pour les call sites qui se moquent du détail
+  /// (success / networkError → "ok globalement, on continue"; rejected →
+  /// false = "force login"). Préférer [refreshAccessToken] pour les flows
+  /// auth-critiques (startup, http interceptor).
+  Future<bool> refreshOk({String? token}) async {
+    final result = await refreshAccessToken(token: token);
+    return result == RefreshResult.success;
   }
 
   String _decodeBase64(String str) {
@@ -224,9 +271,13 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    storageService.deleteSecureData('refreshToken');
-    storageService.deleteSecureData('accessToken');
-    // storageService.deleteSecureData('secure_credentials'); //suprimer les identifiants biométriques
+    // Race condition fix : si l'user logout puis se reconnecte immédiatement,
+    // les `deleteSecureData` non-awaités pouvaient s'exécuter APRÈS le nouveau
+    // `writeSecureData` du login suivant → tokens du nouveau login effacés.
+    await storageService.deleteSecureData('refreshToken');
+    await storageService.deleteSecureData('accessToken');
+    // Note : ne supprime pas `secure_credentials` (identifiants biométriques)
+    // pour permettre la réactivation biométrique sans re-saisie.
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
@@ -325,9 +376,10 @@ class AuthService {
 
       try {
         debugPrint('🔐 AuthService Debug - Tentative de connexion avec identifiants...');
-        final result = await attemptLogIn(email, password);
-        await storageService.writeSecureData('accessToken', result['accessToken']);
-        await storageService.writeSecureData('refreshToken', result['refreshToken']);
+        // attemptLogIn() persiste déjà les tokens (lignes 42-43). Réécrire ici
+        // était redondant et créait une fenêtre de race si un logout ou un
+        // autre flow auth se glissait entre les deux séries de writeSecureData.
+        await attemptLogIn(email, password);
         debugPrint('🔐 AuthService Debug - Connexion réussie !');
         return true;
       } catch (e) {

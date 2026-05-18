@@ -10,6 +10,7 @@ import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
+import 'package:mangatracker/features/library/dto/chapter_log.dto.dart';
 
 import '../../manga/dto/reading_status.enum.dart';
 
@@ -313,5 +314,72 @@ class LibraryService {
       throw Exception('Non autorisé à modifier la bibliothèque');
     }
     return false;
+  }
+
+  // ─────────── Phase 5 : log additif des chapitres ───────────
+
+  /// Enregistre une session de lecture (insertion additive — replays OK).
+  /// Le pointeur global `userReadChapters` reste géré par `updateChapter`.
+  ///
+  /// Pas de queue offline pour MVP : le log enrichit les stats, pas la
+  /// progression — si la requête échoue, l'user perd juste une entrée
+  /// historique, pas son avancement.
+  Future<ChapterLogDto> recordChapterLog(
+    int muId, {
+    required num chapterNumber,
+    bool isBonus = false,
+    int? scrollPosition,
+  }) async {
+    final body = <String, dynamic>{
+      'chapterNumber': chapterNumber,
+      'isBonus': isBonus,
+      if (scrollPosition != null) 'scrollPosition': scrollPosition,
+    };
+    final res = await _http.postWithAuthTokens(
+      buildApiUri('/library/$muId/chapter-log'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (res.statusCode == HttpStatus.ok ||
+        res.statusCode == HttpStatus.created) {
+      return ChapterLogDto.fromJson(
+        jsonDecode(res.body) as Map<String, dynamic>,
+      );
+    }
+    throw Exception('recordChapterLog failed: ${res.statusCode}');
+  }
+
+  /// Toggle skip pour un chapitre (hors-série filler, etc.).
+  Future<ChapterLogDto> toggleChapterSkip(
+    int muId,
+    num chapterNumber, {
+    required bool skipped,
+  }) async {
+    final res = await _http.putWithAuthTokens(
+      buildApiUri('/library/$muId/chapter/$chapterNumber/skip'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'skipped': skipped}),
+    );
+    if (res.statusCode == HttpStatus.ok) {
+      return ChapterLogDto.fromJson(
+        jsonDecode(res.body) as Map<String, dynamic>,
+      );
+    }
+    throw Exception('toggleChapterSkip failed: ${res.statusCode}');
+  }
+
+  /// Historique des sessions de lecture (replays, skips, bonus) pour un
+  /// manga. Trié date décroissante côté serveur, max 500 entrées.
+  Future<List<ChapterLogDto>> getChapterLog(int muId) async {
+    final res = await _http.getWithAuthTokens(
+      buildApiUri('/library/$muId/chapter-log'),
+    );
+    if (res.statusCode != HttpStatus.ok) {
+      throw Exception('getChapterLog failed: ${res.statusCode}');
+    }
+    final list = jsonDecode(res.body) as List<dynamic>;
+    return list
+        .map((e) => ChapterLogDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

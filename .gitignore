@@ -12,6 +12,10 @@
 .swiftpm/
 migrate_working_dir/
 
+# Claude Design handoff bundles (not committed)
+.claude-design/
+mockup_*.html
+
 # IntelliJ related
 *.iml
 *.ipr

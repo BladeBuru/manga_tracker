@@ -6,8 +6,16 @@ import '../../manga/widgets/manga_row.dart';
 class HomepageMangaList extends StatelessWidget {
   final Future<List<MangaQuickViewDto>> mangas;
   final VoidCallback? onDetailReturn;
+  // Si fourni, MangaRow affiche le titre alternatif qui matche la query
+  // (utile pour la page Recherche ; pas pertinent pour Trending/Latest).
+  final String? searchQuery;
 
-  const HomepageMangaList({super.key, required this.mangas, this.onDetailReturn});
+  const HomepageMangaList({
+    super.key,
+    required this.mangas,
+    this.onDetailReturn,
+    this.searchQuery,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +42,8 @@ class HomepageMangaList extends StatelessWidget {
                     readChapter: manga.readChapters,
                     rating: manga.rating,
                     onDetailReturn: onDetailReturn,
+                    searchQuery: searchQuery,
+                    associatedTitles: manga.associated,
                   );
                 },
               );

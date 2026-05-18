@@ -184,7 +184,51 @@
   "@manageNotifications": {
     "description": "Sous-titre pour gérer les notifications"
   },
-  
+
+  "notifSectionApp": "Notifications de l'application",
+  "@notifSectionApp": {},
+  "notifSectionInfo": "Informations",
+  "@notifSectionInfo": {},
+
+  "notifNewChaptersTitle": "Nouveaux chapitres",
+  "@notifNewChaptersTitle": {},
+  "notifNewChaptersSubtitle": "Soyez alerté quand vos mangas suivis publient de nouveaux chapitres",
+  "@notifNewChaptersSubtitle": {},
+
+  "notifFriendReqTitle": "Demandes d'ami",
+  "@notifFriendReqTitle": {},
+  "notifFriendReqSubtitle": "Quelqu'un veut vous ajouter en ami",
+  "@notifFriendReqSubtitle": {},
+
+  "notifSharesTitle": "Recommandations reçues",
+  "@notifSharesTitle": {},
+  "notifSharesSubtitle": "Un ami vous partage un manga",
+  "@notifSharesSubtitle": {},
+
+  "notifPermissionExplanation": "Les notifications s'affichent uniquement quand l'application a la permission système. Si vous n'en recevez aucune, activez-les depuis les réglages de votre téléphone.",
+  "@notifPermissionExplanation": {},
+  "notifOpenSystemSettings": "Ouvrir les réglages système",
+  "@notifOpenSystemSettings": {},
+
+  "pushNotifFriendRequestTitle": "Nouvelle demande d'ami",
+  "@pushNotifFriendRequestTitle": {},
+  "pushNotifFriendRequestBody": "{senderUsername} veut vous ajouter en ami",
+  "@pushNotifFriendRequestBody": {
+    "placeholders": {
+      "senderUsername": { "type": "String" }
+    }
+  },
+  "pushNotifShareTitle": "Nouveau manga partagé",
+  "@pushNotifShareTitle": {},
+  "pushNotifShareBody": "{senderUsername} vous recommande {mangaTitle}",
+  "@pushNotifShareBody": {
+    "placeholders": {
+      "senderUsername": { "type": "String" },
+      "mangaTitle": { "type": "String" }
+    }
+  },
+
+
   "theme": "Thème",
   "@theme": {
     "description": "Option pour gérer le thème"
@@ -788,7 +832,22 @@
     "@clear": {
       "description": "Bouton pour effacer l'historique de recherche"
     },
-  
+
+  "searchTitle": "Rechercher",
+    "@searchTitle": {
+      "description": "Titre de la page Recherche"
+    },
+
+  "searchEmptyHistory": "Aucune recherche récente",
+    "@searchEmptyHistory": {
+      "description": "Message affiché quand l'historique de recherche est vide"
+    },
+
+  "searchPopularGenres": "Genres populaires",
+    "@searchPopularGenres": {
+      "description": "Titre de la section des genres populaires sur la page Recherche"
+    },
+
   "biometricAuthTitle": "Authentification biométrique",
     "@biometricAuthTitle": {
       "description": "Titre pour l'authentification biométrique"
@@ -1607,6 +1666,34 @@
   "@privacyPolicyTitle": {},
   "termsOfServiceTitle": "Conditions d'utilisation",
   "@termsOfServiceTitle": {},
+  "myDataInfoBanner": "Conformément au RGPD, vous avez le droit d'accéder à vos données, de les exporter et de demander leur suppression.",
+  "@myDataInfoBanner": {},
+  "myDataSectionPersonalData": "Données personnelles",
+  "@myDataSectionPersonalData": {},
+  "myDataSectionMyRights": "Mes droits",
+  "@myDataSectionMyRights": {},
+  "myDataSectionDeletion": "Suppression",
+  "@myDataSectionDeletion": {},
+  "myDataSummaryTitle": "Résumé de mes données",
+  "@myDataSummaryTitle": {},
+  "myDataSummarySubtitle": "Voir un aperçu de mes données stockées",
+  "@myDataSummarySubtitle": {},
+  "myDataExportSubtitle": "Télécharger un fichier JSON complet (article 20)",
+  "@myDataExportSubtitle": {},
+  "privacyPolicySubtitle": "Lire le document complet",
+  "@privacyPolicySubtitle": {},
+  "termsOfServiceSubtitle": "Voir les CGU",
+  "@termsOfServiceSubtitle": {},
+  "myDataDeleteAccountSubtitle": "Action irréversible",
+  "@myDataDeleteAccountSubtitle": {},
+  "gdprExportSuccessSnack": "Vos données ont été copiées dans le presse-papier (JSON).",
+  "@gdprExportSuccessSnack": {},
+  "gdprExportFailedSnack": "Échec de l'export",
+  "@gdprExportFailedSnack": {},
+  "gdprSummaryLoadFailed": "Erreur de chargement",
+  "@gdprSummaryLoadFailed": {},
+  "myDataBackLabel": "Profil",
+  "@myDataBackLabel": {},
   "tosShortVersion": "Manga Tracker est fourni en l'état, sans garantie. L'éditeur décline toute responsabilité pour l'utilisation non conforme par l'utilisateur (contenu illégal, scraping, etc.).\n\nDocument complet sur le site officiel.",
   "@tosShortVersion": {},
   "privacyShortVersion": "Données collectées : email, mot de passe (hashé), bibliothèque manga, préférences. Aucune donnée n'est vendue à des tiers. Vous pouvez exporter ou supprimer vos données à tout moment.\n\nDocument complet sur le site officiel.",
@@ -1627,6 +1714,39 @@
   "@refuseAndLogout": {},
   "versionLabel": "Version",
   "@versionLabel": {},
+
+  "welcomeTitle": "Bienvenue !",
+  "@welcomeTitle": {
+    "description": "Titre de la hero sur la page de login"
+  },
+  "loginSubtitle": "Connectez-vous à votre compte",
+  "@loginSubtitle": {
+    "description": "Sous-titre de la hero sur la page de login"
+  },
+  "createAccountTitle": "Créer un compte",
+  "@createAccountTitle": {
+    "description": "Titre de la hero sur la page d'inscription"
+  },
+  "registerSubtitle": "Commencez à suivre vos lectures",
+  "@registerSubtitle": {
+    "description": "Sous-titre de la hero sur la page d'inscription"
+  },
+  "orLoginWith": "ou se connecter avec",
+  "@orLoginWith": {
+    "description": "Texte du séparateur avant les boutons OAuth sur la page de login"
+  },
+  "orSignUpWith": "ou s'inscrire avec",
+  "@orSignUpWith": {
+    "description": "Texte du séparateur avant les boutons OAuth sur la page d'inscription"
+  },
+  "continueWithApple": "Continuer avec Apple",
+  "@continueWithApple": {
+    "description": "Label du bouton de connexion Apple"
+  },
+  "loadingApp": "Chargement…",
+  "@loadingApp": {
+    "description": "Label affiché sur la page de démarrage pendant le chargement"
+  },
 
   "forgotPasswordTitle": "Mot de passe oublié",
   "@forgotPasswordTitle": {},
@@ -1685,5 +1805,476 @@
   "recommendationsByGenreEmpty": "Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.",
   "@recommendationsByGenreEmpty": {
     "description": "Message d'état vide sur la page de recommandations par genre"
+  },
+  "recommendationsAllTitle": "Toutes les recommandations",
+  "@recommendationsAllTitle": {
+    "description": "Titre de la page paginée listant toutes les recommandations"
+  },
+  "recommendationsAllEmpty": "Pas encore de recommandations pour vous.",
+  "@recommendationsAllEmpty": {
+    "description": "Message d'état vide sur la page paginée des recommandations"
+  },
+  "seeAllRecommendations": "Tout voir",
+  "@seeAllRecommendations": {
+    "description": "Bouton sur la home qui ouvre la page paginée des recommandations"
+  },
+  "browseByGenre": "Par genre",
+  "@browseByGenre": {
+    "description": "Action AppBar de la page paginée qui ouvre la vue par genre"
+  },
+  "recommendationsTabAll": "Tout",
+  "@recommendationsTabAll": {},
+  "recommendationsTabByGenre": "Par genre",
+  "@recommendationsTabByGenre": {},
+  "statsTitle": "Mes statistiques",
+  "@statsTitle": { "description": "Titre de la page Statistiques (Phase 2)" },
+  "statsTotalMangas": "mangas dans votre bibliothèque",
+  "@statsTotalMangas": { "description": "Label sous le compteur total de mangas" },
+  "statsMemberSince": "Membre depuis {date}",
+  "@statsMemberSince": {
+    "description": "Date de création du compte",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "statsTotalChapters": "Chapitres lus",
+  "@statsTotalChapters": {},
+  "statsReadingTime": "Temps de lecture estimé",
+  "@statsReadingTime": {},
+  "statsCompletionRate": "Taux de complétion",
+  "@statsCompletionRate": {},
+  "statsLastRead": "Dernière lecture",
+  "@statsLastRead": {},
+  "statsByStatusTitle": "Répartition par statut",
+  "@statsByStatusTitle": {},
+  "statsByStatusEmpty": "Aucun manga dans votre bibliothèque pour le moment.",
+  "@statsByStatusEmpty": {},
+  "statsTopGenresTitle": "Genres préférés",
+  "@statsTopGenresTitle": {},
+  "statsTopGenresEmpty": "Ajoutez des mangas pour découvrir vos genres préférés.",
+  "@statsTopGenresEmpty": {},
+  "statsMinutesShort": "{count} min",
+  "@statsMinutesShort": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "statsHoursAndMinutesShort": "{hours} h {minutes} min",
+  "@statsHoursAndMinutesShort": {
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "statsDaysAndHoursShort": "{days} j {hours} h",
+  "@statsDaysAndHoursShort": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "hours": { "type": "int" }
+    }
+  },
+  "statusReadLater": "À lire",
+  "@statusReadLater": {},
+  "statusReading": "En cours",
+  "@statusReading": {},
+  "statusCaughtUp": "À jour",
+  "@statusCaughtUp": {},
+  "statusCompleted": "Terminé",
+  "@statusCompleted": {},
+  "statsSectionOverview": "Vue d'ensemble",
+  "@statsSectionOverview": { "description": "Titre section résumé chiffré (page Stats V1)" },
+  "statsSectionBreakdown": "Mangas par statut",
+  "@statsSectionBreakdown": { "description": "Titre section répartition par statut (page Stats V1)" },
+  "statsSectionGenres": "Genres préférés",
+  "@statsSectionGenres": { "description": "Titre section genres préférés (page Stats V1)" },
+  "statsLibraryTotal": "Mangas dans la bibliothèque",
+  "@statsLibraryTotal": { "description": "Label ligne total de mangas (page Stats V1)" },
+  "statsMonthsSinceJoin": "{count, plural, =0{Membre depuis moins d''un mois} =1{Membre depuis 1 mois} other{Membre depuis {count} mois}}",
+  "@statsMonthsSinceJoin": {
+    "description": "Texte hero indiquant l'ancienneté du compte en mois",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "statsHeroBadge": "{count, plural, =1{1 manga} other{{count} mangas}}",
+  "@statsHeroBadge": {
+    "description": "Badge à droite du hero (page Stats V1)",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileMyStats": "Mes statistiques",
+  "@profileMyStats": { "description": "Bouton accédant à la page Stats depuis Profile" },
+  "profileEditTitle": "Modifier mon profil",
+  "@profileEditTitle": {},
+  "profileEditBackLabel": "Profil",
+  "@profileEditBackLabel": {},
+  "profileEditMenuTitle": "Modifier le profil",
+  "@profileEditMenuTitle": {},
+  "profileEditMenuSubtitle": "Photo, pseudo, bio, confidentialité",
+  "@profileEditMenuSubtitle": {},
+  "profileFieldAvatarUrl": "URL de l'avatar",
+  "@profileFieldAvatarUrl": {},
+  "profileFieldDisplayName": "Nom à afficher",
+  "@profileFieldDisplayName": {},
+  "profileFieldBio": "Bio",
+  "@profileFieldBio": {},
+  "profileFieldDateOfBirth": "Date de naissance",
+  "@profileFieldDateOfBirth": {},
+  "profileFieldGender": "Genre",
+  "@profileFieldGender": {},
+  "profileGenderNotSet": "Non renseigné",
+  "@profileGenderNotSet": {},
+  "profileGenderMale": "Homme",
+  "@profileGenderMale": {},
+  "profileGenderFemale": "Femme",
+  "@profileGenderFemale": {},
+  "profileGenderNonBinary": "Non-binaire",
+  "@profileGenderNonBinary": {},
+  "profileGenderPreferNotToSay": "Préfère ne pas dire",
+  "@profileGenderPreferNotToSay": {},
+  "profileFieldIsPublic": "Profil public",
+  "@profileFieldIsPublic": {},
+  "profileFieldIsPublicSubtitle": "Visible par les autres utilisateurs",
+  "@profileFieldIsPublicSubtitle": {},
+  "profileSaved": "Profil enregistré",
+  "@profileSaved": {},
+  "profileSaveFailed": "Échec de l'enregistrement",
+  "@profileSaveFailed": {},
+  "friendsTitle": "Amis",
+  "@friendsTitle": {},
+  "friendsTabAccepted": "Amis",
+  "@friendsTabAccepted": {},
+  "friendsTabPending": "Demandes",
+  "@friendsTabPending": {},
+  "friendsSearchLabel": "Trouver un ami",
+  "@friendsSearchLabel": {},
+  "friendsSearchHint": "Tapez un pseudo (min 2 caractères)",
+  "@friendsSearchHint": {},
+  "friendsAddRequest": "Envoyer une demande",
+  "@friendsAddRequest": {},
+  "friendsAccept": "Accepter",
+  "@friendsAccept": {},
+  "friendsReject": "Refuser",
+  "@friendsReject": {},
+  "friendsRemove": "Supprimer",
+  "@friendsRemove": {},
+  "friendsRequestSent": "Demande envoyée",
+  "@friendsRequestSent": {},
+  "friendsError": "Erreur",
+  "@friendsError": {},
+  "friendsEmptyAccepted": "Aucun ami pour l'instant",
+  "@friendsEmptyAccepted": {},
+  "friendsEmptyAcceptedSubtitle": "Recherche des utilisateurs pour les ajouter.",
+  "@friendsEmptyAcceptedSubtitle": {},
+  "friendsEmptyPending": "Aucune demande en attente",
+  "@friendsEmptyPending": {},
+  "friendsEmptyPendingSubtitle": "Les demandes reçues s'afficheront ici.",
+  "@friendsEmptyPendingSubtitle": {},
+  "friendsSectionAccepted": "Mes amis",
+  "@friendsSectionAccepted": {},
+  "friendsSectionPending": "Demandes reçues",
+  "@friendsSectionPending": {},
+  "friendsSearchClear": "Effacer",
+  "@friendsSearchClear": {},
+  "friendsSearchResults": "Résultats",
+  "@friendsSearchResults": {},
+  "friendsSearchEmpty": "Aucun utilisateur trouvé.",
+  "@friendsSearchEmpty": {},
+  "profileMyFriends": "Mes amis",
+  "@profileMyFriends": {},
+  "commentsTitle": "Commentaires",
+  "@commentsTitle": {},
+  "commentsEmpty": "Aucun commentaire pour le moment. Soyez le premier !",
+  "@commentsEmpty": {},
+  "commentsSortRecent": "Récent",
+  "@commentsSortRecent": {},
+  "commentsSortTop": "Populaire",
+  "@commentsSortTop": {},
+  "commentsInputHint": "Partagez votre avis (3-2000 caractères)",
+  "@commentsInputHint": {},
+  "commentsPost": "Publier",
+  "@commentsPost": {},
+  "commentsDelete": "Supprimer",
+  "@commentsDelete": {},
+  "commentsLoadMore": "Voir plus",
+  "@commentsLoadMore": {},
+  "commentsReplyCount": "{count, plural, =1{1 réponse} other{{count} réponses}}",
+  "@commentsReplyCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "timeJustNow": "à l'instant",
+  "@timeJustNow": {},
+  "timeMinutesAgo": "il y a {count} min",
+  "@timeMinutesAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "timeHoursAgo": "il y a {count} h",
+  "@timeHoursAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "timeDaysAgo": "il y a {count} j",
+  "@timeDaysAgo": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "shareTitle": "Partager ce manga",
+  "@shareTitle": {},
+  "shareMessageHint": "Ajouter un message (optionnel)",
+  "@shareMessageHint": {},
+  "shareCancel": "Annuler",
+  "@shareCancel": {},
+  "shareSend": "Envoyer",
+  "@shareSend": {},
+  "shareSuccess": "Manga partagé",
+  "@shareSuccess": {},
+  "shareFailed": "Échec du partage",
+  "@shareFailed": {},
+  "shareLoadError": "Impossible de charger vos amis",
+  "@shareLoadError": {},
+  "shareNoFriends": "Vous n'avez pas encore d'amis avec qui partager. Ajoutez-en depuis la page Amis.",
+  "@shareNoFriends": {},
+  "inboxTitle": "Recommandations reçues",
+  "@inboxTitle": {},
+  "inboxEmpty": "Aucune recommandation pour l'instant.",
+  "@inboxEmpty": {},
+  "inboxBadgeNew": "NOUVEAU",
+  "@inboxBadgeNew": {},
+  "inboxSenderRecommends": "{sender} vous recommande",
+  "@inboxSenderRecommends": {
+    "placeholders": { "sender": { "type": "String" } }
+  },
+  "inboxSharedYouLabel": "{sender} vous a partagé",
+  "@inboxSharedYouLabel": {
+    "placeholders": { "sender": { "type": "String" } }
+  },
+  "inboxFilterAll": "Toutes",
+  "@inboxFilterAll": {},
+  "inboxFilterUnread": "Non lues",
+  "@inboxFilterUnread": {},
+  "inboxFilterRead": "Lues",
+  "@inboxFilterRead": {},
+  "inboxGroupToday": "Aujourd'hui",
+  "@inboxGroupToday": {},
+  "inboxGroupYesterday": "Hier",
+  "@inboxGroupYesterday": {},
+  "inboxGroupThisWeek": "Cette semaine",
+  "@inboxGroupThisWeek": {},
+  "inboxGroupOlder": "Plus tôt",
+  "@inboxGroupOlder": {},
+  "inboxEmptyTitle": "Aucune recommandation",
+  "@inboxEmptyTitle": {},
+  "inboxEmptySubtitle": "Demande à tes amis de te partager leurs lectures préférées.",
+  "@inboxEmptySubtitle": {},
+  "inboxEmptyFilteredUnread": "Aucune recommandation non lue.",
+  "@inboxEmptyFilteredUnread": {},
+  "inboxEmptyFilteredRead": "Aucune recommandation lue.",
+  "@inboxEmptyFilteredRead": {},
+  "profileMyInbox": "Recommandations reçues",
+  "@profileMyInbox": {},
+  "readingGroupsTitle": "Lectures à deux",
+  "@readingGroupsTitle": {},
+  "readingGroupsEmpty": "Aucun groupe de lecture pour le moment. Crée-en un depuis la fiche d'un manga.",
+  "@readingGroupsEmpty": {},
+  "readingGroupDetailTitle": "Groupe de lecture",
+  "@readingGroupDetailTitle": {},
+  "readingGroupMembersTitle": "Membres",
+  "@readingGroupMembersTitle": {},
+  "readingGroupOwnerBadge": "OWNER",
+  "@readingGroupOwnerBadge": {},
+  "readingGroupOpenManga": "Ouvrir le manga",
+  "@readingGroupOpenManga": {},
+  "readingGroupNotStarted": "Pas commencé",
+  "@readingGroupNotStarted": {},
+  "readingGroupChaptersRead": "Chap. {count}",
+  "@readingGroupChaptersRead": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "readingGroupChaptersReadLabel": "lus",
+  "@readingGroupChaptersReadLabel": {},
+  "readingGroupMembersCount": "{count, plural, =1{1 membre} other{{count} membres}}",
+  "@readingGroupMembersCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "profileMyReadingGroups": "Lectures à deux",
+  "@profileMyReadingGroups": {},
+  "profileSectionPublicInfo": "Informations publiques",
+  "@profileSectionPublicInfo": {},
+  "profileSectionAbout": "À propos de vous",
+  "@profileSectionAbout": {},
+  "profileSectionPrivacy": "Confidentialité",
+  "@profileSectionPrivacy": {},
+  "profileNotSet": "Non renseigné",
+  "@profileNotSet": {},
+  "profileSectionAvatar": "Avatar",
+  "@profileSectionAvatar": {},
+  "profileEditAvatarHeroHint": "L'aperçu se met à jour quand tu colles une URL d'image.",
+  "@profileEditAvatarHeroHint": {},
+  "profileEditPickPhoto": "Choisir une photo",
+  "@profileEditPickPhoto": {},
+  "profileEditClearAvatar": "Effacer",
+  "@profileEditClearAvatar": {},
+  "profileEditPhotoPickFailed": "Impossible de sélectionner la photo",
+  "@profileEditPhotoPickFailed": {},
+  "profileGenderClear": "Effacer",
+  "@profileGenderClear": {},
+  "avatarUrlLabel": "URL de l'avatar",
+  "@avatarUrlLabel": {},
+  "avatarUrlInvalid": "L'URL doit commencer par http:// ou https://",
+  "@avatarUrlInvalid": {},
+  "profileSectionAccount": "Compte",
+  "@profileSectionAccount": {},
+  "profileFieldUsername": "Nom d'utilisateur",
+  "@profileFieldUsername": {},
+  "profileFieldEmail": "Adresse e-mail",
+  "@profileFieldEmail": {},
+  "profileFieldReadOnly": "Non modifiable",
+  "@profileFieldReadOnly": {},
+  "profileChangePhoto": "Modifier la photo",
+  "@profileChangePhoto": {},
+  "changelogCardTitle": "Notes de version",
+  "@changelogCardTitle": {},
+  "readingGroupCreateTitle": "Lire à deux",
+  "@readingGroupCreateTitle": {},
+  "readingGroupCreateNameLabel": "Nom du groupe (optionnel)",
+  "@readingGroupCreateNameLabel": {},
+  "readingGroupCreateNameHint": "ex: Berserk avec Léa",
+  "@readingGroupCreateNameHint": {},
+  "readingGroupCreateInviteSection": "Inviter des amis",
+  "@readingGroupCreateInviteSection": {},
+  "readingGroupCreateConfirm": "Créer le groupe",
+  "@readingGroupCreateConfirm": {},
+  "readingGroupCreateFailed": "Création du groupe échouée",
+  "@readingGroupCreateFailed": {},
+  "readingGroupCreateInviteRequired": "Sélectionne au moins un ami pour créer le groupe",
+  "@readingGroupCreateInviteRequired": {},
+  "readingGroupDelete": "Supprimer le groupe",
+  "@readingGroupDelete": {},
+  "readingGroupDeleteConfirmTitle": "Supprimer ce groupe ?",
+  "@readingGroupDeleteConfirmTitle": {},
+  "readingGroupDeleteConfirm": "Cette action est irréversible. Tous les membres perdront l'accès au groupe.",
+  "@readingGroupDeleteConfirm": {},
+  "readingGroupDeleteSuccess": "Groupe supprimé",
+  "@readingGroupDeleteSuccess": {},
+  "readingGroupDeleteFailed": "Suppression du groupe échouée",
+  "@readingGroupDeleteFailed": {},
+  "readingGroupSharedReading": "Lecture partagée",
+  "@readingGroupSharedReading": {},
+  "readingGroupViewGroup": "Voir le groupe",
+  "@readingGroupViewGroup": {},
+  "readingGroupChapterShort": "ch.",
+  "@readingGroupChapterShort": {},
+  "profileHighlightTitle": "Nouvelles fonctionnalités",
+  "@profileHighlightTitle": {},
+  "profileNewBadge": "Nouveau",
+  "@profileNewBadge": {},
+  "profileFooterBrand": "MANGA TRACKER",
+  "@profileFooterBrand": {},
+  "readingGroupListSectionTitle": "Mes groupes",
+  "@readingGroupListSectionTitle": {},
+  "readingGroupWithLabel": "Avec {name}",
+  "@readingGroupWithLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "readingGroupYouLabel": "Toi",
+  "@readingGroupYouLabel": {},
+  "readingGroupProgressYouVsFriend": "Toi : ch. {you} · {friend} : ch. {their}",
+  "@readingGroupProgressYouVsFriend": {
+    "placeholders": {
+      "you": { "type": "String" },
+      "friend": { "type": "String" },
+      "their": { "type": "String" }
+    }
+  },
+  "readingGroupChapterDash": "—",
+  "@readingGroupChapterDash": {},
+  "readingGroupSectionHero": "Lecture en cours",
+  "@readingGroupSectionHero": {},
+  "readingGroupSectionProgress": "Progression",
+  "@readingGroupSectionProgress": {},
+  "readingGroupSectionActions": "Actions",
+  "@readingGroupSectionActions": {},
+  "readingGroupActionsMarkProgress": "Marquer ma progression",
+  "@readingGroupActionsMarkProgress": {},
+  "readingGroupActionsMarkProgressSubtitle": "Ouvrir la fiche du manga pour avancer",
+  "@readingGroupActionsMarkProgressSubtitle": {},
+  "readingGroupActionsInvite": "Inviter un ami",
+  "@readingGroupActionsInvite": {},
+  "readingGroupActionsCopyFriendLink": "Copier le lien de {friend}",
+  "@readingGroupActionsCopyFriendLink": {
+    "placeholders": { "friend": { "type": "String" } }
+  },
+  "readingGroupActionsCopyFriendLinkSubtitle": "Adapté au chapitre {chapter}",
+  "@readingGroupActionsCopyFriendLinkSubtitle": {
+    "placeholders": { "chapter": { "type": "int" } }
+  },
+  "readingGroupApplyLinkSuccess": "Lien enregistré sur le chapitre {chapter}",
+  "@readingGroupApplyLinkSuccess": {
+    "placeholders": { "chapter": { "type": "int" } }
+  },
+  "readingGroupCopyLinkSuccess": "Lien copié — chapitre {chapter}",
+  "@readingGroupCopyLinkSuccess": {
+    "placeholders": { "chapter": { "type": "int" } }
+  },
+  "readingGroupCopyLinkFailed": "Impossible d'adapter ce lien (format non reconnu)",
+  "@readingGroupCopyLinkFailed": {},
+  "readingGroupActionsInviteSubtitle": "Ajouter une personne au groupe",
+  "@readingGroupActionsInviteSubtitle": {},
+  "readingGroupActionsLeave": "Quitter le groupe",
+  "@readingGroupActionsLeave": {},
+  "readingGroupActionsLeaveSubtitle": "Tu ne verras plus la progression partagée",
+  "@readingGroupActionsLeaveSubtitle": {},
+  "readingGroupActionsDeleteSubtitle": "Supprimer définitivement pour tous les membres",
+  "@readingGroupActionsDeleteSubtitle": {},
+  "readingGroupLeaveConfirmTitle": "Quitter ce groupe ?",
+  "@readingGroupLeaveConfirmTitle": {},
+  "readingGroupLeaveConfirm": "Tu n'auras plus accès à la progression partagée.",
+  "@readingGroupLeaveConfirm": {},
+  "readingGroupLeaveSuccess": "Tu as quitté le groupe",
+  "@readingGroupLeaveSuccess": {},
+  "readingGroupLeaveFailed": "Impossible de quitter le groupe",
+  "@readingGroupLeaveFailed": {},
+  "readingGroupEmptyTitle": "Aucune lecture à deux",
+  "@readingGroupEmptyTitle": {},
+  "readingGroupEmptySubtitle": "Démarre un manga avec un ami et suivez votre progression ensemble.",
+  "@readingGroupEmptySubtitle": {},
+  "readingGroupEmptyAction": "Découvrir un manga",
+  "@readingGroupEmptyAction": {},
+  "readingGroupTotalLabel": "Total",
+  "@readingGroupTotalLabel": {},
+  "readingGroupChaptersTotal": "{count} ch.",
+  "@readingGroupChaptersTotal": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "readingGroupInviteSoonTitle": "Bientôt disponible",
+  "@readingGroupInviteSoonTitle": {},
+  "readingGroupInviteSoonMessage": "L'invitation depuis le groupe arrive très bientôt. Pour l'instant, recrée un groupe depuis la fiche d'un manga.",
+  "@readingGroupInviteSoonMessage": {},
+
+  "libraryToggleListView": "Vue liste",
+  "@libraryToggleListView": {
+    "description": "Tooltip du bouton qui passe en vue liste dans la bibliothèque"
+  },
+  "libraryToggleCardView": "Vue carte",
+  "@libraryToggleCardView": {
+    "description": "Tooltip du bouton qui passe en vue carte dans la bibliothèque"
+  },
+  "libraryShowDownloadedOnly": "Afficher uniquement les téléchargés",
+  "@libraryShowDownloadedOnly": {
+    "description": "Tooltip du filtre Téléchargés uniquement"
+  },
+  "libraryShowAllMangas": "Afficher tous les mangas",
+  "@libraryShowAllMangas": {
+    "description": "Tooltip pour revenir à l'affichage complet (filtre Téléchargés désactivé)"
+  },
+  "libraryProgressLabel": "{read} sur {total} chapitres lus",
+  "@libraryProgressLabel": {
+    "description": "Label d'accessibilité de la barre de progression de lecture",
+    "placeholders": {
+      "read": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "votesCount": "{count, plural, =0{Aucun vote} =1{1 vote} other{{count} votes}}",
+  "@votesCount": {
+    "description": "Nombre de votes communautaires sur un manga",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "detailSectionSimilar": "Mangas similaires",
+  "@detailSectionSimilar": {
+    "description": "Titre de section des recommandations / mangas similaires"
   }
 }

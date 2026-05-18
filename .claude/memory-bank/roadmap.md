@@ -25,13 +25,15 @@
 ### ✅ Suppression de compte utilisateur
 ### ✅ Changement de mot de passe du compte utilisateur
 ### ✅ Récupération du nom d'utilisateur
-### ⏳ Photo de profil
-### ⏳ Onboarding pour collecter des stats utilisateur
+### 🔵 Photo de profil *(URL externe OK ; upload multipart à câbler Phase 3.1)*
+### 🔵 Onboarding pour collecter des stats utilisateur *(champs profil étendus prêts ; modal d'onboarding à câbler)*
 
-- ⏳ Tranche d'âge
+- 🔵 Tranche d'âge *(dateOfBirth en base + UI)*
 - ⏳ Pays / Langue
 - ⏳ Genre (sélection 3 genres environ)
-- ⏳ Sexe
+- 🔵 Sexe *(champ gender en base + UI ChoiceChips)*
+
+### ✅ Profil étendu (Phase 3) — displayName, bio, avatarUrl, isProfilePublic
 
 ---
 
@@ -83,7 +85,7 @@
 
 ## Système de notation et avis
 
-### ⏳ Collecte des avis (commentaires utilisateurs)
+### ✅ Collecte des avis (commentaires utilisateurs) *(Phase 7 + 7.1 — livré : threading, soft delete, rating optionnel, pagination)*
 ### Affichage des notes
 
 - ✅ Affichage des notes MangaUpdates
@@ -107,11 +109,11 @@
 
 ### Statistiques
 
-- ⏳ Nombre total de chapitres lus
-- ⏳ Estimation du temps de lecture (chapitres × durée moyenne)
-- ⏳ Top genres les plus consultés
+- ✅ Nombre total de chapitres lus *(Phase 2)*
+- ✅ Estimation du temps de lecture (chapitres × durée moyenne) *(Phase 2)*
+- ✅ Top genres les plus consultés *(Phase 2)*
+- ✅ Taux de complétion + dernière lecture + ancienneté du compte *(Phase 2)*
 - ⏳ Streak de lecture
-- ⏳ Sur en cours, taux de progression totale
 - ⏳ Progression vers un objectif personnel
 
 ### ✅ Status de lectures (reading / readLater / completed / caughtUp / dropped)
@@ -131,11 +133,19 @@
 
 ## Espace communautaire
 
+### ✅ Système d'amis *(Phase 6 + 6.1 — backend + UI livrés)*
+
+- ✅ Demande / accept / refuser / bloquer / supprimer
+- ✅ Recherche d'utilisateurs (autocomplete)
+- ✅ Page Amis (onglets + recherche + cache 24h)
+- ⏳ Badge BottomNavBar (compteur global polling)
+
 ### ⏳ Forum et discussions
 ### ⏳ Partage de théories
 ### ⏳ Mini-jeux communautaires
 ### ⏳ Chat en temps réel
 ### ⏳ Voir la bibliothèque de ses amis
+### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau)*
 
 ---
 
@@ -172,7 +182,7 @@
 - ✅ Re-consentement après mise à jour des versions
 - ⏳ Audit complet vis-à-vis des recommandations CNIL
 
-### ⏳ Endpoint transparent renvoyant les images de MangaUpdates *(éviter le hotlinking)*
+### ✅ Endpoint transparent renvoyant les images de MangaUpdates *(Phase 4 — proxy + auto-refresh)*
 
 ---
 
@@ -305,7 +315,7 @@ mindmap
       ✅ Progression
       ✅ Téléchargement chapitres
       ✅ Bloqueur pub
-      ⏳ Stats
+      ✅ Stats (chapitres, temps, genres, taux complétion)
       ⏳ Streak
     Notifications
       ✅ Background Android

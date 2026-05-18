@@ -1,0 +1,30 @@
+{
+  // ---------------------------------------------------------------------------
+  // Hot reload automatique à chaque sauvegarde (Ctrl+S).
+  //
+  // Sans ça, modifier un .dart depuis Claude (ou n'importe quel outil externe)
+  // ne déclenche AUCUN reload — il faut taper "r" dans le terminal qui héberge
+  // `flutter run`. C'est ce que tu as remarqué : "à chaque fois qu'on fait des
+  // modifs il y a pas de hot restart ou hot reload qui sont faits".
+  //
+  // Avec "all" : dès qu'un .dart est sauvé (par toi OU par Claude via Edit/Write),
+  // VS Code envoie la commande "r" à la session flutter run active.
+  //
+  // Note : si le changement nécessite un hot RESTART (ex: ajout d'un service
+  // dans GetIt, modif d'un main(), nouveau plugin natif), un hot reload ne
+  // suffit pas — il faut taper "R" majuscule manuellement dans le terminal.
+  // ---------------------------------------------------------------------------
+  "dart.flutterHotReloadOnSave": "all",
+
+  // Reformate le .dart à chaque save (cohérence avec dart format).
+  // Si tu trouves ça intrusif, mets à false.
+  "editor.formatOnSave": true,
+
+  // Largeur de ligne dart format (par défaut 80, on monte à 100 — plus lisible
+  // avec les widgets Flutter qui ont vite des longues chaînes de constructeurs).
+  "dart.lineLength": 100,
+
+  // Affiche les info/warning analyzer dans l'éditeur (utile pour repérer
+  // les imports inutiles, deprecated, etc.).
+  "dart.showInspectorNotificationsForWidgetErrors": true
+}

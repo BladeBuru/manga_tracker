@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangatracker/core/components/auth_button.dart';
-import 'package:mangatracker/core/components/password_fields.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/auth/presentation/cubit/reset_password_cubit.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
+import 'package:mangatracker/features/auth/widgets/auth_form_card.dart';
+import 'package:mangatracker/features/auth/widgets/auth_hero.dart';
+import 'package:mangatracker/features/auth/widgets/auth_password_section.dart';
+import 'package:mangatracker/features/auth/widgets/auth_scaffold.dart';
+import 'package:mangatracker/features/auth/widgets/auth_submit_button.dart';
+import 'package:mangatracker/features/auth/widgets/auth_top_bar.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
-/// Vue « Définir un nouveau mot de passe ».
+/// Vue « Définir un nouveau mot de passe » — design V1.
 ///
-/// Atteignable via :
-///  - Deep link : `https://bladeburu.com/auth/reset-password?token=XXX`
-///    → l'app intercepte (App Links Android) et navigue ici avec le token.
-///  - Saisie manuelle (cas du fallback web → l'utilisateur copie-colle).
-///
-/// Après succès, l'utilisateur est auto-loggué (les JWT retournés par
-/// l'API sont persistés via `AuthService.persistTokens`).
+/// Atteignable via deep link `https://bladeburu.com/auth/reset-password?token=XXX`.
+/// Après succès l'utilisateur est auto-loggué (les JWT sont persistés via
+/// `AuthService.persistTokens` dans le Cubit).
 class ResetPasswordView extends StatefulWidget {
-  /// Token brut reçu dans le lien email (64 hex chars).
   final String token;
 
   const ResetPasswordView({super.key, required this.token});
@@ -63,127 +64,167 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     );
   }
 
-  void _goHome() {
-    context.go('/home');
-  }
+  void _goHome() => context.go('/home');
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n?.resetPasswordTitle ?? 'Nouveau mot de passe'),
-      ),
-      body: BlocProvider<ResetPasswordCubit>.value(
+    return AuthScaffold(
+      child: BlocProvider<ResetPasswordCubit>.value(
         value: _cubit,
         child: BlocConsumer<ResetPasswordCubit, ResetPasswordState>(
           listener: (context, state) {
             if (state.isSuccess) {
-              // Petite pause pour que l'utilisateur voit le succès, puis nav
               Future.delayed(const Duration(milliseconds: 800), _goHome);
             }
           },
           builder: (context, state) {
-            if (state.isSuccess) return _buildSuccessView(l10n);
-            return _buildForm(state, l10n);
+            final l10n = AppLocalizations.of(context);
+            if (state.isSuccess) return _ResetPasswordSuccess(l10n: l10n);
+            return Form(
+              key: _formKey,
+              child: _ResetPasswordForm(
+                state: state,
+                passwordController: _passwordController,
+                confirmController: _confirmController,
+                validator: _validator,
+                onSubmit: _submit,
+                onBack: () => Navigator.of(context).pop(),
+                l10n: l10n,
+              ),
+            );
           },
         ),
       ),
     );
   }
+}
 
-  Widget _buildForm(ResetPasswordState state, AppLocalizations? l10n) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n?.resetPasswordIntro ??
-                          'Définissez un nouveau mot de passe pour votre compte. Une fois validé, vous serez automatiquement connecté.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
-                    PasswordFields(
-                      passwordControler: _passwordController,
-                      confirmPasswordControler: _confirmController,
-                      validatorService: _validator,
-                    ),
-                    const SizedBox(height: 24),
-                    AuthButton(
-                      text: l10n?.confirmReset ?? 'Confirmer',
-                      onTap: state.isLoading ? () {} : _submit,
-                      isLoading: state.isLoading,
-                    ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        state.tokenExpired
-                            ? (l10n?.resetTokenExpired ??
-                                'Lien invalide ou expiré. Refaites une demande.')
-                            : (l10n?.networkError ?? 'Erreur réseau. Réessayez plus tard.'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red[600], fontSize: 13),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+class _ResetPasswordForm extends StatelessWidget {
+  final ResetPasswordState state;
+  final TextEditingController passwordController;
+  final TextEditingController confirmController;
+  final ValidatorService validator;
+  final VoidCallback onSubmit;
+  final VoidCallback onBack;
+  final AppLocalizations? l10n;
+
+  const _ResetPasswordForm({
+    required this.state,
+    required this.passwordController,
+    required this.confirmController,
+    required this.validator,
+    required this.onSubmit,
+    required this.onBack,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AuthTopBar(onBack: onBack, backTooltip: l10n?.back ?? 'Retour'),
+        const SizedBox(height: AppSpacing.s),
+        AuthHero(
+          title: l10n?.resetPasswordTitle ?? 'Nouveau mot de passe',
+          subtitle: l10n?.resetPasswordIntro,
+          logoSemanticLabel: l10n?.appTitle ?? 'MangaTracker',
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AuthFormCard(
+          children: [
+            AuthPasswordSection(
+              passwordController: passwordController,
+              confirmController: confirmController,
+              validatorService: validator,
+              isUpdate: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.l),
+        AuthSubmitButton(
+          text: l10n?.confirmReset ?? 'Confirmer',
+          onPressed: state.isLoading ? null : onSubmit,
+          isLoading: state.isLoading,
+        ),
+        if (state.errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.s),
+          Text(
+            state.tokenExpired
+                ? (l10n?.resetTokenExpired ??
+                    'Lien invalide ou expiré. Refaites une demande.')
+                : (l10n?.networkError ??
+                    'Erreur réseau. Réessayez plus tard.'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: scheme.error,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        );
-      },
+        ],
+        const SizedBox(height: AppSpacing.l),
+      ],
     );
   }
+}
 
-  Widget _buildSuccessView(AppLocalizations? l10n) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 16.0;
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 72,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n?.resetPasswordSuccess ?? 'Mot de passe modifié',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    l10n?.resetPasswordSuccessHint ??
-                        'Vous êtes maintenant connecté. Redirection en cours…',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.grey[700]),
-                  ),
-                ],
-              ),
+class _ResetPasswordSuccess extends StatelessWidget {
+  final AppLocalizations? l10n;
+
+  const _ResetPasswordSuccess({required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: AppSpacing.jumbo),
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.dsRedSoft(brightness),
+            border: Border.all(
+              color: AppColors.dsHairline(brightness),
+              width: 1,
             ),
           ),
-        );
-      },
+          child: Icon(
+            Icons.check_circle_outline,
+            size: 40,
+            color: scheme.primary,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.l),
+        Text(
+          l10n?.resetPasswordSuccess ?? 'Mot de passe modifié',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s),
+        Text(
+          l10n?.resetPasswordSuccessHint ??
+              'Vous êtes maintenant connecté. Redirection en cours…',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.dsText2(brightness),
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 }
