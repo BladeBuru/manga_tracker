@@ -1,8 +1,31 @@
 {
-  "latestVersion": "0.9.2",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.9.2/MangaTracker.apk",
+  "latestVersion": "0.10.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.10.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.10.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Système d'amis : recherchez vos amis par nom d'utilisateur, envoyez et acceptez des demandes",
+        "- Recommandations à envoyer : partagez un manga à un ami en un tap depuis la fiche détail",
+        "- Boîte de réception : retrouvez les recommandations reçues de vos amis",
+        "- Lectures à deux : démarrez une lecture synchronisée avec un ami sur un même manga",
+        "- Statistiques personnelles : retrouvez vos genres préférés, votre temps de lecture et votre progression globale",
+        "- Commentaires sur les fiches manga",
+        "- Notifications locales pour les demandes d'amis et les partages",
+        "- Page « Mes données » accessible depuis le profil (export RGPD et téléchargement de vos infos)",
+        "⚡ Améliorations",
+        "- Refonte complète du design : interface plus claire, plus moderne, avec une vraie cohérence sur toutes les pages",
+        "- Nouvelle fiche manga avec un tableau d'informations plus lisible (chapitres, note, statut, année, auteur, artiste)",
+        "- Liste de chapitres redessinée : numérotation simplifiée, lecture marquée d'un coup d'œil",
+        "- Recherche, bibliothèque et recommandations rafraîchies pour un confort d'utilisation accru",
+        "- Recommandations enrichies : davantage de propositions, mieux ciblées sur vos goûts",
+        "🐛 Corrections",
+        "- Couvertures de manga affichées de façon plus fiable",
+        "- Petits ajustements visuels en mode sombre"
+      ]
+    },
     {
       "version": "0.9.2",
       "notes": [
