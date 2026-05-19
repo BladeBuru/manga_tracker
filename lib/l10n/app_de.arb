@@ -996,5 +996,6 @@
       "count": { "type": "int" }
     }
   },
-  "detailSectionSimilar": "Ähnliche Mangas"
+  "detailSectionSimilar": "Ähnliche Mangas",
+  "rating": "Bewertung"
 }

@@ -1974,4 +1974,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => 'Mangas semelhantes';
+
+  @override
+  String get rating => 'Avaliação';
 }

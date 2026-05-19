@@ -1976,4 +1976,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => 'Mangas similares';
+
+  @override
+  String get rating => 'Valoración';
 }

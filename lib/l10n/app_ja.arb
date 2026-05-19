@@ -996,5 +996,6 @@
       "count": { "type": "int" }
     }
   },
-  "detailSectionSimilar": "類似の漫画"
+  "detailSectionSimilar": "類似の漫画",
+  "rating": "評価"
 }

@@ -3555,6 +3555,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Mangas similaires'**
   String get detailSectionSimilar;
+
+  /// Label de la note communautaire affichée dans la carte d'informations du manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Note'**
+  String get rating;
 }
 
 class _AppLocalizationsDelegate

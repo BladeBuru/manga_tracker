@@ -1074,5 +1074,6 @@
       "count": { "type": "int" }
     }
   },
-  "detailSectionSimilar": "Similar mangas"
+  "detailSectionSimilar": "Similar mangas",
+  "rating": "Rating"
 }

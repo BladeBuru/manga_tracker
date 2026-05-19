@@ -10,11 +10,14 @@ import '../../library/services/library.service.dart';
 import '../dto/author.dto.dart';
 import '../dto/season_chapter.dto.dart';
 import '../helpers/chapter_section.helper.dart';
-import 'row_chapter.dart';
+import '../widgets/detail_chapter_section.dart';
+import '../widgets/detail_info_card.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/core/services/translation_service.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/features/comments/widgets/comments_section.dart';
@@ -281,34 +284,142 @@ class _LateDetailViewState extends State<LateDetailView> {
     _saveExpandedState();
   }
 
-  /// Helper pour construire un widget de chapitre (évite la duplication)
-  Widget _buildChapterItem(int chapNum, {bool isInSection = false}) {
-    final line = chapNum.toString().padLeft(2, '0');
-    final isRead = chapNum <= _currentReadCount!;
+  /// Helper pour construire une row chapitre V1 (sans saison/parent card).
+  ///
+  /// Utilisé dans le cas d'affichage linéaire (< 100 chapitres sans saison) :
+  /// les rows sont rendues directement dans une card commune au-dessus.
+  Widget _buildLinearChapterRow(int chapNum) {
+    return DetailChapterRow(
+      chapterNumber: chapNum,
+      isRead: chapNum <= (_currentReadCount ?? 0),
+      isSaving: _isSaving,
+      onTap: () => _handleSaveChapter(widget.muId, chapNum),
+    );
+  }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isInSection ? 16 : 0,
-        vertical: isInSection ? 0 : 1,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: AppRadius.circularMd,
-          onTap: _isSaving
-              ? null
-              : () => _handleSaveChapter(widget.muId, chapNum),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 0),
-            child: RowChapter(
-              line: line,
-              chapter: chapNum.toString(),
-              read: isRead,
-              enabled: !_isSaving,
+  /// Construit le bloc « chapitres » du détail manga.
+  ///
+  /// - Si `ChapterSectionHelper` produit des sections (saisons ou tranches de
+  ///   100) → liste de `DetailChapterSection` collapsibles V1.
+  /// - Sinon (< 100 chapitres sans saisons) → liste linéaire dans une seule
+  ///   card V1 avec rows compactes.
+  ///
+  /// La logique de groupement (saisons, bonus chapters, tranches de 100) reste
+  /// gérée par `ChapterSectionHelper` — on ne change QUE le rendu.
+  Widget _buildChaptersBlock(BuildContext context, int total) {
+    final l10n = AppLocalizations.of(context);
+    final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
+
+    final sections = ChapterSectionHelper.calculateSections(
+      totalChapters: total,
+      seasonChapters: widget.seasonChapters,
+      bonusChapters: widget.bonusChapters,
+    );
+
+    final headerTitle =
+        l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}';
+
+    if (sections.isNotEmpty) {
+      // Ordre : la plus récente en haut (comme avant).
+      final reversedSections = sections.reversed.toList();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            headerTitle,
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s),
+          ...reversedSections.map((section) {
+            final isExpanded = _isStateLoaded
+                ? (_expandedSections[section.title] ?? false)
+                : false;
+            final chapterCount =
+                section.endChapter - section.startChapter + 1;
+            final readCount = section.chapterNumbers
+                .where((n) => n <= (_currentReadCount ?? 0))
+                .length;
+
+            return DetailChapterSection(
+              title: section.title,
+              chapterNumbers: section.chapterNumbers,
+              totalCount: chapterCount,
+              readCount: readCount,
+              isExpanded: isExpanded,
+              currentReadCount: _currentReadCount ?? 0,
+              isSaving: _isSaving,
+              onExpansionChanged: (expanded) =>
+                  _handleSectionExpansion(section.title, expanded),
+              onChapterTap: (chapNum) =>
+                  _handleSaveChapter(widget.muId, chapNum),
+            );
+          }),
+        ],
+      );
+    }
+
+    // Affichage linéaire — < 100 chapitres, pas de saisons.
+    if (total <= 0) {
+      return const SizedBox.shrink();
+    }
+    final chapters = List.generate(total, (i) => total - i);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          headerTitle,
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.s),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.dsSurfaceDark : Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.xxxl),
+            border: Border.all(
+              color: AppColors.dsHairline(brightness),
+              width: 1,
+            ),
+            boxShadow: isDark
+                ? null
+                : const [
+                    BoxShadow(
+                      color: Color(0x0A140A0A), // rgba(20,10,10,0.04)
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (int i = 0; i < chapters.length; i++) ...[
+                _buildLinearChapterRow(chapters[i]),
+                if (i < chapters.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 56),
+                    child: Container(
+                      height: 1,
+                      color: AppColors.dsHairline(brightness),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -441,319 +552,20 @@ class _LateDetailViewState extends State<LateDetailView> {
             // Phase 8.3 (2026-05-18) : section "Lecture partagée" si l'user
             // fait partie d'un reading group pour ce manga (sinon invisible).
             SharedReadingSection(muId: int.tryParse(widget.muId) ?? 0),
-            // Informations principales (Chapitres, Note, Statut, Année) - Layout 2x2
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                children: [
-                  // Première ligne : Chapitres et Note
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context);
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                borderRadius: AppRadius.circularXl,
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.menu_book,
-                                    size: 18,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      l10n?.chaptersCount(widget.mangaTotalChapters?.toInt() ?? 0) ?? 
-                                      '${widget.mangaTotalChapters ?? 0} ${l10n?.chapters ?? "Chapitres"}',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context).colorScheme.onSurface,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                            borderRadius: AppRadius.circularXl,
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star,
-                                size: 18,
-                                color: Colors.red,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  widget.rating,
-                                  style: GoogleFonts.poppins(
-                                    textStyle: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  // Deuxième ligne : Statut et Année
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context);
-                            final statusText = widget.isCompleted == true
-                                ? (l10n?.completed ?? "Terminé")
-                                : (l10n?.reading ?? "En cours");
-                            final statusLabel = l10n?.status ?? "État";
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                borderRadius: AppRadius.circularXl,
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    size: 18,
-                                    color: Colors.red,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: RichText(
-                                      overflow: TextOverflow.ellipsis,
-                                      text: TextSpan(
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Theme.of(context).colorScheme.onSurface,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: '$statusLabel : ',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: statusText,
-                                            style: TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                            borderRadius: AppRadius.circularXl,
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 18,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  widget.year,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            // Informations principales V1 (chapitres · note · statut · année ·
+            // auteur · artiste) regroupées dans une seule card hairline avec
+            // rows label-uppercase / valeur. Remplace l'ancienne grille 6-cells
+            // Material 2 (cf. profile_edit_sections.dart pour le pattern).
+            DetailInfoCard(
+              totalChapters: widget.mangaTotalChapters,
+              rating: widget.rating,
+              isCompleted: widget.isCompleted,
+              year: widget.year,
+              authors: authors,
+              artists: artists,
             ),
 
-            // Auteur & Artiste
-            if (authors.isNotEmpty || artists.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (authors.isNotEmpty)
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                              borderRadius: AppRadius.circularXl,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.person,
-                                      size: 16,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Builder(
-                                      builder: (context) {
-                                        final l10n = AppLocalizations.of(context);
-                                        return Text(
-                                          l10n?.author ?? "Auteur",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                ...authors.map((name) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: Text(
-                                    name,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (authors.isNotEmpty && artists.isNotEmpty)
-                        const SizedBox(width: 10),
-                      if (artists.isNotEmpty)
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                              borderRadius: AppRadius.circularXl,
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.palette,
-                                      size: 16,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Builder(
-                                      builder: (context) {
-                                        final l10n = AppLocalizations.of(context);
-                                        return Text(
-                                          l10n?.artist ?? "Artiste",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                ...artists.map((name) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: Text(
-                                    name,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s),
 
             // **Slot inline rating (2026-05-19)** : si le parent fournit un
             // widget de notation utilisateur, on l'injecte ICI dans le flux
@@ -983,186 +795,13 @@ class _LateDetailViewState extends State<LateDetailView> {
               ],
             const SizedBox(height: 8),
 
-            // Sections de chapitres
+            // Sections de chapitres V1 — cards collapsibles hairline alignées
+            // sur LibrarySection (cf. library_section.dart). Remplace l'ancien
+            // ExpansionTile rouge agressif (border primary + shadow primary)
+            // par une card neutre + AnimatedCrossFade 250ms et rows compactes.
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context);
-                  
-                  // Calculer les sections
-                  final sections = ChapterSectionHelper.calculateSections(
-                    totalChapters: total,
-                    seasonChapters: widget.seasonChapters,
-                    bonusChapters: widget.bonusChapters,
-                  );
-                  
-                  // Si on a des sections, les afficher avec ExpansionTile
-                  if (sections.isNotEmpty) {
-                    // Inverser l'ordre : la plus récente en haut
-                    final reversedSections = sections.reversed.toList();
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...reversedSections.map<Widget>((section) {
-                          // Utiliser l'état chargé ou false par défaut
-                          final isExpanded = _isStateLoaded 
-                              ? (_expandedSections[section.title] ?? false)
-                              : false;
-                          final chapterCount = section.endChapter - section.startChapter + 1;
-                          final readCount = section.chapterNumbers
-                              .where((n) => n <= _currentReadCount!)
-                              .length;
-                          
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 4),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: AppRadius.circularXl,
-                              border: Border.all(
-                                color: isExpanded
-                                    ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                                    : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                                width: isExpanded ? 1.5 : 1,
-                              ),
-                              boxShadow: isExpanded
-                                  ? [
-                                      BoxShadow(
-                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: ExpansionTile(
-                              key: ValueKey('${section.title}_${isExpanded}'),
-                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.xl),
-                              ),
-                              collapsedShape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.xl),
-                              ),
-                              leading: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                                  borderRadius: AppRadius.circularMd,
-                                ),
-                                child: Icon(
-                                  Icons.list_alt,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 20,
-                                ),
-                              ),
-                              title: Text(
-                                section.title,
-                                style: GoogleFonts.poppins(
-                                  textStyle: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Icon(
-                                    Icons.numbers,
-                                    size: 14,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${section.startChapter}-${section.endChapter}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    size: 14,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$readCount/$chapterCount',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: Icon(
-                                isExpanded ? Icons.expand_less : Icons.expand_more,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              initiallyExpanded: isExpanded,
-                              onExpansionChanged: (expanded) {
-                                _handleSectionExpansion(section.title, expanded);
-                              },
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(AppRadius.xl),
-                                      bottomRight: Radius.circular(AppRadius.xl),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: section.chapterNumbers.map((chapNum) {
-                                      return _buildChapterItem(chapNum, isInSection: true);
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    );
-                  }
-                  // Sinon, affichage linéaire (cas < 100 chapitres sans saisons)
-                  else {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n?.chaptersCount(total) ?? '$total ${l10n?.chapters ?? "chapitres"}',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Column(
-                          children: List.generate(total, (i) => total - i).map((chapNum) {
-                            return _buildChapterItem(chapNum, isInSection: false);
-                          }).toList(),
-                        ),
-                      ],
-                    );
-                  }
-                },
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+              child: _buildChaptersBlock(context, total),
             ),
             // Phase 7.1 : section commentaires en bas du détail manga.
             Padding(

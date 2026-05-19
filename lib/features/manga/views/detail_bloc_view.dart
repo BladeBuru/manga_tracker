@@ -122,7 +122,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     return Scaffold(
+      // **Fix 2026-05-19** : bg `dsBg` (peachy off-white) au lieu du blanc
+      // pur du thème par défaut. Sans ça les cards blanches DetailInfoCard
+      // n'ont AUCUN contraste avec le fond → effet "fade" reproché. Avec
+      // `dsBg`, les blancs des cards ressortent + l'ombre prend du sens.
+      backgroundColor: brightness == Brightness.dark
+          ? AppColors.dsBgDark
+          : AppColors.dsBgLight,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,

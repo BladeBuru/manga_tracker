@@ -1917,4 +1917,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => '類似の漫画';
+
+  @override
+  String get rating => '評価';
 }

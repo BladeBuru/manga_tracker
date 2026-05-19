@@ -2276,5 +2276,9 @@
   "detailSectionSimilar": "Mangas similaires",
   "@detailSectionSimilar": {
     "description": "Titre de section des recommandations / mangas similaires"
+  },
+  "rating": "Note",
+  "@rating": {
+    "description": "Label de la note communautaire affichée dans la carte d'informations du manga"
   }
 }

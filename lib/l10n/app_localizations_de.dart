@@ -1977,4 +1977,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => 'Ähnliche Mangas';
+
+  @override
+  String get rating => 'Bewertung';
 }

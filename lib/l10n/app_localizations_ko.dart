@@ -1919,4 +1919,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => '비슷한 만화';
+
+  @override
+  String get rating => '평점';
 }

@@ -1951,4 +1951,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailSectionSimilar => 'Similar mangas';
+
+  @override
+  String get rating => 'Rating';
 }

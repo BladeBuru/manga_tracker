@@ -996,5 +996,6 @@
       "count": { "type": "int" }
     }
   },
-  "detailSectionSimilar": "비슷한 만화"
+  "detailSectionSimilar": "비슷한 만화",
+  "rating": "평점"
 }
