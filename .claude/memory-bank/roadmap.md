@@ -23,10 +23,10 @@
 ### ✅ Déconnexion du compte utilisateur
 ### ✅ Création de compte utilisateur
 ### ✅ Suppression de compte utilisateur
-### ✅ Changement de mot de passe du compte utilisateur
+### 🔵 Changement de mot de passe du compte utilisateur *(endpoint API OK — UI Flutter absente, en cours + révocation sessions à ajouter)*
 ### ✅ Récupération du nom d'utilisateur
 ### 🔵 Photo de profil *(URL externe OK ; upload multipart à câbler Phase 3.1)*
-### 🔵 Onboarding pour collecter des stats utilisateur *(champs profil étendus prêts ; modal d'onboarding à câbler)*
+### 🔵 Onboarding pour collecter des stats utilisateur *(champs profil étendus prêts ; modal post-inscription à câbler — choix de genres pour alimenter les recos + démographie optionnelle)*
 
 - 🔵 Tranche d'âge *(dateOfBirth en base + UI)*
 - ⏳ Pays / Langue
@@ -89,7 +89,7 @@
 ### Affichage des notes
 
 - ✅ Affichage des notes MangaUpdates
-- 🔵 Affichage des notes MangaTracker (agrégées) *(API prête, front à câbler)*
+- ✅ Affichage des notes MangaTracker (agrégées — note Bayésienne sur la fiche détail)
 
 ### ⏳ Interface de notation avancée
 
@@ -103,6 +103,7 @@
 ### Lecture
 
 - ✅ Enregistrement de la progression
+  - 🔵 Journal de lecture par chapitre *(API + table chapter_log livrées : relectures, hors-séries `is_bonus`, skip — le reader ne l'alimente pas encore, branchement en cours)*
   - ⏳ Regrouper les chapitres par tome ou arc
 - ✅ Téléchargement de chapitre (Android/iOS uniquement)
 - ✅ Bloqueur de pub dans le webview
@@ -113,6 +114,7 @@
 - ✅ Estimation du temps de lecture (chapitres × durée moyenne) *(Phase 2)*
 - ✅ Top genres les plus consultés *(Phase 2)*
 - ✅ Taux de complétion + dernière lecture + ancienneté du compte *(Phase 2)*
+- ⏳ Stats v2 : graphiques genres + historique des dernières lectures + chapitres lus + temps estimé *(en cours)*
 - ⏳ Streak de lecture
 - ⏳ Progression vers un objectif personnel
 
@@ -122,9 +124,11 @@
 
 ## Recommandations personnalisées
 
-### 🔵 Suggestions basées sur l'historique de lecture *(API + tests prêts)*
-### 🔵 Recommandations par genre (`/recommendations/by-genre`)
-### 🔵 Sleeper hits (pépites cachées) — `/recommendations/sleepers`
+### ✅ Suggestions basées sur l'historique de lecture *(API + front livrés ; cache user-level 1h back + 2h front — v0.10.x)*
+### ✅ Recommandations par genre (`/recommendations/by-genre` + vue sections front)
+### ✅ Sleeper hits (pépites cachées) — `/recommendations/sleepers` *(intégrés au cold start)*
+### ✅ Cold start nouveaux utilisateurs *(biblio vide → top communauté + pépites + bandeau d'accueil — v0.10.x)*
+### ⏳ Page « Explorer » par catégories personnalisées *(bouton « Voir plus » sur la home — en cours)*
 ### ⏳ Modèle hybride LightFM (interactions explicites + features)
 
 - ⏳ Ignorer un manga des recommandations (déjà en cours / déjà lu)
@@ -138,13 +142,13 @@
 - ✅ Demande / accept / refuser / bloquer / supprimer
 - ✅ Recherche d'utilisateurs (autocomplete)
 - ✅ Page Amis (onglets + recherche + cache 24h)
-- ⏳ Badge BottomNavBar (compteur global polling)
+- ✅ Badge BottomNavBar (compteur global polling — NotificationCountsService)
 
 ### ⏳ Forum et discussions
 ### ⏳ Partage de théories
 ### ⏳ Mini-jeux communautaires
 ### ⏳ Chat en temps réel
-### ⏳ Voir la bibliothèque de ses amis
+### ⏳ Voir la bibliothèque de ses amis *(en cours — profil ami enrichi)*
 ### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau)*
 
 ---
@@ -236,7 +240,7 @@
 ### ✅ Déploiement de l'image d'intégration
 ### ✅ Construction de l'image `latest` à partir de `master`
 ### ✅ Reverse proxy NPMplus + HTTPS Let's Encrypt
-### ⏳ Endpoint pour récupérer l'image de couverture d'un manga (proxy CORS)
+### ✅ Endpoint pour récupérer l'image de couverture d'un manga (proxy CORS — mode `stream` v0.10.x, fix images web)
 ### ⏳ Mention « données provenant de l'API MangaUpdates »
 
 ### Environnement ML dédié
@@ -252,7 +256,7 @@
 ### ✅ Maquette tendances/nouveautés/populaires
 ### ✅ Bottom navbar (4 tabs : Home / Library / Search / Profile)
 ### ✅ Page gestion de compte
-### ⏳ Thème sombre *(en cours sur la branche `feature/dark-mode`)*
+### ✅ Thème sombre *(light/dark/système — ThemeToggleButton, refonte V1 Refined Classic)*
 ### ⏳ Calendrier mensuel/semaine des dates de parution pour les séries suivies
 ### ⏳ Score de compatibilité LightFM (affichage)
 ### ✅ Page Detail Manga
