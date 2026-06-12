@@ -8,6 +8,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 ## [Unreleased] — sprint hotfix-v0-10-1
 
 ### Added
+- Profil ami : tap sur un ami → sa bibliothèque (réservé aux amitiés acceptées)
+- Page « Changer mon mot de passe » (mot de passe actuel requis, déconnexion des autres appareils)
+- Stats v2 : graphique d'activité hebdomadaire + historique des dernières lectures (journal de lecture branché dans les readers)
+- Section « 💎 Pépites cachées » dans les recommandations par genre (note Bayésienne)
+- AppBreakpoints + AppContentWidth : responsive unifié desktop/mobile sur 10+ pages
 - Bandeau d'accueil cold start sur la page Recommandations (bibliothèque vide → explication du top communauté affiché), clés ARB ×7 langues
 - `safeDisplayName`/`stripEmailFormat` (`lib/core/utils/safe_display_name.dart`) — defense-in-depth RGPD
 - `kReadingEndThresholdPercent` (`lib/features/reader/utils/reading_constants.dart`) — seuil unique de fin de chapitre
