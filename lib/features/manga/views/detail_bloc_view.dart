@@ -338,7 +338,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   // Afficher l'image en plein écran
                   showDialog(
                     context: context,
-                    barrierColor: Colors.black87,
+                    // Barrier adapté au thème : 0.75 en light suffit pour
+                    // isoler l'image, 0.85 en dark (audit design 2026-06-12).
+                    barrierColor: Theme.of(context).brightness ==
+                            Brightness.dark
+                        ? Colors.black.withValues(alpha: 0.85)
+                        : Colors.black.withValues(alpha: 0.75),
                     builder: (context) => Dialog(
                       backgroundColor: Colors.transparent,
                       insetPadding: const EdgeInsets.all(20),

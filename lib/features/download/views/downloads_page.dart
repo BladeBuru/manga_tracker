@@ -88,9 +88,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
-            child: Text(l10n?.delete ?? 'Supprimer', style: const TextStyle(color: Colors.white)),
+            child: Text(l10n?.delete ?? 'Supprimer'),
           ),
         ],
       ),
@@ -118,9 +119,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
-            child: Text(l10n?.delete ?? 'Supprimer', style: const TextStyle(color: Colors.white)),
+            child: Text(l10n?.delete ?? 'Supprimer'),
           ),
         ],
       ),
@@ -148,9 +150,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
-            child: Text(l10n?.deleteAll ?? 'Supprimer tout', style: const TextStyle(color: Colors.white)),
+            child: Text(l10n?.deleteAll ?? 'Supprimer tout'),
           ),
         ],
       ),

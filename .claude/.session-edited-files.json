@@ -65,6 +65,8 @@
     "lib/features/recommendations/views/paginated_recommendations_view.dart",
     "lib/core/storage/services/storage.service.dart",
     "test/features/auth/views/register_view_test.dart",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "lib/features/library/services/library.service.dart",
+    "lib/features/home/views/bottom_navbar.dart"
   ]
 }

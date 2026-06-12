@@ -1,3 +1,4 @@
+import 'package:mangatracker/core/theme/app_colors.dart';
 import 'homepage_bloc_view.dart';
 import '../../profile/views/profile.dart';
 import 'package:mangatracker/features/search/views/search.dart';
@@ -24,7 +25,10 @@ class BottomNavbarState extends State<BottomNavbar> {
   final PageController pageCont = PageController(initialPage: 0);
   int currntIndex = 0;
 
-  final Color unselectedColor = const Color(0xffb8b8d2);
+  /// Couleur des items non sélectionnés — token V1 `dsText3` (avant :
+  /// `Color(0xffb8b8d2)` ad-hoc hors design system, audit 2026-06-12).
+  Color get unselectedColor =>
+      AppColors.dsText3(Theme.of(context).brightness);
 
   /// Phase 6.2 + 8.2 : service de polling pour le badge notifs (demandes
   /// d'amis pending + shares non-vues). Récupéré dans initState pour

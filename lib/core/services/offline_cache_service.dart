@@ -316,6 +316,21 @@ class OfflineCacheService {
   // `clearExpiredCache()` supprimés (hotfix-v0-10-1 US-5) — utiliser
   // `isCacheExpiredFor(type, maxHours)` qui lit les vraies metadata.
 
+  /// Invalide le cache des recommandations (hotfix-v0-10-1, review).
+  ///
+  /// À appeler sur TOUTE mutation de la bibliothèque : le backend invalide
+  /// son propre cache, mais sans ça le front servirait sa liste périmée
+  /// jusqu'à 2h (TTL) alors que les recos ont changé côté serveur.
+  Future<void> invalidateRecommendationsCache() async {
+    try {
+      final metadata = await getCacheMetadata();
+      metadata.remove('recommendations');
+      await _storage.writeSecureData(_cacheMetadataKey, jsonEncode(metadata));
+    } catch (e) {
+      debugPrint('Erreur invalidation cache recommandations: $e');
+    }
+  }
+
   /// Nettoie tout le cache
   Future<void> clearAllCache() async {
     try {

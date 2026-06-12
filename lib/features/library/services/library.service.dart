@@ -54,7 +54,9 @@ class LibraryService {
           muId: muId,
           expectStatus: HttpStatus.created,
         );
-        // Cache en mémoire désactivé - plus besoin de le vider
+        // La biblio a changé → les recos doivent refléter le changement
+        // (le back invalide son cache, le front doit faire pareil).
+        if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -82,7 +84,7 @@ class LibraryService {
           body: jsonEncode({'muId': muId, 'readChapters': readChapters}),
         );
         final success = res.statusCode == HttpStatus.ok;
-        // Cache en mémoire désactivé - plus besoin de le vider
+        if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -109,7 +111,7 @@ class LibraryService {
           url: url,
           muId: muId,
         );
-        // Cache en mémoire désactivé - plus besoin de le vider
+        if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -139,7 +141,7 @@ class LibraryService {
           }),
         );
         final success = response.statusCode == HttpStatus.ok;
-        // Cache en mémoire désactivé - plus besoin de le vider
+        if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
@@ -198,7 +200,10 @@ class LibraryService {
           headers: {HttpHeaders.contentTypeHeader: 'application/json'},
           body: jsonEncode({'muId': muId, 'rating': rating}),
         );
-        return res.statusCode == HttpStatus.ok;
+        final success = res.statusCode == HttpStatus.ok;
+        // La note est un multiplicateur du scoring des recos.
+        if (success) await _cacheService.invalidateRecommendationsCache();
+        return success;
       } catch (e) {
         debugPrint('⚠️ updateRating: erreur réseau ($e)');
         return false;
