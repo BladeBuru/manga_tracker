@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:mangatracker/core/components/auth_button.dart';
+import 'package:mangatracker/features/auth/widgets/auth_submit_button.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
@@ -108,7 +108,7 @@ void main() {
 
     await _pumpLoginView(tester);
 
-    await tester.tap(find.byType(AuthButton));
+    await tester.tap(find.byType(AuthSubmitButton));
     await tester.pump();
 
     expect(find.text('Please enter your email address'), findsOneWidget);
@@ -136,7 +136,7 @@ void main() {
     await tester.ensureVisible(passwordField);
     await tester.enterText(passwordField, 'motdepasse1!');
 
-    await tester.tap(find.byType(AuthButton));
+    await tester.tap(find.byType(AuthSubmitButton));
     await tester.pump();
 
     expect(find.text('Invalid credentials'), findsOneWidget);
