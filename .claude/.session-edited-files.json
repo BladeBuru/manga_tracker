@@ -56,6 +56,9 @@
     "lib/core/utils/safe_display_name.dart",
     "lib/features/comments/dto/comment.dto.dart",
     "lib/features/friends/dto/friend.dto.dart",
-    "lib/features/sharing/dto/reading_group.dto.dart"
+    "lib/features/sharing/dto/reading_group.dto.dart",
+    "lib/features/reader/utils/reading_constants.dart",
+    "lib/features/reader/utils/reading_progress_helper.dart",
+    "lib/features/reader/services/scroll_position_service.dart"
   ]
 }

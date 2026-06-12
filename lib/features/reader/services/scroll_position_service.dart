@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service pour gérer la sauvegarde et la restauration de la position de scroll
@@ -79,15 +80,18 @@ class ScrollPositionService {
 
       if (scrollPosition != null && scrollPosition > 0) {
         debugPrint('🔍 ScrollPositionService.saveScrollPosition - Position valide: $scrollPosition');
-        // Ne pas sauvegarder si la position est très proche du bas (>95%)
-        // Cela peut être une erreur ou l'utilisateur était vraiment en bas
+        // Zone « fin de chapitre » (≥ kReadingEndThresholdPercent) : pas de
+        // sauvegarde — c'est la popup « Avez-vous fini ? » qui prend le
+        // relais. Seuil UNIFIÉ avec ReadingProgressHelper (hotfix-v0-10-1
+        // US-4) — avant, 95 ici vs 85 côté popup laissait un trou où on
+        // n'était ni sauvegardé ni détecté en fin.
         if (documentHeight != null && documentHeight > 0 && windowHeight != null) {
           final maxScroll = documentHeight - windowHeight;
           if (maxScroll > 0) {
             final percentage = (scrollPosition / maxScroll) * 100;
             debugPrint('🔍 ScrollPositionService.saveScrollPosition - Pourcentage: ${percentage.toStringAsFixed(1)}%');
-            if (percentage > 95) {
-              debugPrint('🔍 ScrollPositionService - Position trop proche du bas ($percentage%), sauvegarde annulée');
+            if (percentage >= kReadingEndThresholdPercent) {
+              debugPrint('🔍 ScrollPositionService - Zone fin de chapitre ($percentage%), sauvegarde annulée');
               return;
             }
           }
@@ -248,11 +252,11 @@ class ScrollPositionService {
               targetPosition = maxScroll;
             }
 
-            // Si la position est très proche du bas (>95%), ne pas restaurer
-            // (probablement une erreur ou l'utilisateur était vraiment en bas)
+            // Zone « fin de chapitre » : ne pas restaurer — seuil unifié
+            // avec ReadingProgressHelper (hotfix-v0-10-1 US-4).
             final percentage = (targetPosition / maxScroll) * 100;
-            if (percentage > 95) {
-              debugPrint('🔍 ScrollPositionService - Position trop proche du bas ($percentage%), restauration annulée');
+            if (percentage >= kReadingEndThresholdPercent) {
+              debugPrint('🔍 ScrollPositionService - Zone fin de chapitre ($percentage%), restauration annulée');
               return false;
             }
 
@@ -308,10 +312,12 @@ class ScrollPositionService {
           })();
         """;
 
-        // Attendre que les images soient chargées (avec timeout)
+        // Attendre que les images soient chargées (avec timeout).
+        // 50 tentatives = 10s max (hotfix-v0-10-1 US-4 : 5s ne suffisait pas
+        // sur les lecteurs lents → restauration de scroll ratée).
         bool imagesLoaded = false;
         int attempts = 0;
-        const maxAttempts = 25; // 25 tentatives = 5 secondes max
+        const maxAttempts = 50;
 
         while (!imagesLoaded && attempts < maxAttempts) {
           await Future.delayed(const Duration(milliseconds: 200));
@@ -327,7 +333,7 @@ class ScrollPositionService {
         if (imagesLoaded) {
           debugPrint('🔍 ScrollPositionService - Toutes les images sont chargées pour le nouveau chapitre');
         } else {
-          debugPrint('🔍 ScrollPositionService - Timeout: certaines images ne sont pas encore chargées après 5 secondes');
+          debugPrint('🔍 ScrollPositionService - Timeout: certaines images ne sont pas encore chargées après 10 secondes');
         }
 
         // Attendre un peu plus pour que le layout se stabilise après le chargement des images
