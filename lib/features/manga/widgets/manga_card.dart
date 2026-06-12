@@ -147,12 +147,15 @@ class MangaCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
+                    // useProxy: true (hotfix-v0-10-1 US-2) — l'URL MU brute
+                    // est bloquée par CORS sur le web ; le proxy gère les
+                    // deux plateformes (302 mobile, stream web).
                     RefreshableMangaImage(
                       muId: muId,
                       originalUrl: mediumImgPath,
                       width: double.infinity,
                       height: 160,
-                      useProxy: false,
+                      useProxy: true,
                     ),
                     if (compactLibrary && lastChapter != null)
                       _ProgressOverlay(

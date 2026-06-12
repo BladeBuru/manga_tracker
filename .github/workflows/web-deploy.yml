@@ -1,9 +1,22 @@
 name: Web Deploy — Manga Tracker
 
 # Build Flutter Web + image Docker + déploiement sur NAS TrueNAS via SSH/midclt
-# Triggers : push manuel uniquement pour l'instant (à activer sur dev quand stable)
+# Triggers :
+#  1. Auto sur `push: master` (sauf si le commit vient du bot github-actions)
+#  2. workflow_dispatch — déclenchement manuel depuis l'UI ou la CLI
 
 on:
+  push:
+    branches: [master]
+    # Évite les rebuilds Web inutiles si le commit ne touche que de la doc,
+    # la config IDE, ou des fichiers Android/iOS qui n'affectent pas le bundle web.
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'memory-bank/**'
+      - '.claude/**'
+      - 'android/**'
+      - 'ios/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -13,8 +26,6 @@ on:
         type: choice
         options:
           - production
-  # push:
-  #   branches: [dev]   # à activer après stabilisation
 
 env:
   IMAGE: bladeburu/manga-tracker-web
@@ -27,6 +38,12 @@ jobs:
     name: Build Web Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Anti-boucle : ignore les push faits par le bot github-actions
+    # (ex: bump version + push version.json depuis release_workflow.yml).
+    # Le workflow_dispatch passe toujours.
+    if: |
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'push' && github.event.head_commit.author.name != 'github-actions')
 
     steps:
       - uses: actions/checkout@v4

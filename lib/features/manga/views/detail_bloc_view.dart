@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
@@ -11,7 +12,6 @@ import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/features/manga/bloc/detail_state.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
-import 'package:mangatracker/features/manga/helpers/image.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -360,9 +360,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                                   child: InteractiveViewer(
                                     minScale: 0.5,
                                     maxScale: 3.0,
-                                    child: ImageHelper.loadMangaImage(
-                                      widget.coverPath ?? manga.largeCoverUrl ?? manga.mediumCoverUrl,
+                                    // Proxy (hotfix-v0-10-1 US-2) : l'URL MU
+                                    // brute est bloquée par CORS sur le web.
+                                    child: RefreshableMangaImage(
+                                      muId: widget.muId.toString(),
+                                      originalUrl: widget.coverPath ??
+                                          manga.largeCoverUrl ??
+                                          manga.mediumCoverUrl,
                                       fit: BoxFit.contain,
+                                      useProxy: true,
                                     ),
                                   ),
                                 ),
@@ -393,9 +399,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     SizedBox(
                       width: double.infinity,
                       height: 340,
-                      child: ImageHelper.loadMangaImage(
-                        widget.coverPath ?? manga.mediumCoverUrl,
+                      // Proxy (hotfix-v0-10-1 US-2) : CORS web.
+                      child: RefreshableMangaImage(
+                        muId: widget.muId.toString(),
+                        originalUrl: widget.coverPath ?? manga.mediumCoverUrl,
                         fit: BoxFit.cover,
+                        useProxy: true,
                       ),
                     ),
                     Container(

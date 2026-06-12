@@ -1,8 +1,14 @@
 name: Release APK
 
-# Deux modes de déclenchement :
-#  1. PR mergée sur `master` avec label `patch`/`minor`/`major` → ancien flow
+# Trois modes de déclenchement :
+#  1. PR mergée sur `master` avec label `patch`/`minor`/`major` → flow PR
 #  2. workflow_dispatch (manuel ou via skill `/release`) → flow direct
+#  3. push direct sur `master` → release auto patch par défaut.
+#     - `[bump minor]` ou `[bump major]` dans le commit message → override
+#     - `[skip release]` dans le commit message → pas de release (juste le web/back déploient)
+#     - Le changelog est le body du commit (tout ce qui suit la 1ère ligne vide).
+#       À écrire en langage utilisateur (voir CLAUDE.md règle changelog).
+#     - Les commits faits par le bot github-actions sont ignorés (anti-boucle).
 on:
   pull_request:
     types: [closed]
@@ -21,11 +27,29 @@ on:
         description: 'Changelog (markdown, lignes séparées par \n)'
         required: true
         type: string
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'memory-bank/**'
+      - '.claude/**'
+      - '.github/workflows/web-deploy.yml'
 
 jobs:
   release:
-    # Run si workflow_dispatch OU PR effectivement mergée
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    # Run si :
+    #  - workflow_dispatch (toujours)
+    #  - PR effectivement mergée
+    #  - push direct master MAIS pas par le bot ET sans `[skip release]`
+    if: |
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      || (
+        github.event_name == 'push'
+        && github.event.head_commit.author.name != 'github-actions'
+        && !contains(github.event.head_commit.message, '[skip release]')
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -61,6 +85,20 @@ jobs:
             echo "bump=true" >> $GITHUB_OUTPUT
             echo "type=${{ inputs.version_type }}" >> $GITHUB_OUTPUT
             echo "Source: workflow_dispatch (type=${{ inputs.version_type }})"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            # Push direct master : parse le commit message pour `[bump X]`
+            MSG=$(jq -r .head_commit.message "$GITHUB_EVENT_PATH")
+            if echo "$MSG" | grep -qiE '\[bump[[:space:]]+major\]'; then
+              TYPE=major
+            elif echo "$MSG" | grep -qiE '\[bump[[:space:]]+minor\]'; then
+              TYPE=minor
+            else
+              # Défaut : patch (le user peut écrire `[skip release]` pour éviter)
+              TYPE=patch
+            fi
+            echo "bump=true" >> $GITHUB_OUTPUT
+            echo "type=$TYPE" >> $GITHUB_OUTPUT
+            echo "Source: push direct master (type=$TYPE)"
           else
             LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels)
@@ -167,6 +205,17 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             # Le \n littéral dans l'input est converti en vrai newline
             CONTENT=$(printf '%b' "${{ inputs.changelog }}")
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            # Push direct master : le changelog = body du commit (après la 1ère ligne vide).
+            # Anti-bruit : on retire le tag `[bump X]` / `[skip release]` au passage.
+            MSG=$(jq -r .head_commit.message "$GITHUB_EVENT_PATH")
+            CONTENT=$(printf "%s\n" "$MSG" | awk '/^$/{found=1; next} found' \
+              | sed -E 's/\[bump[[:space:]]+(patch|minor|major)\]//gi' \
+              | sed -E 's/\[skip release\]//gi')
+            if [ -z "$(echo "$CONTENT" | tr -d '[:space:]')" ]; then
+              # Pas de body → fallback minimal user-friendly
+              CONTENT="Diverses améliorations et corrections."
+            fi
           else
             BODY=$(jq -r .pull_request.body "$GITHUB_EVENT_PATH")
             CONTENT=$(printf "%s\n" "$BODY" | sed -n '/<!-- CHANGELOG:START -->/,/<!-- CHANGELOG:END -->/p' | sed '1d;$d')

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -47,13 +48,19 @@ class RefreshableMangaImage extends StatefulWidget {
 
   /// Résout l'URL à utiliser : proxy si `useProxy = true`, sinon l'URL
   /// originale. Helper interne factorisé pour init + didUpdateWidget.
+  ///
+  /// **Web (hotfix-v0-10-1 US-2)** : ajoute `mode=stream` — le 302 par
+  /// défaut redirige vers cdn.mangaupdates.com qui n'envoie pas de header
+  /// CORS, donc CanvasKit bloque l'image. En mode stream l'API sert les
+  /// bytes elle-même (même origine → CORS OK). Le mobile garde le 302
+  /// (plus rapide, pas de bande passante serveur).
   String? _resolvedUrl() {
     if (useProxy) {
       final muIdInt = int.tryParse(muId);
       if (muIdInt == null || muIdInt <= 0) return originalUrl;
       return buildApiUri(
         '/mangas/$muIdInt/cover',
-        {'size': proxySize},
+        {'size': proxySize, if (kIsWeb) 'mode': 'stream'},
       ).toString();
     }
     return originalUrl;
@@ -105,7 +112,16 @@ class _RefreshableMangaImageState extends State<RefreshableMangaImage> {
     try {
       final fresh = await getIt<MangaService>().refreshCover(muIdInt);
       if (!mounted) return;
-      final newUrl = fresh.mediumCoverUrl ?? fresh.smallCoverUrl;
+      // En mode proxy, on re-pointe sur le proxy (avec cache-buster pour
+      // forcer le refetch) plutôt que sur l'URL MU brute — sur web, l'URL
+      // MU directe serait re-bloquée par CORS (hotfix-v0-10-1 US-2).
+      final newUrl = widget.useProxy
+          ? buildApiUri('/mangas/$muIdInt/cover', {
+              'size': widget.proxySize,
+              if (kIsWeb) 'mode': 'stream',
+              'r': DateTime.now().millisecondsSinceEpoch.toString(),
+            }).toString()
+          : (fresh.mediumCoverUrl ?? fresh.smallCoverUrl);
       if (newUrl != null && newUrl.isNotEmpty && newUrl != _currentUrl) {
         setState(() => _currentUrl = newUrl);
       }
