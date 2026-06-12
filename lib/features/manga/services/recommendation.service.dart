@@ -59,6 +59,28 @@ class RecommendationService {
     }
   }
 
+  /// Pépites cachées (`GET /recommendations/sleepers`) : sorties récentes
+  /// bien notées (note Bayésienne — pas le 10/10 à un seul vote) mais peu
+  /// visibles. Vide si erreur réseau (section masquée gracieusement).
+  Future<List<MangaQuickViewDto>> getSleeperHits({int limit = 12}) async {
+    final url = buildApiUri('/recommendations/sleepers', {
+      'limit': limit.toString(),
+    });
+    try {
+      final response = await _httpService.getWithAuthTokens(url);
+      if (response.statusCode != _httpOk &&
+          response.statusCode != _httpCreated) {
+        return const [];
+      }
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('⚠️ RecommendationService.sleepers: erreur ($e)');
+      return const [];
+    }
+  }
+
   /// Retourne la liste personnalisée de mangas recommandés pour l'utilisateur
   /// connecté.
   /// Appelle `GET /recommendations?limit=<limit>&offset=<offset>`.

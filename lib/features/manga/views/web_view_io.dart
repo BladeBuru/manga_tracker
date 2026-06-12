@@ -532,6 +532,17 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     final ok = await _library.saveChapterProgress(widget.muId, chapter);
     if (ok) {
       _lastCommitted = chapter;
+      // Journal additif (Stats v2) : trace la session de lecture pour
+      // l'historique + l'activité hebdo. Fire-and-forget : n'altère PAS
+      // le pointeur de progression (RETRO-015), un échec perd juste une
+      // entrée d'historique.
+      unawaited(
+        _library
+            .recordChapterLog(widget.muId, chapterNumber: chapter)
+            .then((_) {}, onError: (Object e) {
+          debugPrint('⚠️ chapterLog: $e');
+        }),
+      );
       final l10n = AppLocalizations.of(context);
       _notifier.info(l10n?.chapterSaved(chapter.toString()) ?? "Chapitre $chapter enregistré");
     }

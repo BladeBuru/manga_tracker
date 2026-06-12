@@ -7,6 +7,7 @@ import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
+import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 
 /// Service côté Flutter pour le système d'amis (Phase 6).
 ///
@@ -44,6 +45,22 @@ class FriendsService {
         .toList();
     await _writeCache(list);
     return list;
+  }
+
+  /// Bibliothèque d'un ami accepté (`GET /friends/:id/library`).
+  ///
+  /// 403 si l'amitié n'est pas acceptée — propagé en exception. Pas de
+  /// cache : consultation ponctuelle, données de l'ami toujours fraîches.
+  Future<List<MangaQuickViewDto>> getFriendLibrary(int friendUserId) async {
+    final res = await _http.getWithAuthTokens(
+      buildApiUri('/friends/$friendUserId/library'),
+    );
+    if (res.statusCode != HttpStatus.ok) {
+      throw Exception('getFriendLibrary failed: ${res.statusCode}');
+    }
+    return (jsonDecode(res.body) as List<dynamic>)
+        .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Demandes reçues en attente. Pas de cache — toujours fresh pour le badge.

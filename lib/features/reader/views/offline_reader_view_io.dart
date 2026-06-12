@@ -185,6 +185,15 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         // Sauvegarder le chapitre actuel comme lu seulement si proche de la fin
         await _libraryService.saveChapterProgress(widget.muId, widget.chapterNumber);
         _hasSavedProgress = true;
+        // Journal additif (Stats v2) — fire-and-forget, cf. RETRO-015.
+        unawaited(
+          _libraryService
+              .recordChapterLog(widget.muId,
+                  chapterNumber: widget.chapterNumber)
+              .then((_) {}, onError: (Object e) {
+            debugPrint('⚠️ chapterLog offline: $e');
+          }),
+        );
       }
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la progression: $e');
