@@ -105,6 +105,35 @@ class AppLocalizationsKo extends AppLocalizations {
   String get changePasswordSubtitle => '로그인 비밀번호 변경';
 
   @override
+  String get changePasswordTitle => '비밀번호 변경';
+
+  @override
+  String get changePasswordIntro =>
+      '현재 비밀번호를 입력한 후 새 비밀번호를 설정하세요. 다른 기기는 로그아웃됩니다.';
+
+  @override
+  String get currentPasswordLabel => '현재 비밀번호';
+
+  @override
+  String get newPasswordLabel => '새 비밀번호';
+
+  @override
+  String get confirmNewPasswordLabel => '새 비밀번호 확인';
+
+  @override
+  String get changePasswordSuccess => '비밀번호가 변경되었습니다';
+
+  @override
+  String get changePasswordSuccessHint => '다른 기기는 로그아웃되었습니다. 프로필로 돌아갑니다…';
+
+  @override
+  String get changePasswordWrongCurrent => '현재 비밀번호가 올바르지 않습니다';
+
+  @override
+  String get changePasswordSocialAccount =>
+      '이 계정은 Google 로그인을 사용하므로 변경할 비밀번호가 없습니다';
+
+  @override
   String get accountInformation => '계정 정보';
 
   @override
@@ -1931,4 +1960,30 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get recommendationsColdStartSubtitle => '첫 작품을 추가하면 맞춤 추천을 받을 수 있어요';
+
+  @override
+  String get friendLibraryError => '친구의 서재를 불러올 수 없습니다.';
+
+  @override
+  String get friendLibraryEmpty => '서재가 아직 비어 있습니다.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '서재에 $count개의 만화';
+  }
+
+  @override
+  String get statsHistoryTitle => '최근 읽은 작품';
+
+  @override
+  String get statsActivityTitle => '독서 활동';
+
+  @override
+  String get statsBonusTag => '외전';
+
+  @override
+  String get statsNoHistory => '아직 기록된 독서가 없습니다. 리더에서 챕터를 완료하면 기록이 시작됩니다.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 숨은 명작';
 }

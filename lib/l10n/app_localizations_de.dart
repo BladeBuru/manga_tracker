@@ -106,6 +106,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get changePasswordSubtitle => 'Ändern Sie Ihr Anmelde-Passwort';
 
   @override
+  String get changePasswordTitle => 'Mein Passwort ändern';
+
+  @override
+  String get changePasswordIntro =>
+      'Geben Sie Ihr aktuelles Passwort ein und wählen Sie dann ein neues. Ihre anderen Geräte werden abgemeldet.';
+
+  @override
+  String get currentPasswordLabel => 'Aktuelles Passwort';
+
+  @override
+  String get newPasswordLabel => 'Neues Passwort';
+
+  @override
+  String get confirmNewPasswordLabel => 'Neues Passwort bestätigen';
+
+  @override
+  String get changePasswordSuccess => 'Passwort geändert';
+
+  @override
+  String get changePasswordSuccessHint =>
+      'Ihre anderen Geräte wurden abgemeldet. Zurück zum Profil…';
+
+  @override
+  String get changePasswordWrongCurrent => 'Das aktuelle Passwort ist falsch';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'Dieses Konto nutzt die Google-Anmeldung: Es gibt kein Passwort zu ändern';
+
+  @override
   String get accountInformation => 'Kontoinformationen';
 
   @override
@@ -1990,4 +2020,32 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       'Füge deine ersten Lektüren hinzu, um persönliche Empfehlungen zu erhalten';
+
+  @override
+  String get friendLibraryError =>
+      'Die Bibliothek dieses Freundes konnte nicht geladen werden.';
+
+  @override
+  String get friendLibraryEmpty => 'Seine Bibliothek ist noch leer.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '$count Manga in seiner Bibliothek';
+  }
+
+  @override
+  String get statsHistoryTitle => 'Zuletzt gelesen';
+
+  @override
+  String get statsActivityTitle => 'Leseaktivität';
+
+  @override
+  String get statsBonusTag => 'Extra-Kapitel';
+
+  @override
+  String get statsNoHistory =>
+      'Noch keine Lektüre aufgezeichnet. Schließe ein Kapitel im Reader ab, um deinen Verlauf zu starten.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 Geheimtipps';
 }

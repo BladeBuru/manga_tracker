@@ -282,6 +282,60 @@ abstract class AppLocalizations {
   /// **'Changez votre mot de passe de connexion'**
   String get changePasswordSubtitle;
 
+  /// Titre de la page de changement de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer mon mot de passe'**
+  String get changePasswordTitle;
+
+  /// Texte d'introduction de la page de changement de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez votre mot de passe actuel puis choisissez-en un nouveau. Vos autres appareils seront déconnectés.'**
+  String get changePasswordIntro;
+
+  /// Label du champ mot de passe actuel
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe actuel'**
+  String get currentPasswordLabel;
+
+  /// Label du champ nouveau mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau mot de passe'**
+  String get newPasswordLabel;
+
+  /// Label du champ de confirmation du nouveau mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Confirmer le nouveau mot de passe'**
+  String get confirmNewPasswordLabel;
+
+  /// Message de succès après changement de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Mot de passe modifié'**
+  String get changePasswordSuccess;
+
+  /// Précision affichée sous le message de succès du changement de mot de passe
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos autres appareils ont été déconnectés. Retour au profil…'**
+  String get changePasswordSuccessHint;
+
+  /// Erreur quand le mot de passe actuel saisi est faux
+  ///
+  /// In fr, this message translates to:
+  /// **'Le mot de passe actuel est incorrect'**
+  String get changePasswordWrongCurrent;
+
+  /// Erreur pour les comptes Google sans mot de passe local
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce compte utilise la connexion Google : il n\'a pas de mot de passe à modifier'**
+  String get changePasswordSocialAccount;
+
   /// Option pour voir les informations du compte
   ///
   /// In fr, this message translates to:
@@ -3579,6 +3633,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ajoute tes premières lectures pour recevoir des recommandations personnalisées'**
   String get recommendationsColdStartSubtitle;
+
+  /// No description provided for @friendLibraryError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger la bibliothèque de cet ami.'**
+  String get friendLibraryError;
+
+  /// No description provided for @friendLibraryEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sa bibliothèque est vide pour l’instant.'**
+  String get friendLibraryEmpty;
+
+  /// No description provided for @friendLibraryCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} mangas dans sa bibliothèque'**
+  String friendLibraryCount(int count);
+
+  /// No description provided for @statsHistoryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernières lectures'**
+  String get statsHistoryTitle;
+
+  /// No description provided for @statsActivityTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activité de lecture'**
+  String get statsActivityTitle;
+
+  /// No description provided for @statsBonusTag.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors-série'**
+  String get statsBonusTag;
+
+  /// No description provided for @statsNoHistory.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.'**
+  String get statsNoHistory;
+
+  /// No description provided for @recommendationsSleepersTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'💎 Pépites cachées'**
+  String get recommendationsSleepersTitle;
 }
 
 class _AppLocalizationsDelegate

@@ -113,6 +113,36 @@ class AppLocalizationsEs extends AppLocalizations {
       'Cambiar tu contraseña de inicio de sesión';
 
   @override
+  String get changePasswordTitle => 'Cambiar mi contraseña';
+
+  @override
+  String get changePasswordIntro =>
+      'Introduce tu contraseña actual y elige una nueva. Tus otros dispositivos se desconectarán.';
+
+  @override
+  String get currentPasswordLabel => 'Contraseña actual';
+
+  @override
+  String get newPasswordLabel => 'Nueva contraseña';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirmar la nueva contraseña';
+
+  @override
+  String get changePasswordSuccess => 'Contraseña cambiada';
+
+  @override
+  String get changePasswordSuccessHint =>
+      'Tus otros dispositivos se han desconectado. Volviendo al perfil…';
+
+  @override
+  String get changePasswordWrongCurrent => 'La contraseña actual es incorrecta';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'Esta cuenta usa el inicio de sesión de Google: no hay contraseña que cambiar';
+
+  @override
   String get accountInformation => 'Información de la cuenta';
 
   @override
@@ -1989,4 +2019,32 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       'Añade tus primeras lecturas para recibir recomendaciones personalizadas';
+
+  @override
+  String get friendLibraryError =>
+      'No se pudo cargar la biblioteca de este amigo.';
+
+  @override
+  String get friendLibraryEmpty => 'Su biblioteca está vacía por ahora.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '$count mangas en su biblioteca';
+  }
+
+  @override
+  String get statsHistoryTitle => 'Lecturas recientes';
+
+  @override
+  String get statsActivityTitle => 'Actividad de lectura';
+
+  @override
+  String get statsBonusTag => 'Historia extra';
+
+  @override
+  String get statsNoHistory =>
+      'Aún no hay lecturas registradas. Termina un capítulo en el lector para iniciar tu historial.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 Joyas ocultas';
 }

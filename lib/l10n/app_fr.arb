@@ -121,6 +121,42 @@
   "@changePasswordSubtitle": {
     "description": "Sous-titre pour modifier le mot de passe"
   },
+  "changePasswordTitle": "Changer mon mot de passe",
+  "@changePasswordTitle": {
+    "description": "Titre de la page de changement de mot de passe"
+  },
+  "changePasswordIntro": "Saisissez votre mot de passe actuel puis choisissez-en un nouveau. Vos autres appareils seront déconnectés.",
+  "@changePasswordIntro": {
+    "description": "Texte d'introduction de la page de changement de mot de passe"
+  },
+  "currentPasswordLabel": "Mot de passe actuel",
+  "@currentPasswordLabel": {
+    "description": "Label du champ mot de passe actuel"
+  },
+  "newPasswordLabel": "Nouveau mot de passe",
+  "@newPasswordLabel": {
+    "description": "Label du champ nouveau mot de passe"
+  },
+  "confirmNewPasswordLabel": "Confirmer le nouveau mot de passe",
+  "@confirmNewPasswordLabel": {
+    "description": "Label du champ de confirmation du nouveau mot de passe"
+  },
+  "changePasswordSuccess": "Mot de passe modifié",
+  "@changePasswordSuccess": {
+    "description": "Message de succès après changement de mot de passe"
+  },
+  "changePasswordSuccessHint": "Vos autres appareils ont été déconnectés. Retour au profil…",
+  "@changePasswordSuccessHint": {
+    "description": "Précision affichée sous le message de succès du changement de mot de passe"
+  },
+  "changePasswordWrongCurrent": "Le mot de passe actuel est incorrect",
+  "@changePasswordWrongCurrent": {
+    "description": "Erreur quand le mot de passe actuel saisi est faux"
+  },
+  "changePasswordSocialAccount": "Ce compte utilise la connexion Google : il n'a pas de mot de passe à modifier",
+  "@changePasswordSocialAccount": {
+    "description": "Erreur pour les comptes Google sans mot de passe local"
+  },
   "accountInformation": "Informations du compte",
   "@accountInformation": {
     "description": "Option pour voir les informations du compte"
@@ -2040,5 +2076,20 @@
   "recommendationsColdStartSubtitle": "Ajoute tes premières lectures pour recevoir des recommandations personnalisées",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "Impossible de charger la bibliothèque de cet ami.",
+  "friendLibraryEmpty": "Sa bibliothèque est vide pour l’instant.",
+  "friendLibraryCount": "{count} mangas dans sa bibliothèque",
+  "statsHistoryTitle": "Dernières lectures",
+  "statsActivityTitle": "Activité de lecture",
+  "statsBonusTag": "Hors-série",
+  "statsNoHistory": "Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 Pépites cachées"
 }

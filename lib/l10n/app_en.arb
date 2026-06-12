@@ -29,6 +29,15 @@
   "actions": "Actions",
   "changePassword": "Change password",
   "changePasswordSubtitle": "Change your login password",
+  "changePasswordTitle": "Change my password",
+  "changePasswordIntro": "Enter your current password, then choose a new one. Your other devices will be signed out.",
+  "currentPasswordLabel": "Current password",
+  "newPasswordLabel": "New password",
+  "confirmNewPasswordLabel": "Confirm new password",
+  "changePasswordSuccess": "Password changed",
+  "changePasswordSuccessHint": "Your other devices have been signed out. Returning to your profile…",
+  "changePasswordWrongCurrent": "The current password is incorrect",
+  "changePasswordSocialAccount": "This account uses Google sign-in: there is no password to change",
   "accountInformation": "Account information",
   "email": "Email",
   "notifications": "Notifications",
@@ -1155,5 +1164,20 @@
   "recommendationsColdStartSubtitle": "Add your first reads to get personalized recommendations",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "Unable to load this friend’s library.",
+  "friendLibraryEmpty": "Their library is empty for now.",
+  "friendLibraryCount": "{count} manga in their library",
+  "statsHistoryTitle": "Recent reads",
+  "statsActivityTitle": "Reading activity",
+  "statsBonusTag": "Side story",
+  "statsNoHistory": "No reading recorded yet. Finish a chapter in the reader to start your history.",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 Hidden gems"
 }

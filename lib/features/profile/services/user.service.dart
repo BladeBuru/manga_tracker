@@ -104,6 +104,12 @@ class UserService {
     }
   }
 
+  /// LEGACY — ne plus utiliser. L'API `PUT /user/password` exige désormais
+  /// `currentPassword` + `newPassword` : cet appel (ancien contrat
+  /// `{password}`) retourne maintenant 400. Remplacé par
+  /// `ChangePasswordService.changePassword` (vue `/change-password`).
+  /// À supprimer avec l'ancien dialog quand l'entrée de menu du profil
+  /// pointera vers la nouvelle route (chantier profile.dart en cours).
   Future changePassword(password) async {
     final response = await httpService.putWithAuthTokens(
       buildApiUri('/user/password'),

@@ -37,6 +37,7 @@ import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
 
 // Profile sub-routes
 import 'package:mangatracker/features/download/views/downloads_page.dart';
+import 'package:mangatracker/features/profile/views/change_password.view.dart';
 import 'package:mangatracker/features/profile/views/my_data_view.dart';
 import 'package:mangatracker/features/profile/views/notifications_settings_page.dart';
 import 'package:mangatracker/features/profile/views/custom_selectors_page.dart';
@@ -52,6 +53,7 @@ import 'package:mangatracker/features/stats/views/stats_view.dart';
 
 // Friends (Phase 6.1)
 import 'package:mangatracker/features/friends/views/friends_list_page.dart';
+import 'package:mangatracker/features/friends/views/friend_profile_view.dart';
 
 // Inbox (Phase 8.1)
 import 'package:mangatracker/features/sharing/views/inbox_page.dart';
@@ -70,6 +72,14 @@ class MangaDetailExtras {
   final String? title;
   final String? coverPath;
   const MangaDetailExtras({this.title, this.coverPath});
+}
+
+/// Extras passés via `context.push('/friends/:userId', extra: ...)` —
+/// affichage immédiat du header (nom + avatar) pendant le fetch.
+class FriendProfileExtras {
+  final String displayName;
+  final String? avatarUrl;
+  const FriendProfileExtras({required this.displayName, this.avatarUrl});
 }
 
 /// Extras passés via `context.push('/manga/:muId/read', extra: ...)`.
@@ -246,6 +256,11 @@ GoRouter buildAppRouter() {
         builder: (context, state) => const MyDataView(),
       ),
       GoRoute(
+        path: '/change-password',
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordView(),
+      ),
+      GoRoute(
         path: '/custom-selectors',
         name: 'custom-selectors',
         builder: (context, state) => const CustomSelectorsPage(),
@@ -299,6 +314,22 @@ GoRouter buildAppRouter() {
         path: '/friends',
         name: 'friends',
         builder: (context, state) => const FriendsListPage(),
+      ),
+
+      // Profil d'un ami : sa bibliothèque (amitié acceptée requise côté API).
+      GoRoute(
+        path: '/friends/:userId',
+        name: 'friend-profile',
+        builder: (context, state) {
+          final userId =
+              int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
+          final extras = state.extra as FriendProfileExtras?;
+          return FriendProfileView(
+            friendUserId: userId,
+            displayName: extras?.displayName ?? '',
+            avatarUrl: extras?.avatarUrl,
+          );
+        },
       ),
 
       // ──────────────────────────────────────────────────────────────

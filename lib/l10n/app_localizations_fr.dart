@@ -106,6 +106,37 @@ class AppLocalizationsFr extends AppLocalizations {
       'Changez votre mot de passe de connexion';
 
   @override
+  String get changePasswordTitle => 'Changer mon mot de passe';
+
+  @override
+  String get changePasswordIntro =>
+      'Saisissez votre mot de passe actuel puis choisissez-en un nouveau. Vos autres appareils seront déconnectés.';
+
+  @override
+  String get currentPasswordLabel => 'Mot de passe actuel';
+
+  @override
+  String get newPasswordLabel => 'Nouveau mot de passe';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirmer le nouveau mot de passe';
+
+  @override
+  String get changePasswordSuccess => 'Mot de passe modifié';
+
+  @override
+  String get changePasswordSuccessHint =>
+      'Vos autres appareils ont été déconnectés. Retour au profil…';
+
+  @override
+  String get changePasswordWrongCurrent =>
+      'Le mot de passe actuel est incorrect';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'Ce compte utilise la connexion Google : il n\'a pas de mot de passe à modifier';
+
+  @override
   String get accountInformation => 'Informations du compte';
 
   @override
@@ -1992,4 +2023,32 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       'Ajoute tes premières lectures pour recevoir des recommandations personnalisées';
+
+  @override
+  String get friendLibraryError =>
+      'Impossible de charger la bibliothèque de cet ami.';
+
+  @override
+  String get friendLibraryEmpty => 'Sa bibliothèque est vide pour l’instant.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '$count mangas dans sa bibliothèque';
+  }
+
+  @override
+  String get statsHistoryTitle => 'Dernières lectures';
+
+  @override
+  String get statsActivityTitle => 'Activité de lecture';
+
+  @override
+  String get statsBonusTag => 'Hors-série';
+
+  @override
+  String get statsNoHistory =>
+      'Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 Pépites cachées';
 }

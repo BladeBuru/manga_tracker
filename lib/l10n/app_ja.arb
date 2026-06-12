@@ -29,6 +29,15 @@
   "actions": "アクション",
   "changePassword": "パスワードを変更",
   "changePasswordSubtitle": "ログインパスワードを変更",
+  "changePasswordTitle": "パスワードを変更",
+  "changePasswordIntro": "現在のパスワードを入力し、新しいパスワードを設定してください。他の端末はログアウトされます。",
+  "currentPasswordLabel": "現在のパスワード",
+  "newPasswordLabel": "新しいパスワード",
+  "confirmNewPasswordLabel": "新しいパスワード（確認）",
+  "changePasswordSuccess": "パスワードを変更しました",
+  "changePasswordSuccessHint": "他の端末はログアウトされました。プロフィールに戻ります…",
+  "changePasswordWrongCurrent": "現在のパスワードが正しくありません",
+  "changePasswordSocialAccount": "このアカウントはGoogleログインを使用しているため、変更できるパスワードはありません",
   "accountInformation": "アカウント情報",
   "email": "メール",
   "notifications": "通知",
@@ -1086,5 +1095,20 @@
   "recommendationsColdStartSubtitle": "最初の作品を追加すると、あなた好みのおすすめが表示されます",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "この友達のライブラリを読み込めませんでした。",
+  "friendLibraryEmpty": "ライブラリはまだ空です。",
+  "friendLibraryCount": "ライブラリに{count}作品",
+  "statsHistoryTitle": "最近の読書",
+  "statsActivityTitle": "読書アクティビティ",
+  "statsBonusTag": "番外編",
+  "statsNoHistory": "まだ読書記録がありません。リーダーで章を読み終えると履歴が始まります。",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 隠れた名作"
 }

@@ -6,6 +6,7 @@ import 'package:mangatracker/features/auth/services/validator.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
+import 'package:mangatracker/features/profile/services/change_password.service.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/stats/services/stats.service.dart';
@@ -79,6 +80,9 @@ void setupServiceLocator() {
       dependsOn: [HttpService]);
   getIt.registerSingletonWithDependencies<EmailAuthService>(
       () => EmailAuthService(),
+      dependsOn: [HttpService]);
+  getIt.registerSingletonWithDependencies<ChangePasswordService>(
+      () => ChangePasswordService(),
       dependsOn: [HttpService]);
   getIt.registerSingletonWithDependencies<AppUpdateService>(
       () => AppUpdateService(),

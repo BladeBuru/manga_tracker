@@ -29,6 +29,15 @@
   "actions": "작업",
   "changePassword": "비밀번호 변경",
   "changePasswordSubtitle": "로그인 비밀번호 변경",
+  "changePasswordTitle": "비밀번호 변경",
+  "changePasswordIntro": "현재 비밀번호를 입력한 후 새 비밀번호를 설정하세요. 다른 기기는 로그아웃됩니다.",
+  "currentPasswordLabel": "현재 비밀번호",
+  "newPasswordLabel": "새 비밀번호",
+  "confirmNewPasswordLabel": "새 비밀번호 확인",
+  "changePasswordSuccess": "비밀번호가 변경되었습니다",
+  "changePasswordSuccessHint": "다른 기기는 로그아웃되었습니다. 프로필로 돌아갑니다…",
+  "changePasswordWrongCurrent": "현재 비밀번호가 올바르지 않습니다",
+  "changePasswordSocialAccount": "이 계정은 Google 로그인을 사용하므로 변경할 비밀번호가 없습니다",
   "accountInformation": "계정 정보",
   "email": "이메일",
   "notifications": "알림",
@@ -1086,5 +1095,20 @@
   "recommendationsColdStartSubtitle": "첫 작품을 추가하면 맞춤 추천을 받을 수 있어요",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "친구의 서재를 불러올 수 없습니다.",
+  "friendLibraryEmpty": "서재가 아직 비어 있습니다.",
+  "friendLibraryCount": "서재에 {count}개의 만화",
+  "statsHistoryTitle": "최근 읽은 작품",
+  "statsActivityTitle": "독서 활동",
+  "statsBonusTag": "외전",
+  "statsNoHistory": "아직 기록된 독서가 없습니다. 리더에서 챕터를 완료하면 기록이 시작됩니다.",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 숨은 명작"
 }

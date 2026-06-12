@@ -105,6 +105,35 @@ class AppLocalizationsJa extends AppLocalizations {
   String get changePasswordSubtitle => 'ログインパスワードを変更';
 
   @override
+  String get changePasswordTitle => 'パスワードを変更';
+
+  @override
+  String get changePasswordIntro =>
+      '現在のパスワードを入力し、新しいパスワードを設定してください。他の端末はログアウトされます。';
+
+  @override
+  String get currentPasswordLabel => '現在のパスワード';
+
+  @override
+  String get newPasswordLabel => '新しいパスワード';
+
+  @override
+  String get confirmNewPasswordLabel => '新しいパスワード（確認）';
+
+  @override
+  String get changePasswordSuccess => 'パスワードを変更しました';
+
+  @override
+  String get changePasswordSuccessHint => '他の端末はログアウトされました。プロフィールに戻ります…';
+
+  @override
+  String get changePasswordWrongCurrent => '現在のパスワードが正しくありません';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'このアカウントはGoogleログインを使用しているため、変更できるパスワードはありません';
+
+  @override
   String get accountInformation => 'アカウント情報';
 
   @override
@@ -1930,4 +1959,30 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       '最初の作品を追加すると、あなた好みのおすすめが表示されます';
+
+  @override
+  String get friendLibraryError => 'この友達のライブラリを読み込めませんでした。';
+
+  @override
+  String get friendLibraryEmpty => 'ライブラリはまだ空です。';
+
+  @override
+  String friendLibraryCount(int count) {
+    return 'ライブラリに$count作品';
+  }
+
+  @override
+  String get statsHistoryTitle => '最近の読書';
+
+  @override
+  String get statsActivityTitle => '読書アクティビティ';
+
+  @override
+  String get statsBonusTag => '番外編';
+
+  @override
+  String get statsNoHistory => 'まだ読書記録がありません。リーダーで章を読み終えると履歴が始まります。';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 隠れた名作';
 }

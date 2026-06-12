@@ -18,12 +18,20 @@ class AuthPasswordSection extends StatefulWidget {
   final ValidatorService validatorService;
   final bool isUpdate;
 
+  /// Overrides optionnels des labels (ex : « Confirmer le nouveau mot de
+  /// passe » sur la page de changement de mot de passe). Si null, les
+  /// labels par défaut (selon [isUpdate]) sont utilisés.
+  final String? passwordLabel;
+  final String? confirmLabel;
+
   const AuthPasswordSection({
     super.key,
     required this.passwordController,
     required this.confirmController,
     required this.validatorService,
     this.isUpdate = false,
+    this.passwordLabel,
+    this.confirmLabel,
   });
 
   @override
@@ -54,9 +62,10 @@ class _AuthPasswordSectionState extends State<AuthPasswordSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final passwordLabel = widget.isUpdate
-        ? (l10n?.newPassword ?? 'Nouveau mot de passe')
-        : (l10n?.password ?? 'Mot de passe');
+    final passwordLabel = widget.passwordLabel ??
+        (widget.isUpdate
+            ? (l10n?.newPassword ?? 'Nouveau mot de passe')
+            : (l10n?.password ?? 'Mot de passe'));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -80,7 +89,7 @@ class _AuthPasswordSectionState extends State<AuthPasswordSection> {
           color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
         AuthPasswordField(
-          label: l10n?.confirmPassword ?? 'Confirmation',
+          label: widget.confirmLabel ?? l10n?.confirmPassword ?? 'Confirmation',
           controller: widget.confirmController,
           focusNode: _confirmFocus,
           validator: (v) => widget.validatorService.validateConfirmPassword(

@@ -112,6 +112,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get changePasswordSubtitle => 'Altere sua senha de login';
 
   @override
+  String get changePasswordTitle => 'Alterar minha senha';
+
+  @override
+  String get changePasswordIntro =>
+      'Digite sua senha atual e escolha uma nova. Seus outros dispositivos serão desconectados.';
+
+  @override
+  String get currentPasswordLabel => 'Senha atual';
+
+  @override
+  String get newPasswordLabel => 'Nova senha';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirmar a nova senha';
+
+  @override
+  String get changePasswordSuccess => 'Senha alterada';
+
+  @override
+  String get changePasswordSuccessHint =>
+      'Seus outros dispositivos foram desconectados. Voltando ao perfil…';
+
+  @override
+  String get changePasswordWrongCurrent => 'A senha atual está incorreta';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'Esta conta usa o login do Google: não há senha para alterar';
+
+  @override
   String get accountInformation => 'Informações da conta';
 
   @override
@@ -1987,4 +2017,32 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       'Adicione suas primeiras leituras para receber recomendações personalizadas';
+
+  @override
+  String get friendLibraryError =>
+      'Não foi possível carregar a biblioteca deste amigo.';
+
+  @override
+  String get friendLibraryEmpty => 'A biblioteca dele está vazia por enquanto.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '$count mangás na biblioteca dele';
+  }
+
+  @override
+  String get statsHistoryTitle => 'Leituras recentes';
+
+  @override
+  String get statsActivityTitle => 'Atividade de leitura';
+
+  @override
+  String get statsBonusTag => 'História extra';
+
+  @override
+  String get statsNoHistory =>
+      'Nenhuma leitura registrada ainda. Conclua um capítulo no leitor para iniciar seu histórico.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 Joias escondidas';
 }

@@ -29,6 +29,15 @@
   "actions": "Ações",
   "changePassword": "Alterar senha",
   "changePasswordSubtitle": "Altere sua senha de login",
+  "changePasswordTitle": "Alterar minha senha",
+  "changePasswordIntro": "Digite sua senha atual e escolha uma nova. Seus outros dispositivos serão desconectados.",
+  "currentPasswordLabel": "Senha atual",
+  "newPasswordLabel": "Nova senha",
+  "confirmNewPasswordLabel": "Confirmar a nova senha",
+  "changePasswordSuccess": "Senha alterada",
+  "changePasswordSuccessHint": "Seus outros dispositivos foram desconectados. Voltando ao perfil…",
+  "changePasswordWrongCurrent": "A senha atual está incorreta",
+  "changePasswordSocialAccount": "Esta conta usa o login do Google: não há senha para alterar",
   "accountInformation": "Informações da conta",
   "email": "E-mail",
   "notifications": "Notificações",
@@ -1086,5 +1095,20 @@
   "recommendationsColdStartSubtitle": "Adicione suas primeiras leituras para receber recomendações personalizadas",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "Não foi possível carregar a biblioteca deste amigo.",
+  "friendLibraryEmpty": "A biblioteca dele está vazia por enquanto.",
+  "friendLibraryCount": "{count} mangás na biblioteca dele",
+  "statsHistoryTitle": "Leituras recentes",
+  "statsActivityTitle": "Atividade de leitura",
+  "statsBonusTag": "História extra",
+  "statsNoHistory": "Nenhuma leitura registrada ainda. Conclua um capítulo no leitor para iniciar seu histórico.",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 Joias escondidas"
 }

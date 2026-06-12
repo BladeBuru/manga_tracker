@@ -29,6 +29,15 @@
   "actions": "Aktionen",
   "changePassword": "Passwort ändern",
   "changePasswordSubtitle": "Ändern Sie Ihr Anmelde-Passwort",
+  "changePasswordTitle": "Mein Passwort ändern",
+  "changePasswordIntro": "Geben Sie Ihr aktuelles Passwort ein und wählen Sie dann ein neues. Ihre anderen Geräte werden abgemeldet.",
+  "currentPasswordLabel": "Aktuelles Passwort",
+  "newPasswordLabel": "Neues Passwort",
+  "confirmNewPasswordLabel": "Neues Passwort bestätigen",
+  "changePasswordSuccess": "Passwort geändert",
+  "changePasswordSuccessHint": "Ihre anderen Geräte wurden abgemeldet. Zurück zum Profil…",
+  "changePasswordWrongCurrent": "Das aktuelle Passwort ist falsch",
+  "changePasswordSocialAccount": "Dieses Konto nutzt die Google-Anmeldung: Es gibt kein Passwort zu ändern",
   "accountInformation": "Kontoinformationen",
   "email": "E-Mail",
   "notifications": "Benachrichtigungen",
@@ -1086,5 +1095,20 @@
   "recommendationsColdStartSubtitle": "Füge deine ersten Lektüren hinzu, um persönliche Empfehlungen zu erhalten",
   "@recommendationsColdStartSubtitle": {
     "description": "Sous-titre du bandeau cold start recos"
-  }
+  },
+  "friendLibraryError": "Die Bibliothek dieses Freundes konnte nicht geladen werden.",
+  "friendLibraryEmpty": "Seine Bibliothek ist noch leer.",
+  "friendLibraryCount": "{count} Manga in seiner Bibliothek",
+  "statsHistoryTitle": "Zuletzt gelesen",
+  "statsActivityTitle": "Leseaktivität",
+  "statsBonusTag": "Extra-Kapitel",
+  "statsNoHistory": "Noch keine Lektüre aufgezeichnet. Schließe ein Kapitel im Reader ab, um deinen Verlauf zu starten.",
+  "@friendLibraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recommendationsSleepersTitle": "💎 Geheimtipps"
 }

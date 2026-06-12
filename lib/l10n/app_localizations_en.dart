@@ -105,6 +105,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changePasswordSubtitle => 'Change your login password';
 
   @override
+  String get changePasswordTitle => 'Change my password';
+
+  @override
+  String get changePasswordIntro =>
+      'Enter your current password, then choose a new one. Your other devices will be signed out.';
+
+  @override
+  String get currentPasswordLabel => 'Current password';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirm new password';
+
+  @override
+  String get changePasswordSuccess => 'Password changed';
+
+  @override
+  String get changePasswordSuccessHint =>
+      'Your other devices have been signed out. Returning to your profile…';
+
+  @override
+  String get changePasswordWrongCurrent => 'The current password is incorrect';
+
+  @override
+  String get changePasswordSocialAccount =>
+      'This account uses Google sign-in: there is no password to change';
+
+  @override
   String get accountInformation => 'Account information';
 
   @override
@@ -1964,4 +1994,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recommendationsColdStartSubtitle =>
       'Add your first reads to get personalized recommendations';
+
+  @override
+  String get friendLibraryError => 'Unable to load this friend’s library.';
+
+  @override
+  String get friendLibraryEmpty => 'Their library is empty for now.';
+
+  @override
+  String friendLibraryCount(int count) {
+    return '$count manga in their library';
+  }
+
+  @override
+  String get statsHistoryTitle => 'Recent reads';
+
+  @override
+  String get statsActivityTitle => 'Reading activity';
+
+  @override
+  String get statsBonusTag => 'Side story';
+
+  @override
+  String get statsNoHistory =>
+      'No reading recorded yet. Finish a chapter in the reader to start your history.';
+
+  @override
+  String get recommendationsSleepersTitle => '💎 Hidden gems';
 }
