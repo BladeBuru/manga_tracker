@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/stats/bloc/stats_bloc.dart';
 import 'package:mangatracker/features/stats/dto/user_stats.dto.dart';
+import 'package:mangatracker/features/stats/widgets/stats_activity_section.dart';
 import 'package:mangatracker/features/stats/widgets/stats_genres_section.dart';
 import 'package:mangatracker/features/stats/widgets/stats_hero_card.dart';
+import 'package:mangatracker/features/stats/widgets/stats_history_section.dart';
 import 'package:mangatracker/features/stats/widgets/stats_offline_banner.dart';
 import 'package:mangatracker/features/stats/widgets/stats_overview_section.dart';
 import 'package:mangatracker/features/stats/widgets/stats_status_section.dart';
@@ -110,39 +113,50 @@ class _StatsContent extends StatelessWidget {
     final lastReadFormatted =
         stats.lastReadAt != null ? dateFmt.format(stats.lastReadAt!) : null;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final hPad = constraints.maxWidth >= 600 ? 32.0 : 16.0;
-        return ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 24),
-          children: [
-            if (isOffline) ...[
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: StatsOfflineBanner(),
+    // Responsive (audit 2026-06-12) : contenu centré (max 1100) via le
+    // wrapper unifié AppContentWidth + breakpoint AppBreakpoints au lieu
+    // du seuil local 600.
+    return AppContentWidth(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bp = AppBreakpoints.of(constraints.maxWidth);
+          final hPad = bp.isAtLeastTablet ? 32.0 : 16.0;
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 24),
+            children: [
+              if (isOffline) ...[
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: StatsOfflineBanner(),
+                ),
+                const SizedBox(height: 12),
+              ],
+              StatsHeroCard(
+                accountCreatedAt: stats.accountCreatedAt,
+                formattedDate: dateFmt.format(stats.accountCreatedAt),
+                totalMangas: stats.totalMangas,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 22),
+              StatsOverviewSection(
+                stats: stats,
+                lastReadFormatted: lastReadFormatted,
+                emptyDash: '—',
+              ),
+              const SizedBox(height: 22),
+              StatsStatusSection(byStatus: stats.mangasByStatus),
+              const SizedBox(height: 22),
+              // Stats v2 : activité hebdo + historique (journal de lecture).
+              StatsActivitySection(chaptersPerWeek: stats.chaptersPerWeek),
+              const SizedBox(height: 22),
+              StatsHistorySection(history: stats.readingHistory),
+              const SizedBox(height: 22),
+              StatsGenresSection(topGenres: stats.topGenres),
+              const SizedBox(height: 24),
             ],
-            StatsHeroCard(
-              accountCreatedAt: stats.accountCreatedAt,
-              formattedDate: dateFmt.format(stats.accountCreatedAt),
-              totalMangas: stats.totalMangas,
-            ),
-            const SizedBox(height: 22),
-            StatsOverviewSection(
-              stats: stats,
-              lastReadFormatted: lastReadFormatted,
-              emptyDash: '—',
-            ),
-            const SizedBox(height: 22),
-            StatsStatusSection(byStatus: stats.mangasByStatus),
-            const SizedBox(height: 22),
-            StatsGenresSection(topGenres: stats.topGenres),
-            const SizedBox(height: 24),
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

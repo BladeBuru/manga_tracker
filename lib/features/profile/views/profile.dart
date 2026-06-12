@@ -8,6 +8,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
@@ -102,16 +103,10 @@ class _ProfileState extends State<Profile> {
     context.go('/login');
   }
 
-  Future<void> _onChangePassword() async {
-    final l10n = AppLocalizations.of(context)!;
-    final newPassword = await ProfileDialogs.showChangePasswordDialog(context);
-    if (newPassword == null) return;
-    try {
-      await _userService.changePassword(newPassword);
-      _notifier.success(l10n.passwordChangedSuccess);
-    } catch (_) {
-      _notifier.error(l10n.passwordChangeError);
-    }
+  /// Nouvelle page dédiée `/change-password` (mot de passe actuel requis +
+  /// déconnexion des autres appareils) — remplace l'ancien dialog legacy.
+  void _onChangePassword() {
+    context.push('/change-password');
   }
 
   Future<void> _onDeleteAccount() async {
@@ -234,45 +229,46 @@ class _ProfileState extends State<Profile> {
       backgroundColor: bgColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          // Responsive (audit 2026-06-12) : centrage via le wrapper unifié
+          // AppContentWidth (700 conservé : contenu type formulaire) +
+          // breakpoint AppBreakpoints au lieu du seuil local 700.
           : LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 700;
-                final horizontalPadding = isWide ? 24.0 : 0.0;
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 700),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding),
-                      child: ProfileBody(
-                        username: username,
-                        email: email,
-                        avatarUrl: _userInfo?.avatarUrl,
-                        currentLocale: _currentLocale,
-                        currentThemeMode: _currentThemeMode,
-                        biometricEnabled: _biometricEnabled,
-                        biometricService: _authService.biometricService,
-                        onAvatarTap: () =>
-                            _notifier.info(l10n.comingSoonAvatar),
-                        onChangePassword: _onChangePassword,
-                        onEditProfile: _onEditProfile,
-                        onMyStats: () => context.push('/stats'),
-                        onMyFriends: () => context.push('/friends'),
-                        onMyInbox: () => context.push('/inbox'),
-                        onReadingGroups: () => context.push('/reading-groups'),
-                        onPickLanguage: _onPickLanguage,
-                        onNotifications: () =>
-                            context.push('/notifications-settings'),
-                        onPickTheme: _onPickTheme,
-                        onToggleBiometric: _onToggleBiometric,
-                        onMyData: () => context.push('/my-data'),
-                        onLogout: _onLogout,
-                        onDeleteAccount: _onDeleteAccount,
-                        onOpenDiscord: _onOpenDiscord,
-                        onDownloads: () => context.push('/downloads'),
-                        onCustomSelectors: () =>
-                            context.push('/custom-selectors'),
-                      ),
+                final bp = AppBreakpoints.of(constraints.maxWidth);
+                final horizontalPadding = bp.isAtLeastTablet ? 24.0 : 0.0;
+                return AppContentWidth(
+                  maxWidth: 700,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding),
+                    child: ProfileBody(
+                      username: username,
+                      email: email,
+                      avatarUrl: _userInfo?.avatarUrl,
+                      currentLocale: _currentLocale,
+                      currentThemeMode: _currentThemeMode,
+                      biometricEnabled: _biometricEnabled,
+                      biometricService: _authService.biometricService,
+                      onAvatarTap: () =>
+                          _notifier.info(l10n.comingSoonAvatar),
+                      onChangePassword: _onChangePassword,
+                      onEditProfile: _onEditProfile,
+                      onMyStats: () => context.push('/stats'),
+                      onMyFriends: () => context.push('/friends'),
+                      onMyInbox: () => context.push('/inbox'),
+                      onReadingGroups: () => context.push('/reading-groups'),
+                      onPickLanguage: _onPickLanguage,
+                      onNotifications: () =>
+                          context.push('/notifications-settings'),
+                      onPickTheme: _onPickTheme,
+                      onToggleBiometric: _onToggleBiometric,
+                      onMyData: () => context.push('/my-data'),
+                      onLogout: _onLogout,
+                      onDeleteAccount: _onDeleteAccount,
+                      onOpenDiscord: _onOpenDiscord,
+                      onDownloads: () => context.push('/downloads'),
+                      onCustomSelectors: () =>
+                          context.push('/custom-selectors'),
                     ),
                   ),
                 );

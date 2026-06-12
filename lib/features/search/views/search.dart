@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
@@ -169,35 +170,25 @@ class _SearchState extends State<Search> {
     return Scaffold(
       backgroundColor: bg,
       resizeToAvoidBottomInset: false,
+      // Responsive (audit 2026-06-12) : breakpoint local 1200/720 remplacé
+      // par le wrapper unifié AppContentWidth (contenu centré, max 1100).
       body: SafeArea(
         bottom: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth >= 1200;
-            final content = _BrowseOrResults(
-              hasResults: hasResults,
-              searchedMangas: _searchedMangas,
-              activeQuery: _activeQuery,
-              controller: _controller,
-              history: _history,
-              genres: _popularGenres,
-              onQueryChanged: _onQueryChanged,
-              onClearQuery: _clearQuery,
-              onSelectTerm: _selectTerm,
-              onRemoveTerm: _removeFromHistory,
-              onClearHistory: _clearHistory,
-              onSelectGenre: _selectTerm,
-            );
-            if (isDesktop) {
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: content,
-                ),
-              );
-            }
-            return content;
-          },
+        child: AppContentWidth(
+          child: _BrowseOrResults(
+            hasResults: hasResults,
+            searchedMangas: _searchedMangas,
+            activeQuery: _activeQuery,
+            controller: _controller,
+            history: _history,
+            genres: _popularGenres,
+            onQueryChanged: _onQueryChanged,
+            onClearQuery: _clearQuery,
+            onSelectTerm: _selectTerm,
+            onRemoveTerm: _removeFromHistory,
+            onClearHistory: _clearHistory,
+            onSelectGenre: _selectTerm,
+          ),
         ),
       ),
     );

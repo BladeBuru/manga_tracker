@@ -15,6 +15,7 @@ import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -223,11 +224,13 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           ),
         ],
       ),
+      // Responsive (audit 2026-06-12) : le cap local 900 qui contraignait
+      // toute la page (hero compris) est retiré — le hero reste pleine
+      // largeur (cinématique) et le contenu sous le hero est centré via
+      // AppContentWidth (cf. `_buildDetailContent`).
       body: SafeArea(
         top: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final inner = BlocConsumer<DetailBloc, DetailState>(
+        child: BlocConsumer<DetailBloc, DetailState>(
           listener: (context, state) {
             if (state is DetailError) {
               if (state.message.contains('InvalidCredentials') ||
@@ -300,17 +303,6 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             }
 
             return const SizedBox.shrink();
-          },
-        );
-            if (constraints.maxWidth >= 900) {
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  child: inner,
-                ),
-              );
-            }
-            return inner;
           },
         ),
       ),
@@ -448,52 +440,56 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   ],
                 ),
               ),
-              // Détails du manga (LateDetailView)
+              // Détails du manga (LateDetailView) — contenu sous le hero
+              // centré (max 1100) via AppContentWidth (audit 2026-06-12) ;
+              // le hero au-dessus reste pleine largeur (cinématique).
               Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<DetailBloc>().add(const RefreshMangaDetail());
-                    await Future.delayed(const Duration(milliseconds: 500));
-                  },
-                  child: LateDetailView(
-                    muId: widget.muId.toString(),
-                    mangaTitle: manga.title,
-                    mangaDescription: manga.description,
-                    rating: manga.rating,
-                    mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
-                    mangaTotalChapters: manga.totalChapters,
-                    isCompleted: manga.isCompleted,
-                    authors: manga.authors,
-                    year: manga.year,
-                    readChapters: readChapters,
-                    genres: manga.genres,
-                    seasonChapters: manga.seasonChapters,
-                    bonusChapters: manga.bonusChapters,
-                    associated: manga.associated,
-                    onReadCountChanged: (newCount) {
-                      // Dispatcher l'événement au BLoC pour mise à jour réactive
-                      context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));
+                child: AppContentWidth(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<DetailBloc>().add(const RefreshMangaDetail());
+                      await Future.delayed(const Duration(milliseconds: 500));
                     },
-                    onAddToLibrary: () {
-                      // Dispatcher l'événement au BLoC
-                      context.read<DetailBloc>().add(AddToLibrary(widget.muId));
-                    },
-                    onRemoveFromLibrary: () {
-                      // Dispatcher l'événement au BLoC
-                      context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
-                    },
-                    // **Fix 2026-05-19** : la notation utilisateur est désormais
-                    // injectée dans le flux scrollable de LateDetailView (entre
-                    // stats grid et Noms associés) au lieu d'être pinnée en bas.
-                    // Libère de la place verticale fixe pour voir + de contenu.
-                    inlineRatingSlot: manga.inLibrary
-                        ? DetailRatingSection(
-                            muId: widget.muId,
-                            userRating: manga.userRating,
-                            communityRating: manga.communityRating,
-                            communityRatingCount: manga.communityRatingCount,
-                          )
-                        : null,
+                    child: LateDetailView(
+                      muId: widget.muId.toString(),
+                      mangaTitle: manga.title,
+                      mangaDescription: manga.description,
+                      rating: manga.rating,
+                      mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
+                      mangaTotalChapters: manga.totalChapters,
+                      isCompleted: manga.isCompleted,
+                      authors: manga.authors,
+                      year: manga.year,
+                      readChapters: readChapters,
+                      genres: manga.genres,
+                      seasonChapters: manga.seasonChapters,
+                      bonusChapters: manga.bonusChapters,
+                      associated: manga.associated,
+                      onReadCountChanged: (newCount) {
+                        // Dispatcher l'événement au BLoC pour mise à jour réactive
+                        context.read<DetailBloc>().add(SaveChapterProgress(widget.muId, newCount.toInt()));
+                      },
+                      onAddToLibrary: () {
+                        // Dispatcher l'événement au BLoC
+                        context.read<DetailBloc>().add(AddToLibrary(widget.muId));
+                      },
+                      onRemoveFromLibrary: () {
+                        // Dispatcher l'événement au BLoC
+                        context.read<DetailBloc>().add(RemoveFromLibrary(widget.muId));
+                      },
+                      // **Fix 2026-05-19** : la notation utilisateur est désormais
+                      // injectée dans le flux scrollable de LateDetailView (entre
+                      // stats grid et Noms associés) au lieu d'être pinnée en bas.
+                      // Libère de la place verticale fixe pour voir + de contenu.
+                      inlineRatingSlot: manga.inLibrary
+                          ? DetailRatingSection(
+                              muId: widget.muId,
+                              userRating: manga.userRating,
+                              communityRating: manga.communityRating,
+                              communityRatingCount: manga.communityRatingCount,
+                            )
+                          : null,
+                    ),
                   ),
                 ),
               ),
@@ -501,7 +497,8 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               // dans l'action bar (à gauche de "Lire en ligne") sous forme
               // d'icône 48px, pour libérer de la hauteur fixe. Cf. l'icône
               // `_StatusIconButton` dans `_buildBottomActionBar`.
-              _buildBottomActionBar(status),
+              // L'action bar suit la même largeur max que le contenu.
+              AppContentWidth(child: _buildBottomActionBar(status)),
             ],
           ),
         ),

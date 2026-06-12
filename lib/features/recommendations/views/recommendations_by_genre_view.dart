@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
@@ -27,19 +28,24 @@ class RecommendationsByGenreView extends StatefulWidget {
 class _RecommendationsByGenreViewState
     extends State<RecommendationsByGenreView> {
   late Future<Map<String, List<MangaQuickViewDto>>> _byGenreFuture;
+  late Future<List<MangaQuickViewDto>> _sleepersFuture;
 
   @override
   void initState() {
     super.initState();
+    _load();
+  }
+
+  void _load() {
     _byGenreFuture = getIt<RecommendationService>()
         .getRecommendationsByGenre(topGenres: 5, perGenre: 10);
+    // Pépites : sorties récentes bien notées (Bayésien) mais peu visibles —
+    // section « découverte » en tête de l'explorer par genre.
+    _sleepersFuture = getIt<RecommendationService>().getSleeperHits();
   }
 
   Future<void> _refresh() async {
-    setState(() {
-      _byGenreFuture = getIt<RecommendationService>()
-          .getRecommendationsByGenre(topGenres: 5, perGenre: 10);
-    });
+    setState(_load);
     await _byGenreFuture;
   }
 
@@ -52,10 +58,16 @@ class _RecommendationsByGenreViewState
           l10n?.recommendationsByGenreTitle ?? 'Recommandations par genre',
         ),
       ),
+      // Responsive (audit 2026-06-12) : breakpoints locaux 1200/600 remplacés
+      // par le wrapper unifié AppContentWidth (max 1100) + AppBreakpoints.
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isDesktop = constraints.maxWidth >= 1200;
-          final isTablet = constraints.maxWidth >= 600;
+          final bp = AppBreakpoints.of(constraints.maxWidth);
+          final hPad = bp.isWide
+              ? 32.0
+              : bp.isAtLeastTablet
+                  ? 24.0
+                  : 0.0;
           // **Fix 2026-05-19** : segmented toggle V1 en tête de page (au lieu
           // d'un IconButton dans l'AppBar) pour switcher entre Tout / Par genre.
           const toggle = RecommendationsSegmentedToggle(
@@ -98,39 +110,54 @@ class _RecommendationsByGenreViewState
                 onRefresh: _refresh,
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemCount: entries.length,
-                  itemBuilder: (context, index) =>
-                      _GenreSection(entry: entries[index]),
+                  // +1 : section « Pépites » en tête (masquée si vide).
+                  itemCount: entries.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return _SleepersSection(future: _sleepersFuture);
+                    }
+                    return _GenreSection(entry: entries[index - 1]);
+                  },
                 ),
               );
             },
           );
-          if (isDesktop) {
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1100),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [toggle, Expanded(child: inner)],
-                  ),
-                ),
-              ),
-            );
-          }
-          if (isTablet) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+          return AppContentWidth(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPad),
               child: Column(
                 children: [toggle, Expanded(child: inner)],
               ),
-            );
-          }
-          return Column(
-            children: [toggle, Expanded(child: inner)],
+            ),
           );
         },
       ),
+    );
+  }
+}
+
+/// Section « 💎 Pépites cachées » — sleeper hits en tête de l'explorer.
+/// Rendue vide (SizedBox.shrink) tant que le fetch n'a pas abouti ou si
+/// l'API ne renvoie rien : la page reste utilisable sans cette section.
+class _SleepersSection extends StatelessWidget {
+  final Future<List<MangaQuickViewDto>> future;
+  const _SleepersSection({required this.future});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return FutureBuilder<List<MangaQuickViewDto>>(
+      future: future,
+      builder: (context, snapshot) {
+        final sleepers = snapshot.data ?? const <MangaQuickViewDto>[];
+        if (sleepers.isEmpty) return const SizedBox.shrink();
+        return _GenreSection(
+          entry: MapEntry(
+            l10n?.recommendationsSleepersTitle ?? '💎 Pépites cachées',
+            sleepers,
+          ),
+        );
+      },
     );
   }
 }

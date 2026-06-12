@@ -8,6 +8,7 @@ import 'package:mangatracker/features/download/services/download_manager_service
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
 import 'package:mangatracker/features/library/bloc/library_event.dart';
 import 'package:mangatracker/features/library/bloc/library_state.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/library/widgets/library_action_banner.dart';
 import 'package:mangatracker/features/library/widgets/library_error_state.dart';
@@ -163,27 +164,23 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           }
         },
         builder: (context, state) {
+          // Responsive (audit 2026-06-12) : branches locales 1200/600
+          // remplacées par le wrapper unifié AppContentWidth (max 1100)
+          // + paddings issus d'AppBreakpoints.
           return LayoutBuilder(
             builder: (context, constraints) {
-              if (constraints.maxWidth >= 1200) {
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1100),
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 32),
-                      child: _buildBody(state),
-                    ),
-                  ),
-                );
-              }
-              if (constraints.maxWidth >= 600) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+              final bp = AppBreakpoints.of(constraints.maxWidth);
+              final hPad = bp.isWide
+                  ? 32.0
+                  : bp.isAtLeastTablet
+                      ? 24.0
+                      : 0.0;
+              return AppContentWidth(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: _buildBody(state),
-                );
-              }
-              return _buildBody(state);
+                ),
+              );
             },
           );
         },

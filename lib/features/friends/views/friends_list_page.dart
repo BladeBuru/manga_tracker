@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart' show AppContentWidth;
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/utils/responsive_layout.dart';
 import 'package:mangatracker/features/friends/bloc/friends_bloc.dart';
@@ -130,40 +133,38 @@ class _FriendsContentState extends State<_FriendsContent>
   Widget build(BuildContext context) {
     final s = widget.state;
     final hPad = horizontalPadding(context);
-    final maxW = maxContentWidth(context);
     return RefreshIndicator(
       onRefresh: () async {
         context.read<FriendsBloc>().add(const LoadFriends(forceRefresh: true));
       },
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxW),
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 24),
-            children: [
-              UserSearchField(
-                results: s.searchResults,
-                onQueryChanged: (q) =>
-                    context.read<FriendsBloc>().add(SearchUsers(q)),
-                onSendRequest: (userId) => context
-                    .read<FriendsBloc>()
-                    .add(SendFriendRequest(userId)),
-              ),
-              const SizedBox(height: 18),
-              FriendsTabSegmented(
-                selected: _tab,
-                acceptedCount: s.accepted.length,
-                pendingCount: s.pending.length,
-                onChanged: (t) => setState(() => _tab = t),
-              ),
-              const SizedBox(height: 16),
-              if (_tab == FriendsTab.accepted)
-                _AcceptedBody(items: s.accepted)
-              else
-                _PendingBody(items: s.pending),
-            ],
-          ),
+      // Responsive (audit 2026-06-12) : contenu centré via le wrapper
+      // unifié AppContentWidth (max 1100) au lieu du maxContentWidth local.
+      child: AppContentWidth(
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 24),
+          children: [
+            UserSearchField(
+              results: s.searchResults,
+              onQueryChanged: (q) =>
+                  context.read<FriendsBloc>().add(SearchUsers(q)),
+              onSendRequest: (userId) => context
+                  .read<FriendsBloc>()
+                  .add(SendFriendRequest(userId)),
+            ),
+            const SizedBox(height: 18),
+            FriendsTabSegmented(
+              selected: _tab,
+              acceptedCount: s.accepted.length,
+              pendingCount: s.pending.length,
+              onChanged: (t) => setState(() => _tab = t),
+            ),
+            const SizedBox(height: 16),
+            if (_tab == FriendsTab.accepted)
+              _AcceptedBody(items: s.accepted)
+            else
+              _PendingBody(items: s.pending),
+          ],
         ),
       ),
     );
@@ -190,6 +191,14 @@ class _AcceptedBody extends StatelessWidget {
         for (final f in items)
           FriendListTile(
             friendship: f,
+            // Tap → profil de l'ami (sa bibliothèque).
+            onTap: () => context.push(
+              '/friends/${f.otherUserId}',
+              extra: FriendProfileExtras(
+                displayName: f.displayName,
+                avatarUrl: f.otherAvatarUrl,
+              ),
+            ),
             onRemove: () =>
                 context.read<FriendsBloc>().add(RemoveFriend(f.id)),
           ),

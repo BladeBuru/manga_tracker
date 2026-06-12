@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
+import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -98,17 +99,12 @@ class _PaginatedRecommendationsViewState
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final w = constraints.maxWidth;
           // **Fix 2026-05-19** : 3 cols sur mobile (au lieu de 2) → cards
           // plus compactes, alignées sur la grille library V1 et le mockup
           // design source (3 cols repeat).
-          final cols = w >= 1200
-              ? 6
-              : w >= 800
-                  ? 5
-                  : w >= 600
-                      ? 4
-                      : 3;
+          // Responsive (audit 2026-06-12) : calcul local 1200/800/600 remplacé
+          // par AppBreakpoints.gridColumns (même résultat, source unique).
+          final cols = AppBreakpoints.of(constraints.maxWidth).gridColumns;
           return Column(
             children: [
               const RecommendationsSegmentedToggle(
