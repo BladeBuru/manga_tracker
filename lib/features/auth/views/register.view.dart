@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -152,6 +153,9 @@ class _RegisterViewState extends State<RegisterView> {
         listenWhen: (prev, curr) => prev.status != curr.status,
         listener: (context, state) {
           if (state.status == AuthSubmissionStatus.success) {
+            // Propose l'enregistrement des identifiants au gestionnaire de
+            // mots de passe (hotfix-v0-10-1 US-1).
+            TextInput.finishAutofillContext();
             context.go('/home');
           }
         },
@@ -159,7 +163,10 @@ class _RegisterViewState extends State<RegisterView> {
           canPop: false,
           child: Form(
             key: _formKey,
-            child: BlocBuilder<RegisterCubit, RegisterState>(
+            // Indispensable pour que les autofillHints soient agrégés par
+            // les gestionnaires de mots de passe (hotfix-v0-10-1 US-1).
+            child: AutofillGroup(
+              child: BlocBuilder<RegisterCubit, RegisterState>(
               builder: (context, state) {
                 final l10n = AppLocalizations.of(context);
                 return _RegisterContent(
@@ -181,6 +188,7 @@ class _RegisterViewState extends State<RegisterView> {
                   onApple: _onAppleLogin,
                 );
               },
+              ),
             ),
           ),
         ),

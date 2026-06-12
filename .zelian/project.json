@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "framework_version": "2.5.8",
+  "project_id": "a90501da-b34b-4f03-8e2d-a22711875dbe",
+  "initialized_at": "2026-06-04T12:34:20.272Z",
+  "stack": "Flutter 3.x (Material 3, `useMaterial3: true`)",
+  "monorepo": false,
+  "apps": [],
+  "initialized_via": "retro"
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -155,6 +156,11 @@ class _LoginViewState extends State<LoginView> {
               return;
             }
             if (!context.mounted) return;
+            // Signale aux gestionnaires de mots de passe que le formulaire
+            // est validé → propose d'enregistrer/mettre à jour les
+            // identifiants (hotfix-v0-10-1 US-1, fonctionne avec
+            // AutofillGroup ci-dessous).
+            TextInput.finishAutofillContext();
             context.go('/home');
             _loginCubit.reset();
           }
@@ -163,17 +169,22 @@ class _LoginViewState extends State<LoginView> {
           canPop: false,
           child: Form(
             key: _formKey,
-            child: _LoginContent(
-              emailController: _emailController,
-              passwordController: _passwordController,
-              validatorService: _validatorService,
-              onSubmit: _onSubmit,
-              onRegister: _goToRegister,
-              onForgotPassword: () => context.push('/forgot-password'),
-              onBiometric: _onBiometricLogin,
-              onGoogle: _onGoogleLogin,
-              onApple: _onAppleLogin,
-              authService: _authService,
+            // AutofillGroup : sans lui, les autofillHints des champs sont
+            // ignorés par Chrome/gestionnaires Android — le formulaire doit
+            // être agrégé pour que l'autofill email+password fonctionne.
+            child: AutofillGroup(
+              child: _LoginContent(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                validatorService: _validatorService,
+                onSubmit: _onSubmit,
+                onRegister: _goToRegister,
+                onForgotPassword: () => context.push('/forgot-password'),
+                onBiometric: _onBiometricLogin,
+                onGoogle: _onGoogleLogin,
+                onApple: _onAppleLogin,
+                authService: _authService,
+              ),
             ),
           ),
         ),
