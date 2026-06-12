@@ -63,6 +63,8 @@
     "lib/features/manga/services/recommendation.service.dart",
     "lib/core/services/offline_cache_service.dart",
     "lib/features/recommendations/views/paginated_recommendations_view.dart",
-    "lib/core/storage/services/storage.service.dart"
+    "lib/core/storage/services/storage.service.dart",
+    "test/features/auth/views/register_view_test.dart",
+    "CHANGELOG.md"
   ]
 }
