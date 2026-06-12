@@ -448,6 +448,13 @@ Le `username` ou `displayName` de certains utilisateurs **contient leur email** 
 
 ## 🎯 Ordre de priorité suggéré pour la prochaine session
 
+**✅ SPRINT 1 IMPLÉMENTÉ ET VÉRIFIÉ (2026-06-12)** — voir specs `docs/specs/hotfix-v0-10-1/` (2 repos). Tout est commité localement, EN ATTENTE DE PUSH (review user). Vérifications passées : boot prod sur Postgres jetable (health 200, migrations OK), build web OK, flutter analyze 0 erreur, 19 tests Flutter + 42 tests API verts, review adversariale (3 findings corrigés : sharing DTOs RGPD, invalidation cache front, faux positif custom-link), audit design (4 quick wins corrigés).
+
+**📋 Chantiers issus de l'audit design/responsive (sessions futures)** :
+- **Responsive coverage** : ~95% des pages sans LayoutBuilder/MediaQuery (seuls auth_scaffold, homepage, paginated_recommendations en ont). Prioriser library grid/list, detail sub-pages, search, friends, profile. Créer `AppBreakpoints` (stratégie unifiée 1200/800/600 — actuellement incohérente entre pages).
+- **Dark mode pass** : ~20 `Color(0x...)` ad-hoc restants + Colors.white hors checks brightness (user_search_field, library offline banner pattern à arbitrer).
+- **Skeleton screens** : RefreshableMangaImage fallback immédiat sans skeleton (perception 3G).
+
 **Sprint 1 — Hotfixes** (release v0.10.1) :
 1. **🚨 Bug commentaires email** (P1.2) — RGPD, à fixer en priorité absolue
 2. **Refresh token 7d → 30d/90d** — fix critique UX, env var à bump
