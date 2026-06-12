@@ -1,3 +1,4 @@
+import 'package:mangatracker/core/utils/safe_display_name.dart';
 /// Tri pour la liste des commentaires top-level.
 enum CommentSort {
   recent('recent'),
@@ -36,11 +37,13 @@ class CommentDto {
     required this.updatedAt,
   });
 
-  /// Helper : displayName avec fallback username.
-  String get displayName =>
-      (authorDisplayName?.isNotEmpty ?? false)
-          ? authorDisplayName!
-          : authorUsername;
+  /// Helper : displayName avec fallback username. Passé par
+  /// [stripEmailFormat] — jamais d'email affiché (RGPD, hotfix-v0-10-1).
+  String get displayName => stripEmailFormat(
+        (authorDisplayName?.isNotEmpty ?? false)
+            ? authorDisplayName!
+            : authorUsername,
+      );
 
   factory CommentDto.fromJson(Map<String, dynamic> json) {
     return CommentDto(

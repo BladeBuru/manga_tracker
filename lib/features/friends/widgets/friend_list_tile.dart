@@ -67,7 +67,7 @@ class FriendListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '@${friendship.otherUsername}',
+                    '@${friendship.safeOtherUsername}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

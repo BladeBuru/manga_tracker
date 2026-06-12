@@ -1,7 +1,6 @@
 {
   "@@locale": "es",
   "appTitle": "MangaTracker",
-  
   "welcomeBack": "Bienvenido de nuevo",
   "emailAddress": "Dirección de correo electrónico",
   "password": "Contraseña",
@@ -50,14 +49,22 @@
   "pushNotifFriendRequestTitle": "Nueva solicitud de amistad",
   "pushNotifFriendRequestBody": "{senderUsername} quiere añadirte como amigo",
   "@pushNotifFriendRequestBody": {
-    "placeholders": { "senderUsername": { "type": "String" } }
+    "placeholders": {
+      "senderUsername": {
+        "type": "String"
+      }
+    }
   },
   "pushNotifShareTitle": "Nuevo manga compartido",
   "pushNotifShareBody": "{senderUsername} te recomienda {mangaTitle}",
   "@pushNotifShareBody": {
     "placeholders": {
-      "senderUsername": { "type": "String" },
-      "mangaTitle": { "type": "String" }
+      "senderUsername": {
+        "type": "String"
+      },
+      "mangaTitle": {
+        "type": "String"
+      }
     }
   },
   "theme": "Tema",
@@ -148,7 +155,6 @@
   "addToReadLater": "Añadir a \"Leer más tarde\"",
   "mangaRemovedFromLibrary": "Manga eliminado de la biblioteca",
   "searchPlaceholder": "Buscar Mangas, Manwhas...",
-  "error": "Error",
   "year": "Año",
   "status": "Estado",
   "author": "Autor",
@@ -157,7 +163,6 @@
   "seeMore": "Ver más",
   "seeLess": "Ver menos",
   "all": "Todos",
-  "popular": "Popular",
   "newReleases": "Nuevos lanzamientos",
   "chapter": "Capítulo",
   "chaptersCount": "{count, plural, =0{Sin capítulos} =1{{count} capítulo} other{{count} capítulos}}",
@@ -206,7 +211,6 @@
   "passwordStrengthWeak": "Débil",
   "passwordStrengthMedium": "Media",
   "passwordStrengthStrong": "Fuerte",
-  
   "yes": "Sí",
   "no": "No",
   "yesValidate": "Sí, validar",
@@ -235,47 +239,38 @@
   "linkFormatDescription": "Incluya el número de capítulo en la URL para permitir el guardado automático del progreso.\n\nFormatos aceptados:\n• /capítulo-23/ o /chapter-23/\n• /c23/ o /ch23/\n• /ep-23/ o /episode-23/\n• ?chapter=23 o ?num=24",
   "linkFormatWarning": "No se detectó formato de capítulo. El enlace redirigirá a la página del manga (no a un capítulo específico).",
   "linkFormatDetected": "¡Formato de capítulo detectado! El progreso se guardará automáticamente.",
-  
   "captchaDetected": "Captcha detectado - El bloqueador de anuncios ha sido desactivado temporalmente",
   "@captchaDetected": {
     "description": "Mensaje cuando se detecta un captcha"
   },
-  
   "captchaResolved": "Captcha resuelto - El bloqueador de anuncios ha sido reactivado",
   "@captchaResolved": {
     "description": "Mensaje cuando se resuelve un captcha"
   },
-  
   "scrollPositionSaved": "Posición de desplazamiento guardada",
   "@scrollPositionSaved": {
     "description": "Mensaje de confirmación para guardar la posición de desplazamiento"
   },
-  
   "chapterProgressSaved": "Progreso del capítulo guardado",
   "@chapterProgressSaved": {
     "description": "Mensaje de confirmación para guardar el progreso"
   },
-  
   "readingOffline": "Leyendo sin conexión",
   "@readingOffline": {
     "description": "Título para lectura sin conexión"
   },
-  
   "chapterDownloaded": "Capítulo descargado",
   "@chapterDownloaded": {
     "description": "Mensaje que indica que un capítulo está descargado"
   },
-  
   "offlineReadingMode": "Modo de lectura sin conexión",
   "@offlineReadingMode": {
     "description": "Descripción del modo de lectura sin conexión"
   },
-  
   "deleteChapterTitle": "Eliminar capítulo",
   "@deleteChapterTitle": {
     "description": "Título del diálogo para eliminar un capítulo"
   },
-  
   "deleteChapterMessage": "¿Realmente desea eliminar el capítulo {chapterNumber}?",
   "@deleteChapterMessage": {
     "description": "Mensaje de confirmación para eliminar un capítulo",
@@ -285,62 +280,48 @@
       }
     }
   },
-  
   "deleteAllChaptersTitle": "Eliminar todos los capítulos",
   "@deleteAllChaptersTitle": {
     "description": "Título del diálogo para eliminar todos los capítulos de un manga"
   },
-  
   "deleteAllChaptersMessage": "¿Realmente desea eliminar todos los capítulos descargados de este manga?",
   "@deleteAllChaptersMessage": {
     "description": "Mensaje de confirmación para eliminar todos los capítulos de un manga"
   },
-  
   "deleteAllDownloadsTitle": "Eliminar todos los descargos",
   "@deleteAllDownloadsTitle": {
     "description": "Título del diálogo para eliminar todos los descargos"
   },
-  
   "deleteAllDownloadsMessage": "¿Realmente desea eliminar TODOS los descargos? Esta acción es irreversible.",
   "@deleteAllDownloadsMessage": {
     "description": "Mensaje de confirmación para eliminar todos los descargos"
   },
-  
-  "delete": "Eliminar",
   "@delete": {
     "description": "Botón para eliminar"
   },
-  
   "deleteAll": "Eliminar todo",
   "@deleteAll": {
     "description": "Botón para eliminar todo"
   },
-  
-  "cancel": "Cancelar",
   "@cancel": {
     "description": "Botón para cancelar"
   },
-  
   "chapterDeleted": "Capítulo eliminado",
   "@chapterDeleted": {
     "description": "Mensaje de éxito después de eliminar un capítulo"
   },
-  
   "allChaptersDeleted": "Todos los capítulos eliminados",
   "@allChaptersDeleted": {
     "description": "Mensaje de éxito después de eliminar todos los capítulos de un manga"
   },
-  
   "allDownloadsDeleted": "Todos los descargos eliminados",
   "@allDownloadsDeleted": {
     "description": "Mensaje de éxito después de eliminar todos los descargos"
   },
-  
   "noChaptersDownloaded": "Ningún capítulo descargado",
   "@noChaptersDownloaded": {
     "description": "Mensaje mostrado cuando no hay capítulos descargados"
   },
-  
   "chaptersDownloadedCount": "{count, plural, =0{Ningún capítulo descargado} =1{1 capítulo descargado} other{{count} capítulos descargados}}",
   "@chaptersDownloadedCount": {
     "description": "Número de capítulos descargados",
@@ -350,66 +331,61 @@
       }
     }
   },
-  
   "readChapter": "Leer",
   "@readChapter": {
     "description": "Botón para leer un capítulo"
   },
-  
   "deleteAllChaptersAction": "Eliminar todos los capítulos",
   "@deleteAllChaptersAction": {
     "description": "Acción para eliminar todos los capítulos de un manga"
   },
-  
   "deleteAllDownloadsTooltip": "Eliminar todos los descargos",
   "@deleteAllDownloadsTooltip": {
     "description": "Tooltip para el botón de eliminar todos los descargos"
   },
-
   "recommendedForYou": "Recomendado para ti",
   "@recommendedForYou": {
     "description": "Section of personalized manga recommendations"
   },
-
   "recommendedForYouEmpty": "Añade mangas a tu biblioteca\npara obtener recomendaciones personalizadas.",
   "@recommendedForYouEmpty": {
     "description": "Message shown in the recommendations section when the library is empty"
   },
-
   "recommendedForYouCount": "{count, plural, =1{1 manga} other{{count} mangas}}",
   "@recommendedForYouCount": {
     "description": "Subtitle showing the number of recommended manga",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "recommendedForYouCached": "Recomendaciones en caché (modo sin conexión)",
   "@recommendedForYouCached": {
     "description": "Indicator shown when recommendations are loaded from offline cache"
   },
-
   "errorWithMessage": "Error: {message}",
   "@errorWithMessage": {
     "description": "Generic error prefix with a technical message",
     "placeholders": {
-      "message": { "type": "String" }
+      "message": {
+        "type": "String"
+      }
     }
   },
-
   "recommendedBecauseOf": "Porque te gustó {titles}",
   "@recommendedBecauseOf": {
     "description": "Explanation for a recommendation, listing source manga",
     "placeholders": {
-      "titles": { "type": "String" }
+      "titles": {
+        "type": "String"
+      }
     }
   },
-
   "yourRating": "Tu valoración",
   "@yourRating": {
     "description": "Label next to the user rating widget on the manga detail page"
   },
-
   "myDataTitle": "Mis datos",
   "@myDataTitle": {},
   "myDataSubtitle": "Ver, exportar o eliminar mis datos (RGPD)",
@@ -480,7 +456,6 @@
   "@refuseAndLogout": {},
   "versionLabel": "Versión",
   "@versionLabel": {},
-
   "welcomeTitle": "¡Bienvenido!",
   "@welcomeTitle": {},
   "loginSubtitle": "Inicia sesión en tu cuenta",
@@ -497,7 +472,6 @@
   "@continueWithApple": {},
   "loadingApp": "Cargando…",
   "@loadingApp": {},
-
   "forgotPasswordTitle": "Contraseña olvidada",
   "@forgotPasswordTitle": {},
   "forgotPasswordIntro": "Introduce tu email. Si existe una cuenta, recibirás un enlace para establecer una nueva contraseña.",
@@ -508,7 +482,11 @@
   "@resetEmailSentTitle": {},
   "resetEmailSentMessage": "Si existe una cuenta para {email}, se ha enviado un email con un enlace para establecer una nueva contraseña.\n\nEl enlace expira en 30 minutos.",
   "@resetEmailSentMessage": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "resetPasswordTitle": "Nueva contraseña",
   "@resetPasswordTitle": {},
@@ -566,7 +544,11 @@
   "@statsTotalMangas": {},
   "statsMemberSince": "Miembro desde {date}",
   "@statsMemberSince": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "statsTotalChapters": "Capítulos leídos",
   "@statsTotalChapters": {},
@@ -586,20 +568,32 @@
   "@statsTopGenresEmpty": {},
   "statsMinutesShort": "{count} min",
   "@statsMinutesShort": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "statsHoursAndMinutesShort": "{hours} h {minutes} min",
   "@statsHoursAndMinutesShort": {
     "placeholders": {
-      "hours": { "type": "int" },
-      "minutes": { "type": "int" }
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "statsDaysAndHoursShort": "{days} d {hours} h",
   "@statsDaysAndHoursShort": {
     "placeholders": {
-      "days": { "type": "int" },
-      "hours": { "type": "int" }
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "statusReadLater": "Para leer",
@@ -611,22 +605,38 @@
   "statusCompleted": "Completado",
   "@statusCompleted": {},
   "statsSectionOverview": "Resumen",
-  "@statsSectionOverview": { "description": "Stats page V1 — overview section title" },
+  "@statsSectionOverview": {
+    "description": "Stats page V1 — overview section title"
+  },
   "statsSectionBreakdown": "Mangas por estado",
-  "@statsSectionBreakdown": { "description": "Stats page V1 — breakdown by status section title" },
+  "@statsSectionBreakdown": {
+    "description": "Stats page V1 — breakdown by status section title"
+  },
   "statsSectionGenres": "Géneros favoritos",
-  "@statsSectionGenres": { "description": "Stats page V1 — genres section title" },
+  "@statsSectionGenres": {
+    "description": "Stats page V1 — genres section title"
+  },
   "statsLibraryTotal": "Mangas en tu biblioteca",
-  "@statsLibraryTotal": { "description": "Stats page V1 — total mangas row label" },
+  "@statsLibraryTotal": {
+    "description": "Stats page V1 — total mangas row label"
+  },
   "statsMonthsSinceJoin": "{count, plural, =0{Miembro desde hace menos de un mes} =1{Miembro desde hace 1 mes} other{Miembro desde hace {count} meses}}",
   "@statsMonthsSinceJoin": {
     "description": "Stats page V1 — hero text indicating account age in months",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "statsHeroBadge": "{count, plural, =1{1 manga} other{{count} mangas}}",
   "@statsHeroBadge": {
     "description": "Stats page V1 — badge on the right of the hero",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "profileMyStats": "Mis estadísticas",
   "@profileMyStats": {},
@@ -726,21 +736,37 @@
   "@commentsLoadMore": {},
   "commentsReplyCount": "{count, plural, =1{1 respuesta} other{{count} respuestas}}",
   "@commentsReplyCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeJustNow": "justo ahora",
   "@timeJustNow": {},
   "timeMinutesAgo": "hace {count} min",
   "@timeMinutesAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeHoursAgo": "hace {count} h",
   "@timeHoursAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeDaysAgo": "hace {count} d",
   "@timeDaysAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "shareTitle": "Compartir este manga",
   "@shareTitle": {},
@@ -766,11 +792,19 @@
   "@inboxBadgeNew": {},
   "inboxSenderRecommends": "{sender} recomienda",
   "@inboxSenderRecommends": {
-    "placeholders": { "sender": { "type": "String" } }
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
   },
   "inboxSharedYouLabel": "{sender} compartió contigo",
   "@inboxSharedYouLabel": {
-    "placeholders": { "sender": { "type": "String" } }
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
   },
   "inboxFilterAll": "Todas",
   "@inboxFilterAll": {},
@@ -812,13 +846,21 @@
   "@readingGroupNotStarted": {},
   "readingGroupChaptersRead": "Cap. {count}",
   "@readingGroupChaptersRead": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupChaptersReadLabel": "leídos",
   "@readingGroupChaptersReadLabel": {},
   "readingGroupMembersCount": "{count, plural, =1{1 miembro} other{{count} miembros}}",
   "@readingGroupMembersCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "profileMyReadingGroups": "Lecturas en pareja",
   "@profileMyReadingGroups": {},
@@ -898,16 +940,26 @@
   "@readingGroupListSectionTitle": {},
   "readingGroupWithLabel": "Con {name}",
   "@readingGroupWithLabel": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "readingGroupYouLabel": "Tú",
   "@readingGroupYouLabel": {},
   "readingGroupProgressYouVsFriend": "Tú: cap. {you} · {friend}: cap. {their}",
   "@readingGroupProgressYouVsFriend": {
     "placeholders": {
-      "you": { "type": "String" },
-      "friend": { "type": "String" },
-      "their": { "type": "String" }
+      "you": {
+        "type": "String"
+      },
+      "friend": {
+        "type": "String"
+      },
+      "their": {
+        "type": "String"
+      }
     }
   },
   "readingGroupChapterDash": "—",
@@ -926,19 +978,35 @@
   "@readingGroupActionsInvite": {},
   "readingGroupActionsCopyFriendLink": "Copiar el enlace de {friend}",
   "@readingGroupActionsCopyFriendLink": {
-    "placeholders": { "friend": { "type": "String" } }
+    "placeholders": {
+      "friend": {
+        "type": "String"
+      }
+    }
   },
   "readingGroupActionsCopyFriendLinkSubtitle": "Adaptado al capítulo {chapter}",
   "@readingGroupActionsCopyFriendLinkSubtitle": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupApplyLinkSuccess": "Enlace guardado en el capítulo {chapter}",
   "@readingGroupApplyLinkSuccess": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupCopyLinkSuccess": "Enlace copiado — capítulo {chapter}",
   "@readingGroupCopyLinkSuccess": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupCopyLinkFailed": "No se puede adaptar este enlace (formato desconocido)",
   "@readingGroupCopyLinkFailed": {},
@@ -968,13 +1036,16 @@
   "@readingGroupTotalLabel": {},
   "readingGroupChaptersTotal": "{count} cap.",
   "@readingGroupChaptersTotal": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupInviteSoonTitle": "Próximamente",
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Invitar desde el grupo llegará muy pronto. Por ahora, crea un nuevo grupo desde la ficha del manga.",
   "@readingGroupInviteSoonMessage": {},
-
   "libraryToggleListView": "Vista de lista",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Vista de tarjetas",
@@ -986,16 +1057,34 @@
   "libraryProgressLabel": "{read} de {total} capítulos leídos",
   "@libraryProgressLabel": {
     "placeholders": {
-      "read": { "type": "int" },
-      "total": { "type": "int" }
+      "read": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "votesCount": "{count, plural, =0{Sin votos} =1{1 voto} other{{count} votos}}",
   "@votesCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "detailSectionSimilar": "Mangas similares",
-  "rating": "Valoración"
+  "rating": "Valoración",
+  "anonymousUser": "Usuario anónimo",
+  "@anonymousUser": {
+    "description": "Nom affiché à la place d'un identifiant au format email (RGPD defense-in-depth)"
+  },
+  "recommendationsColdStartTitle": "Descubre mangas populares",
+  "@recommendationsColdStartTitle": {
+    "description": "Titre du bandeau d'accueil recos quand la bibliothèque est vide"
+  },
+  "recommendationsColdStartSubtitle": "Añade tus primeras lecturas para recibir recomendaciones personalizadas",
+  "@recommendationsColdStartSubtitle": {
+    "description": "Sous-titre du bandeau cold start recos"
+  }
 }

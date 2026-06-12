@@ -311,7 +311,7 @@ class _FriendPickRow extends StatelessWidget {
                       ),
                 ),
                 Text(
-                  '@${friend.otherUsername}',
+                  '@${friend.safeOtherUsername}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: selected
                             ? scheme.onPrimaryContainer

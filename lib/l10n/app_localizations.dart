@@ -3561,6 +3561,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Note'**
   String get rating;
+
+  /// Nom affiché à la place d'un identifiant au format email (RGPD defense-in-depth)
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateur anonyme'**
+  String get anonymousUser;
+
+  /// Titre du bandeau d'accueil recos quand la bibliothèque est vide
+  ///
+  /// In fr, this message translates to:
+  /// **'Découvre les mangas populaires'**
+  String get recommendationsColdStartTitle;
+
+  /// Sous-titre du bandeau cold start recos
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoute tes premières lectures pour recevoir des recommandations personnalisées'**
+  String get recommendationsColdStartSubtitle;
 }
 
 class _AppLocalizationsDelegate

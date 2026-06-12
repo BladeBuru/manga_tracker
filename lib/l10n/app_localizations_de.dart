@@ -1980,4 +1980,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rating => 'Bewertung';
+
+  @override
+  String get anonymousUser => 'Anonymer Nutzer';
+
+  @override
+  String get recommendationsColdStartTitle => 'Entdecke beliebte Manga';
+
+  @override
+  String get recommendationsColdStartSubtitle =>
+      'Füge deine ersten Lektüren hinzu, um persönliche Empfehlungen zu erhalten';
 }

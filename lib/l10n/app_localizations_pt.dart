@@ -1977,4 +1977,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get rating => 'Avaliação';
+
+  @override
+  String get anonymousUser => 'Usuário anônimo';
+
+  @override
+  String get recommendationsColdStartTitle => 'Descubra mangás populares';
+
+  @override
+  String get recommendationsColdStartSubtitle =>
+      'Adicione suas primeiras leituras para receber recomendações personalizadas';
 }

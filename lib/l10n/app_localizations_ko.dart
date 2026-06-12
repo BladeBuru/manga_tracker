@@ -1922,4 +1922,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get rating => '평점';
+
+  @override
+  String get anonymousUser => '익명 사용자';
+
+  @override
+  String get recommendationsColdStartTitle => '인기 만화를 만나보세요';
+
+  @override
+  String get recommendationsColdStartSubtitle => '첫 작품을 추가하면 맞춤 추천을 받을 수 있어요';
 }

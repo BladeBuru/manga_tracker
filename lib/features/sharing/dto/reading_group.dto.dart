@@ -1,3 +1,4 @@
+import 'package:mangatracker/core/utils/safe_display_name.dart';
 /// Membre d'un groupe avec sa progression sur le manga partagé (Phase 8.3).
 class ReadingGroupMemberDto {
   final int userId;
@@ -28,8 +29,10 @@ class ReadingGroupMemberDto {
     required this.joinedAt,
   });
 
-  String get effectiveDisplayName =>
-      (displayName?.isNotEmpty ?? false) ? displayName! : username;
+  // Jamais d'email affiché (RGPD, hotfix-v0-10-1 US-3).
+  String get effectiveDisplayName => stripEmailFormat(
+        (displayName?.isNotEmpty ?? false) ? displayName! : username,
+      );
 
   factory ReadingGroupMemberDto.fromJson(Map<String, dynamic> json) {
     return ReadingGroupMemberDto(

@@ -52,6 +52,10 @@
     "lib/features/auth/views/register.view.dart",
     "lib/core/components/refreshable_manga_image.dart",
     "lib/features/manga/widgets/manga_card.dart",
-    "lib/features/manga/views/detail_bloc_view.dart"
+    "lib/features/manga/views/detail_bloc_view.dart",
+    "lib/core/utils/safe_display_name.dart",
+    "lib/features/comments/dto/comment.dto.dart",
+    "lib/features/friends/dto/friend.dto.dart",
+    "lib/features/sharing/dto/reading_group.dto.dart"
   ]
 }

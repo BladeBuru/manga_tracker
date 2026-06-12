@@ -1,7 +1,6 @@
 {
   "@@locale": "ko",
   "appTitle": "MangaTracker",
-  
   "welcomeBack": "다시 오신 것을 환영합니다",
   "emailAddress": "이메일 주소",
   "password": "비밀번호",
@@ -50,14 +49,22 @@
   "pushNotifFriendRequestTitle": "새 친구 요청",
   "pushNotifFriendRequestBody": "{senderUsername}님이 친구로 추가하고 싶어합니다",
   "@pushNotifFriendRequestBody": {
-    "placeholders": { "senderUsername": { "type": "String" } }
+    "placeholders": {
+      "senderUsername": {
+        "type": "String"
+      }
+    }
   },
   "pushNotifShareTitle": "새 만화 공유됨",
   "pushNotifShareBody": "{senderUsername}님이 {mangaTitle}을(를) 추천합니다",
   "@pushNotifShareBody": {
     "placeholders": {
-      "senderUsername": { "type": "String" },
-      "mangaTitle": { "type": "String" }
+      "senderUsername": {
+        "type": "String"
+      },
+      "mangaTitle": {
+        "type": "String"
+      }
     }
   },
   "theme": "테마",
@@ -148,7 +155,6 @@
   "addToReadLater": "\"나중에 읽기\"에 추가",
   "mangaRemovedFromLibrary": "만화가 라이브러리에서 제거되었습니다",
   "searchPlaceholder": "만화, 만화 검색...",
-  "error": "오류",
   "year": "연도",
   "status": "상태",
   "author": "작가",
@@ -157,7 +163,6 @@
   "seeMore": "더 보기",
   "seeLess": "접기",
   "all": "전체",
-  "popular": "인기",
   "newReleases": "신작",
   "chapter": "챕터",
   "chaptersCount": "{count, plural, =0{챕터 없음} =1{{count}챕터} other{{count}챕터}}",
@@ -206,7 +211,6 @@
   "passwordStrengthWeak": "약함",
   "passwordStrengthMedium": "보통",
   "passwordStrengthStrong": "강함",
-  
   "yes": "예",
   "no": "아니오",
   "yesValidate": "예, 확인",
@@ -235,47 +239,38 @@
   "linkFormatDescription": "자동 진행 상황 저장을 활성화하려면 URL에 챕터 번호를 포함하세요.\n\n허용되는 형식:\n• /챕터-23/ 또는 /chapter-23/\n• /c23/ 또는 /ch23/\n• /ep-23/ 또는 /episode-23/\n• ?chapter=23 또는 ?num=24",
   "linkFormatWarning": "챕터 형식이 감지되지 않았습니다. 링크는 만화 페이지로 리디렉션됩니다(특정 챕터가 아님).",
   "linkFormatDetected": "챕터 형식이 감지되었습니다! 진행 상황이 자동으로 저장됩니다.",
-  
   "captchaDetected": "캡차가 감지되었습니다 - 광고 차단기가 일시적으로 비활성화되었습니다",
   "@captchaDetected": {
     "description": "캡차가 감지되었을 때 메시지"
   },
-  
   "captchaResolved": "캡차가 해결되었습니다 - 광고 차단기가 다시 활성화되었습니다",
   "@captchaResolved": {
     "description": "캡차가 해결되었을 때 메시지"
   },
-  
   "scrollPositionSaved": "스크롤 위치가 저장되었습니다",
   "@scrollPositionSaved": {
     "description": "스크롤 위치 저장 확인 메시지"
   },
-  
   "chapterProgressSaved": "챕터 진행 상황이 저장되었습니다",
   "@chapterProgressSaved": {
     "description": "진행 상황 저장 확인 메시지"
   },
-  
   "readingOffline": "오프라인으로 읽기",
   "@readingOffline": {
     "description": "오프라인 읽기 제목"
   },
-  
   "chapterDownloaded": "챕터가 다운로드되었습니다",
   "@chapterDownloaded": {
     "description": "챕터가 다운로드되었음을 나타내는 메시지"
   },
-  
   "offlineReadingMode": "오프라인 읽기 모드",
   "@offlineReadingMode": {
     "description": "오프라인 읽기 모드 설명"
   },
-  
   "deleteChapterTitle": "챕터 삭제",
   "@deleteChapterTitle": {
     "description": "챕터 삭제 대화상자 제목"
   },
-  
   "deleteChapterMessage": "정말 챕터 {chapterNumber}을(를) 삭제하시겠습니까?",
   "@deleteChapterMessage": {
     "description": "챕터 삭제 확인 메시지",
@@ -285,62 +280,48 @@
       }
     }
   },
-  
   "deleteAllChaptersTitle": "모든 챕터 삭제",
   "@deleteAllChaptersTitle": {
     "description": "만화의 모든 챕터 삭제 대화상자 제목"
   },
-  
   "deleteAllChaptersMessage": "이 만화의 모든 다운로드된 챕터를 정말 삭제하시겠습니까?",
   "@deleteAllChaptersMessage": {
     "description": "만화의 모든 챕터 삭제 확인 메시지"
   },
-  
   "deleteAllDownloadsTitle": "모든 다운로드 삭제",
   "@deleteAllDownloadsTitle": {
     "description": "모든 다운로드 삭제 대화상자 제목"
   },
-  
   "deleteAllDownloadsMessage": "정말 모든 다운로드를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
   "@deleteAllDownloadsMessage": {
     "description": "모든 다운로드 삭제 확인 메시지"
   },
-  
-  "delete": "삭제",
   "@delete": {
     "description": "삭제 버튼"
   },
-  
   "deleteAll": "모두 삭제",
   "@deleteAll": {
     "description": "모두 삭제 버튼"
   },
-  
-  "cancel": "취소",
   "@cancel": {
     "description": "취소 버튼"
   },
-  
   "chapterDeleted": "챕터가 삭제되었습니다",
   "@chapterDeleted": {
     "description": "챕터 삭제 후 성공 메시지"
   },
-  
   "allChaptersDeleted": "모든 챕터가 삭제되었습니다",
   "@allChaptersDeleted": {
     "description": "만화의 모든 챕터 삭제 후 성공 메시지"
   },
-  
   "allDownloadsDeleted": "모든 다운로드가 삭제되었습니다",
   "@allDownloadsDeleted": {
     "description": "모든 다운로드 삭제 후 성공 메시지"
   },
-  
   "noChaptersDownloaded": "다운로드된 챕터가 없습니다",
   "@noChaptersDownloaded": {
     "description": "챕터가 다운로드되지 않았을 때 표시되는 메시지"
   },
-  
   "chaptersDownloadedCount": "{count, plural, =0{다운로드된 챕터가 없습니다} =1{1개 챕터가 다운로드되었습니다} other{{count}개 챕터가 다운로드되었습니다}}",
   "@chaptersDownloadedCount": {
     "description": "다운로드된 챕터 수",
@@ -350,66 +331,61 @@
       }
     }
   },
-  
   "readChapter": "읽기",
   "@readChapter": {
     "description": "챕터 읽기 버튼"
   },
-  
   "deleteAllChaptersAction": "모든 챕터 삭제",
   "@deleteAllChaptersAction": {
     "description": "만화의 모든 챕터 삭제 작업"
   },
-  
   "deleteAllDownloadsTooltip": "모든 다운로드 삭제",
   "@deleteAllDownloadsTooltip": {
     "description": "모든 다운로드 삭제 버튼의 툴팁"
   },
-
   "recommendedForYou": "추천 항목",
   "@recommendedForYou": {
     "description": "Section of personalized manga recommendations"
   },
-
   "recommendedForYouEmpty": "라이브러리에 만화를 추가하여\n맞춤 추천을 받아보세요.",
   "@recommendedForYouEmpty": {
     "description": "Message shown in the recommendations section when the library is empty"
   },
-
   "recommendedForYouCount": "{count, plural, other{만화 {count}개}}",
   "@recommendedForYouCount": {
     "description": "Subtitle showing the number of recommended manga",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "recommendedForYouCached": "캐시된 추천 (오프라인 모드)",
   "@recommendedForYouCached": {
     "description": "Indicator shown when recommendations are loaded from offline cache"
   },
-
   "errorWithMessage": "오류: {message}",
   "@errorWithMessage": {
     "description": "Generic error prefix with a technical message",
     "placeholders": {
-      "message": { "type": "String" }
+      "message": {
+        "type": "String"
+      }
     }
   },
-
   "recommendedBecauseOf": "{titles}을(를) 좋아했기 때문에",
   "@recommendedBecauseOf": {
     "description": "Explanation for a recommendation, listing source manga",
     "placeholders": {
-      "titles": { "type": "String" }
+      "titles": {
+        "type": "String"
+      }
     }
   },
-
   "yourRating": "내 평점",
   "@yourRating": {
     "description": "Label next to the user rating widget on the manga detail page"
   },
-
   "myDataTitle": "내 데이터",
   "@myDataTitle": {},
   "myDataSubtitle": "내 데이터 보기, 내보내기 또는 삭제 (GDPR)",
@@ -480,7 +456,6 @@
   "@refuseAndLogout": {},
   "versionLabel": "버전",
   "@versionLabel": {},
-
   "welcomeTitle": "환영합니다!",
   "@welcomeTitle": {},
   "loginSubtitle": "계정에 로그인하세요",
@@ -497,7 +472,6 @@
   "@continueWithApple": {},
   "loadingApp": "로딩 중…",
   "@loadingApp": {},
-
   "forgotPasswordTitle": "비밀번호 찾기",
   "@forgotPasswordTitle": {},
   "forgotPasswordIntro": "이메일을 입력하세요. 계정이 존재하면 새 비밀번호를 설정할 수 있는 링크를 받게 됩니다.",
@@ -508,7 +482,11 @@
   "@resetEmailSentTitle": {},
   "resetEmailSentMessage": "{email} 계정이 존재하는 경우 새 비밀번호를 설정할 수 있는 링크가 포함된 이메일이 전송되었습니다.\n\n링크는 30분 후에 만료됩니다.",
   "@resetEmailSentMessage": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "resetPasswordTitle": "새 비밀번호",
   "@resetPasswordTitle": {},
@@ -566,7 +544,11 @@
   "@statsTotalMangas": {},
   "statsMemberSince": "{date}부터 가입",
   "@statsMemberSince": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "statsTotalChapters": "읽은 화 수",
   "@statsTotalChapters": {},
@@ -586,20 +568,32 @@
   "@statsTopGenresEmpty": {},
   "statsMinutesShort": "{count}분",
   "@statsMinutesShort": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "statsHoursAndMinutesShort": "{hours}시간 {minutes}분",
   "@statsHoursAndMinutesShort": {
     "placeholders": {
-      "hours": { "type": "int" },
-      "minutes": { "type": "int" }
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "statsDaysAndHoursShort": "{days}일 {hours}시간",
   "@statsDaysAndHoursShort": {
     "placeholders": {
-      "days": { "type": "int" },
-      "hours": { "type": "int" }
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "statusReadLater": "나중에 읽기",
@@ -611,22 +605,38 @@
   "statusCompleted": "완결",
   "@statusCompleted": {},
   "statsSectionOverview": "개요",
-  "@statsSectionOverview": { "description": "Stats page V1 — overview section title" },
+  "@statsSectionOverview": {
+    "description": "Stats page V1 — overview section title"
+  },
   "statsSectionBreakdown": "상태별 만화",
-  "@statsSectionBreakdown": { "description": "Stats page V1 — breakdown by status section title" },
+  "@statsSectionBreakdown": {
+    "description": "Stats page V1 — breakdown by status section title"
+  },
   "statsSectionGenres": "선호 장르",
-  "@statsSectionGenres": { "description": "Stats page V1 — genres section title" },
+  "@statsSectionGenres": {
+    "description": "Stats page V1 — genres section title"
+  },
   "statsLibraryTotal": "라이브러리의 만화",
-  "@statsLibraryTotal": { "description": "Stats page V1 — total mangas row label" },
+  "@statsLibraryTotal": {
+    "description": "Stats page V1 — total mangas row label"
+  },
   "statsMonthsSinceJoin": "{count, plural, =0{가입한 지 1개월 미만} other{가입한 지 {count}개월}}",
   "@statsMonthsSinceJoin": {
     "description": "Stats page V1 — hero text indicating account age in months",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "statsHeroBadge": "{count, plural, other{만화 {count}권}}",
   "@statsHeroBadge": {
     "description": "Stats page V1 — badge on the right of the hero",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "profileMyStats": "내 통계",
   "@profileMyStats": {},
@@ -726,21 +736,37 @@
   "@commentsLoadMore": {},
   "commentsReplyCount": "{count, plural, =1{1개의 답글} other{{count}개의 답글}}",
   "@commentsReplyCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeJustNow": "방금 전",
   "@timeJustNow": {},
   "timeMinutesAgo": "{count}분 전",
   "@timeMinutesAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeHoursAgo": "{count}시간 전",
   "@timeHoursAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "timeDaysAgo": "{count}일 전",
   "@timeDaysAgo": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "shareTitle": "이 만화 공유",
   "@shareTitle": {},
@@ -766,11 +792,19 @@
   "@inboxBadgeNew": {},
   "inboxSenderRecommends": "{sender}님이 추천합니다",
   "@inboxSenderRecommends": {
-    "placeholders": { "sender": { "type": "String" } }
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
   },
   "inboxSharedYouLabel": "{sender}님이 공유했습니다",
   "@inboxSharedYouLabel": {
-    "placeholders": { "sender": { "type": "String" } }
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      }
+    }
   },
   "inboxFilterAll": "전체",
   "@inboxFilterAll": {},
@@ -812,13 +846,21 @@
   "@readingGroupNotStarted": {},
   "readingGroupChaptersRead": "{count}화",
   "@readingGroupChaptersRead": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupChaptersReadLabel": "읽음",
   "@readingGroupChaptersReadLabel": {},
   "readingGroupMembersCount": "{count, plural, =1{1명} other{{count}명}}",
   "@readingGroupMembersCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "profileMyReadingGroups": "함께 읽기",
   "@profileMyReadingGroups": {},
@@ -898,16 +940,26 @@
   "@readingGroupListSectionTitle": {},
   "readingGroupWithLabel": "{name} 와(과) 함께",
   "@readingGroupWithLabel": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "readingGroupYouLabel": "나",
   "@readingGroupYouLabel": {},
   "readingGroupProgressYouVsFriend": "나: {you}화 · {friend}: {their}화",
   "@readingGroupProgressYouVsFriend": {
     "placeholders": {
-      "you": { "type": "String" },
-      "friend": { "type": "String" },
-      "their": { "type": "String" }
+      "you": {
+        "type": "String"
+      },
+      "friend": {
+        "type": "String"
+      },
+      "their": {
+        "type": "String"
+      }
     }
   },
   "readingGroupChapterDash": "—",
@@ -926,19 +978,35 @@
   "@readingGroupActionsInvite": {},
   "readingGroupActionsCopyFriendLink": "{friend}의 링크 복사",
   "@readingGroupActionsCopyFriendLink": {
-    "placeholders": { "friend": { "type": "String" } }
+    "placeholders": {
+      "friend": {
+        "type": "String"
+      }
+    }
   },
   "readingGroupActionsCopyFriendLinkSubtitle": "{chapter}화에 맞춰 조정됨",
   "@readingGroupActionsCopyFriendLinkSubtitle": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupApplyLinkSuccess": "{chapter}화의 링크가 저장되었습니다",
   "@readingGroupApplyLinkSuccess": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupCopyLinkSuccess": "링크 복사됨 — {chapter}화",
   "@readingGroupCopyLinkSuccess": {
-    "placeholders": { "chapter": { "type": "int" } }
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupCopyLinkFailed": "이 링크를 조정할 수 없습니다(알 수 없는 형식)",
   "@readingGroupCopyLinkFailed": {},
@@ -968,13 +1036,16 @@
   "@readingGroupTotalLabel": {},
   "readingGroupChaptersTotal": "{count}화",
   "@readingGroupChaptersTotal": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "readingGroupInviteSoonTitle": "곧 제공 예정",
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "그룹에서 친구를 초대하는 기능이 곧 추가됩니다. 지금은 만화 페이지에서 새 그룹을 만들어 주세요.",
   "@readingGroupInviteSoonMessage": {},
-
   "libraryToggleListView": "목록 보기",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "카드 보기",
@@ -986,16 +1057,34 @@
   "libraryProgressLabel": "{total}화 중 {read}화 읽음",
   "@libraryProgressLabel": {
     "placeholders": {
-      "read": { "type": "int" },
-      "total": { "type": "int" }
+      "read": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "votesCount": "{count, plural, =0{투표 없음} other{{count}표}}",
   "@votesCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "detailSectionSimilar": "비슷한 만화",
-  "rating": "평점"
+  "rating": "평점",
+  "anonymousUser": "익명 사용자",
+  "@anonymousUser": {
+    "description": "Nom affiché à la place d'un identifiant au format email (RGPD defense-in-depth)"
+  },
+  "recommendationsColdStartTitle": "인기 만화를 만나보세요",
+  "@recommendationsColdStartTitle": {
+    "description": "Titre du bandeau d'accueil recos quand la bibliothèque est vide"
+  },
+  "recommendationsColdStartSubtitle": "첫 작품을 추가하면 맞춤 추천을 받을 수 있어요",
+  "@recommendationsColdStartSubtitle": {
+    "description": "Sous-titre du bandeau cold start recos"
+  }
 }

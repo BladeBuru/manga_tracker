@@ -1,3 +1,4 @@
+import 'package:mangatracker/core/utils/safe_display_name.dart';
 /// Statut d'une relation d'amitié — miroir de `FriendshipStatus` côté API.
 enum FriendshipStatus {
   pending('pending'),
@@ -42,10 +43,15 @@ class FriendshipDto {
   });
 
   /// Helper : nom à afficher (fallback username si pas de displayName).
-  String get displayName =>
-      (otherDisplayName?.isNotEmpty ?? false)
-          ? otherDisplayName!
-          : otherUsername;
+  /// Passé par [stripEmailFormat] — jamais d'email affiché (RGPD).
+  String get displayName => stripEmailFormat(
+        (otherDisplayName?.isNotEmpty ?? false)
+            ? otherDisplayName!
+            : otherUsername,
+      );
+
+  /// Username sans format email pour les sous-titres `@username` (RGPD).
+  String get safeOtherUsername => stripEmailFormat(otherUsername);
 
   factory FriendshipDto.fromJson(Map<String, dynamic> json) {
     return FriendshipDto(
@@ -80,8 +86,9 @@ class UserSearchResultDto {
     this.avatarUrl,
   });
 
-  String get effectiveDisplayName =>
-      (displayName?.isNotEmpty ?? false) ? displayName! : username;
+  String get effectiveDisplayName => stripEmailFormat(
+        (displayName?.isNotEmpty ?? false) ? displayName! : username,
+      );
 
   factory UserSearchResultDto.fromJson(Map<String, dynamic> json) {
     return UserSearchResultDto(

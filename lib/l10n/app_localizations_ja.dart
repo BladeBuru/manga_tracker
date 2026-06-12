@@ -1920,4 +1920,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get rating => '評価';
+
+  @override
+  String get anonymousUser => '匿名ユーザー';
+
+  @override
+  String get recommendationsColdStartTitle => '人気のマンガを見つけよう';
+
+  @override
+  String get recommendationsColdStartSubtitle =>
+      '最初の作品を追加すると、あなた好みのおすすめが表示されます';
 }
