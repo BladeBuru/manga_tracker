@@ -312,24 +312,10 @@ class OfflineCacheService {
     return null;
   }
   
-  /// Vérifie si le cache est expiré.
-  /// Retourne toujours `false` pour conserver les données tant qu'un nouveau fetch n'est pas effectué.
-  Future<bool> isCacheExpired() async {
-    return false;
-  }
-  
-  /// Nettoie le cache expiré
-  Future<void> clearExpiredCache() async {
-    try {
-      if (await isCacheExpired()) {
-        await _storage.deleteSecureData(_libraryCacheKey);
-        // Note: On garde les détails de manga car ils changent moins souvent
-      }
-    } catch (e) {
-      debugPrint('Erreur lors du nettoyage du cache expiré: $e');
-    }
-  }
-  
+  // Stub legacy `isCacheExpired()` (retournait toujours false) et
+  // `clearExpiredCache()` supprimés (hotfix-v0-10-1 US-5) — utiliser
+  // `isCacheExpiredFor(type, maxHours)` qui lit les vraies metadata.
+
   /// Nettoie tout le cache
   Future<void> clearAllCache() async {
     try {

@@ -73,6 +73,21 @@ class RecommendationService {
     int limit = 50,
     int offset = 0,
   }) async {
+    // Cache hit TTL 2h sur la première page (hotfix-v0-10-1 US-5) : revenir
+    // sur la page ne refetch plus systématiquement. 2h front vs 1h back :
+    // le back garantit la fraîcheur réelle, le front peut servir un cache
+    // légèrement plus vieux (stale-while-revalidate, RETRO-005).
+    if (offset == 0) {
+      final expired = await _cacheService.isCacheExpiredFor(
+        'recommendations',
+        maxHours: 2,
+      );
+      if (!expired) {
+        final cached = await _cacheService.getCachedRecommendations();
+        if (cached != null && cached.isNotEmpty) return cached;
+      }
+    }
+
     final url = buildApiUri('/recommendations', {
       'limit': limit.toString(),
       'offset': offset.toString(),
@@ -87,7 +102,12 @@ class RecommendationService {
         final list = data
             .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
             .toList();
-        await _cacheService.cacheRecommendations(list);
+        // Seule la première page est mise en cache — avant, chaque page de
+        // pagination ÉCRASAIT le cache (retour sur la page = page N affichée
+        // à la place du début de liste).
+        if (offset == 0) {
+          await _cacheService.cacheRecommendations(list);
+        }
         return list;
       }
 

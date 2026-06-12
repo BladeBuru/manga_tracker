@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/offline_cache_service.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/manga/widgets/manga_card.dart';
@@ -33,10 +36,22 @@ class _PaginatedRecommendationsViewState
   bool _loading = false;
   bool _hasMore = true;
 
+  /// Cold start (hotfix-v0-10-1 US-5) : bibliothèque vide → les recos
+  /// affichées sont le top communauté (backend) → bandeau d'accueil pour
+  /// l'expliquer. Heuristique : cache local de la bibliothèque.
+  bool _libraryEmpty = false;
+
   @override
   void initState() {
     super.initState();
+    _detectColdStart();
     _loadMore();
+  }
+
+  Future<void> _detectColdStart() async {
+    final library = await getIt<OfflineCacheService>().getCachedLibrary();
+    if (!mounted) return;
+    setState(() => _libraryEmpty = library == null || library.isEmpty);
   }
 
   Future<void> _loadMore() async {
@@ -123,26 +138,62 @@ class _PaginatedRecommendationsViewState
       return ListView(
         children: [
           const SizedBox(height: 80),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              l10n?.recommendationsAllEmpty ??
-                  'Pas encore de recommandations pour vous.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
+          if (_libraryEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: _ColdStartBanner(l10n: l10n),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                l10n?.recommendationsAllEmpty ??
+                    'Pas encore de recommandations pour vous.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
             ),
+        ],
+      );
+    }
+    if (_libraryEmpty) {
+      // Biblio vide mais recos cold start présentes : bandeau d'accueil
+      // au-dessus de la grille.
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s + 4,
+                AppSpacing.s + 4,
+                AppSpacing.s + 4,
+                0,
+              ),
+              child: _ColdStartBanner(l10n: l10n),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(12),
+            sliver: _buildGrid(cols, asSliver: true),
           ),
         ],
       );
     }
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: _gridDelegate(cols),
+      itemCount: _items.length + (_hasMore ? 1 : 0),
+      itemBuilder: _buildGridItem,
+    );
+  }
+
+  SliverGridDelegate _gridDelegate(int cols) =>
+      SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
         crossAxisSpacing: 10,
         mainAxisSpacing: 14,
@@ -150,26 +201,87 @@ class _PaginatedRecommendationsViewState
         // titre 2 lignes + meta row). Avant 0.55 sur 2 cols → cards trop
         // hautes / larges au scroll.
         childAspectRatio: 0.62,
+      );
+
+  Widget _buildGrid(int cols, {required bool asSliver}) {
+    assert(asSliver);
+    return SliverGrid(
+      gridDelegate: _gridDelegate(cols),
+      delegate: SliverChildBuilderDelegate(
+        _buildGridItem,
+        childCount: _items.length + (_hasMore ? 1 : 0),
       ),
-      itemCount: _items.length + (_hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= _items.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final manga = _items[index];
-        return MangaCard(
-          muId: manga.muId.toString(),
-          mangaTitle: manga.title,
-          mangaAuthor: manga.year.toString(),
-          mediumImgPath: manga.mediumCoverUrl,
-          rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-              ? manga.rating
-              : null,
-        );
-      },
+    );
+  }
+
+  Widget _buildGridItem(BuildContext context, int index) {
+    if (index >= _items.length) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final manga = _items[index];
+    return MangaCard(
+      muId: manga.muId.toString(),
+      mangaTitle: manga.title,
+      mangaAuthor: manga.year.toString(),
+      mediumImgPath: manga.mediumCoverUrl,
+      rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
+          ? manga.rating
+          : null,
+    );
+  }
+}
+
+/// Bandeau d'accueil cold start — bibliothèque vide, les recos affichées
+/// sont le top communauté + pépites (hotfix-v0-10-1 US-5).
+class _ColdStartBanner extends StatelessWidget {
+  final AppLocalizations? l10n;
+
+  const _ColdStartBanner({required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.xxxl),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.auto_awesome_outlined,
+              size: 28, color: scheme.onPrimaryContainer),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.recommendationsColdStartTitle ??
+                      'Découvre les mangas populaires',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n?.recommendationsColdStartSubtitle ??
+                      'Ajoute tes premières lectures pour recevoir des '
+                          'recommandations personnalisées',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onPrimaryContainer
+                            .withValues(alpha: 0.85),
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

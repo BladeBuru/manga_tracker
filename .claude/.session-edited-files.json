@@ -59,6 +59,9 @@
     "lib/features/sharing/dto/reading_group.dto.dart",
     "lib/features/reader/utils/reading_constants.dart",
     "lib/features/reader/utils/reading_progress_helper.dart",
-    "lib/features/reader/services/scroll_position_service.dart"
+    "lib/features/reader/services/scroll_position_service.dart",
+    "lib/features/manga/services/recommendation.service.dart",
+    "lib/core/services/offline_cache_service.dart",
+    "lib/features/recommendations/views/paginated_recommendations_view.dart"
   ]
 }
