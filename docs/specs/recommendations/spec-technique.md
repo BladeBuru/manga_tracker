@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | recommendations     |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-06-19          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
 
 ---
 
@@ -44,6 +44,7 @@ Le module s'articule autour de trois couches :
 | `lib/features/manga/widgets/detail_recommendations_section.dart` | Section recommandations similaires dans la fiche détail | - |
 | `lib/features/manga/services/manga.service.dart` | `getMangaRecommendations(muId)` : recommandations similaires fiche détail | lignes 148-204 |
 | `test/features/manga/dto/manga_recommendation_view_dto_test.dart` | Tests non-régression du DTO | ~109 |
+| `lib/features/manga/services/recommendation.service.dart` (méthode ajoutée) | NEW — `getSleeperHits()` : mangas « pépites cachées » (note Bayésienne élevée, popularité faible) | — |
 
 ---
 
@@ -65,6 +66,7 @@ La vue par genre (`getRecommendationsByGenre`) n'utilise pas de cache — retour
 |---------|-------|-------------|------|
 | `GET` | `/recommendations?limit=N&offset=N` | Liste paginée par score décroissant | JWT obligatoire |
 | `GET` | `/recommendations/by-genre?topGenres=N&perGenre=N` | Map `{genre: [mangas]}` des top genres | JWT obligatoire |
+| `GET` | `/recommendations/sleeper-hits` | NEW — Liste de pépites cachées (note Bayésienne, faible popularité) | JWT obligatoire |
 | `GET` | `/mangas/recommendations/:muId` | Recommandations similaires d'un manga (fiche détail) | JWT obligatoire |
 
 **Comportements HTTP notables :**
@@ -99,6 +101,12 @@ Vue par genre avec breakpoints séparés :
 **RecommendationsSegmentedToggle** — widget custom pill (pas `SegmentedButton` Material 3). Deux `_SegChip` avec `AnimatedContainer` (durée 150ms). Actif : fond `dsRedSoft` + border primary + icone check. Inactif : fond surface + hairline border. Navigation via `context.go()` go_router.
 
 **Clé de cache sécurisée** — Le cache `cached_recommendations` est stocké dans `flutter_secure_storage` (pas `shared_preferences`). Contient des données utilisateur (liste de mangas personnalisés), justifiant le stockage sécurisé.
+
+**Section « 💎 Pépites cachées »** — La vue `RecommendationsByGenreView` affiche en tête de liste une section dédiée aux pépites cachées (via `RecommendationService.getSleeperHits()`). Le résultat est chargé en parallèle des données par genre via un `Future` séparé dans `initState`. La section n'est affichée que si la liste retournée est non vide.
+
+**Invalidation cache sur mutation bibliothèque** — `OfflineCacheService.invalidateRecommendationsCache()` est appelé depuis les mutations de bibliothèque (ajout, suppression, changement de statut) pour invalider le cache `cached_recommendations`. Les recos sont ainsi régénérées au prochain fetch afin de refléter la bibliothèque mise à jour.
+
+**Responsive `AppBreakpoints`** — Les breakpoints de grille (3/4/5/6 colonnes) et le centrage `AppContentWidth` (1100px) sont désormais délégués à `AppBreakpoints` (`lib/core/theme/app_breakpoints.dart`) plutôt qu'être définis localement dans chaque vue. Les valeurs 600/800/1200 px restent identiques.
 
 **Deux DTOs distincts pour deux contextes** :
 - `MangaQuickViewDto` — utilisé dans les vues recommendations (flux paginé + par genre) et dans la home

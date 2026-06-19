@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | friends             |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-06-19          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
 
 ---
 
@@ -53,6 +53,7 @@ décrémenter le badge immédiatement après acceptation/refus.
 | `lib/features/friends/widgets/friends_tab_segmented.dart` | Sélecteur d'onglets chip-style avec compteur | ~150 |
 | `lib/features/friends/widgets/friends_section_card.dart` | Carte section avec label uppercase et dividers | ~79 |
 | `lib/core/services/notification_counts_service.dart` | Badge BottomNavBar (partagé friends + sharing) — polling 60s | ~128 |
+| `lib/features/friends/views/friend_profile_view.dart` | NEW — Page profil d'un ami : bibliothèque + stats + extras (`FriendProfileExtras`) | — |
 
 ---
 
@@ -82,6 +83,7 @@ des champs.
 | `PATCH` | `/friends/:id` | Mettre à jour le statut d'une relation (`{status: "accepted"\|"blocked"}`) | JWT |
 | `DELETE` | `/friends/:id` | Supprimer une relation (amitié ou demande) | JWT |
 | `GET` | `/friends/search?q=` | Recherche d'utilisateurs (min 2 chars) | JWT |
+| `GET` | `/friends/:userId/library` | NEW — Bibliothèque de l'ami (via `FriendsService.getFriendLibrary`) | JWT |
 
 Convention HTTP attendue : `200 OK` ou `201 Created` pour les mutations
 réussies. Toute autre réponse est traitée comme une erreur avec throw.
@@ -120,7 +122,8 @@ réussies. Toute autre réponse est traitée comme une erreur avec throw.
 
 - **Responsive layout** — `_FriendsScaffold` et `_FriendsContentState` mixent
   `ResponsiveLayoutMixin` pour adapter le padding horizontal et la largeur
-  maximale selon les breakpoints (`AppBreakpoints`).
+  maximale selon les breakpoints (`AppBreakpoints` — `lib/core/theme/app_breakpoints.dart`, 600/800/1200 px, `AppContentWidth` centré à 1100px).
+- **Profil ami** — Tap sur un `FriendListTile` (amitié acceptée) navigue vers la route `/friends/:userId`. La page `FriendProfileView` charge la bibliothèque de l'ami via `FriendsService.getFriendLibrary(userId)` et affiche un ensemble d'extras (`FriendProfileExtras`) : stats publiques, mangas en commun, etc.
 
 ---
 

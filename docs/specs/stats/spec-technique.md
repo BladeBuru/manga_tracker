@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | stats               |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-06-19          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
 
 ---
 
@@ -51,6 +51,8 @@ StatsView (StatelessWidget)
 | `lib/features/stats/widgets/stats_genres_section.dart` | Section top genres (AppChip wrap) | ~49 |
 | `lib/features/stats/widgets/stats_offline_banner.dart` | Pill discret mode hors-ligne | ~53 |
 | `lib/features/stats/widgets/stats_section_row.dart` | Row label/valeur avec PastelTile (partagé entre sections overview et status) | ~72 |
+| `lib/features/stats/widgets/stats_activity_section.dart` | NEW — Graphique d'activité hebdomadaire (barres, `chaptersPerWeek`) | — |
+| `lib/features/stats/widgets/stats_history_section.dart` | NEW — Historique des dernières lectures (`ReadingHistoryEntryDto`) | — |
 
 ---
 
@@ -83,6 +85,16 @@ Pas de base de données embarquée. Le cache est stocké dans `flutter_secure_st
 | `completionRate` | `double` | Valeur 0–1. Défaut 0.0 |
 | `accountCreatedAt` | `DateTime` | Défaut `DateTime.now()` si parsing échoue |
 | `totalMangas` | `int` | Défaut 0 |
+| `topGenreObjects` | `List<GenreCountDto>` | NEW — Top genres enrichis avec comptage (`genre`, `count`). Défaut liste vide |
+| `readingHistory` | `List<ReadingHistoryEntryDto>` | NEW — Historique des dernières lectures (`muId`, `title`, `coverUrl`, `lastChapter`, `readAt`). Défaut liste vide |
+| `chaptersPerWeek` | `List<int>` | NEW — Nombre de chapitres lus par jour sur les 7 derniers jours (index 0 = J-6, index 6 = aujourd'hui). Défaut liste vide |
+
+**Nouveaux DTOs internes (définis dans `user_stats.dto.dart`) :**
+
+| DTO | Champs |
+|-----|--------|
+| `GenreCountDto` | `genre: String`, `count: int` |
+| `ReadingHistoryEntryDto` | `muId: String`, `title: String`, `coverUrl: String?`, `lastChapter: int?`, `readAt: DateTime` |
 
 ---
 
@@ -94,6 +106,8 @@ Pas de base de données embarquée. Le cache est stocké dans `flutter_secure_st
 - **Dépendances résolues en dur via getIt** : `StatsBloc` et `StatsService` appellent `getIt<...>()` directement dans leur corps — pas d'injection par constructeur. Ce pattern diffère des BLoCs seniors du projet (`LibraryBloc`, `HomePageBloc`) qui reçoivent leurs services via constructeur. Cela rend le BLoC difficile à tester unitairement sans GetIt configuré.
 - **Forward-compat sur les statuts** : `StatsStatusSection` affiche les statuts connus dans l'ordre fixe et itère en dernier sur les entrées inconnues de `mangasByStatus`, permettant à l'API d'ajouter de nouveaux statuts sans plantage client.
 - **Partage de composant cross-feature** : `StatsOverviewSection` et `StatsStatusSection` importent `ProfileEditSection` depuis `lib/features/profile/widgets/profile_edit_sections.dart` pour le layout des sections — couplage cross-feature assumé pour la cohérence visuelle.
+- **Responsive via `AppBreakpoints`** : la vue stats utilise `AppBreakpoints` (600/800/1200 px, `AppContentWidth` centré à 1100px) pour adapter son layout. Voir `lib/core/theme/app_breakpoints.dart`.
+- **Stats v2 — sections d'activité** : `StatsActivitySection` affiche un graphique en barres des `chaptersPerWeek` (7 valeurs journalières). `StatsHistorySection` affiche les `readingHistory` sous forme de liste des dernières lectures. Ces deux sections sont ajoutées à la fin de `_StatsContent`.
 - **Formatage du temps de lecture** : la logique de formatage (minutes → heures+minutes → jours+heures) est implémentée dans `StatsOverviewSection._formatMinutes()`, privé au widget. Les seuils sont 60 min et 24 h.
 - **Calcul du nombre de mois** : `StatsHeroCard._monthsSinceJoin` calcule la différence en mois entre `accountCreatedAt` et `DateTime.now()`, avec correction si le jour courant est antérieur au jour de création dans le mois.
 

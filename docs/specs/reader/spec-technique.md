@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | reader              |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-06-19          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
 
 ---
 
@@ -81,6 +81,13 @@ go_router /manga/:muId/read-offline?chapter=N
 | `lib/features/reader/utils/chapter_link_resolver.dart` | Extraction numéro chapitre depuis URL, construction URL suivante | ~251 |
 | `lib/features/reader/utils/reading_progress_helper.dart` | Calcul position relative (near end ≤15%), get/restore scroll | ~115 |
 
+**Ajouts sprint responsive/social/stats-v2 :**
+
+| Fichier | Modification |
+|---------|-------------|
+| `lib/features/manga/views/web_view_io.dart` | NEW — Appel `recordChapterLog(muId, chapter)` fire-and-forget à chaque changement de chapitre détecté (branché sur `_handleDetected`) |
+| `lib/features/reader/views/offline_reader_view_io.dart` | NEW — Appel `recordChapterLog(muId, chapter)` fire-and-forget au chargement d'un chapitre hors-ligne |
+
 ---
 
 ## Schéma BDD (si applicable)
@@ -135,6 +142,10 @@ Quand un captcha est détecté (dans l'URL via `urlContainsCaptcha`, au niveau d
 
 ### Sélecteurs personnalisés extensibles
 `AdBlockerService` et `ChapterLinkResolver` consultent `CustomSelectorsService` pour charger des règles spécifiques au domaine. Type `adBlocker` = sélecteur CSS à masquer. Type `urlPattern` = regex pour extraire le numéro de chapitre depuis l'URL. Cela permet à l'utilisateur d'étendre les règles via l'UI "Custom Selectors" sans mise à jour de l'application.
+
+### Journal de lecture — `recordChapterLog` fire-and-forget (RETRO-015)
+
+À chaque chapitre détecté (en ligne via `_handleDetected` dans `web_view_io.dart`, hors-ligne au chargement dans `offline_reader_view_io.dart`), un appel `recordChapterLog(muId, chapter)` est effectué en fire-and-forget (pas d'`await`, pas de gestion d'erreur). Ce mécanisme alimente le journal de lecture côté API, utilisé par les stats v2 (`chaptersPerWeek`, `readingHistory` dans `UserStatsDto`). L'échec silencieux est intentionnel — le journal est best-effort et ne doit pas bloquer la lecture.
 
 ### Isolation réseau complète du lecteur hors-ligne
 Le `OfflineReaderView` bloque toutes les requêtes HTTP/HTTPS via `shouldOverrideUrlLoading` (retourne `CANCEL` pour tout sauf `file://`) et `androidShouldInterceptRequest` (retourne 403 pour tout sauf `file://`). Le HTML est préalablement nettoyé de toutes les balises pointant vers des ressources externes (`_cleanHtmlForOffline`).

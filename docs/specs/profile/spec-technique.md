@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | profile             |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-06-19          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
 
 ---
 
@@ -52,6 +52,9 @@ Profile (StatefulWidget)           ← orchestrateur, gère les loaders/actions
 | `lib/features/profile/views/profile_edit.view.dart` | Formulaire d'édition du profil | ~376 |
 | `lib/features/profile/views/custom_selectors_page.dart` | Sélecteurs personnalisés | N/A |
 | `lib/features/profile/views/notifications_settings_page.dart` | Paramètres de notifications | N/A |
+| `lib/features/profile/views/change_password.view.dart` | NEW — Page dédiée « Changer mon mot de passe » (formulaire 3 champs) | — |
+| `lib/features/profile/services/change_password.service.dart` | NEW — Service dédié au changement de MDP (appel `PUT /user/password`, auto-persistance nouveaux tokens) | — |
+| `lib/features/profile/presentation/cubit/change_password_cubit.dart` | NEW — Cubit pour la page change-password (validation, loading, success, error) | — |
 | `lib/features/profile/services/user.service.dart` | Infos utilisateur, changement MDP, suppression compte, mise à jour profil | ~208 |
 | `lib/features/profile/services/gdpr.service.dart` | Droits RGPD articles 15/20 + gestion consentement | ~127 |
 | `lib/features/profile/widgets/profile_body.dart` | Corps scrollable + ProfileFooter | ~206 |
@@ -112,7 +115,7 @@ DTO simplifié (Equatable) utilisé dans d'autres contextes : `username`, `email
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
 | GET | `/user/information` | Informations profil complet | JWT |
-| PUT | `/user/password` | Changement de mot de passe | JWT |
+| PUT | `/user/password` | Changement de mot de passe (retourne nouveaux tokens, persistés automatiquement) | JWT |
 | DELETE | `/user/delete` | Suppression du compte | JWT |
 | PATCH | `/user/profile` | Mise à jour des champs profil étendu | JWT |
 | GET | `/user/gdpr/summary` | Résumé des données (article 15) | JWT |
@@ -157,6 +160,15 @@ L'avatar sélectionné est redimensionné à 512×512 px, qualité 75%, et encod
 
 - Page profil principale : `LayoutBuilder` avec contrainte `maxWidth: 700`. Padding horizontal `24` si largeur >= 700px, `0` sinon.
 - `MyDataView` et `ProfileEditView` : `LayoutBuilder` avec padding horizontal `32` si >= 600px, `16` sinon.
+- `ChangePasswordView` : utilise `AppBreakpoints` (`lib/core/theme/app_breakpoints.dart`) pour le centrage du formulaire (max-width via `AppContentWidth` 1100px).
+
+## Page « Changer mon mot de passe »
+
+Route go_router : `/change-password`. Accessible depuis le menu profil (entrée « Compte » / `AccountSection`).
+
+Architecture : Cubit (`ChangePasswordCubit`) + `ChangePasswordView` (StatelessWidget). Trois champs : mot de passe actuel, nouveau mot de passe, confirmation. Le Cubit gère les états `ChangePasswordInitial`, `ChangePasswordLoading`, `ChangePasswordSuccess`, `ChangePasswordError`.
+
+`ChangePasswordService.changePassword()` appelle `PUT /user/password`. L'API retourne de nouveaux tokens (access + refresh) après un changement réussi — ils sont persistés automatiquement dans `flutter_secure_storage` via `StorageService` sans nécessiter de re-login.
 
 ---
 
