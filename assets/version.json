@@ -1,8 +1,26 @@
 {
-  "latestVersion": "0.10.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.10.0/MangaTracker.apk",
+  "latestVersion": "0.11.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.11.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.11.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Vous pouvez maintenant changer votre mot de passe directement depuis votre profil",
+        "- Découvrez la bibliothèque de vos amis depuis leur profil",
+        "- Nouvelle section « Pépites cachées » : des perles méconnues mais très bien notées, en plus des recommandations par genre",
+        "- Vos statistiques s'enrichissent : graphique de votre activité de lecture et historique de vos dernières lectures",
+        "⚡ Améliorations",
+        "- Vous restez connecté beaucoup plus longtemps — fini les reconnexions à répétition",
+        "- Le remplissage automatique de vos identifiants (gestionnaire de mots de passe) fonctionne à nouveau",
+        "- Les couvertures de mangas s'affichent de façon plus fiable, y compris dans le navigateur",
+        "- Suivi de lecture plus précis : votre position et la fin de chapitre sont mieux détectées",
+        "- Affichage repensé pour les grands écrans (ordinateur et tablette)",
+        "🔒 Confidentialité",
+        "- Votre adresse e-mail n'apparaît plus jamais publiquement (commentaires, profil, amis)"
+      ]
+    },
     {
       "version": "0.10.0",
       "notes": [
