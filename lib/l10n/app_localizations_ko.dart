@@ -30,6 +30,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get googleLoginFailed => 'Google 로그인 실패';
 
   @override
+  String get googleLoginConfigError => 'Google 로그인을 사용할 수 없습니다 (앱 구성 오류)';
+
+  @override
   String get loginWithGoogle => 'Google로 로그인';
 
   @override
@@ -76,6 +79,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get retry => '다시 시도';
+
+  @override
+  String get searchNoResults => '검색 결과가 없습니다';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '결과 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchLoadFailed => '검색에 실패했습니다';
+
+  @override
+  String get searchLoadMoreFailed => '추가 결과를 불러오지 못했습니다';
 
   @override
   String get error => '오류';

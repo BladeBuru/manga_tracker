@@ -30,6 +30,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get googleLoginFailed => 'Échec de la connexion avec Google';
 
   @override
+  String get googleLoginConfigError =>
+      'Connexion Google indisponible (erreur de configuration de l\'application)';
+
+  @override
   String get loginWithGoogle => 'Se connecter avec Google';
 
   @override
@@ -76,6 +80,27 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get retry => 'Réessayer';
+
+  @override
+  String get searchNoResults => 'Aucun résultat trouvé';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count résultats',
+      one: '1 résultat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchLoadFailed => 'La recherche a échoué';
+
+  @override
+  String get searchLoadMoreFailed =>
+      'Impossible de charger la suite des résultats';
 
   @override
   String get error => 'Erreur';

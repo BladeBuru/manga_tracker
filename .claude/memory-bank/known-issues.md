@@ -1,10 +1,42 @@
 # Problèmes Connus — Manga Tracker Flutter
 
-**Dernière mise à jour :** Mai 2026
+**Dernière mise à jour :** Juillet 2026
 
 ---
 
 ## 🐛 Problèmes Actifs
+
+### Google Sign-In : OAuth client **Android** absent de la console GCP
+- **Module** : auth (Google Sign-In mobile)
+- **Sévérité** : 🔴 Critique (la connexion Google ne fonctionne pas du tout)
+- **Découvert le** : 2026-07-03
+- **Statut** : Actif — **action manuelle console Google Cloud requise**
+
+**Description** : le flux natif Credential Manager (`google_sign_in` v7) exige un
+OAuth client de type **Android** (package + SHA-1 de signature) dans le projet
+GCP `43781664315`, en plus du client Web utilisé comme `serverClientId`. Aucun
+client Android n'est déclaré → le sélecteur de compte s'affiche (UI système)
+puis Google refuse d'émettre l'idToken après le choix du compte.
+
+**Diagnostic 2026-07-03 (vérifié)** : le client Web `43781664315-4qruuj…` existe
+toujours ; le `GOOGLE_CLIENT_ID` de prod (lu dans la redirection `GET
+/auth/google`) est identique au `serverClientId` hardcodé → pas de mismatch
+d'audience. Par élimination : client Android manquant/mauvais SHA-1.
+
+**Solution (console GCP → APIs & Services → Credentials → Create OAuth client ID)** :
+1. Type **Android** — package `com.example.manga_tracker`, SHA-1
+   `F8:A8:85:63:C1:62:9C:12:06:65:29:14:59:DE:1F:2A:9A:5F:52:4B`
+   (cert du keystore `upload` — celui de l'APK GitHub Releases, vérifié sur v0.11.0).
+2. (Dev) Type **Android** — package `com.example.manga_tracker.dev` + SHA-1 du
+   keystore debug (`keytool -list -v -keystore ~/.android/debug.keystore -alias
+   androiddebugkey -storepass android`).
+3. Ne PAS toucher au client Web (il sert d'audience à l'API et au flux web).
+4. À la migration Play Store : ajouter le SHA-1 de re-signature Play App Signing.
+
+Le code affiche désormais un message dédié (`googleLoginConfigError`) et logge
+le code d'erreur (`adb logcat | grep GoogleSignInException`) pour confirmer.
+
+---
 
 ### `key.properties` versionné dans git
 - **Module** : android signing
@@ -114,6 +146,32 @@
 ---
 
 ## ✅ Problèmes Résolus
+
+### Recherche : résultats non pertinents, plafonnés à 20, sans pagination
+- **Feature** : search
+- **Résolu le** : 2026-07-03
+- **Symptôme** : « Shadow System » introuvable (1er résultat sur mangaupdates.com),
+  « Naruto » mal classé, liste limitée à ~20 résultats sans scroll infini.
+- **Cause** : côté API, `orderby: 'rating'` écrasait le tri par pertinence de
+  MangaUpdates (les titres de niche sortaient du top-60 téléchargé, le re-tri
+  local ne pouvait pas les repêcher) ; côté Flutter, aucun paramètre de
+  pagination envoyé et un `FutureBuilder` sans `ScrollController`.
+- **Solution** : API alignée sur le classement MangaUpdates (pas d'`orderby`,
+  `perpage = limit`, enveloppe paginée `{results, totalHits, page, perPage,
+  hasMore}` rétrocompatible) ; côté app, `SearchBloc` (accumulation des pages,
+  dédoublonnage par `muId`, fallback cache offline) + `SearchResultsList`
+  (scroll infini, seuil 400 px). Tests : `test/features/search/search_bloc_test.dart`.
+
+### Google Sign-In : annulation affichée comme un échec
+- **Feature** : auth
+- **Résolu le** : 2026-07-03
+- **Symptôme** : fermer le sélecteur de compte Google affichait « Échec de la
+  connexion avec Google » ; toutes les erreurs (annulation, config, réseau,
+  backend) produisaient le même message, rendant le diagnostic impossible.
+- **Solution** : `loginWithGoogle` retourne `GoogleLoginResult`
+  (success/cancelled/configError/failed) ; l'annulation est silencieuse, les
+  erreurs de configuration OAuth ont un message dédié (`googleLoginConfigError`,
+  7 langues) et le code `GoogleSignInException` est loggé.
 
 ### Race conditions sur DetailBloc
 - **Feature** : manga/detail

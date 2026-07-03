@@ -31,6 +31,7 @@ import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
 import '../../features/manga/bloc/detail_bloc.dart';
+import '../../features/search/bloc/search_bloc.dart';
 import '../../features/search/services/search_history.service.dart';
 import '../../features/reader/services/scroll_position_service.dart';
 import '../../features/reader/services/captcha_detection_service.dart';
@@ -161,6 +162,10 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<ConnectivityBloc>(() => ConnectivityBloc());
   getIt.registerLazySingleton<LibraryBloc>(() => LibraryBloc());
   getIt.registerLazySingleton<HomePageBloc>(() => HomePageBloc());
+  getIt.registerLazySingleton<SearchBloc>(() => SearchBloc(
+        mangaService: getIt<MangaService>(),
+        cacheService: getIt<OfflineCacheService>(),
+      ));
   // DetailBloc doit être une factory, pas un singleton, pour éviter les race conditions
   // Chaque page de détails doit avoir sa propre instance de bloc
   getIt.registerFactory<DetailBloc>(() => DetailBloc());

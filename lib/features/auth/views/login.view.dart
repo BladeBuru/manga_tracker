@@ -124,14 +124,22 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _onGoogleLogin(AppLocalizations? l10n) async {
-    final success = await _authService.loginWithGoogle(context);
+    final result = await _authService.loginWithGoogle(context);
     if (!mounted) return;
-    if (success) {
-      context.go('/home');
-    } else {
-      _notifier.error(
-        l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
-      );
+    switch (result) {
+      case GoogleLoginResult.success:
+        context.go('/home');
+      case GoogleLoginResult.cancelled:
+        break; // fermeture volontaire du sélecteur — pas un échec
+      case GoogleLoginResult.configError:
+        _notifier.error(
+          l10n?.googleLoginConfigError ??
+              "Connexion Google indisponible (erreur de configuration de l'app)",
+        );
+      case GoogleLoginResult.failed:
+        _notifier.error(
+          l10n?.googleLoginFailed ?? 'Échec de la connexion Google',
+        );
     }
   }
 

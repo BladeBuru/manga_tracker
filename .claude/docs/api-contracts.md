@@ -42,7 +42,7 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 | `GET` | `/mangas/popular` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
 | `GET` | `/mangas/trending` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
 | `GET` | `/mangas/new` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
-| `GET` | `/mangas/search` | JWT | `?q=...&page=1&limit=20` | `List<MangaQuickViewDto>` |
+| `POST` | `/mangas/search` | JWT | body JSON `{search_pattern, page?, limit?}` | `SearchResultsPageDto` (enveloppe `{results, totalHits, page, perPage, hasMore}`) — tri par pertinence MangaUpdates ; tableau nu `List<MangaQuickViewDto>` si `page` absent (rétrocompat ≤ 0.11.0) |
 | `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` |
 
 ---
@@ -171,7 +171,7 @@ HttpService gère :
 | `GET /mangas/popular + trending + new` | `cached_homepage` |
 | `GET /library` | `cached_library` |
 | `GET /mangas/:muId` | `cached_manga_detail_<muId>` |
-| `GET /mangas/search?q=...` | `cached_search_<query>` |
+| `POST /mangas/search` (page 1) | `cached_search_<query>` |
 | `GET /users/profile` | `cached_user_info` (TTL 7 jours) |
 
 ---

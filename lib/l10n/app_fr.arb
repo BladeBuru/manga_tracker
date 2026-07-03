@@ -28,6 +28,10 @@
   "@googleLoginFailed": {
     "description": "Message d'erreur quand la connexion Google échoue"
   },
+  "googleLoginConfigError": "Connexion Google indisponible (erreur de configuration de l'application)",
+  "@googleLoginConfigError": {
+    "description": "Erreur quand le SDK Google refuse la configuration de l'app (OAuth client Android / SHA-1 manquant dans la console GCP)"
+  },
   "loginWithGoogle": "Se connecter avec Google",
   "@loginWithGoogle": {
     "description": "Bouton connexion Google"
@@ -84,6 +88,27 @@
   "retry": "Réessayer",
   "@retry": {
     "description": "Bouton pour réessayer une action"
+  },
+  "searchNoResults": "Aucun résultat trouvé",
+  "@searchNoResults": {
+    "description": "État vide de la page de recherche"
+  },
+  "searchResultsCount": "{count, plural, =1{1 résultat} other{{count} résultats}}",
+  "@searchResultsCount": {
+    "description": "Compteur de résultats de recherche (totalHits)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchLoadFailed": "La recherche a échoué",
+  "@searchLoadFailed": {
+    "description": "Erreur de chargement de la première page de résultats"
+  },
+  "searchLoadMoreFailed": "Impossible de charger la suite des résultats",
+  "@searchLoadMoreFailed": {
+    "description": "Erreur de chargement de la page suivante (scroll infini)"
   },
   "error": "Erreur",
   "@error": {

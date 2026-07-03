@@ -30,6 +30,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get googleLoginFailed => 'Googleログインに失敗しました';
 
   @override
+  String get googleLoginConfigError => 'Googleログインを利用できません（アプリ設定エラー）';
+
+  @override
   String get loginWithGoogle => 'Googleでサインイン';
 
   @override
@@ -76,6 +79,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String get searchNoResults => '結果が見つかりません';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件の結果',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchLoadFailed => '検索に失敗しました';
+
+  @override
+  String get searchLoadMoreFailed => '続きを読み込めませんでした';
 
   @override
   String get error => 'エラー';

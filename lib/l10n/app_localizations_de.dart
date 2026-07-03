@@ -30,6 +30,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get googleLoginFailed => 'Google-Anmeldung fehlgeschlagen';
 
   @override
+  String get googleLoginConfigError =>
+      'Google-Anmeldung nicht verfügbar (App-Konfigurationsfehler)';
+
+  @override
   String get loginWithGoogle => 'Mit Google anmelden';
 
   @override
@@ -77,6 +81,27 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get retry => 'Wiederholen';
+
+  @override
+  String get searchNoResults => 'Keine Ergebnisse gefunden';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Ergebnisse',
+      one: '1 Ergebnis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchLoadFailed => 'Die Suche ist fehlgeschlagen';
+
+  @override
+  String get searchLoadMoreFailed =>
+      'Weitere Ergebnisse konnten nicht geladen werden';
 
   @override
   String get error => 'Fehler';
