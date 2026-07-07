@@ -34,6 +34,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Google sign-in unavailable (app configuration error)';
 
   @override
+  String get googlePopupBlocked =>
+      'Sign-in window blocked by the browser — allow pop-ups for this site and try again';
+
+  @override
   String get loginWithGoogle => 'Sign in with Google';
 
   @override

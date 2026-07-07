@@ -8,6 +8,7 @@
   "login": "Iniciar sesión",
   "googleLoginFailed": "Error al iniciar sesión con Google",
   "googleLoginConfigError": "Inicio de sesión con Google no disponible (error de configuración de la app)",
+  "googlePopupBlocked": "Ventana de inicio de sesión bloqueada por el navegador — permite las ventanas emergentes para este sitio e inténtalo de nuevo",
   "loginWithGoogle": "Iniciar sesión con Google",
   "back": "Atrás",
   "signUp": "Registrarse",

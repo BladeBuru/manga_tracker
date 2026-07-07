@@ -8,6 +8,7 @@
   "login": "로그인",
   "googleLoginFailed": "Google 로그인 실패",
   "googleLoginConfigError": "Google 로그인을 사용할 수 없습니다 (앱 구성 오류)",
+  "googlePopupBlocked": "브라우저가 로그인 창을 차단했습니다. 이 사이트의 팝업을 허용한 후 다시 시도하세요",
   "loginWithGoogle": "Google로 로그인",
   "back": "뒤로",
   "signUp": "회원가입",

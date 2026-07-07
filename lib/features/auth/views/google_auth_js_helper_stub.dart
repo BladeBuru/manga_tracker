@@ -1,3 +1,3 @@
 /// Stubs pour les plateformes non-web (Android, iOS)
-void openGoogleOAuthPopup(String url) {}
+bool openGoogleOAuthPopup(String url) => false;
 Map<String, String>? readGoogleAuthResult() => null;

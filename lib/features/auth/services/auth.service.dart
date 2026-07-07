@@ -8,6 +8,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
+import 'package:mangatracker/features/auth/views/google_auth_js_helper_stub.dart'
+    if (dart.library.html) 'package:mangatracker/features/auth/views/google_auth_js_helper_web.dart';
 import 'package:mangatracker/features/auth/views/google_auth_webview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
@@ -43,8 +45,10 @@ enum RefreshResult { success, networkError, rejected }
 ///   (typiquement : OAuth client **Android** absent de la console GCP ou
 ///   SHA-1 de signature non déclaré). L'utilisateur ne peut rien y faire —
 ///   message dédié pour que les rapports de bug soient exploitables.
+/// - [popupBlocked] : web uniquement — le navigateur a bloqué la popup
+///   OAuth (window.open → null). Message dédié : autoriser les pop-ups.
 /// - [failed] : toute autre erreur (réseau, backend, token invalide).
-enum GoogleLoginResult { success, cancelled, configError, failed }
+enum GoogleLoginResult { success, cancelled, configError, popupBlocked, failed }
 
 class AuthService {
   StorageService storageService = getIt<StorageService>();
@@ -490,12 +494,25 @@ class AuthService {
   Future<GoogleLoginResult> _loginWithGoogleWeb(BuildContext context) async {
     final oauthUrl = buildApiUri('/auth/google').toString();
 
+    // window.open DOIT être appelé dans la section SYNCHRONE du handler de
+    // tap (avant tout await / Navigator.push) : hors du geste utilisateur,
+    // Brave/Safari bloquent silencieusement la popup et l'écran d'attente
+    // pollait un postMessage qui ne pouvait jamais arriver (bug web 2026-07).
+    final popupOpened = openGoogleOAuthPopup(oauthUrl);
+    if (!popupOpened) {
+      debugPrint('❌ AuthService: popup Google bloquée par le navigateur');
+      return GoogleLoginResult.popupBlocked;
+    }
+
     if (!context.mounted) return GoogleLoginResult.failed;
 
     final result = await Navigator.of(context).push<GoogleAuthResult>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => GoogleAuthWebView(oauthUrl: oauthUrl),
+        builder: (_) => GoogleAuthWebView(
+          oauthUrl: oauthUrl,
+          popupAlreadyOpened: true,
+        ),
       ),
     );
 

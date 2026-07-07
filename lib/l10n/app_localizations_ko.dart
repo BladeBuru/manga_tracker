@@ -33,6 +33,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get googleLoginConfigError => 'Google 로그인을 사용할 수 없습니다 (앱 구성 오류)';
 
   @override
+  String get googlePopupBlocked =>
+      '브라우저가 로그인 창을 차단했습니다. 이 사이트의 팝업을 허용한 후 다시 시도하세요';
+
+  @override
   String get loginWithGoogle => 'Google로 로그인';
 
   @override

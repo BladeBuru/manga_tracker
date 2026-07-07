@@ -33,6 +33,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get googleLoginConfigError => 'Googleログインを利用できません（アプリ設定エラー）';
 
   @override
+  String get googlePopupBlocked =>
+      'ログインウィンドウがブラウザにブロックされました。このサイトのポップアップを許可して再試行してください';
+
+  @override
   String get loginWithGoogle => 'Googleでサインイン';
 
   @override

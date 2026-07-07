@@ -34,6 +34,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Connexion Google indisponible (erreur de configuration de l\'application)';
 
   @override
+  String get googlePopupBlocked =>
+      'Fenêtre de connexion bloquée par le navigateur — autorisez les pop-ups pour ce site puis réessayez';
+
+  @override
   String get loginWithGoogle => 'Se connecter avec Google';
 
   @override

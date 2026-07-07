@@ -34,6 +34,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Google-Anmeldung nicht verfügbar (App-Konfigurationsfehler)';
 
   @override
+  String get googlePopupBlocked =>
+      'Anmeldefenster vom Browser blockiert — erlauben Sie Pop-ups für diese Website und versuchen Sie es erneut';
+
+  @override
   String get loginWithGoogle => 'Mit Google anmelden';
 
   @override
