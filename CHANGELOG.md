@@ -8,6 +8,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 ## [Unreleased] — sprint hotfix-v0-10-1
 
 ### Added
+- Recherche : pagination par scroll infini (`SearchBloc` + `SearchResultsList`), compteur de résultats (`totalHits`), états vide/erreur du design system, fallback cache offline page 1, clés ARB ×7 langues
 - Profil ami : tap sur un ami → sa bibliothèque (réservé aux amitiés acceptées)
 - Page « Changer mon mot de passe » (mot de passe actuel requis, déconnexion des autres appareils)
 - Stats v2 : graphique d'activité hebdomadaire + historique des dernières lectures (journal de lecture branché dans les readers)
@@ -25,6 +26,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 - Formulaires login/register wrappés dans `AutofillGroup` + `finishAutofillContext()` après succès
 
 ### Fixed
+- Recherche : titres de niche introuvables (« Shadow System… ») et pertinence cassée — l'écran consomme la nouvelle réponse paginée de l'API triée par pertinence MangaUpdates (`POST /mangas/search` + `page`/`limit`)
+- Connexion Google : l'annulation du sélecteur de compte n'affiche plus « Échec de la connexion » ; erreurs de configuration OAuth distinguées (`GoogleLoginResult.configError`, message dédié ×7 langues) avec code d'erreur loggé pour diagnostic `adb logcat`
 - Autofill des gestionnaires de mots de passe (cassé depuis la refonte V1)
 - Emails affichés comme noms d'auteur dans les commentaires/amis/groupes (RGPD) + tap mailto involontaire
 - La pagination des recos écrasait le cache de la première page

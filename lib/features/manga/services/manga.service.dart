@@ -13,6 +13,7 @@ import 'package:mangatracker/core/network/http_service.dart';
 import '../../library/services/library.service.dart';
 import '../dto/manga_quick_view.dto.dart';
 import '../dto/manga_recommendation_view.dto.dart';
+import '../dto/search_results_page.dto.dart';
 
 class MangaService {
   HttpService httpService = getIt<HttpService>();
@@ -88,11 +89,54 @@ class MangaService {
     return getNewMangas();
   }
 
-  Future<List<MangaQuickViewDto>> searchForMangas(String searchPattern) async {
+  /// Recherche paginée de mangas.
+  ///
+  /// L'API renvoie une enveloppe `{results, totalHits, page, perPage, hasMore}`
+  /// triée par pertinence (classement MangaUpdates, identique au site).
+  /// L'enveloppe n'est renvoyée que si `page` est présent dans le body —
+  /// c'est ce qui distingue les nouveaux clients des anciens (tableau nu).
+  Future<SearchResultsPageDto> searchForMangas(
+    String searchPattern, {
+    int page = 1,
+    int limit = 20,
+  }) async {
     Uri url = buildApiUri('/mangas/search');
-    Map<String, String> body = {'search_pattern': searchPattern};
+    Response response = await httpService.postWithAuthTokens(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'search_pattern': searchPattern,
+        'page': page,
+        'limit': limit,
+      }),
+    );
 
-    return getMangas(url, post: true, body: body);
+    if (response.statusCode == HttpStatus.ok ||
+        response.statusCode == HttpStatus.created) {
+      final decoded = jsonDecode(response.body);
+      // Défense en profondeur : une API legacy (rollback serveur) renvoie
+      // un tableau nu → synthétiser une enveloppe sans pagination plutôt
+      // que de casser toute la recherche sur un cast.
+      if (decoded is List) {
+        final results = decoded
+            .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return SearchResultsPageDto(
+          results: results,
+          totalHits: results.length,
+          page: 1,
+          perPage: results.isEmpty ? limit : results.length,
+          hasMore: false,
+        );
+      }
+      return SearchResultsPageDto.fromJson(decoded as Map<String, dynamic>);
+    } else if (response.statusCode == HttpStatus.forbidden) {
+      throw InvalidCredentialsException(
+          "Not authorized to access this resource");
+    } else {
+      throw Exception(
+          'HTTP Request Failed with status: ${response.statusCode}.');
+    }
   }
 
   /// Demande à l'API de rafraîchir les URLs de cover d'un manga (utile quand

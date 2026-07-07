@@ -34,6 +34,18 @@ import 'biometric.service.dart';
 ///   avec l'illusion d'être connecté.
 enum RefreshResult { success, networkError, rejected }
 
+/// Résultat d'une tentative de connexion Google.
+///
+/// - [success] : tokens reçus et persistés, l'utilisateur est connecté.
+/// - [cancelled] : l'utilisateur a fermé le sélecteur de compte — ce n'est
+///   PAS une erreur, ne rien afficher.
+/// - [configError] : le SDK Google refuse la configuration de l'app
+///   (typiquement : OAuth client **Android** absent de la console GCP ou
+///   SHA-1 de signature non déclaré). L'utilisateur ne peut rien y faire —
+///   message dédié pour que les rapports de bug soient exploitables.
+/// - [failed] : toute autre erreur (réseau, backend, token invalide).
+enum GoogleLoginResult { success, cancelled, configError, failed }
+
 class AuthService {
   StorageService storageService = getIt<StorageService>();
   BiometricService biometricService = getIt<BiometricService>();
@@ -402,7 +414,7 @@ class AuthService {
   /// - Sur **mobile** : utilise le package `google_sign_in` (popup natif Google)
   ///   → envoie l'idToken au backend `POST /auth/google/mobile`
   /// - Sur **web** : ouvre une popup via WebView + postMessage (flux OAuth existant)
-  Future<bool> loginWithGoogle(BuildContext context) async {
+  Future<GoogleLoginResult> loginWithGoogle(BuildContext context) async {
     if (!kIsWeb) {
       return _loginWithGoogleMobile();
     }
@@ -413,7 +425,7 @@ class AuthService {
   static const _googleWebClientId =
       '43781664315-4qruuj7eek7j71meh9ccl398r9k20a6k.apps.googleusercontent.com';
 
-  Future<bool> _loginWithGoogleMobile() async {
+  Future<GoogleLoginResult> _loginWithGoogleMobile() async {
     try {
       // Initialise le SDK (idempotent si déjà initialisé)
       await GoogleSignIn.instance.initialize(serverClientId: _googleWebClientId);
@@ -428,7 +440,7 @@ class AuthService {
       final idToken = account.authentication.idToken;
       if (idToken == null) {
         debugPrint('❌ AuthService: idToken Google null (serverClientId manquant ?)');
-        return false;
+        return GoogleLoginResult.failed;
       }
 
       debugPrint('🔵 AuthService: idToken reçu, envoi au backend...');
@@ -449,21 +461,36 @@ class AuthService {
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
         debugPrint('✅ AuthService: Connexion Google mobile réussie');
-        return true;
+        return GoogleLoginResult.success;
       } else {
         debugPrint('❌ AuthService: Erreur backend Google mobile - ${res.statusCode}: ${res.body}');
-        return false;
+        return GoogleLoginResult.failed;
       }
+    } on GoogleSignInException catch (e) {
+      // Le code permet de distinguer les cas (visible via `adb logcat`) :
+      //  - canceled → fermeture volontaire du sélecteur, pas une erreur ;
+      //  - clientConfigurationError / providerConfigurationError → OAuth
+      //    client Android absent ou SHA-1 non déclaré dans la console GCP.
+      debugPrint(
+          '⚠️ AuthService: GoogleSignInException code=${e.code.name} — ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return GoogleLoginResult.cancelled;
+      }
+      if (e.code == GoogleSignInExceptionCode.clientConfigurationError ||
+          e.code == GoogleSignInExceptionCode.providerConfigurationError) {
+        return GoogleLoginResult.configError;
+      }
+      return GoogleLoginResult.failed;
     } on Exception catch (e) {
-      debugPrint('⚠️ AuthService: Connexion Google annulée ou erreur: $e');
-      return false;
+      debugPrint('⚠️ AuthService: Connexion Google échouée: $e');
+      return GoogleLoginResult.failed;
     }
   }
 
-  Future<bool> _loginWithGoogleWeb(BuildContext context) async {
+  Future<GoogleLoginResult> _loginWithGoogleWeb(BuildContext context) async {
     final oauthUrl = buildApiUri('/auth/google').toString();
 
-    if (!context.mounted) return false;
+    if (!context.mounted) return GoogleLoginResult.failed;
 
     final result = await Navigator.of(context).push<GoogleAuthResult>(
       MaterialPageRoute(
@@ -472,12 +499,13 @@ class AuthService {
       ),
     );
 
-    if (result == null) return false;
+    // Fermeture de la popup sans compléter le flux = annulation volontaire.
+    if (result == null) return GoogleLoginResult.cancelled;
 
     await storageService.writeSecureData('accessToken', result.accessToken);
     await storageService.writeSecureData('refreshToken', result.refreshToken);
     debugPrint('✅ AuthService: Connexion Google web réussie');
-    return true;
+    return GoogleLoginResult.success;
   }
 
   /// Persiste un couple `{accessToken, refreshToken}` reçu d'une voie

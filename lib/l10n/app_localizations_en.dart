@@ -30,6 +30,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get googleLoginFailed => 'Google sign-in failed';
 
   @override
+  String get googleLoginConfigError =>
+      'Google sign-in unavailable (app configuration error)';
+
+  @override
   String get loginWithGoogle => 'Sign in with Google';
 
   @override
@@ -76,6 +80,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get searchNoResults => 'No results found';
+
+  @override
+  String searchResultsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchLoadFailed => 'Search failed';
+
+  @override
+  String get searchLoadMoreFailed => 'Couldn\'t load more results';
 
   @override
   String get error => 'Error';

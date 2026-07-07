@@ -1,18 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
-import 'package:mangatracker/features/home/widgets/homepage_manga_list.dart';
-import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
-import 'package:mangatracker/features/manga/services/manga.service.dart';
+import 'package:mangatracker/features/search/bloc/search_bloc.dart';
 import 'package:mangatracker/features/search/services/search_history.service.dart';
 import 'package:mangatracker/features/search/widgets/popular_genres_wrap.dart';
 import 'package:mangatracker/features/search/widgets/search_bar_input.dart';
 import 'package:mangatracker/features/search/widgets/search_header.dart';
 import 'package:mangatracker/features/search/widgets/search_history_list.dart';
+import 'package:mangatracker/features/search/widgets/search_results_list.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Page Recherche — Design System V1 « Refined Classic ».
 ///
@@ -24,7 +26,8 @@ import 'package:mangatracker/features/search/widgets/search_history_list.dart';
 ///  - Historique de recherche (card hairline + rows refresh + clear)
 ///  - Genres populaires (Wrap de chips pilule)
 ///
-/// Mode résultats : titre + barre + liste de résultats (HomepageMangaList).
+/// Mode résultats : titre + barre + [SearchResultsList] (scroll infini
+/// piloté par [SearchBloc] — résultats triés par pertinence côté API).
 class Search extends StatefulWidget {
   const Search({super.key});
 
@@ -33,11 +36,9 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
-  final MangaService _mangaService = getIt<MangaService>();
+  final SearchBloc _searchBloc = getIt<SearchBloc>();
   final TextEditingController _controller = TextEditingController();
   Timer? _debounce;
-  Future<List<MangaQuickViewDto>>? _searchedMangas;
-  String _activeQuery = '';
   List<String> _history = const [];
 
   // Genres populaires — hardcodés (correspondent au design source).
@@ -65,6 +66,26 @@ class _SearchState extends State<Search> {
   void initState() {
     super.initState();
     _loadHistory();
+    _syncControllerWithBloc();
+  }
+
+  /// Le bloc est un singleton GetIt : au retour sur l'onglet Recherche, il
+  /// peut encore porter une recherche (résultats conservés — voulu). On
+  /// resynchronise la barre pour éviter « résultats affichés, barre vide ».
+  void _syncControllerWithBloc() {
+    final blocState = _searchBloc.state;
+    final query = switch (blocState) {
+      SearchLoading(:final query) => query,
+      SearchLoaded(:final query) => query,
+      SearchError(:final query) => query,
+      _ => '',
+    };
+    if (query.isNotEmpty) {
+      _controller.text = query;
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: query.length),
+      );
+    }
   }
 
   @override
@@ -117,10 +138,7 @@ class _SearchState extends State<Search> {
     setState(() {}); // re-render barre (border rouge / bouton clear)
     if (value.isEmpty) {
       _debounce?.cancel();
-      setState(() {
-        _searchedMangas = null;
-        _activeQuery = '';
-      });
+      _searchBloc.add(const SearchCleared());
       return;
     }
     _debounce?.cancel();
@@ -135,19 +153,14 @@ class _SearchState extends State<Search> {
     if (query.isEmpty) return;
     await _addToHistory(query);
     if (!mounted) return;
-    setState(() {
-      _activeQuery = query;
-      _searchedMangas = _mangaService.searchForMangas(query);
-    });
+    _searchBloc.add(SearchRequested(query));
   }
 
   void _clearQuery() {
     _debounce?.cancel();
     _controller.clear();
-    setState(() {
-      _searchedMangas = null;
-      _activeQuery = '';
-    });
+    _searchBloc.add(const SearchCleared());
+    setState(() {}); // re-render barre
   }
 
   void _selectTerm(String term) {
@@ -166,7 +179,6 @@ class _SearchState extends State<Search> {
     final bg = brightness == Brightness.dark
         ? AppColors.dsBgDark
         : AppColors.dsBgLight;
-    final hasResults = _searchedMangas != null && _activeQuery.isNotEmpty;
     return Scaffold(
       backgroundColor: bg,
       resizeToAvoidBottomInset: false,
@@ -175,19 +187,47 @@ class _SearchState extends State<Search> {
       body: SafeArea(
         bottom: false,
         child: AppContentWidth(
-          child: _BrowseOrResults(
-            hasResults: hasResults,
-            searchedMangas: _searchedMangas,
-            activeQuery: _activeQuery,
-            controller: _controller,
-            history: _history,
-            genres: _popularGenres,
-            onQueryChanged: _onQueryChanged,
-            onClearQuery: _clearQuery,
-            onSelectTerm: _selectTerm,
-            onRemoveTerm: _removeFromHistory,
-            onClearHistory: _clearHistory,
-            onSelectGenre: _selectTerm,
+          child: BlocProvider<SearchBloc>.value(
+            value: _searchBloc,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SearchHeader(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.m,
+                    0,
+                    AppSpacing.m,
+                    22,
+                  ),
+                  child: SearchBarInput(
+                    controller: _controller,
+                    onChanged: _onQueryChanged,
+                    onClear: _clearQuery,
+                  ),
+                ),
+                Expanded(
+                  child: BlocBuilder<SearchBloc, SearchState>(
+                    builder: (context, state) => switch (state) {
+                      SearchLoading() =>
+                        const Center(child: CircularProgressIndicator()),
+                      SearchLoaded() => SearchResultsList(state: state),
+                      SearchError() => _SearchErrorView(
+                          state: state,
+                          onRetry: _runSearch,
+                        ),
+                      _ => _BrowseContent(
+                          history: _history,
+                          genres: _popularGenres,
+                          onSelectTerm: _selectTerm,
+                          onRemoveTerm: _removeFromHistory,
+                          onClearHistory: _clearHistory,
+                        ),
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -195,89 +235,64 @@ class _SearchState extends State<Search> {
   }
 }
 
-/// Switcher entre le mode "browse" (historique + genres) et "results"
-/// (liste de mangas matching la query). Conserve la barre de recherche
-/// + le titre dans les deux cas.
-class _BrowseOrResults extends StatelessWidget {
-  final bool hasResults;
-  final Future<List<MangaQuickViewDto>>? searchedMangas;
-  final String activeQuery;
-  final TextEditingController controller;
+/// Mode "browse" : historique de recherche + genres populaires.
+class _BrowseContent extends StatelessWidget {
   final List<String> history;
   final List<String> genres;
-  final ValueChanged<String> onQueryChanged;
-  final VoidCallback onClearQuery;
   final ValueChanged<String> onSelectTerm;
   final ValueChanged<String> onRemoveTerm;
   final VoidCallback onClearHistory;
-  final ValueChanged<String> onSelectGenre;
 
-  const _BrowseOrResults({
-    required this.hasResults,
-    required this.searchedMangas,
-    required this.activeQuery,
-    required this.controller,
+  const _BrowseContent({
     required this.history,
     required this.genres,
-    required this.onQueryChanged,
-    required this.onClearQuery,
     required this.onSelectTerm,
     required this.onRemoveTerm,
     required this.onClearHistory,
-    required this.onSelectGenre,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SearchHeader(),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.m,
-            0,
-            AppSpacing.m,
-            22,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SearchHistoryHeader(
+            canClear: history.isNotEmpty,
+            onClearAll: onClearHistory,
           ),
-          child: SearchBarInput(
-            controller: controller,
-            onChanged: onQueryChanged,
-            onClear: onClearQuery,
+          SearchHistoryList(
+            history: history,
+            onSelect: onSelectTerm,
+            onRemove: onRemoveTerm,
           ),
-        ),
-        if (hasResults)
-          Expanded(
-            child: HomepageMangaList(
-              mangas: searchedMangas!,
-              searchQuery: activeQuery,
-            ),
-          )
-        else
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SearchHistoryHeader(
-                    canClear: history.isNotEmpty,
-                    onClearAll: onClearHistory,
-                  ),
-                  SearchHistoryList(
-                    history: history,
-                    onSelect: onSelectTerm,
-                    onRemove: onRemoveTerm,
-                  ),
-                  PopularGenresWrap(
-                    genres: genres,
-                    onSelectGenre: onSelectGenre,
-                  ),
-                  const SizedBox(height: AppSpacing.l),
-                ],
-              ),
-            ),
+          PopularGenresWrap(
+            genres: genres,
+            onSelectGenre: onSelectTerm,
           ),
-      ],
+          const SizedBox(height: AppSpacing.l),
+        ],
+      ),
+    );
+  }
+}
+
+/// Erreur de recherche (page 1) : message réseau ou générique + Retry.
+class _SearchErrorView extends StatelessWidget {
+  final SearchError state;
+  final VoidCallback onRetry;
+
+  const _SearchErrorView({required this.state, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AppErrorState(
+      message: state.isOffline
+          ? (l10n?.networkError ?? 'Veuillez vérifier votre connexion internet')
+          : (l10n?.searchLoadFailed ?? 'La recherche a échoué'),
+      retryLabel: l10n?.retry,
+      onRetry: onRetry,
     );
   }
 }

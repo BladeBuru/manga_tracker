@@ -150,6 +150,12 @@ abstract class AppLocalizations {
   /// **'Échec de la connexion avec Google'**
   String get googleLoginFailed;
 
+  /// Erreur quand le SDK Google refuse la configuration de l'app (OAuth client Android / SHA-1 manquant dans la console GCP)
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion Google indisponible (erreur de configuration de l\'application)'**
+  String get googleLoginConfigError;
+
   /// Bouton connexion Google
   ///
   /// In fr, this message translates to:
@@ -227,6 +233,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Réessayer'**
   String get retry;
+
+  /// État vide de la page de recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun résultat trouvé'**
+  String get searchNoResults;
+
+  /// Compteur de résultats de recherche (totalHits)
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 résultat} other{{count} résultats}}'**
+  String searchResultsCount(int count);
+
+  /// Erreur de chargement de la première page de résultats
+  ///
+  /// In fr, this message translates to:
+  /// **'La recherche a échoué'**
+  String get searchLoadFailed;
+
+  /// Erreur de chargement de la page suivante (scroll infini)
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger la suite des résultats'**
+  String get searchLoadMoreFailed;
 
   /// Label pour les erreurs
   ///

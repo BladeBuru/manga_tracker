@@ -41,6 +41,9 @@ class HttpService {
         Map<String, String>? headers,
         Object? body,
       }) async {
+    // Conservés pour le retry post-refresh : reconstruire depuis null
+    // perdrait les headers de l'appelant (ex. Content-Type: application/json).
+    final originalHeaders = headers;
     headers = await _addAuthHeaders(headers);
 
 
@@ -66,7 +69,7 @@ class HttpService {
       switch (result) {
         case RefreshResult.success:
           debugPrint('🔄 HttpService: Réessai de la requête avec le nouveau token...');
-          headers = await _addAuthHeaders(null);
+          headers = await _addAuthHeaders(originalHeaders);
           res = await _performRequest(method, url, headers: headers, body: body);
           if (res.statusCode == HttpStatus.unauthorized) {
             debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');

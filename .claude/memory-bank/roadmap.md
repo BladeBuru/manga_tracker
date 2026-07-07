@@ -14,6 +14,28 @@
 | 🔵 | Feature **prête côté back** (API OK, front à faire) |
 | ❌ | Feature **abandonnée** (volontairement écartée) |
 | ⏳ | Feature **à faire** (pas commencée ou en cours) |
+| 🔴 | **Cassé en prod / bloquant** (priorité absolue) |
+| 🔥 P0-P3 | Marqueur de **priorité** (voir section Priorités) |
+
+---
+
+## 🔥 Priorités (mise à jour 2026-07-03)
+
+> Ordre de traitement recommandé. Détail et justification en bas de fichier
+> (section « Ordre de priorité — justification »).
+
+| # | Priorité | Item | Effort | État |
+|---|---|---|---|---|
+| 1 | **P0** 🔴 | Google Sign-In : créer l'OAuth client **Android** dans la console GCP (runbook `known-issues.md`) | ~5 min, zéro code | Action console en attente |
+| 2 | **P0** 🔴 | Recherche : merger [PR API #71](https://github.com/BladeBuru/API-mangaTracker/pull/71) → vérifier prod → merger [PR Flutter #48](https://github.com/BladeBuru/manga_tracker/pull/48) + release | 2 merges + 1 release | PRs testées, prêtes |
+| 3 | **P1** 🔥 | Secrets : `.env.development` **embarqué dans l'APK distribué** (contient `GOOGLE_CLIENT_SECRET`) → retirer des assets + **rotation** | ~1 h + rotation | À faire |
+| 4 | **P1** 🔥 | Secrets : `key.properties`/keystore versionnés (Flutter) + `development.env` versionné (API : JWT_KEY, secrets) → gitignore + rotation | ~2 h + rotation | Known-issues critiques |
+| 5 | **P2** | Notifications de nouveaux chapitres (pipeline complet — le check background Android existe déjà) | sprint | ⏳ |
+| 6 | **P2** | Play Store readiness (dépend de #3/#4 pour le signing propre) — `.aab`, permissions, listing | sprint | ⏳ |
+| 7 | **P2** | Web : 1er déploiement `app.bladeburu.com` (infra prête) + responsive | sprint court | 🔵 |
+| 8 | **P3** | Catalogue local + recherche `pg_trgm` + modèle `work`/multi-sources (lève le verrou `mu_id`, MangaDex pivot — doc veille 2026-06) | chantier | ⏳ |
+| 9 | **P3** | Reco ML (LightFM) — après le catalogue local | chantier | ⏳ |
+| 10 | **P3** | iOS App Store (après Play Store + abstractions cross-platform) | chantier | ⏳ |
 
 ---
 
@@ -23,7 +45,7 @@
 ### ✅ Déconnexion du compte utilisateur
 ### ✅ Création de compte utilisateur
 ### ✅ Suppression de compte utilisateur
-### 🔵 Changement de mot de passe du compte utilisateur *(endpoint API OK — UI Flutter absente, en cours + révocation sessions à ajouter)*
+### ✅ Changement de mot de passe du compte utilisateur *(livré v0.11.x — page profil + currentPassword requis + révocation des autres sessions)*
 ### ✅ Récupération du nom d'utilisateur
 ### 🔵 Photo de profil *(URL externe OK ; upload multipart à câbler Phase 3.1)*
 ### 🔵 Onboarding pour collecter des stats utilisateur *(champs profil étendus prêts ; modal post-inscription à câbler — choix de genres pour alimenter les recos + démographie optionnelle)*
@@ -50,7 +72,7 @@
 
 ### Externe
 
-- ✅ Authentification Google (mobile via `idToken` + web via OAuth WebView)
+- 🔴 Authentification Google **cassée en prod (mobile)** — 🔥 **P0-1** *(cause diagnostiquée 2026-07-03 : OAuth client **Android** absent de la console GCP — sélecteur OK puis refus du token. Fix = 5 min console, runbook complet dans `known-issues.md`. Feedback d'erreurs différencié livré dans la PR #48. Le flux web OAuth reste fonctionnel.)*
 - ⏳ Authentification Apple (App Store requirement)
 
 ---
@@ -67,6 +89,10 @@
 - ✅ Lien personnalisé (custom link)
 
 ### ✅ Recherche sur tous les noms des mangas
+
+- 🔵 Pertinence alignée sur le classement MangaUpdates — 🔥 **P0-2** *(cause racine `orderby: rating` corrigée ; « Shadow System » et « Naruto » vérifiés en #1. PR API #71 + PR Flutter #48 testées de bout en bout — merger l'API D'ABORD)*
+- 🔵 Pagination scroll infini + compteur de résultats + fin de liste propre *(mêmes PRs — enveloppe `{results, totalHits, page, perPage, hasMore}` rétrocompatible)*
+
 ### ✅ Récupération d'un manga spécifique
 
 - ✅ Traduire les champs (description)
@@ -103,7 +129,7 @@
 ### Lecture
 
 - ✅ Enregistrement de la progression
-  - 🔵 Journal de lecture par chapitre *(API + table chapter_log livrées : relectures, hors-séries `is_bonus`, skip — le reader ne l'alimente pas encore, branchement en cours)*
+  - ✅ Journal de lecture par chapitre *(API + table chapter_log ; readers branchés — sprint stats v2, v0.11.x)*
   - ⏳ Regrouper les chapitres par tome ou arc
 - ✅ Téléchargement de chapitre (Android/iOS uniquement)
 - ✅ Bloqueur de pub dans le webview
@@ -114,7 +140,7 @@
 - ✅ Estimation du temps de lecture (chapitres × durée moyenne) *(Phase 2)*
 - ✅ Top genres les plus consultés *(Phase 2)*
 - ✅ Taux de complétion + dernière lecture + ancienneté du compte *(Phase 2)*
-- ⏳ Stats v2 : graphiques genres + historique des dernières lectures + chapitres lus + temps estimé *(en cours)*
+- ✅ Stats v2 : graphique d'activité hebdo + historique des dernières lectures + genres *(livré sprint social/stats, v0.11.x)*
 - ⏳ Streak de lecture
 - ⏳ Progression vers un objectif personnel
 
@@ -148,7 +174,7 @@
 ### ⏳ Partage de théories
 ### ⏳ Mini-jeux communautaires
 ### ⏳ Chat en temps réel
-### ⏳ Voir la bibliothèque de ses amis *(en cours — profil ami enrichi)*
+### ✅ Voir la bibliothèque de ses amis *(livré v0.11.x — profil ami, réservé aux amitiés acceptées)*
 ### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau)*
 
 ---
@@ -176,6 +202,12 @@
 ---
 
 ## Sécurité et Conformité
+
+### 🔴 Secrets exposés — 🔥 **P1** *(découverts/reconfirmés lors de l'audit du 2026-07-03)*
+
+- ⏳ `assets/env/.env.development` est **déclaré comme asset Flutter → embarqué dans chaque APK release distribué** (contient `GOOGLE_CLIENT_SECRET`) → le retirer des assets du `pubspec.yaml` + **rotation du secret Google**
+- ⏳ `android/key.properties` + `upload-keystore.jks` présents dans le repo (mot de passe keystore lisible) → vérifier gitignore/historique + rotation si exposé
+- ⏳ API : `src/common/envs/development.env` versionné (JWT_KEY, JWT_REFRESH_SECRET, GOOGLE_CLIENT_SECRET en clair) → retrait de git + rotation
 
 ### ✅ Conformité RGPD (article 15 / 17 / 20 / 7)
 
@@ -262,7 +294,8 @@
 ### ✅ Page Detail Manga
 ### ✅ Recherche manga
 
-- ⏳ Améliorer la pertinence des résultats
+- 🔵 Améliorer la pertinence des résultats — 🔥 **P0-2** *(fait dans les PRs #71/#48, à merger — voir section Priorités)*
+- 🔵 Pagination scroll infini *(idem)*
 
 ### ✅ i18n complète 7 langues (fr, en, de, ja, ko, pt, es)
 
@@ -297,38 +330,50 @@
 ```mermaid
 mindmap
   root((Manga Tracker))
+    🔥 P0 — Débloquer
+      🔴 Google Sign-In — client Android console GCP
+      🔴 Recherche — merge PR API 71 puis PR app 48 + release
+    🔥 P1 — Sécurité secrets
+      🔴 .env.development embarqué dans APK — rotation GOOGLE_CLIENT_SECRET
+      🔴 keystore et env versionnés — gitignore + rotation
     Auth
       ✅ Login/Register/Logout
       ✅ JWT + Refresh
       ✅ Biométrique
-      ✅ Google OAuth
+      🔴 Google OAuth mobile — P0
       ✅ Magic links email
-      ⏳ Apple Sign-In
+      ⏳ Apple Sign-In — avec iOS
     Bibliothèque
       ✅ CRUD complet
       ✅ Statuts lecture
       ✅ Note + custom link
-      ✅ Recherche
+      🔵 Recherche pertinence + pagination — P0, PRs prêtes
       ✅ Tendances/populaires
     Recommandations
-      🔵 API user
-      🔵 Par genre
-      🔵 Sleeper hits
-      ⏳ LightFM
+      ✅ API user
+      ✅ Par genre
+      ✅ Sleeper hits + cold start
+      ⏳ LightFM — P3, après catalogue
     Lecture
-      ✅ Progression
+      ✅ Progression + journal par chapitre
       ✅ Téléchargement chapitres
       ✅ Bloqueur pub
-      ✅ Stats (chapitres, temps, genres, taux complétion)
+      ✅ Stats v2 — activité hebdo, historique, genres
       ⏳ Streak
-    Notifications
-      ✅ Background Android
-      ⏳ iOS
+    Notifications — P2
+      ✅ Check background Android
+      ⏳ Notifs nouveaux chapitres bout en bout
+      ⏳ iOS BGTask
       ⏳ Web Push
+    Données — P3
+      ⏳ Catalogue local + recherche pg_trgm
+      ⏳ Modèle work multi-sources — lever verrou mu_id
+      ⏳ MangaDex pivot — webtoons occidentaux
     Plateformes
-      ✅ Android prod
-      🔵 Web déployable
-      ⏳ iOS App Store
+      ✅ Android prod hors store
+      ⏳ Play Store — P2, après P1 secrets
+      🔵 Web déployable — P2, infra prête
+      ⏳ iOS App Store — P3
     Infrastructure
       ✅ NestJS API + Postgres
       ✅ Docker NAS
@@ -338,15 +383,48 @@ mindmap
     Frontend
       ✅ Material 3 + i18n 7 langues
       ✅ go_router
-      ⏳ Dark mode
-      ⏳ Responsive
+      ✅ Dark mode
+      ⏳ Responsive — P2 avec le web
       ⏳ PWA
     Communauté
+      ✅ Amis + partage + biblio ami
       ⏳ Forum
       ⏳ Chat
       ⏳ Mini-jeux
-      ⏳ Amis biblio
 ```
+
+---
+
+## Ordre de priorité — justification (2026-07-03)
+
+**P0 — Débloquer l'existant (heures).** Deux features déjà payées sont
+inutilisables : la connexion Google (panne totale, fix = 5 min de console
+GCP, aucun code, agit sur l'APK déjà installé) et la recherche (PRs #71/#48
+testées de bout en bout, il ne reste que 2 merges + 1 release — **ordre
+impératif : API d'abord**). Meilleur ratio valeur/effort de toute la carte.
+
+**P1 — Secrets (avant toute croissance).** Le `GOOGLE_CLIENT_SECRET` est
+distribué publiquement dans chaque APK (asset `.env.development`) et des
+secrets JWT/keystore sont versionnés. Tant que l'app est confidentielle le
+risque est contenu, mais c'est un préalable absolu au Play Store (review +
+exposition) et chaque jour augmente le coût d'une rotation. À faire AVANT P2.
+
+**P2 — Vague produit courte (semaines).** (a) Notifications de nouveaux
+chapitres : c'est LE cœur d'une app de suivi, le check background existe
+déjà, il manque le pipeline de bout en bout ; (b) Play Store (dépend de P1
+pour le signing/secrets) : distribution et mises à jour sans friction ;
+(c) 1er déploiement web `app.bladeburu.com` : infra prête, gros gain de
+visibilité pour un effort résiduel (responsive en parallèle).
+
+**P3 — Fond structurant (mois).** Catalogue local + `pg_trgm` + modèle
+`work` multi-sources (doc veille 2026-06) : recherche instantanée, lève le
+verrou `mu_id`, couvre les webtoons occidentaux via MangaDex. À faire AVANT
+LightFM (le ML a besoin d'un catalogue propre) et avant iOS (qui a ses
+propres prérequis d'abstraction). Apple Sign-In s'aligne sur iOS.
+
+**Non prioritaire.** Forum/chat/mini-jeux (communauté embryonnaire),
+calendrier de sorties, streak — valeur réelle mais aucune dépendance ne les
+bloque, à piocher en fond de sprint.
 
 ---
 
@@ -354,9 +432,10 @@ mindmap
 
 | État | Compte | Description |
 |---|---:|---|
-| ✅ Prêt (front + back) | ~55 | Livré et testé |
-| 🔵 Prêt (back uniquement) | ~5 | API OK, attente front |
-| ⏳ À faire | ~70 | Backlog |
+| ✅ Prêt (front + back) | ~62 | Livré et testé *(+7 : stats v2, journal lecture, biblio ami, change password, dark mode…)* |
+| 🔵 Prêt, en attente merge/release | ~5 | Dont recherche pertinence + pagination (PRs #71/#48) |
+| 🔴 Cassé / bloquant | 2 | Google Sign-In mobile (console GCP) + secrets exposés |
+| ⏳ À faire | ~60 | Backlog priorisé (P2/P3 + fond de sprint) |
 | ❌ Abandonné | 3 | Volontairement écartés |
 
 ---
