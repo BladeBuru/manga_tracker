@@ -3,8 +3,13 @@ import 'dart:js' as js;
 
 /// Ouvre la popup Google OAuth via window.open() sans "noopener"
 /// afin que window.opener soit disponible dans la popup pour le postMessage.
-void openGoogleOAuthPopup(String url) {
-  js.context.callMethod('openGoogleOAuthPopup', [url]);
+///
+/// Retourne `false` si le navigateur a bloqué la popup. À appeler dans la
+/// section SYNCHRONE d'un handler de tap (user activation), sinon
+/// Brave/Safari bloquent systématiquement.
+bool openGoogleOAuthPopup(String url) {
+  final result = js.context.callMethod('openGoogleOAuthPopup', [url]);
+  return result == true;
 }
 
 /// Lit le résultat Google OAuth stocké dans window.__googleAuthResult

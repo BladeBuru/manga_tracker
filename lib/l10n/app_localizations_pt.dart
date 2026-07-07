@@ -34,6 +34,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Login com Google indisponível (erro de configuração do app)';
 
   @override
+  String get googlePopupBlocked =>
+      'Janela de login bloqueada pelo navegador — permita pop-ups para este site e tente novamente';
+
+  @override
   String get loginWithGoogle => 'Entrar com Google';
 
   @override

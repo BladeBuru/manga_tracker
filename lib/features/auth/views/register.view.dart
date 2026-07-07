@@ -142,6 +142,11 @@ class _RegisterViewState extends State<RegisterView> {
           l10n?.googleLoginConfigError ??
               "Connexion Google indisponible (erreur de configuration de l'app)",
         );
+      case GoogleLoginResult.popupBlocked:
+        getIt<Notifier>().error(
+          l10n?.googlePopupBlocked ??
+              'Fenêtre bloquée par le navigateur — autorisez les pop-ups pour ce site',
+        );
       case GoogleLoginResult.failed:
         getIt<Notifier>().error(
           l10n?.googleLoginFailed ?? 'Échec de la connexion Google',

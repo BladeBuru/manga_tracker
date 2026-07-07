@@ -46,9 +46,12 @@
       }
     });
 
-    // Ouvre la popup Google OAuth SANS "noopener" pour que window.opener soit disponible
+    // Ouvre la popup Google OAuth SANS "noopener" pour que window.opener soit disponible.
+    // Retourne false si le navigateur a bloqué la popup (window.open → null),
+    // pour que l'app affiche un message au lieu d'attendre indéfiniment.
     window.openGoogleOAuthPopup = function(url) {
-      window.open(url, 'googleOAuth', 'width=520,height=640,left=200,top=100');
+      var w = window.open(url, 'googleOAuth', 'width=520,height=640,left=200,top=100');
+      return w !== null && typeof w !== 'undefined';
     };
   </script>
   <script src="flutter_bootstrap.js" async></script>

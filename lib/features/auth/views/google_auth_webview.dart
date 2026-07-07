@@ -25,7 +25,16 @@ class GoogleAuthResult {
 class GoogleAuthWebView extends StatefulWidget {
   final String oauthUrl;
 
-  const GoogleAuthWebView({super.key, required this.oauthUrl});
+  /// Web : vrai si la popup a déjà été ouverte par l'appelant DANS le geste
+  /// utilisateur (obligatoire pour passer les bloqueurs de popups —
+  /// l'ouvrir ici, dans initState, arrive après le tap et se fait bloquer).
+  final bool popupAlreadyOpened;
+
+  const GoogleAuthWebView({
+    super.key,
+    required this.oauthUrl,
+    this.popupAlreadyOpened = false,
+  });
 
   @override
   State<GoogleAuthWebView> createState() => _GoogleAuthWebViewState();
@@ -49,8 +58,12 @@ class _GoogleAuthWebViewState extends State<GoogleAuthWebView> {
 
   /// Web : ouvre une popup via window.open() (sans noopener) et poll le résultat
   Future<void> _launchWebOAuth() async {
-    // window.open() sans "noopener" → window.opener disponible dans la popup
-    openGoogleOAuthPopup(widget.oauthUrl);
+    // window.open() sans "noopener" → window.opener disponible dans la popup.
+    // Si l'appelant l'a déjà ouverte dans le geste utilisateur (cas nominal),
+    // ne pas rouvrir : ici on est hors geste → les bloqueurs refuseraient.
+    if (!widget.popupAlreadyOpened) {
+      openGoogleOAuthPopup(widget.oauthUrl);
+    }
 
     // Polling toutes les 500ms pour détecter les tokens postMessage
     _pollTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {

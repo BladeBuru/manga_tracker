@@ -8,6 +8,7 @@
   "login": "Entrar",
   "googleLoginFailed": "Falha no login com Google",
   "googleLoginConfigError": "Login com Google indisponível (erro de configuração do app)",
+  "googlePopupBlocked": "Janela de login bloqueada pelo navegador — permita pop-ups para este site e tente novamente",
   "loginWithGoogle": "Entrar com Google",
   "back": "Voltar",
   "signUp": "Cadastrar",

@@ -32,6 +32,10 @@
   "@googleLoginConfigError": {
     "description": "Erreur quand le SDK Google refuse la configuration de l'app (OAuth client Android / SHA-1 manquant dans la console GCP)"
   },
+  "googlePopupBlocked": "Fenêtre de connexion bloquée par le navigateur — autorisez les pop-ups pour ce site puis réessayez",
+  "@googlePopupBlocked": {
+    "description": "Web uniquement : le navigateur a bloqué la popup OAuth Google (window.open null)"
+  },
   "loginWithGoogle": "Se connecter avec Google",
   "@loginWithGoogle": {
     "description": "Bouton connexion Google"

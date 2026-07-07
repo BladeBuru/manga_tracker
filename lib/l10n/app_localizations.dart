@@ -156,6 +156,12 @@ abstract class AppLocalizations {
   /// **'Connexion Google indisponible (erreur de configuration de l\'application)'**
   String get googleLoginConfigError;
 
+  /// Web uniquement : le navigateur a bloqué la popup OAuth Google (window.open null)
+  ///
+  /// In fr, this message translates to:
+  /// **'Fenêtre de connexion bloquée par le navigateur — autorisez les pop-ups pour ce site puis réessayez'**
+  String get googlePopupBlocked;
+
   /// Bouton connexion Google
   ///
   /// In fr, this message translates to:

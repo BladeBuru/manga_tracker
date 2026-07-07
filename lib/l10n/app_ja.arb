@@ -8,6 +8,7 @@
   "login": "サインイン",
   "googleLoginFailed": "Googleログインに失敗しました",
   "googleLoginConfigError": "Googleログインを利用できません（アプリ設定エラー）",
+  "googlePopupBlocked": "ログインウィンドウがブラウザにブロックされました。このサイトのポップアップを許可して再試行してください",
   "loginWithGoogle": "Googleでサインイン",
   "back": "戻る",
   "signUp": "サインアップ",

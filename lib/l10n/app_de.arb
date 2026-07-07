@@ -8,6 +8,7 @@
   "login": "Anmelden",
   "googleLoginFailed": "Google-Anmeldung fehlgeschlagen",
   "googleLoginConfigError": "Google-Anmeldung nicht verfügbar (App-Konfigurationsfehler)",
+  "googlePopupBlocked": "Anmeldefenster vom Browser blockiert — erlauben Sie Pop-ups für diese Website und versuchen Sie es erneut",
   "loginWithGoogle": "Mit Google anmelden",
   "back": "Zurück",
   "signUp": "Registrieren",

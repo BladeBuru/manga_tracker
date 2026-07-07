@@ -34,6 +34,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Inicio de sesión con Google no disponible (error de configuración de la app)';
 
   @override
+  String get googlePopupBlocked =>
+      'Ventana de inicio de sesión bloqueada por el navegador — permite las ventanas emergentes para este sitio e inténtalo de nuevo';
+
+  @override
   String get loginWithGoogle => 'Iniciar sesión con Google';
 
   @override
