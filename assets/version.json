@@ -1,8 +1,22 @@
 {
-  "latestVersion": "0.11.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.11.0/MangaTracker.apk",
+  "latestVersion": "0.12.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.12.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.12.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- La recherche affiche désormais tous les résultats : faites défiler la liste pour en voir davantage",
+        "- Le nombre total de résultats s'affiche au-dessus de la liste",
+        "⚡ Améliorations",
+        "- Les résultats de recherche sont triés par pertinence : le manga que vous cherchez apparaît en premier",
+        "- Les derniers résultats de recherche restent consultables hors connexion",
+        "🐛 Corrections",
+        "- La connexion avec Google fonctionne de nouveau",
+        "- Fermer la fenêtre de choix de compte Google n'affiche plus de message d'erreur"
+      ]
+    },
     {
       "version": "0.11.0",
       "notes": [
