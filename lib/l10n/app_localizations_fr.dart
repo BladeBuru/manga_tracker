@@ -535,6 +535,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chapter => 'Chapitre';
 
   @override
+  String get chapterNotFound => 'Chapitre non trouvé';
+
+  @override
+  String get previousChapterTooltip => 'Chapitre précédent';
+
+  @override
+  String get nextChapterTooltip => 'Chapitre suivant';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

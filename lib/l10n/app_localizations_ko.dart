@@ -523,6 +523,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chapter => '챕터';
 
   @override
+  String get chapterNotFound => '챕터를 찾을 수 없습니다';
+
+  @override
+  String get previousChapterTooltip => '이전 챕터';
+
+  @override
+  String get nextChapterTooltip => '다음 챕터';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

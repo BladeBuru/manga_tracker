@@ -1068,6 +1068,24 @@ abstract class AppLocalizations {
   /// **'Chapitre'**
   String get chapter;
 
+  /// Reader offline : le fichier du chapitre est introuvable
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre non trouvé'**
+  String get chapterNotFound;
+
+  /// Tooltip navigation reader offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre précédent'**
+  String get previousChapterTooltip;
+
+  /// Tooltip navigation reader offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre suivant'**
+  String get nextChapterTooltip;
+
   /// Nombre de chapitres avec pluralisation
   ///
   /// In fr, this message translates to:

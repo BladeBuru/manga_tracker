@@ -634,6 +634,18 @@
     "description": "Filtre pour afficher les nouveautés"
   },
   "chapter": "Chapitre",
+  "chapterNotFound": "Chapitre non trouvé",
+  "@chapterNotFound": {
+    "description": "Reader offline : le fichier du chapitre est introuvable"
+  },
+  "previousChapterTooltip": "Chapitre précédent",
+  "@previousChapterTooltip": {
+    "description": "Tooltip navigation reader offline"
+  },
+  "nextChapterTooltip": "Chapitre suivant",
+  "@nextChapterTooltip": {
+    "description": "Tooltip navigation reader offline"
+  },
   "@chapter": {
     "description": "Label pour un chapitre"
   },

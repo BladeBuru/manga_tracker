@@ -787,6 +787,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
     if (result == true) {
       final count = await _service.importSelectors(jsonController.text);
       await _loadSelectors();
+      if (!mounted) return;
       final l10n = AppLocalizations.of(context);
       _notifier.success(
         l10n?.selectorsImported(count.toString()) ??

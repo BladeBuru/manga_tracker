@@ -132,6 +132,7 @@ class MangaRow extends StatelessWidget {
         }
 
         // Sinon, aller sur le détail normal
+        if (!context.mounted) return;
         await context.push(
           '/manga/$muId',
           extra: MangaDetailExtras(title: mangaName, coverPath: mediumImgPath),
