@@ -11,7 +11,6 @@ import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/features/manga/bloc/detail_state.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
-import 'package:mangatracker/features/manga/helpers/chapters.helper.dart';
 import 'package:mangatracker/features/manga/views/late_detail.view.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -453,14 +452,18 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     child: LateDetailView(
                       muId: widget.muId.toString(),
                       mangaTitle: manga.title,
-                      mangaDescription: manga.description,
+                      // Chantier traduction : l'API renvoie la description
+                      // traduite (Accept-Language) — fallback sur l'original.
+                      mangaDescription:
+                          manga.translatedDescription ?? manga.description,
                       rating: manga.rating,
-                      mangaChapters: ChaptersHelper.buildChapterList(manga.totalChapters),
                       mangaTotalChapters: manga.totalChapters,
+                      officialTotalChapters: manga.officialTotalChapters,
                       isCompleted: manga.isCompleted,
                       authors: manga.authors,
                       year: manga.year,
                       readChapters: readChapters,
+                      inLibrary: manga.inLibrary,
                       genres: manga.genres,
                       seasonChapters: manga.seasonChapters,
                       bonusChapters: manga.bonusChapters,

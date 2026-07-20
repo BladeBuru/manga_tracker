@@ -537,6 +537,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get chapter => 'Capítulo';
 
   @override
+  String get chapterNotFound => 'Capítulo não encontrado';
+
+  @override
+  String get previousChapterTooltip => 'Capítulo anterior';
+
+  @override
+  String get nextChapterTooltip => 'Próximo capítulo';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2070,7 +2079,52 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get statsNoHistory =>
-      'Nenhuma leitura registrada ainda. Conclua um capítulo no leitor para iniciar seu histórico.';
+      'Nenhuma leitura registrada ainda. Atualize seu progresso para iniciar seu histórico.';
+
+  @override
+  String get reportMoreChaptersCta => 'Informar mais capítulos';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'Informar mais capítulos';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      'Leu mais capítulos do que o total conhecido? Informe o novo total: ele contará para o seu progresso e será verificado com os relatos de outros leitores.';
+
+  @override
+  String get reportMoreChaptersInputLabel => 'Novo total de capítulos';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return 'O total deve ser maior que $total.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return 'O total não pode exceder $max.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => 'Informar';
+
+  @override
+  String get reportMoreChaptersSuccess =>
+      'Obrigado! O número de capítulos foi atualizado.';
+
+  @override
+  String get reportMoreChaptersError =>
+      'Não foi possível enviar o relato agora. Tente novamente mais tarde.';
+
+  @override
+  String get reportMoreChaptersErrorInvalid =>
+      'O total conhecido mudou nesse meio-tempo. Recarregue a página e tente novamente.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Muitos relatos enviados recentemente. Tente novamente daqui a pouco.';
+
+  @override
+  String get reportMoreChaptersOffline => 'Indisponível offline.';
 
   @override
   String get recommendationsSleepersTitle => '💎 Joias escondidas';

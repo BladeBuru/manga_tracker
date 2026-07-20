@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
+
+import '../../manga/dto/reading_status.enum.dart';
 
 class DetailBottomBar extends StatelessWidget {
   final ReadingStatus? status;
@@ -38,12 +40,13 @@ class DetailBottomBar extends StatelessWidget {
       width: 52,
       height: double.infinity,
       child: Tooltip(
-        message: 'Recommandations',
+        message: AppLocalizations.of(context)?.recommendations ??
+            'Recommandations',
         child: ElevatedButton(
           style: primary().copyWith(
-            padding: const MaterialStatePropertyAll(EdgeInsets.zero),
-            elevation: const MaterialStatePropertyAll(0),
-            minimumSize: const MaterialStatePropertyAll(Size.zero),
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            elevation: const WidgetStatePropertyAll(0),
+            minimumSize: const WidgetStatePropertyAll(Size.zero),
           ),
           onPressed: onShowRecommendations,
           child: const Icon(Icons.auto_awesome, size: 22),
@@ -60,7 +63,8 @@ class DetailBottomBar extends StatelessWidget {
             child: ElevatedButton.icon(
               style: primary(),
               icon: const Icon(Icons.bookmark_add_outlined),
-              label: const Text('Ajouter à "À lire plus tard"'),
+              label: Text(AppLocalizations.of(context)?.addToReadLater ??
+                  'Ajouter à "À lire plus tard"'),
               onPressed: onAddToLibrary,
             ),
           ),
@@ -93,9 +97,12 @@ class DetailBottomBar extends StatelessWidget {
               style: primary(),
               onPressed: onReadOnline,
               icon: const Icon(Icons.link),
-              label: const Padding(
-                padding: EdgeInsets.only(right: 24),
-                child: Text('Lire en ligne', style: TextStyle(fontSize: 17)),
+              label: Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Text(
+                  AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne',
+                  style: const TextStyle(fontSize: 17),
+                ),
               ),
             ),
           ),
@@ -108,7 +115,8 @@ class DetailBottomBar extends StatelessWidget {
                 icon: const Icon(Icons.more_vert, size: 20),
                 color: Theme.of(context).colorScheme.onPrimary,
                 onPressed: onOpenLinkMenu,
-                tooltip: 'Gérer le lien',
+                tooltip: AppLocalizations.of(context)?.manageLink ??
+                    'Gérer le lien',
               ),
             ),
           ),
@@ -119,7 +127,10 @@ class DetailBottomBar extends StatelessWidget {
       style: primary(),
       onPressed: onAddLink,
       icon: const Icon(Icons.link_off),
-      label: const Text('Ajouter un lien', style: TextStyle(fontSize: 17)),
+      label: Text(
+        AppLocalizations.of(context)?.addLink ?? 'Ajouter un lien',
+        style: const TextStyle(fontSize: 17),
+      ),
     );
 
     return _bar(context, [

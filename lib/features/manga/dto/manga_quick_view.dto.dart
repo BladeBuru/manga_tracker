@@ -12,7 +12,18 @@ class MangaQuickViewDto {
   final String rating;
   final ReadingStatus? readingStatus ;
   final num? readChapters;
+
+  /// Total EFFECTIF de chapitres = `max(total officiel MU, signalement user)`
+  /// (chantier A). L'UI se débloque au-delà du total officiel sans logique
+  /// supplémentaire.
   final num? totalChapters;
+
+  /// Total « plus de chapitres » signalé par l'utilisateur (chantier A).
+  /// Renvoyé par `/library/all` uniquement si le report dépasse encore le
+  /// total officiel — sinon `null`. Informatif : le total officiel exact
+  /// n'est pas dérivable de la seule quick view quand un report est actif
+  /// (cf. `MangaDetailDto.officialTotalChapters` côté détail).
+  final num? userReportedTotalChapters;
   final List<String>? associated;
   final bool hasNewChapters;
 
@@ -26,6 +37,7 @@ class MangaQuickViewDto {
     this.readingStatus,
     this.readChapters,
     this.totalChapters,
+    this.userReportedTotalChapters,
     this.associated,
     this.hasNewChapters = false,
   });
@@ -54,6 +66,8 @@ class MangaQuickViewDto {
             : ReadingStatus.readLater,
         readChapters: json['readChapters'],
         totalChapters: json['totalChapters'],
+        userReportedTotalChapters: json['userReportedTotalChapters'] ??
+            json['user_reported_total_chapters'],
         associated: (json['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
         hasNewChapters: json['hasNewChapters'] as bool? ?? false,
     );
@@ -70,6 +84,7 @@ class MangaQuickViewDto {
       'readingStatus': readingStatus?.name,
       'readChapters': readChapters,
       'totalChapters': totalChapters,
+      'userReportedTotalChapters': userReportedTotalChapters,
       'associated': associated,
       'hasNewChapters': hasNewChapters,
     };

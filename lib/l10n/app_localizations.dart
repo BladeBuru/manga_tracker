@@ -1068,6 +1068,24 @@ abstract class AppLocalizations {
   /// **'Chapitre'**
   String get chapter;
 
+  /// Reader offline : le fichier du chapitre est introuvable
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre non trouvé'**
+  String get chapterNotFound;
+
+  /// Tooltip navigation reader offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre précédent'**
+  String get previousChapterTooltip;
+
+  /// Tooltip navigation reader offline
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitre suivant'**
+  String get nextChapterTooltip;
+
   /// Nombre de chapitres avec pluralisation
   ///
   /// In fr, this message translates to:
@@ -3709,8 +3727,80 @@ abstract class AppLocalizations {
   /// No description provided for @statsNoHistory.
   ///
   /// In fr, this message translates to:
-  /// **'Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.'**
+  /// **'Aucune lecture enregistrée pour l’instant. Mets à jour ta progression pour démarrer ton historique.'**
   String get statsNoHistory;
+
+  /// CTA dans le header du bloc chapitres du détail manga (signalement de chapitres manquants)
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler plus de chapitres'**
+  String get reportMoreChaptersCta;
+
+  /// Titre du dialog de signalement de chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler plus de chapitres'**
+  String get reportMoreChaptersDialogTitle;
+
+  /// Texte explicatif du dialog de signalement de chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Tu as lu plus de chapitres que le total connu ? Indique le nouveau total : il sera pris en compte pour ta progression et vérifié avec les signalements des autres lecteurs.'**
+  String get reportMoreChaptersExplainer;
+
+  /// Label du champ numérique du dialog de signalement
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau total de chapitres'**
+  String get reportMoreChaptersInputLabel;
+
+  /// Erreur de validation : total saisi inférieur ou égal au total connu
+  ///
+  /// In fr, this message translates to:
+  /// **'Le total doit être supérieur à {total}.'**
+  String reportMoreChaptersInvalidLow(int total);
+
+  /// Erreur de validation : total saisi au-delà de la borne autorisée (total + 200)
+  ///
+  /// In fr, this message translates to:
+  /// **'Le total ne peut pas dépasser {max}.'**
+  String reportMoreChaptersInvalidHigh(int max);
+
+  /// Bouton de validation du dialog de signalement
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler'**
+  String get reportMoreChaptersSubmit;
+
+  /// Notification de succès après un signalement accepté
+  ///
+  /// In fr, this message translates to:
+  /// **'Merci ! Le nombre de chapitres a été mis à jour.'**
+  String get reportMoreChaptersSuccess;
+
+  /// Message d'erreur générique du dialog de signalement (hors bibliothèque ou erreur serveur inattendue)
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.'**
+  String get reportMoreChaptersError;
+
+  /// Erreur de signalement 400 : le total saisi n'est plus valide côté serveur (le total officiel a bougé)
+  ///
+  /// In fr, this message translates to:
+  /// **'Le total connu a changé entre-temps. Recharge la page et réessaie.'**
+  String get reportMoreChaptersErrorInvalid;
+
+  /// Erreur de signalement 429 : trop de signalements sur une courte période (throttle serveur)
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de signalements envoyés récemment. Réessaie dans un moment.'**
+  String get reportMoreChaptersErrorThrottled;
+
+  /// Message affiché quand le signalement est désactivé hors ligne
+  ///
+  /// In fr, this message translates to:
+  /// **'Indisponible hors ligne.'**
+  String get reportMoreChaptersOffline;
 
   /// No description provided for @recommendationsSleepersTitle.
   ///

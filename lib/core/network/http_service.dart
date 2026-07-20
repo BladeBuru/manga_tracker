@@ -8,6 +8,7 @@ import 'package:mangatracker/features/auth/services/auth.service.dart';
 import '../service_locator/service_locator.dart';
 import '../storage/services/storage.service.dart';
 import '../services/connectivity_service.dart';
+import '../services/language_service.dart';
 
 class HttpService {
   final StorageService _storage = getIt<StorageService>();
@@ -92,8 +93,20 @@ class HttpService {
     return res;
   }
 
+  /// Ajoute la langue de l'app (header CORS-safelisted, pas de préflight web)
+  /// pour que l'API renvoie `translated_description` dans la bonne langue.
+  /// Défensif comme pour ConnectivityService : si le service n'est pas encore
+  /// prêt, le header est simplement omis (l'API renverra l'original).
+  void _addLanguageHeader(Map<String, String> headers) {
+    try {
+      final locale = getIt<LanguageService>().getCurrentLocale();
+      headers[HttpHeaders.acceptLanguageHeader] = locale.languageCode;
+    } catch (_) {}
+  }
+
   Future<Map<String, String>> _addAuthHeaders(Map<String, String>? h) async {
     final headers = h == null ? <String, String>{} : Map.of(h);
+    _addLanguageHeader(headers);
 
     String? accessToken = await _storage.readSecureData('accessToken');
     String? refreshToken = await _storage.readSecureData('refreshToken');

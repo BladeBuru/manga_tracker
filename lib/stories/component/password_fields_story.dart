@@ -1,5 +1,4 @@
 import 'package:dashbook/dashbook.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/auth_button.dart';
 import '../../../core/theme/app_theme.dart';
@@ -63,11 +62,11 @@ class FakeValidatorService extends ValidatorService {
   @override
   String? validateConfirmPassword(
     String? value,
-    TextEditingController passwordController,
+    TextEditingController pwdController,
     BuildContext? context,
   ) {
     if (value == null || value.isEmpty) return 'Champ requis';
-    if (value != passwordController.text) {
+    if (value != pwdController.text) {
       return 'Les mots de passe ne correspondent pas';
     }
     return null;

@@ -528,6 +528,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chapter => 'Chapter';
 
   @override
+  String get chapterNotFound => 'Chapter not found';
+
+  @override
+  String get previousChapterTooltip => 'Previous chapter';
+
+  @override
+  String get nextChapterTooltip => 'Next chapter';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2045,7 +2054,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsNoHistory =>
-      'No reading recorded yet. Finish a chapter in the reader to start your history.';
+      'No reading recorded yet. Update your progress to start your history.';
+
+  @override
+  String get reportMoreChaptersCta => 'Report more chapters';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'Report more chapters';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      'Read more chapters than the known total? Enter the new total: it will count towards your progress and be checked against other readers\' reports.';
+
+  @override
+  String get reportMoreChaptersInputLabel => 'New chapter total';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return 'The total must be greater than $total.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return 'The total cannot exceed $max.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => 'Report';
+
+  @override
+  String get reportMoreChaptersSuccess =>
+      'Thanks! The chapter count has been updated.';
+
+  @override
+  String get reportMoreChaptersError =>
+      'Unable to send the report right now. Please try again later.';
+
+  @override
+  String get reportMoreChaptersErrorInvalid =>
+      'The known total has changed in the meantime. Reload the page and try again.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Too many reports sent recently. Please try again in a moment.';
+
+  @override
+  String get reportMoreChaptersOffline => 'Unavailable offline.';
 
   @override
   String get recommendationsSleepersTitle => '💎 Hidden gems';
