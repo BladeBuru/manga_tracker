@@ -2124,7 +2124,57 @@
   "statsHistoryTitle": "Dernières lectures",
   "statsActivityTitle": "Activité de lecture",
   "statsBonusTag": "Hors-série",
-  "statsNoHistory": "Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.",
+  "statsNoHistory": "Aucune lecture enregistrée pour l’instant. Mets à jour ta progression pour démarrer ton historique.",
+  "reportMoreChaptersCta": "Signaler plus de chapitres",
+  "@reportMoreChaptersCta": {
+    "description": "CTA dans le header du bloc chapitres du détail manga (signalement de chapitres manquants)"
+  },
+  "reportMoreChaptersDialogTitle": "Signaler plus de chapitres",
+  "@reportMoreChaptersDialogTitle": {
+    "description": "Titre du dialog de signalement de chapitres"
+  },
+  "reportMoreChaptersExplainer": "Tu as lu plus de chapitres que le total connu ? Indique le nouveau total : il sera pris en compte pour ta progression et vérifié avec les signalements des autres lecteurs.",
+  "@reportMoreChaptersExplainer": {
+    "description": "Texte explicatif du dialog de signalement de chapitres"
+  },
+  "reportMoreChaptersInputLabel": "Nouveau total de chapitres",
+  "@reportMoreChaptersInputLabel": {
+    "description": "Label du champ numérique du dialog de signalement"
+  },
+  "reportMoreChaptersInvalidLow": "Le total doit être supérieur à {total}.",
+  "@reportMoreChaptersInvalidLow": {
+    "description": "Erreur de validation : total saisi inférieur ou égal au total connu",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "reportMoreChaptersInvalidHigh": "Le total ne peut pas dépasser {max}.",
+  "@reportMoreChaptersInvalidHigh": {
+    "description": "Erreur de validation : total saisi au-delà de la borne autorisée (total + 200)",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "reportMoreChaptersSubmit": "Signaler",
+  "@reportMoreChaptersSubmit": {
+    "description": "Bouton de validation du dialog de signalement"
+  },
+  "reportMoreChaptersSuccess": "Merci ! Le nombre de chapitres a été mis à jour.",
+  "@reportMoreChaptersSuccess": {
+    "description": "Notification de succès après un signalement accepté"
+  },
+  "reportMoreChaptersError": "Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.",
+  "@reportMoreChaptersError": {
+    "description": "Message d'erreur du dialog de signalement (throttle ou erreur serveur)"
+  },
+  "reportMoreChaptersOffline": "Indisponible hors ligne.",
+  "@reportMoreChaptersOffline": {
+    "description": "Message affiché quand le signalement est désactivé hors ligne"
+  },
   "@friendLibraryCount": {
     "placeholders": {
       "count": {

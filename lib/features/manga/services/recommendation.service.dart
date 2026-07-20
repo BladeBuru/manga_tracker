@@ -106,7 +106,12 @@ class RecommendationService {
       );
       if (!expired) {
         final cached = await _cacheService.getCachedRecommendations();
-        if (cached != null && cached.isNotEmpty) return cached;
+        // Fix « page Tout plafonnée » : le fetch home (limit 10) écrit un
+        // cache court — ne le servir que s'il couvre la page demandée,
+        // sinon la vue paginée (pageSize 50) croit la liste terminée.
+        if (cached != null && cached.isNotEmpty && cached.length >= limit) {
+          return cached;
+        }
       }
     }
 

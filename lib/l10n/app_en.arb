@@ -1180,7 +1180,17 @@
   "statsHistoryTitle": "Recent reads",
   "statsActivityTitle": "Reading activity",
   "statsBonusTag": "Side story",
-  "statsNoHistory": "No reading recorded yet. Finish a chapter in the reader to start your history.",
+  "statsNoHistory": "No reading recorded yet. Update your progress to start your history.",
+  "reportMoreChaptersCta": "Report more chapters",
+  "reportMoreChaptersDialogTitle": "Report more chapters",
+  "reportMoreChaptersExplainer": "Read more chapters than the known total? Enter the new total: it will count towards your progress and be checked against other readers' reports.",
+  "reportMoreChaptersInputLabel": "New chapter total",
+  "reportMoreChaptersInvalidLow": "The total must be greater than {total}.",
+  "reportMoreChaptersInvalidHigh": "The total cannot exceed {max}.",
+  "reportMoreChaptersSubmit": "Report",
+  "reportMoreChaptersSuccess": "Thanks! The chapter count has been updated.",
+  "reportMoreChaptersError": "Unable to send the report right now. Please try again later.",
+  "reportMoreChaptersOffline": "Unavailable offline.",
   "@friendLibraryCount": {
     "placeholders": {
       "count": {

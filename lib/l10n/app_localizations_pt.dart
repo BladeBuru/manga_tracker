@@ -2079,7 +2079,44 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get statsNoHistory =>
-      'Nenhuma leitura registrada ainda. Conclua um capítulo no leitor para iniciar seu histórico.';
+      'Nenhuma leitura registrada ainda. Atualize seu progresso para iniciar seu histórico.';
+
+  @override
+  String get reportMoreChaptersCta => 'Informar mais capítulos';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'Informar mais capítulos';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      'Leu mais capítulos do que o total conhecido? Informe o novo total: ele contará para o seu progresso e será verificado com os relatos de outros leitores.';
+
+  @override
+  String get reportMoreChaptersInputLabel => 'Novo total de capítulos';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return 'O total deve ser maior que $total.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return 'O total não pode exceder $max.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => 'Informar';
+
+  @override
+  String get reportMoreChaptersSuccess =>
+      'Obrigado! O número de capítulos foi atualizado.';
+
+  @override
+  String get reportMoreChaptersError =>
+      'Não foi possível enviar o relato agora. Tente novamente mais tarde.';
+
+  @override
+  String get reportMoreChaptersOffline => 'Indisponível offline.';
 
   @override
   String get recommendationsSleepersTitle => '💎 Joias escondidas';

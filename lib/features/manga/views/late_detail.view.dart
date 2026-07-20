@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,14 +11,13 @@ import '../dto/season_chapter.dto.dart';
 import '../helpers/chapter_section.helper.dart';
 import '../widgets/detail_chapter_section.dart';
 import '../widgets/detail_info_card.dart';
+import '../widgets/report_chapters_dialog.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
-import 'package:mangatracker/core/services/translation_service.dart';
-import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/features/comments/widgets/comments_section.dart';
 import 'package:mangatracker/features/sharing/widgets/shared_reading_section.dart';
 
@@ -28,7 +26,6 @@ class LateDetailView extends StatefulWidget {
   final String mangaTitle;
   final String? mangaDescription;
   final String rating;
-  final List mangaChapters;
   final num? mangaTotalChapters;
   final bool? isCompleted;
   final List<AuthorDto>? authors;
@@ -54,7 +51,6 @@ class LateDetailView extends StatefulWidget {
     required this.mangaTitle,
     this.mangaDescription,
     required this.rating,
-    required this.mangaChapters,
     this.mangaTotalChapters,
     this.isCompleted,
     this.authors,
@@ -80,88 +76,20 @@ class _LateDetailViewState extends State<LateDetailView> {
   bool _isSaving = false;
   final LibraryService _libraryService = getIt<LibraryService>();
   final Notifier _notifier = getIt<Notifier>();
-  final TranslationService _translationService = getIt<TranslationService>();
   int? _pendingChapterUpdate; // Pour tracker la mise à jour en cours
-  
+
   // État d'ouverture des sections
   Map<String, bool> _expandedSections = {};
   bool _associatedExpanded = false;
   bool _isStateLoaded = false;
-  
-  // Description traduite - initialiser avec la description originale
-  String? _translatedDescription;
 
   @override
   void initState() {
     super.initState();
     _currentReadCount = widget.readChapters;
-    // Initialiser avec la description originale pour l'afficher immédiatement
-    _translatedDescription = widget.mangaDescription;
-    
-    debugPrint('📖 LateDetailView initState:');
-    debugPrint('  - mangaDescription=${widget.mangaDescription != null ? "présente (${widget.mangaDescription!.length} caractères)" : "null"}');
-    debugPrint('  - _translatedDescription=${_translatedDescription != null ? "présente (${_translatedDescription!.length} caractères)" : "null"}');
-    
     _loadExpandedState();
-    // Traduire en arrière-plan sans bloquer l'affichage
-    _translateDescription();
   }
-  
-  /// Traduit la description si nécessaire (en arrière-plan)
-  Future<void> _translateDescription() async {
-    debugPrint('🔍 Traduction description: début');
-    
-    if (widget.mangaDescription == null || widget.mangaDescription!.isEmpty) {
-      debugPrint('⚠️ Traduction description: description vide ou null');
-      return;
-    }
-    
-    debugPrint('📝 Traduction description: longueur=${widget.mangaDescription!.length}');
-    
-    try {
-      // Obtenir la langue actuelle de l'application
-      final languageService = await getIt.getAsync<LanguageService>();
-      final currentLocale = languageService.getCurrentLocale();
-      final targetLanguage = currentLocale.languageCode;
-      
-      debugPrint('🌐 Traduction description: langue cible=$targetLanguage');
-      
-      // Toujours essayer de traduire (pas de détection de langue)
-      debugPrint('🔄 Traduction description: début de la traduction vers $targetLanguage');
-      
-      final translated = await _translationService.translateText(
-        widget.mangaDescription!,
-        targetLanguage,
-      );
-      
-      debugPrint('✅ Traduction description: traduction terminée');
-      
-      // Vérifier si la traduction est différente de l'original
-      if (translated != null && translated != widget.mangaDescription) {
-        // Vérifier que le début n'est pas identique (signe que la traduction n'a pas fonctionné)
-        final originalStart = widget.mangaDescription!.substring(0, widget.mangaDescription!.length > 50 ? 50 : widget.mangaDescription!.length).trim();
-        final translatedStart = translated.substring(0, translated.length > 50 ? 50 : translated.length).trim();
-        
-        if (originalStart.toLowerCase() != translatedStart.toLowerCase()) {
-          debugPrint('✅ Traduction description: traduction différente, mise à jour de l\'affichage');
-          if (mounted) {
-            setState(() {
-              _translatedDescription = translated;
-            });
-          }
-        } else {
-          debugPrint('⚠️ Traduction description: début identique, traduction probablement échouée, garder l\'original');
-        }
-      } else {
-        debugPrint('⚠️ Traduction description: traduction identique à l\'original ou null');
-      }
-    } catch (e, stackTrace) {
-      debugPrint('❌ Erreur lors de la traduction de la description: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
-      // En cas d'erreur, garder la description originale
-    }
-  }
-  
+
   Future<void> _loadExpandedState() async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'manga_${widget.muId}_expanded_seasons';
@@ -297,6 +225,41 @@ class _LateDetailViewState extends State<LateDetailView> {
     );
   }
 
+  /// Header du bloc chapitres : titre + CTA « Signaler plus de chapitres »
+  /// (chantier A — visible seulement si le manga est en bibliothèque).
+  Widget _buildChaptersHeader(BuildContext context, String headerTitle, int total) {
+    final l10n = AppLocalizations.of(context);
+    final inLibrary = widget.readChapters >= 0;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            headerTitle,
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        if (inLibrary)
+          TextButton.icon(
+            onPressed: () => ReportChaptersDialog.show(
+              context,
+              muId: int.tryParse(widget.muId) ?? 0,
+              currentTotal: total,
+              readChapters: _currentReadCount?.toInt() ?? 0,
+            ),
+            icon: const Icon(Icons.flag_outlined, size: 18),
+            label: Text(
+              l10n?.reportMoreChaptersCta ?? 'Signaler plus de chapitres',
+            ),
+          ),
+      ],
+    );
+  }
+
   /// Construit le bloc « chapitres » du détail manga.
   ///
   /// - Si `ChapterSectionHelper` produit des sections (saisons ou tranches de
@@ -327,15 +290,7 @@ class _LateDetailViewState extends State<LateDetailView> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            headerTitle,
-            style: GoogleFonts.poppins(
-              textStyle: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          _buildChaptersHeader(context, headerTitle, total),
           const SizedBox(height: AppSpacing.s),
           ...reversedSections.map((section) {
             final isExpanded = _isStateLoaded
@@ -373,15 +328,7 @@ class _LateDetailViewState extends State<LateDetailView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          headerTitle,
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+        _buildChaptersHeader(context, headerTitle, total),
         const SizedBox(height: AppSpacing.s),
         Container(
           decoration: BoxDecoration(
@@ -684,47 +631,17 @@ class _LateDetailViewState extends State<LateDetailView> {
               ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            final l10n = AppLocalizations.of(context);
-                            return Text(
-                              l10n?.synopsis ?? 'Synopsis',
-                              style: GoogleFonts.poppins(
-                                textStyle: const TextStyle(fontSize: 18),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          },
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        l10n?.synopsis ?? 'Synopsis',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(fontSize: 18),
+                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      // Bouton pour forcer la retraduction
-                      IconButton(
-                        icon: const Icon(Icons.refresh, size: 20),
-                        tooltip: 'Retraduire la description',
-                        onPressed: () async {
-                          // Vider le cache et retraduire
-                          if (widget.mangaDescription != null) {
-                            final languageService = await getIt.getAsync<LanguageService>();
-                            final currentLocale = languageService.getCurrentLocale();
-                            final targetLanguage = currentLocale.languageCode;
-                            
-                            await _translationService.clearCachedTranslation(
-                              widget.mangaDescription!,
-                              targetLanguage,
-                            );
-                            
-                            // Retraduire
-                            await _translateDescription();
-                          }
-                        },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
                 Padding(
@@ -736,38 +653,26 @@ class _LateDetailViewState extends State<LateDetailView> {
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
 
-                    child: Builder(
-                      builder: (context) {
-                        final displayText = _translatedDescription ?? widget.mangaDescription ?? '';
-                        debugPrint('📖 LateDetailView build: affichage description');
-                        debugPrint('  - widget.mangaDescription=${widget.mangaDescription != null ? "présente (${widget.mangaDescription!.length} caractères)" : "null"}');
-                        debugPrint('  - _translatedDescription=${_translatedDescription != null ? "présente (${_translatedDescription!.length} caractères)" : "null"}');
-                        debugPrint('  - displayText=${displayText.isNotEmpty ? "présente (${displayText.length} caractères)" : "vide"}');
-                        
-                        if (displayText.isEmpty) {
-                          debugPrint('⚠️ LateDetailView build: description vide!');
-                          return const SizedBox.shrink();
-                        }
-                        
-                        return SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          child: MarkdownBody(
-                            data: displayText,
-                            onTapLink: (text, href, title) {
-                              if (href != null) handleLinkTap(href);
-                            },
-                            styleSheet: MarkdownStyleSheet(
-                              p: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                              strong: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                    // La traduction est désormais fournie par l'API
+                    // (`translated_description`) — le parent passe déjà la
+                    // bonne version dans `mangaDescription`.
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: MarkdownBody(
+                        data: widget.mangaDescription!,
+                        onTapLink: (text, href, title) {
+                          if (href != null) handleLinkTap(href);
+                        },
+                        styleSheet: MarkdownStyleSheet(
+                          p: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
                           ),
-                        );
-                      },
+                          strong: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

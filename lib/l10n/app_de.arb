@@ -1111,7 +1111,17 @@
   "statsHistoryTitle": "Zuletzt gelesen",
   "statsActivityTitle": "Leseaktivität",
   "statsBonusTag": "Extra-Kapitel",
-  "statsNoHistory": "Noch keine Lektüre aufgezeichnet. Schließe ein Kapitel im Reader ab, um deinen Verlauf zu starten.",
+  "statsNoHistory": "Noch keine Lektüre aufgezeichnet. Aktualisiere deinen Fortschritt, um deinen Verlauf zu starten.",
+  "reportMoreChaptersCta": "Mehr Kapitel melden",
+  "reportMoreChaptersDialogTitle": "Mehr Kapitel melden",
+  "reportMoreChaptersExplainer": "Hast du mehr Kapitel gelesen als die bekannte Gesamtzahl? Gib die neue Gesamtzahl an: Sie zählt für deinen Fortschritt und wird mit den Meldungen anderer Leser abgeglichen.",
+  "reportMoreChaptersInputLabel": "Neue Kapitel-Gesamtzahl",
+  "reportMoreChaptersInvalidLow": "Die Gesamtzahl muss größer als {total} sein.",
+  "reportMoreChaptersInvalidHigh": "Die Gesamtzahl darf {max} nicht überschreiten.",
+  "reportMoreChaptersSubmit": "Melden",
+  "reportMoreChaptersSuccess": "Danke! Die Kapitelanzahl wurde aktualisiert.",
+  "reportMoreChaptersError": "Die Meldung kann gerade nicht gesendet werden. Versuche es später erneut.",
+  "reportMoreChaptersOffline": "Offline nicht verfügbar.",
   "@friendLibraryCount": {
     "placeholders": {
       "count": {

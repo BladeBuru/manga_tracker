@@ -78,6 +78,24 @@ class DeleteCustomLink extends DetailEvent {
   const DeleteCustomLink();
 }
 
+/// Signaler que le manga possède plus de chapitres que le total connu
+/// (chantier A). Succès → le BLoC ré-émet l'état avec le total effectif
+/// renvoyé par l'API ; échec → état inchangé.
+class ReportMoreChapters extends DetailEvent {
+  final int muId;
+  final int reportedTotal;
+
+  /// Callback UI optionnel (succès / échec) — pattern « callbacks » autorisé
+  /// par les rules BLoC pour informer le dialog sans navigation dans le BLoC.
+  /// Exclu des props (les fonctions ne sont pas comparables par valeur).
+  final void Function(bool success)? onResult;
+
+  const ReportMoreChapters(this.muId, this.reportedTotal, {this.onResult});
+
+  @override
+  List<Object?> get props => [muId, reportedTotal];
+}
+
 /// Mettre à jour la note personnelle de l'utilisateur (0-10).
 /// `rating = 0` supprime la note.
 class UpdateUserRating extends DetailEvent {

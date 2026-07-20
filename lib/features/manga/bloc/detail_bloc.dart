@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
+import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
@@ -19,6 +21,8 @@ import 'detail_state.dart';
 class DetailBloc extends Bloc<DetailEvent, DetailState> {
   final MangaService _mangaService = getIt<MangaService>();
   final LibraryService _libraryService = getIt<LibraryService>();
+  final ChapterReportService _chapterReportService =
+      getIt<ChapterReportService>();
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
   final ChapterCheckService _chapterCheckService = ChapterCheckService();
@@ -40,6 +44,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     on<UpdateCustomLink>(_onUpdateCustomLink);
     on<DeleteCustomLink>(_onDeleteCustomLink);
     on<UpdateUserRating>(_onUpdateUserRating);
+    on<ReportMoreChapters>(_onReportMoreChapters);
 
     _initializeConnectivityListener();
   }
@@ -159,21 +164,59 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
   Future<MangaDetailDto> _enrichWithLibraryInfo(int muId, MangaDetailDto mangaDetail) async {
     try {
-      final libraryStatus = await _libraryService.getReadingStatusByUid(muId);
-      final readChaptersCount = await _libraryService.getReadChapterByUid(muId);
+      final entry = await _libraryService.getLibraryEntry(muId);
 
-      if (libraryStatus != null) {
+      if (entry != null && entry.readingStatus != null) {
+        final readChaptersCount = entry.readChapters ?? -1;
+        // Chantier A : /library/all renvoie le total effectif (max serveur
+        // entre le total MU et le signalement user) → on garde le plus grand
+        // des deux totaux (détail vs quick view).
+        final effectiveTotal = max(
+          mangaDetail.totalChapters,
+          entry.totalChapters?.toInt() ?? 0,
+        );
         return _copyMangaDetail(
           mangaDetail,
           inLibrary: true,
-          readChaptersCount: readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
-          readingStatus: libraryStatus,
+          readChaptersCount:
+              readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
+          readingStatus: entry.readingStatus,
+          totalChapters: effectiveTotal,
         );
       }
     } catch (e) {
       debugPrint('⚠️ DetailBloc: Erreur lors de la récupération du statut: $e');
     }
     return mangaDetail;
+  }
+
+  /// Signale que le manga possède plus de chapitres que le total connu
+  /// (chantier A). Succès → ré-émission de l'état avec le total effectif
+  /// renvoyé par l'API (PAS de reload). Échec → état inchangé, le résultat
+  /// est remonté au dialog via `event.onResult`.
+  Future<void> _onReportMoreChapters(
+      ReportMoreChapters event, Emitter<DetailState> emit) async {
+    final currentState = state;
+    if (currentState is! DetailLoaded) {
+      event.onResult?.call(false);
+      return;
+    }
+
+    try {
+      final result = await _chapterReportService.reportMoreChapters(
+        event.muId,
+        event.reportedTotal,
+      );
+      emit(currentState.copyWith(
+        mangaDetail: currentState.mangaDetail.copyWith(
+          totalChapters: result.effectiveTotalChapters,
+        ),
+      ));
+      event.onResult?.call(true);
+    } catch (e) {
+      debugPrint('⚠️ DetailBloc: signalement de chapitres échoué: $e');
+      event.onResult?.call(false);
+    }
   }
 
   /// Rafraîchit les détails
@@ -748,6 +791,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     int? readChaptersCount,
     ReadingStatus? readingStatus,
     String? customLink,
+    int? totalChapters,
     bool clearCustomLink = false,
     bool clearReadingStatus = false,
     bool clearReadChaptersCount = false,
@@ -756,6 +800,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       muId: original.muId,
       title: original.title,
       description: original.description,
+      translatedDescription: original.translatedDescription,
       status: original.status,
       publicationStatus: original.publicationStatus,
       year: original.year,
@@ -763,7 +808,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       mediumCoverUrl: original.mediumCoverUrl,
       largeCoverUrl: original.largeCoverUrl,
       rating: original.rating,
-      totalChapters: original.totalChapters,
+      totalChapters: totalChapters ?? original.totalChapters,
       isCompleted: original.isCompleted,
       authors: original.authors,
       genres: original.genres,
@@ -776,6 +821,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       type: original.type,
       seasonChapters: original.seasonChapters,
       bonusChapters: original.bonusChapters,
+      userRating: original.userRating,
+      communityRating: original.communityRating,
+      communityRatingCount: original.communityRatingCount,
+      aggregatedRating: original.aggregatedRating,
     );
   }
 }

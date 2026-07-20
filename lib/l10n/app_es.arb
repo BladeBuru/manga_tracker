@@ -1111,7 +1111,17 @@
   "statsHistoryTitle": "Lecturas recientes",
   "statsActivityTitle": "Actividad de lectura",
   "statsBonusTag": "Historia extra",
-  "statsNoHistory": "Aún no hay lecturas registradas. Termina un capítulo en el lector para iniciar tu historial.",
+  "statsNoHistory": "Aún no hay lecturas registradas. Actualiza tu progreso para iniciar tu historial.",
+  "reportMoreChaptersCta": "Reportar más capítulos",
+  "reportMoreChaptersDialogTitle": "Reportar más capítulos",
+  "reportMoreChaptersExplainer": "¿Has leído más capítulos que el total conocido? Indica el nuevo total: contará para tu progreso y se contrastará con los reportes de otros lectores.",
+  "reportMoreChaptersInputLabel": "Nuevo total de capítulos",
+  "reportMoreChaptersInvalidLow": "El total debe ser mayor que {total}.",
+  "reportMoreChaptersInvalidHigh": "El total no puede superar {max}.",
+  "reportMoreChaptersSubmit": "Reportar",
+  "reportMoreChaptersSuccess": "¡Gracias! El número de capítulos se ha actualizado.",
+  "reportMoreChaptersError": "No se puede enviar el reporte en este momento. Inténtalo más tarde.",
+  "reportMoreChaptersOffline": "No disponible sin conexión.",
   "@friendLibraryCount": {
     "placeholders": {
       "count": {

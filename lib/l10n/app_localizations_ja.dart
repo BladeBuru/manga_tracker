@@ -2016,7 +2016,42 @@ class AppLocalizationsJa extends AppLocalizations {
   String get statsBonusTag => '番外編';
 
   @override
-  String get statsNoHistory => 'まだ読書記録がありません。リーダーで章を読み終えると履歴が始まります。';
+  String get statsNoHistory => 'まだ読書記録がありません。進捗を更新すると履歴が始まります。';
+
+  @override
+  String get reportMoreChaptersCta => 'チャプター数を報告';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'チャプター数を報告';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      '既知の合計より多くのチャプターを読みましたか？新しい合計を入力してください。進捗に反映され、他の読者の報告と照合されます。';
+
+  @override
+  String get reportMoreChaptersInputLabel => '新しいチャプター合計';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return '合計は$totalより大きい必要があります。';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return '合計は$maxを超えられません。';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => '報告する';
+
+  @override
+  String get reportMoreChaptersSuccess => 'ありがとうございます！チャプター数が更新されました。';
+
+  @override
+  String get reportMoreChaptersError => '現在報告を送信できません。後でもう一度お試しください。';
+
+  @override
+  String get reportMoreChaptersOffline => 'オフラインでは利用できません。';
 
   @override
   String get recommendationsSleepersTitle => '💎 隠れた名作';

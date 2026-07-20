@@ -6,6 +6,11 @@ class MangaDetailDto {
   final num muId;
   final String title;
   final String? description;
+
+  /// Description traduite côté serveur (header Accept-Language).
+  /// Absente si la langue est `en` ou non supportée — `description` reste
+  /// TOUJOURS l'original anglais.
+  final String? translatedDescription;
   final String? status;
   final String? publicationStatus;
   final String year;
@@ -43,6 +48,7 @@ class MangaDetailDto {
     required this.muId,
     required this.title,
     this.description,
+    this.translatedDescription,
     this.status,
     this.publicationStatus,
     required this.year,
@@ -96,6 +102,9 @@ class MangaDetailDto {
       muId: num.parse((j['muId'] ?? j['mu_id'] ?? 0).toString()),
       title: (j['title'] ?? '').toString(),
       description: (j['description'] ?? j['desc'])?.toString(),
+      translatedDescription:
+          (j['translatedDescription'] ?? j['translated_description'])
+              ?.toString(),
       status: j['status']?.toString(),
       publicationStatus: (j['publicationStatus'] ?? j['publication_status'])?.toString(),
       year: (j['year'] ?? '').toString(),
@@ -153,11 +162,15 @@ class MangaDetailDto {
     int? readChaptersCount,
     ReadingStatus? readingStatus,
     String? customLink,
+    int? totalChapters,
+    String? translatedDescription,
   }) {
     return MangaDetailDto(
       muId: muId,
       title: title,
       description: description,
+      translatedDescription:
+          translatedDescription ?? this.translatedDescription,
       status: status,
       publicationStatus: publicationStatus,
       year: year,
@@ -165,7 +178,7 @@ class MangaDetailDto {
       mediumCoverUrl: mediumCoverUrl,
       largeCoverUrl: largeCoverUrl,
       rating: rating,
-      totalChapters: totalChapters,
+      totalChapters: totalChapters ?? this.totalChapters,
       isCompleted: isCompleted,
       authors: authors,
       genres: genres,
@@ -190,6 +203,7 @@ class MangaDetailDto {
       'muId': muId,
       'title': title,
       'description': description,
+      'translatedDescription': translatedDescription,
       'status': status,
       'publicationStatus': publicationStatus,
       'year': year,
