@@ -45,8 +45,11 @@ void main() {
     // Cache frais par défaut.
     when(() => cacheService.isCacheExpiredFor(any(),
         maxHours: any(named: 'maxHours'))).thenAnswer((_) async => false);
-    when(() => cacheService.cacheRecommendations(any()))
-        .thenAnswer((_) async {});
+    when(() => cacheService.cacheRecommendations(any(),
+        exhaustive: any(named: 'exhaustive'))).thenAnswer((_) async {});
+    // Cache non-exhaustif par défaut (le serveur peut avoir plus d'items).
+    when(() => cacheService.isRecommendationsCacheExhaustive())
+        .thenAnswer((_) async => false);
   });
 
   tearDown(() async => getIt.reset());
@@ -84,6 +87,43 @@ void main() {
       expect(result, hasLength(10));
       verifyNever(() => httpService.getWithAuthTokens(any(),
           headers: any(named: 'headers')));
+    });
+
+    test(
+        'cache court (5) MAIS exhaustif + limit 50 → servi du cache, zéro réseau',
+        () async {
+      // Fix « refetch systématique » : un user avec moins de recos que la
+      // limite doit servir son cache tant que le TTL est frais, sans refetch.
+      when(() => cacheService.getCachedRecommendations())
+          .thenAnswer((_) async => mangas(5));
+      when(() => cacheService.isRecommendationsCacheExhaustive())
+          .thenAnswer((_) async => true);
+
+      final result =
+          await service.getPersonalizedRecommendations(limit: 50, offset: 0);
+
+      expect(result, hasLength(5));
+      verifyNever(() => httpService.getWithAuthTokens(any(),
+          headers: any(named: 'headers')));
+    });
+
+    test('fetch réseau < limit → cache marqué exhaustif', () async {
+      when(() => cacheService.getCachedRecommendations())
+          .thenAnswer((_) async => null);
+      when(() => httpService.getWithAuthTokens(any(),
+          headers: any(named: 'headers'))).thenAnswer(
+        (_) async => http.Response(
+          '[{"muId":1,"title":"A","year":"2021","rating":8},'
+          '{"muId":2,"title":"B","year":"2021","rating":8}]',
+          200,
+        ),
+      );
+
+      await service.getPersonalizedRecommendations(limit: 50, offset: 0);
+
+      // 2 items renvoyés pour une limite de 50 ⇒ exhaustif = true.
+      verify(() => cacheService.cacheRecommendations(any(), exhaustive: true))
+          .called(1);
     });
 
     test('offset > 0 → jamais servi du cache même s\'il est frais', () async {

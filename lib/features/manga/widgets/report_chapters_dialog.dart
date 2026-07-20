@@ -4,6 +4,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -16,7 +17,15 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 class ReportChaptersDialog extends StatefulWidget {
   final DetailBloc bloc;
   final int muId;
+
+  /// Total EFFECTIF affiché (= `max(officiel, signalement user)`). Sert la
+  /// borne BASSE : un nouveau signalement doit dépasser ce qui est déjà connu.
   final int currentTotal;
+
+  /// Total OFFICIEL (MU), avant signalement utilisateur. Sert la borne HAUTE :
+  /// le serveur valide contre `officiel + [maxReportDelta]`. `null` → on
+  /// retombe sur [currentTotal] (aligné quand aucun report n'est actif).
+  final int? officialTotal;
   final int readChapters;
 
   const ReportChaptersDialog({
@@ -24,10 +33,11 @@ class ReportChaptersDialog extends StatefulWidget {
     required this.bloc,
     required this.muId,
     required this.currentTotal,
+    this.officialTotal,
     required this.readChapters,
   });
 
-  /// Borne haute serveur : total actuel + 200.
+  /// Borne haute serveur : total officiel + 200.
   static const int maxReportDelta = 200;
 
   /// Ouvre le dialog depuis le CTA du bloc chapitres (le `context` doit être
@@ -36,6 +46,7 @@ class ReportChaptersDialog extends StatefulWidget {
     BuildContext context, {
     required int muId,
     required int currentTotal,
+    int? officialTotal,
     required int readChapters,
   }) {
     final bloc = context.read<DetailBloc>();
@@ -45,6 +56,7 @@ class ReportChaptersDialog extends StatefulWidget {
         bloc: bloc,
         muId: muId,
         currentTotal: currentTotal,
+        officialTotal: officialTotal,
         readChapters: readChapters,
       ),
     );
@@ -58,7 +70,13 @@ class _ReportChaptersDialogState extends State<ReportChaptersDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _controller;
   bool _isSubmitting = false;
-  bool _hasError = false;
+
+  /// Cause du dernier échec serveur (`null` = pas d'erreur). Mappée vers un
+  /// message l10n adapté dans [build].
+  ChapterReportFailure? _errorFailure;
+
+  /// Borne haute : le serveur valide contre le total OFFICIEL + delta.
+  int get _upperBoundBase => widget.officialTotal ?? widget.currentTotal;
 
   bool get _isOffline {
     try {
@@ -82,12 +100,14 @@ class _ReportChaptersDialogState extends State<ReportChaptersDialog> {
 
   String? _validate(String? value, AppLocalizations l10n) {
     final parsed = int.tryParse((value ?? '').trim());
+    // Borne basse : > total effectif affiché (signaler PLUS que le connu).
     if (parsed == null || parsed <= widget.currentTotal) {
       return l10n.reportMoreChaptersInvalidLow(widget.currentTotal);
     }
-    if (parsed > widget.currentTotal + ReportChaptersDialog.maxReportDelta) {
+    // Borne haute alignée sur le serveur : officiel + delta (pas effectif).
+    if (parsed > _upperBoundBase + ReportChaptersDialog.maxReportDelta) {
       return l10n.reportMoreChaptersInvalidHigh(
-        widget.currentTotal + ReportChaptersDialog.maxReportDelta,
+        _upperBoundBase + ReportChaptersDialog.maxReportDelta,
       );
     }
     return null;
@@ -97,25 +117,40 @@ class _ReportChaptersDialogState extends State<ReportChaptersDialog> {
     if (_isSubmitting || !(_formKey.currentState?.validate() ?? false)) return;
     setState(() {
       _isSubmitting = true;
-      _hasError = false;
+      _errorFailure = null;
     });
     widget.bloc.add(ReportMoreChapters(
       widget.muId,
       int.parse(_controller.text.trim()),
-      onResult: (success) => _onResult(success, l10n),
+      onResult: (failure) => _onResult(failure, l10n),
     ));
   }
 
-  void _onResult(bool success, AppLocalizations l10n) {
+  void _onResult(ChapterReportFailure? failure, AppLocalizations l10n) {
     if (!mounted) return;
-    if (success) {
+    if (failure == null) {
       Navigator.of(context).pop();
       getIt<Notifier>().success(l10n.reportMoreChaptersSuccess);
     } else {
       setState(() {
         _isSubmitting = false;
-        _hasError = true;
+        _errorFailure = failure;
       });
+    }
+  }
+
+  /// Mappe une cause d'échec typée vers un message l10n adapté.
+  String _errorMessage(ChapterReportFailure failure, AppLocalizations l10n) {
+    switch (failure) {
+      case ChapterReportFailure.invalidTotal:
+        // 400 permanent : le total officiel a bougé côté serveur → recharger.
+        return l10n.reportMoreChaptersErrorInvalid;
+      case ChapterReportFailure.throttled:
+        // 429 temporaire : trop de signalements récents.
+        return l10n.reportMoreChaptersErrorThrottled;
+      case ChapterReportFailure.notInLibrary:
+      case ChapterReportFailure.unknown:
+        return l10n.reportMoreChaptersError;
     }
   }
 
@@ -149,12 +184,12 @@ class _ReportChaptersDialogState extends State<ReportChaptersDialog> {
               ),
               validator: (value) => _validate(value, l10n),
             ),
-            if (offline || _hasError) ...[
+            if (offline || _errorFailure != null) ...[
               const SizedBox(height: AppSpacing.s),
               Text(
                 offline
                     ? l10n.reportMoreChaptersOffline
-                    : l10n.reportMoreChaptersError,
+                    : _errorMessage(_errorFailure!, l10n),
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall

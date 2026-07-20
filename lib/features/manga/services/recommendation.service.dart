@@ -107,10 +107,20 @@ class RecommendationService {
       if (!expired) {
         final cached = await _cacheService.getCachedRecommendations();
         // Fix « page Tout plafonnée » : le fetch home (limit 10) écrit un
-        // cache court — ne le servir que s'il couvre la page demandée,
-        // sinon la vue paginée (pageSize 50) croit la liste terminée.
-        if (cached != null && cached.isNotEmpty && cached.length >= limit) {
-          return cached;
+        // cache court — ne le servir que s'il couvre la page demandée, sinon
+        // la vue paginée (pageSize 50) croit la liste terminée.
+        //
+        // Fix « refetch systématique » : un user qui a MOINS de `limit` recos
+        // au total avait un cache toujours plus court que `limit` → refetch à
+        // chaque affichage malgré le TTL. On sert donc aussi le cache quand il
+        // est marqué exhaustif (le réseau a déjà renvoyé tout ce que le serveur
+        // possède).
+        if (cached != null && cached.isNotEmpty) {
+          final exhaustive =
+              await _cacheService.isRecommendationsCacheExhaustive();
+          if (cached.length >= limit || exhaustive) {
+            return cached;
+          }
         }
       }
     }
@@ -132,8 +142,15 @@ class RecommendationService {
         // Seule la première page est mise en cache — avant, chaque page de
         // pagination ÉCRASAIT le cache (retour sur la page = page N affichée
         // à la place du début de liste).
+        //
+        // `exhaustive` : le serveur a renvoyé moins que `limit` ⇒ il n'a plus
+        // rien de plus. Mémorisé pour servir ce cache court sans refetch (cf.
+        // garde-fou ci-dessus).
         if (offset == 0) {
-          await _cacheService.cacheRecommendations(list);
+          await _cacheService.cacheRecommendations(
+            list,
+            exhaustive: list.length < limit,
+          );
         }
         return list;
       }

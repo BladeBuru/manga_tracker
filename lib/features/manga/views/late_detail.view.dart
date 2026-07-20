@@ -27,10 +27,20 @@ class LateDetailView extends StatefulWidget {
   final String? mangaDescription;
   final String rating;
   final num? mangaTotalChapters;
+
+  /// Total OFFICIEL (MU) pour la validation du dialog de signalement (borne
+  /// serveur = officiel + 200). `null` → le dialog retombe sur le total
+  /// effectif ([mangaTotalChapters]).
+  final num? officialTotalChapters;
   final bool? isCompleted;
   final List<AuthorDto>? authors;
   final String year;
   final num readChapters;
+
+  /// Le manga est-il dans la bibliothèque de l'utilisateur ? Pilote
+  /// l'affichage du CTA « Signaler plus de chapitres » (chantier A) — y
+  /// compris quand le total connu est 0 (données MU incomplètes).
+  final bool inLibrary;
   final List<String>? genres;
   final Function(num)? onReadCountChanged;
   final VoidCallback? onAddToLibrary;
@@ -52,10 +62,12 @@ class LateDetailView extends StatefulWidget {
     this.mangaDescription,
     required this.rating,
     this.mangaTotalChapters,
+    this.officialTotalChapters,
     this.isCompleted,
     this.authors,
     required this.year,
     required this.readChapters,
+    this.inLibrary = false,
     this.genres,
     this.onReadCountChanged,
     this.onAddToLibrary,
@@ -229,7 +241,6 @@ class _LateDetailViewState extends State<LateDetailView> {
   /// (chantier A — visible seulement si le manga est en bibliothèque).
   Widget _buildChaptersHeader(BuildContext context, String headerTitle, int total) {
     final l10n = AppLocalizations.of(context);
-    final inLibrary = widget.readChapters >= 0;
     return Row(
       children: [
         Expanded(
@@ -243,12 +254,13 @@ class _LateDetailViewState extends State<LateDetailView> {
             ),
           ),
         ),
-        if (inLibrary)
+        if (widget.inLibrary)
           TextButton.icon(
             onPressed: () => ReportChaptersDialog.show(
               context,
               muId: int.tryParse(widget.muId) ?? 0,
               currentTotal: total,
+              officialTotal: widget.officialTotalChapters?.toInt(),
               readChapters: _currentReadCount?.toInt() ?? 0,
             ),
             icon: const Icon(Icons.flag_outlined, size: 18),
@@ -322,6 +334,12 @@ class _LateDetailViewState extends State<LateDetailView> {
 
     // Affichage linéaire — < 100 chapitres, pas de saisons.
     if (total <= 0) {
+      // Finding 4a : total inconnu (0). Si le manga est en bibliothèque, on
+      // affiche quand même le header pour exposer le CTA « Signaler plus de
+      // chapitres » (données MU incomplètes → l'utilisateur peut corriger).
+      if (widget.inLibrary) {
+        return _buildChaptersHeader(context, headerTitle, total);
+      }
       return const SizedBox.shrink();
     }
     final chapters = List.generate(total, (i) => total - i);
@@ -478,11 +496,15 @@ class _LateDetailViewState extends State<LateDetailView> {
             [];
 
     Future<void> handleLinkTap(String url) async {
+      // Finding 4b : capturer l10n AVANT l'await (pas de BuildContext au travers
+      // d'un gap async) + garde `mounted` après l'await (c'est un State).
+      final l10n = AppLocalizations.of(context);
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
+      final canLaunch = await canLaunchUrl(uri);
+      if (!mounted) return;
+      if (canLaunch) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        final l10n = AppLocalizations.of(context);
         _notifier.error(l10n?.cannotOpenLink(url) ?? "Impossible d'ouvrir le lien : $url");
       }
     }

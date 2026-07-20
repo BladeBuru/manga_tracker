@@ -168,11 +168,15 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
       if (entry != null && entry.readingStatus != null) {
         final readChaptersCount = entry.readChapters ?? -1;
-        // Chantier A : /library/all renvoie le total effectif (max serveur
-        // entre le total MU et le signalement user) → on garde le plus grand
-        // des deux totaux (détail vs quick view).
+        // Chantier A : le détail (`getMangaDetail`) renvoie le total OFFICIEL
+        // MU (le cache stocke le détail brut, non enrichi → fiable), tandis que
+        // /library/all renvoie le total EFFECTIF (max serveur entre le total MU
+        // et le signalement user). On garde le plus grand comme total effectif
+        // affiché, et on conserve le total officiel pour la validation du
+        // dialog « Signaler plus de chapitres » (borne serveur = officiel+200).
+        final officialTotal = mangaDetail.totalChapters;
         final effectiveTotal = max(
-          mangaDetail.totalChapters,
+          officialTotal,
           entry.totalChapters?.toInt() ?? 0,
         );
         return _copyMangaDetail(
@@ -182,6 +186,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
               readChaptersCount >= 0 ? readChaptersCount.toInt() : null,
           readingStatus: entry.readingStatus,
           totalChapters: effectiveTotal,
+          officialTotalChapters: officialTotal,
         );
       }
     } catch (e) {
@@ -192,13 +197,13 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
 
   /// Signale que le manga possède plus de chapitres que le total connu
   /// (chantier A). Succès → ré-émission de l'état avec le total effectif
-  /// renvoyé par l'API (PAS de reload). Échec → état inchangé, le résultat
-  /// est remonté au dialog via `event.onResult`.
+  /// renvoyé par l'API (PAS de reload) et `onResult(null)`. Échec → état
+  /// inchangé, la cause typée est remontée au dialog via `event.onResult`
+  /// (400 bornes, 404 hors biblio, 429 throttle, sinon `unknown`).
   Future<void> _onReportMoreChapters(
       ReportMoreChapters event, Emitter<DetailState> emit) async {
-    final currentState = state;
-    if (currentState is! DetailLoaded) {
-      event.onResult?.call(false);
+    if (state is! DetailLoaded) {
+      event.onResult?.call(ChapterReportFailure.unknown);
       return;
     }
 
@@ -207,15 +212,26 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         event.muId,
         event.reportedTotal,
       );
-      emit(currentState.copyWith(
-        mangaDetail: currentState.mangaDetail.copyWith(
-          totalChapters: result.effectiveTotalChapters,
-        ),
-      ));
-      event.onResult?.call(true);
+      // Finding 1 : relire `state` APRÈS l'await. Réutiliser le snapshot
+      // capturé avant l'appel réseau écraserait une mise à jour émise
+      // entre-temps par un handler concurrent (race).
+      final latest = state;
+      if (latest is DetailLoaded) {
+        emit(latest.copyWith(
+          mangaDetail: latest.mangaDetail.copyWith(
+            totalChapters: result.effectiveTotalChapters,
+          ),
+        ));
+      }
+      event.onResult?.call(null);
+    } on ChapterReportException catch (e) {
+      // Finding 2 : propager la cause typée au dialog pour un message adapté
+      // (400 permanent ≠ throttle temporaire).
+      debugPrint('⚠️ DetailBloc: signalement de chapitres échoué: $e');
+      event.onResult?.call(e.failure);
     } catch (e) {
       debugPrint('⚠️ DetailBloc: signalement de chapitres échoué: $e');
-      event.onResult?.call(false);
+      event.onResult?.call(ChapterReportFailure.unknown);
     }
   }
 
@@ -792,6 +808,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     ReadingStatus? readingStatus,
     String? customLink,
     int? totalChapters,
+    int? officialTotalChapters,
     bool clearCustomLink = false,
     bool clearReadingStatus = false,
     bool clearReadChaptersCount = false,
@@ -809,6 +826,8 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       largeCoverUrl: original.largeCoverUrl,
       rating: original.rating,
       totalChapters: totalChapters ?? original.totalChapters,
+      officialTotalChapters:
+          officialTotalChapters ?? original.officialTotalChapters,
       isCompleted: original.isCompleted,
       authors: original.authors,
       genres: original.genres,

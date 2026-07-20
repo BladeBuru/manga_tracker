@@ -2169,7 +2169,15 @@
   },
   "reportMoreChaptersError": "Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.",
   "@reportMoreChaptersError": {
-    "description": "Message d'erreur du dialog de signalement (throttle ou erreur serveur)"
+    "description": "Message d'erreur générique du dialog de signalement (hors bibliothèque ou erreur serveur inattendue)"
+  },
+  "reportMoreChaptersErrorInvalid": "Le total connu a changé entre-temps. Recharge la page et réessaie.",
+  "@reportMoreChaptersErrorInvalid": {
+    "description": "Erreur de signalement 400 : le total saisi n'est plus valide côté serveur (le total officiel a bougé)"
+  },
+  "reportMoreChaptersErrorThrottled": "Trop de signalements envoyés récemment. Réessaie dans un moment.",
+  "@reportMoreChaptersErrorThrottled": {
+    "description": "Erreur de signalement 429 : trop de signalements sur une courte période (throttle serveur)"
   },
   "reportMoreChaptersOffline": "Indisponible hors ligne.",
   "@reportMoreChaptersOffline": {

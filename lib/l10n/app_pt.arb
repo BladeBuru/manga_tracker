@@ -1121,6 +1121,8 @@
   "reportMoreChaptersSubmit": "Informar",
   "reportMoreChaptersSuccess": "Obrigado! O número de capítulos foi atualizado.",
   "reportMoreChaptersError": "Não foi possível enviar o relato agora. Tente novamente mais tarde.",
+  "reportMoreChaptersErrorInvalid": "O total conhecido mudou nesse meio-tempo. Recarregue a página e tente novamente.",
+  "reportMoreChaptersErrorThrottled": "Muitos relatos enviados recentemente. Tente novamente daqui a pouco.",
   "reportMoreChaptersOffline": "Indisponível offline.",
   "@friendLibraryCount": {
     "placeholders": {

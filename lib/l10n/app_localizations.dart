@@ -3778,11 +3778,23 @@ abstract class AppLocalizations {
   /// **'Merci ! Le nombre de chapitres a été mis à jour.'**
   String get reportMoreChaptersSuccess;
 
-  /// Message d'erreur du dialog de signalement (throttle ou erreur serveur)
+  /// Message d'erreur générique du dialog de signalement (hors bibliothèque ou erreur serveur inattendue)
   ///
   /// In fr, this message translates to:
   /// **'Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.'**
   String get reportMoreChaptersError;
+
+  /// Erreur de signalement 400 : le total saisi n'est plus valide côté serveur (le total officiel a bougé)
+  ///
+  /// In fr, this message translates to:
+  /// **'Le total connu a changé entre-temps. Recharge la page et réessaie.'**
+  String get reportMoreChaptersErrorInvalid;
+
+  /// Erreur de signalement 429 : trop de signalements sur une courte période (throttle serveur)
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de signalements envoyés récemment. Réessaie dans un moment.'**
+  String get reportMoreChaptersErrorThrottled;
 
   /// Message affiché quand le signalement est désactivé hors ligne
   ///

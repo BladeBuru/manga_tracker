@@ -2122,6 +2122,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      'Le total connu a changé entre-temps. Recharge la page et réessaie.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Trop de signalements envoyés récemment. Réessaie dans un moment.';
+
+  @override
   String get reportMoreChaptersOffline => 'Indisponible hors ligne.';
 
   @override

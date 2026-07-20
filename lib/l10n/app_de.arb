@@ -1121,6 +1121,8 @@
   "reportMoreChaptersSubmit": "Melden",
   "reportMoreChaptersSuccess": "Danke! Die Kapitelanzahl wurde aktualisiert.",
   "reportMoreChaptersError": "Die Meldung kann gerade nicht gesendet werden. Versuche es später erneut.",
+  "reportMoreChaptersErrorInvalid": "Die bekannte Gesamtzahl hat sich inzwischen geändert. Lade die Seite neu und versuche es erneut.",
+  "reportMoreChaptersErrorThrottled": "Zu viele Meldungen in kurzer Zeit. Versuche es gleich noch einmal.",
   "reportMoreChaptersOffline": "Offline nicht verfügbar.",
   "@friendLibraryCount": {
     "placeholders": {

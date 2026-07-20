@@ -2119,6 +2119,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Meldung kann gerade nicht gesendet werden. Versuche es später erneut.';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      'Die bekannte Gesamtzahl hat sich inzwischen geändert. Lade die Seite neu und versuche es erneut.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Zu viele Meldungen in kurzer Zeit. Versuche es gleich noch einmal.';
+
+  @override
   String get reportMoreChaptersOffline => 'Offline nicht verfügbar.';
 
   @override

@@ -2116,6 +2116,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível enviar o relato agora. Tente novamente mais tarde.';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      'O total conhecido mudou nesse meio-tempo. Recarregue a página e tente novamente.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Muitos relatos enviados recentemente. Tente novamente daqui a pouco.';
+
+  @override
   String get reportMoreChaptersOffline => 'Indisponível offline.';
 
   @override

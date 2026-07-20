@@ -1190,6 +1190,8 @@
   "reportMoreChaptersSubmit": "Report",
   "reportMoreChaptersSuccess": "Thanks! The chapter count has been updated.",
   "reportMoreChaptersError": "Unable to send the report right now. Please try again later.",
+  "reportMoreChaptersErrorInvalid": "The known total has changed in the meantime. Reload the page and try again.",
+  "reportMoreChaptersErrorThrottled": "Too many reports sent recently. Please try again in a moment.",
   "reportMoreChaptersOffline": "Unavailable offline.",
   "@friendLibraryCount": {
     "placeholders": {

@@ -1121,6 +1121,8 @@
   "reportMoreChaptersSubmit": "報告する",
   "reportMoreChaptersSuccess": "ありがとうございます！チャプター数が更新されました。",
   "reportMoreChaptersError": "現在報告を送信できません。後でもう一度お試しください。",
+  "reportMoreChaptersErrorInvalid": "既知の合計数がその間に変更されました。ページを再読み込みして、もう一度お試しください。",
+  "reportMoreChaptersErrorThrottled": "短時間に報告が多すぎます。しばらくしてからもう一度お試しください。",
   "reportMoreChaptersOffline": "オフラインでは利用できません。",
   "@friendLibraryCount": {
     "placeholders": {

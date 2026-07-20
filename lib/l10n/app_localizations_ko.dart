@@ -2052,6 +2052,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportMoreChaptersError => '지금은 신고를 보낼 수 없습니다. 나중에 다시 시도해 주세요.';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      '그 사이에 알려진 총 화수가 변경되었습니다. 페이지를 새로고침한 후 다시 시도해 주세요.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      '최근에 신고를 너무 많이 보냈습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
   String get reportMoreChaptersOffline => '오프라인에서는 사용할 수 없습니다.';
 
   @override

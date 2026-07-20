@@ -2051,6 +2051,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reportMoreChaptersError => '現在報告を送信できません。後でもう一度お試しください。';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      '既知の合計数がその間に変更されました。ページを再読み込みして、もう一度お試しください。';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      '短時間に報告が多すぎます。しばらくしてからもう一度お試しください。';
+
+  @override
   String get reportMoreChaptersOffline => 'オフラインでは利用できません。';
 
   @override

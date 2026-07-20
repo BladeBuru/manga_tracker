@@ -2091,6 +2091,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unable to send the report right now. Please try again later.';
 
   @override
+  String get reportMoreChaptersErrorInvalid =>
+      'The known total has changed in the meantime. Reload the page and try again.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Too many reports sent recently. Please try again in a moment.';
+
+  @override
   String get reportMoreChaptersOffline => 'Unavailable offline.';
 
   @override
