@@ -147,6 +147,27 @@ le code d'erreur (`adb logcat | grep GoogleSignInException`) pour confirmer.
 
 ## ✅ Problèmes Résolus
 
+### Reader : chapitre non détecté quand le numéro est un segment d'URL isolé
+- **Feature** : reader
+- **Résolu le** : 2026-08-25
+- **Symptôme** : sur `https://raijin-scans.fr/manga/the-great-mage-returns-after-4000-years/190/`,
+  aucun suivi de chapitre (le 190 n'était pas détecté) et bouton « chapitre
+  suivant » mort. Piège associé : le `4000` du slug ne devait jamais être pris
+  pour un chapitre.
+- **Cause** : `ChapterLinkResolver` ne connaissait que les query params et les
+  patterns de chemin préfixés (`chapitre-N`, `cN`, `/manga/N`…) ; une URL dont
+  le chapitre est un segment numérique nu (`/manga/<slug>/190/`) ne matchait
+  rien → `extractChapter` retournait null.
+- **Solution** : étape 3 de fallback « segment numérique isolé »
+  (`lib/features/reader/utils/chapter_url_heuristics.dart`) appliquée APRÈS
+  les sélecteurs custom (étape 0) et les patterns connus (étapes 1-2) :
+  seuls les segments de chemin entièrement numériques sont candidats, le
+  dernier gagne (gère `/190/chapter/xxx`), garde-fous anti-faux-positifs
+  (paires date `/2024/05/`, segments > 6 chiffres). Symétrie assurée dans
+  `buildUrlForChapter(Sync)` pour la navigation chapitre suivant (`/190/` →
+  `/191/`). Duplication async/sync factorisée (listes de patterns partagées).
+  Tests : `test/features/reader/chapter_link_resolver_test.dart` (20 cas).
+
 ### Recherche : résultats non pertinents, plafonnés à 20, sans pagination
 - **Feature** : search
 - **Résolu le** : 2026-07-03
