@@ -10,13 +10,18 @@ import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
-import 'package:mangatracker/features/library/dto/chapter_log.dto.dart';
+import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 
 import '../../manga/dto/reading_status.enum.dart';
 
 class LibraryService {
   final HttpService _http = getIt<HttpService>();
   MangaService get _mangaService => getIt<MangaService>();
+
+  /// Résolu **paresseusement** : `ChapterReportService` est enregistré APRÈS
+  /// `LibraryService` dans `setupServiceLocator`. Le résoudre dans le
+  /// constructeur ou dans `init()` planterait le démarrage (écran blanc).
+  ChapterReportService get _chapterReportService => getIt<ChapterReportService>();
   late final ConnectivityService _connectivityService;
   late final OfflineCacheService _cacheService;
   
@@ -72,20 +77,39 @@ class LibraryService {
 
 
   // ─────────── PUT /library/chapter ───────────
-  Future<bool> saveChapterProgress(int muId, int readChapters) async {
+
+  /// Met à jour le pointeur de progression `userReadChapters`.
+  ///
+  /// L'API répond **406** quand `readChapters` dépasse le total effectif
+  /// connu du manga (cap serveur dans `updateChapter`). Sans traitement,
+  /// la progression pourtant confirmée par l'utilisateur est perdue en
+  /// silence — c'est le scénario « la source dit 79, j'ai lu 90 ».
+  ///
+  /// [autoReportIfAboveTotal] active le rattrapage : le 406 déclenche un
+  /// signalement communautaire (`report-chapters`) puis **un seul** rejeu
+  /// du PUT. À n'activer QUE sur les chemins où l'utilisateur a
+  /// explicitement affirmé sa lecture (dialogue de confirmation, tap sur
+  /// un chapitre) — jamais sur une détection automatique d'URL, qui
+  /// polluerait la base communautaire sur un simple faux positif.
+  Future<bool> saveChapterProgress(
+    int muId,
+    int readChapters, {
+    bool autoReportIfAboveTotal = false,
+  }) async {
     final isOnline = _connectivityService.isConnected;
-    
+
     if (isOnline) {
       try {
-        final url = buildApiUri('/library/chapter');
-        final res = await _http.putWithAuthTokens(
-          url,
-          headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-          body: jsonEncode({'muId': muId, 'readChapters': readChapters}),
-        );
-        final success = res.statusCode == HttpStatus.ok;
-        if (success) await _cacheService.invalidateRecommendationsCache();
-        return success;
+        final res = await _putChapterProgress(muId, readChapters);
+        if (res.statusCode == HttpStatus.ok) {
+          await _cacheService.invalidateRecommendationsCache();
+          return true;
+        }
+        if (res.statusCode == HttpStatus.notAcceptable &&
+            autoReportIfAboveTotal) {
+          return await _reportThenRetryProgress(muId, readChapters);
+        }
+        return false;
       } catch (e) {
         // En cas d'erreur réseau, ajouter à la queue
         await _cacheService.queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
@@ -95,6 +119,46 @@ class LibraryService {
       // Mode hors ligne : ajouter à la queue
       await _cacheService.queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
       return true; // Retourner true car l'action est en queue
+    }
+  }
+
+  Future<Response> _putChapterProgress(int muId, int readChapters) {
+    return _http.putWithAuthTokens(
+      buildApiUri('/library/chapter'),
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: jsonEncode({'muId': muId, 'readChapters': readChapters}),
+    );
+  }
+
+  /// Signale le nouveau total puis rejoue le PUT **une seule fois**.
+  ///
+  /// Échoue silencieusement (retour `false`, comme avant) si le
+  /// signalement est refusé — bornes (400), throttle (429), manga hors
+  /// bibliothèque (404) ou réseau. Le flux de lecture n'est jamais bloqué
+  /// et aucune boucle de retry n'est possible : le rejeu n'active pas
+  /// [autoReportIfAboveTotal].
+  Future<bool> _reportThenRetryProgress(int muId, int readChapters) async {
+    try {
+      await _chapterReportService.reportMoreChapters(muId, readChapters);
+    } on ChapterReportException catch (e) {
+      debugPrint('⚠️ auto-report chapitres refusé : ${e.failure}');
+      return false;
+    } catch (e) {
+      debugPrint('⚠️ auto-report chapitres indisponible : $e');
+      return false;
+    }
+
+    try {
+      final res = await _putChapterProgress(muId, readChapters);
+      final success = res.statusCode == HttpStatus.ok;
+      if (success) await _cacheService.invalidateRecommendationsCache();
+      return success;
+    } catch (e) {
+      // Réseau tombé entre le signalement et le rejeu : on ne perd pas la
+      // progression, elle repart par la queue offline comme d'habitude.
+      await _cacheService
+          .queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
+      return false;
     }
   }
 
@@ -321,70 +385,4 @@ class LibraryService {
     return false;
   }
 
-  // ─────────── Phase 5 : log additif des chapitres ───────────
-
-  /// Enregistre une session de lecture (insertion additive — replays OK).
-  /// Le pointeur global `userReadChapters` reste géré par `updateChapter`.
-  ///
-  /// Pas de queue offline pour MVP : le log enrichit les stats, pas la
-  /// progression — si la requête échoue, l'user perd juste une entrée
-  /// historique, pas son avancement.
-  Future<ChapterLogDto> recordChapterLog(
-    int muId, {
-    required num chapterNumber,
-    bool isBonus = false,
-    int? scrollPosition,
-  }) async {
-    final body = <String, dynamic>{
-      'chapterNumber': chapterNumber,
-      'isBonus': isBonus,
-      if (scrollPosition != null) 'scrollPosition': scrollPosition,
-    };
-    final res = await _http.postWithAuthTokens(
-      buildApiUri('/library/$muId/chapter-log'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
-    if (res.statusCode == HttpStatus.ok ||
-        res.statusCode == HttpStatus.created) {
-      return ChapterLogDto.fromJson(
-        jsonDecode(res.body) as Map<String, dynamic>,
-      );
-    }
-    throw Exception('recordChapterLog failed: ${res.statusCode}');
-  }
-
-  /// Toggle skip pour un chapitre (hors-série filler, etc.).
-  Future<ChapterLogDto> toggleChapterSkip(
-    int muId,
-    num chapterNumber, {
-    required bool skipped,
-  }) async {
-    final res = await _http.putWithAuthTokens(
-      buildApiUri('/library/$muId/chapter/$chapterNumber/skip'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'skipped': skipped}),
-    );
-    if (res.statusCode == HttpStatus.ok) {
-      return ChapterLogDto.fromJson(
-        jsonDecode(res.body) as Map<String, dynamic>,
-      );
-    }
-    throw Exception('toggleChapterSkip failed: ${res.statusCode}');
-  }
-
-  /// Historique des sessions de lecture (replays, skips, bonus) pour un
-  /// manga. Trié date décroissante côté serveur, max 500 entrées.
-  Future<List<ChapterLogDto>> getChapterLog(int muId) async {
-    final res = await _http.getWithAuthTokens(
-      buildApiUri('/library/$muId/chapter-log'),
-    );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('getChapterLog failed: ${res.statusCode}');
-    }
-    final list = jsonDecode(res.body) as List<dynamic>;
-    return list
-        .map((e) => ChapterLogDto.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
 }

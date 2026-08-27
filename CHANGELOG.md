@@ -5,6 +5,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/auto-report-chapters-above-total
+
+### Fixed
+- Si vous lisez un chapitre au-delà du dernier connu, votre progression est désormais enregistrée et le manga mis à jour automatiquement. Avant, confirmer « Vous avez bien lu jusqu'au 90 » ne gardait rien : l'avancement était perdu sans le moindre message.
+
+---
+
 ## [Unreleased] — hotfix démarrage v0.12.1
 
 ### Fixed

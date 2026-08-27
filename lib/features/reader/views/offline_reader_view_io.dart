@@ -4,6 +4,7 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/library/services/chapter_log.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -32,6 +33,7 @@ class OfflineReaderView extends StatefulWidget {
 class _OfflineReaderViewState extends State<OfflineReaderView> {
   final DownloadManagerService _downloadManager = DownloadManagerService();
   final LibraryService _libraryService = getIt<LibraryService>();
+  final ChapterLogService _chapterLogService = getIt<ChapterLogService>();
   DownloadedChapter? _chapter;
   List<DownloadedChapter> _allChapters = [];
   bool _isLoading = true;
@@ -185,7 +187,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         _hasSavedProgress = true;
         // Journal additif (Stats v2) — fire-and-forget, cf. RETRO-015.
         unawaited(
-          _libraryService
+          _chapterLogService
               .recordChapterLog(widget.muId,
                   chapterNumber: widget.chapterNumber)
               .then((_) {}, onError: (Object e) {

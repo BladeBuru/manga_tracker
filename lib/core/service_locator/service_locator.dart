@@ -3,6 +3,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
+import 'package:mangatracker/features/library/services/chapter_log.service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -130,6 +131,11 @@ void setupServiceLocator() {
   // Signalement « plus de chapitres » (chantier A) — après HttpService.
   getIt.registerSingletonWithDependencies<ChapterReportService>(
       () => ChapterReportService(),
+      dependsOn: [HttpService]);
+
+  // Journal additif des chapitres (Stats v2) — extrait de LibraryService.
+  getIt.registerSingletonWithDependencies<ChapterLogService>(
+      () => ChapterLogService(),
       dependsOn: [HttpService]);
 
   // SyncService après LibraryService

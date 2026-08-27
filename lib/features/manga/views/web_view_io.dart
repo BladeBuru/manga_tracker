@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/features/library/services/chapter_log.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/download/services/chapter_download_service.dart';
@@ -52,6 +53,7 @@ class ReaderWebView extends StatefulWidget {
 class _ReaderWebViewState extends State<ReaderWebView> {
   final _notifier = getIt<Notifier>();
   final _library = getIt<LibraryService>();
+  final _chapterLog = getIt<ChapterLogService>();
   final _downloadManager = DownloadManagerService();
   final _scrollPositionService = getIt<ScrollPositionService>();
   final _adBlockerService = getIt<AdBlockerService>();
@@ -525,11 +527,21 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     );
   }
 
-  Future<void> _commitIfNeeded(int chapter) async {
+  /// [confirmedByUser] : l'utilisateur vient d'affirmer explicitement avoir
+  /// lu ce chapitre (dialogue de validation ou de saut). Dans ce cas
+  /// seulement, un chapitre au-delà du total connu déclenche un
+  /// signalement automatique côté serveur au lieu d'être perdu en silence.
+  /// La détection d'URL, elle, ne confirme rien : un numéro mal détecté ne
+  /// doit jamais alimenter la base communautaire.
+  Future<void> _commitIfNeeded(int chapter, {bool confirmedByUser = false}) async {
     if (chapter <= _lastCommitted) {
       return;
     }
-    final ok = await _library.saveChapterProgress(widget.muId, chapter);
+    final ok = await _library.saveChapterProgress(
+      widget.muId,
+      chapter,
+      autoReportIfAboveTotal: confirmedByUser,
+    );
     if (ok) {
       _lastCommitted = chapter;
       // Journal additif (Stats v2) : trace la session de lecture pour
@@ -537,7 +549,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       // le pointeur de progression (RETRO-015), un échec perd juste une
       // entrée d'historique.
       unawaited(
-        _library
+        _chapterLog
             .recordChapterLog(widget.muId, chapterNumber: chapter)
             .then((_) {}, onError: (Object e) {
           debugPrint('⚠️ chapterLog: $e');
@@ -608,7 +620,10 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         // Supprimer la position sauvegardée du chapitre actuel (on avance)
         await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
         _promptJumpConfirm(prev: prev, next: newCh).then((yes) {
-          if (yes == true) _commitIfNeeded(newCh - 1); // on valide au moins le précédent
+          // Confirmation explicite → auto-signalement autorisé.
+          if (yes == true) {
+            _commitIfNeeded(newCh - 1, confirmedByUser: true); // on valide au moins le précédent
+          }
           initializeChapter(newCh);
         });
         break;
@@ -759,7 +774,9 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         ),
       );
       if (yes == true) {
-        await _commitIfNeeded(c);
+        // « Vous avez bien lu jusqu'au N ? » → oui : assertion explicite,
+        // on autorise le signalement automatique si N dépasse le total.
+        await _commitIfNeeded(c, confirmedByUser: true);
         final currentUrl = await _controller?.getUrl();
         await _updateNextLinkFrom(
           (currentUrl?.toString() ?? widget.baseUserLink),

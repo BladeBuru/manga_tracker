@@ -18,6 +18,7 @@ class HttpStatus {
   static const int unauthorized = io.HttpStatus.unauthorized; // 401
   static const int forbidden = io.HttpStatus.forbidden; // 403
   static const int notFound = io.HttpStatus.notFound; // 404
+  static const int notAcceptable = io.HttpStatus.notAcceptable; // 406
   static const int conflict = io.HttpStatus.conflict; // 409
   static const int tooManyRequests = io.HttpStatus.tooManyRequests; // 429
   static const int unprocessableEntity = io.HttpStatus.unprocessableEntity; // 422
