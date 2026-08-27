@@ -48,14 +48,21 @@ void setupServiceLocator() {
       () async => StorageService().init());
   // Service d'historique de recherche (sans dépendances, peut être enregistré tôt)
   getIt.registerSingleton<SearchHistoryService>(SearchHistoryService());
+  // LanguageService tôt : HttpService injecte le header Accept-Language à
+  // chaque requête. PAS dans les dependsOn de HttpService — GetIt exige que
+  // les types de dependsOn soient déjà enregistrés au moment de
+  // l'enregistrement du dépendant (sinon ArgumentError async dans allReady()
+  // → runApp jamais appelé → écran blanc, bug v0.12.1). Le header est
+  // défensif côté HttpService : omis tant que le service n'est pas prêt.
+  getIt.registerSingletonAsync<LanguageService>(
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        return LanguageService(prefs);
+      });
   getIt.registerSingletonWithDependencies<AuthService>(() => AuthService(),
       dependsOn: [StorageService]);
-  // LanguageService dans les dependsOn : HttpService injecte le header
-  // Accept-Language à chaque requête (l'enregistrement de LanguageService
-  // plus bas dans ce fichier n'est pas un problème — GetIt résout le graphe
-  // au moment de allReady(), pas à l'enregistrement).
   getIt.registerSingletonWithDependencies<HttpService>(() => HttpService(),
-      dependsOn: [StorageService, AuthService, LanguageService]);
+      dependsOn: [StorageService, AuthService]);
   getIt.registerSingleton<ValidatorService>(ValidatorService());
   getIt.registerSingletonWithDependencies<MangaService>(() => MangaService(),
       dependsOn: [HttpService]);
@@ -138,13 +145,6 @@ void setupServiceLocator() {
   getIt.registerSingletonWithDependencies<CacheHelperService>(
       () => CacheHelperService(),
       dependsOn: [ConnectivityService, OfflineCacheService]);
-  
-  // Service de langue
-  getIt.registerSingletonAsync<LanguageService>(
-      () async {
-        final prefs = await SharedPreferences.getInstance();
-        return LanguageService(prefs);
-      });
   
   // Service de thème
   getIt.registerSingletonAsync<ThemeService>(
