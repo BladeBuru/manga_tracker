@@ -23,13 +23,19 @@ class RecommendationsSegmentedToggle extends StatelessWidget {
 
   const RecommendationsSegmentedToggle({super.key, required this.current});
 
+  /// `pushReplacement` et non `go` : les deux routes recos sont déclarées à
+  /// la racine du routeur, donc `go` reconstruit la pile depuis zéro et ne
+  /// laisse plus rien à dépiler — le retour arrière devenait impossible et
+  /// l'utilisateur devait tuer l'app. `pushReplacement` échange uniquement
+  /// la page courante et conserve les écrans en dessous (accueil), tout en
+  /// évitant d'empiler indéfiniment à chaque bascule.
   void _navigate(BuildContext context, RecommendationsMode target) {
     if (target == current) return;
     switch (target) {
       case RecommendationsMode.all:
-        context.go('/recommendations');
+        context.pushReplacement('/recommendations');
       case RecommendationsMode.byGenre:
-        context.go('/recommendations/by-genre');
+        context.pushReplacement('/recommendations/by-genre');
     }
   }
 
