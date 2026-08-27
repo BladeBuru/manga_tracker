@@ -26,8 +26,8 @@
 
 | # | Priorité | Item | Effort | État |
 |---|---|---|---|---|
-| 1 | **P0** 🔴 | Google Sign-In : créer l'OAuth client **Android** dans la console GCP (runbook `known-issues.md`) | ~5 min, zéro code | Action console en attente |
-| 2 | **P0** 🔴 | Recherche : merger [PR API #71](https://github.com/BladeBuru/API-mangaTracker/pull/71) → vérifier prod → merger [PR Flutter #48](https://github.com/BladeBuru/manga_tracker/pull/48) + release | 2 merges + 1 release | PRs testées, prêtes |
+| 1 | **P0** 🔴 | Google Sign-In : créer l'OAuth client **Android** dans la console GCP (runbook `known-issues.md`) | ~5 min, zéro code | ✅ **Fait le 2026-07-07** (2 clients Android créés + testeur `fabien1.…` ajouté + app OAuth publiée) — à confirmer sur téléphone |
+| 2 | **P0** 🔴 | Recherche : merger [PR API #71](https://github.com/BladeBuru/API-mangaTracker/pull/71) → vérifier prod → merger [PR Flutter #48](https://github.com/BladeBuru/manga_tracker/pull/48) + release | 2 merges + 1 release | ✅ **Déployé le 2026-07-07** (API en prod, APK v0.12.0, web) |
 | 3 | **P1** 🔥 | Secrets : `.env.development` **embarqué dans l'APK distribué** (contient `GOOGLE_CLIENT_SECRET`) → retirer des assets + **rotation** | ~1 h + rotation | À faire |
 | 4 | **P1** 🔥 | Secrets : `key.properties`/keystore versionnés (Flutter) + `development.env` versionné (API : JWT_KEY, secrets) → gitignore + rotation | ~2 h + rotation | Known-issues critiques |
 | 5 | **P2** | Notifications de nouveaux chapitres (pipeline complet — le check background Android existe déjà) | sprint | ⏳ |
@@ -72,7 +72,7 @@
 
 ### Externe
 
-- 🔴 Authentification Google **cassée en prod (mobile)** — 🔥 **P0-1** *(cause diagnostiquée 2026-07-03 : OAuth client **Android** absent de la console GCP — sélecteur OK puis refus du token. Fix = 5 min console, runbook complet dans `known-issues.md`. Feedback d'erreurs différencié livré dans la PR #48. Le flux web OAuth reste fonctionnel.)*
+- ✅ Authentification Google (mobile via `idToken` + web via OAuth WebView) *(réparée le 2026-07-07 : clients OAuth Android release + dev créés dans la console GCP, testeur corrigé (`fabien1.…`), app OAuth publiée en production. Feedback d'erreurs différencié livré en v0.12.0 — confirmation finale sur téléphone en attente)*
 - ⏳ Authentification Apple (App Store requirement)
 
 ---
@@ -90,8 +90,8 @@
 
 ### ✅ Recherche sur tous les noms des mangas
 
-- 🔵 Pertinence alignée sur le classement MangaUpdates — 🔥 **P0-2** *(cause racine `orderby: rating` corrigée ; « Shadow System » et « Naruto » vérifiés en #1. PR API #71 + PR Flutter #48 testées de bout en bout — merger l'API D'ABORD)*
-- 🔵 Pagination scroll infini + compteur de résultats + fin de liste propre *(mêmes PRs — enveloppe `{results, totalHits, page, perPage, hasMore}` rétrocompatible)*
+- ✅ Pertinence alignée sur le classement MangaUpdates *(livré v0.12.0 — cause racine `orderby: rating` corrigée ; « Shadow System » et « Naruto » vérifiés en #1 en local ET la correction profite aussi aux vieux APK)*
+- ✅ Pagination scroll infini + compteur de résultats + fin de liste propre *(livré v0.12.0 — enveloppe `{results, totalHits, page, perPage, hasMore}` rétrocompatible)*
 
 ### ✅ Récupération d'un manga spécifique
 
@@ -294,8 +294,8 @@
 ### ✅ Page Detail Manga
 ### ✅ Recherche manga
 
-- 🔵 Améliorer la pertinence des résultats — 🔥 **P0-2** *(fait dans les PRs #71/#48, à merger — voir section Priorités)*
-- 🔵 Pagination scroll infini *(idem)*
+- ✅ Améliorer la pertinence des résultats *(livré v0.12.0)*
+- ✅ Pagination scroll infini *(livré v0.12.0)*
 
 ### ✅ i18n complète 7 langues (fr, en, de, ja, ko, pt, es)
 
@@ -330,9 +330,9 @@
 ```mermaid
 mindmap
   root((Manga Tracker))
-    🔥 P0 — Débloquer
-      🔴 Google Sign-In — client Android console GCP
-      🔴 Recherche — merge PR API 71 puis PR app 48 + release
+    🔥 P0 — Débloquer ✅ fait 2026-07-07
+      ✅ Google Sign-In — clients Android créés + app publiée
+      ✅ Recherche — v0.12.0 déployée API + APK + web
     🔥 P1 — Sécurité secrets
       🔴 .env.development embarqué dans APK — rotation GOOGLE_CLIENT_SECRET
       🔴 keystore et env versionnés — gitignore + rotation
@@ -340,14 +340,14 @@ mindmap
       ✅ Login/Register/Logout
       ✅ JWT + Refresh
       ✅ Biométrique
-      🔴 Google OAuth mobile — P0
+      ✅ Google OAuth mobile — réparé
       ✅ Magic links email
       ⏳ Apple Sign-In — avec iOS
     Bibliothèque
       ✅ CRUD complet
       ✅ Statuts lecture
       ✅ Note + custom link
-      🔵 Recherche pertinence + pagination — P0, PRs prêtes
+      ✅ Recherche pertinence + pagination — v0.12.0
       ✅ Tendances/populaires
     Recommandations
       ✅ API user
