@@ -1,8 +1,16 @@
 {
-  "latestVersion": "0.12.2",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.12.2/MangaTracker.apk",
+  "latestVersion": "0.12.3",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.12.3/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.12.3",
+      "notes": [
+        "🐛 Corrections",
+        "- Vous pouvez de nouveau revenir en arrière depuis les recommandations : le bouton retour ne répondait plus et il fallait fermer l'application",
+        "- Si vous terminez un chapitre au-delà du dernier connu, votre progression est désormais bien enregistrée — le manga est automatiquement signalé comme ayant davantage de chapitres, au lieu que votre lecture soit perdue"
+      ]
+    },
     {
       "version": "0.12.2",
       "notes": [
