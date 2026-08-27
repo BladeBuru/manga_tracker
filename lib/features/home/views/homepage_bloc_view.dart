@@ -165,7 +165,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
 
     if (state is! HomePageLoaded) return const SizedBox.shrink();
 
-    final recs = state.recommendations.take(5).toList();
+    final recs = state.recommendations.take(10).toList();
     final isOffline = state.isOffline;
 
     if (recs.isEmpty) {

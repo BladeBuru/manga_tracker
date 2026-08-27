@@ -39,12 +39,12 @@ class HomePageDataLoader {
           query: 'trending',
           networkCall: () => _mangaService.getTrendingMangas());
 
-  /// Charge les recommandations personnalisees (limite 5 pour le carrousel
-  /// compact de la home). Silencieux en cas d'erreur (graceful degradation).
+  /// Charge les recommandations personnalisees (limite 10 pour le carrousel
+  /// de la home). Silencieux en cas d'erreur (graceful degradation).
   Future<List<MangaQuickViewDto>> loadRecommendations() async {
     try {
       return await _recommendationService.getPersonalizedRecommendations(
-          limit: 5);
+          limit: 10);
     } catch (e) {
       debugPrint('HomePageDataLoader: Erreur recommandations (ignoree): $e');
       return [];

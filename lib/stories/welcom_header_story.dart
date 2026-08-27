@@ -1,5 +1,4 @@
 import 'package:dashbook/dashbook.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/welcome_header.dart';
 

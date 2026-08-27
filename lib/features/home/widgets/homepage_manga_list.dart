@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/components/app_empty_state.dart';
+import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 import '../../manga/dto/manga_quick_view.dto.dart';
 import '../../manga/widgets/manga_row.dart';
@@ -25,7 +28,11 @@ class HomepageMangaList extends StatelessWidget {
           if (snapshot.hasData) {
             final mangaList = snapshot.data!;
             if (mangaList.isEmpty) {
-              return const Center(child: Text('Nothing found'));
+              return AppEmptyState(
+                icon: Icons.menu_book_outlined,
+                title: AppLocalizations.of(context)?.searchNoResults ??
+                    'Aucun résultat trouvé',
+              );
             } else {
               return ListView.builder(
                 itemCount: mangaList.length,
@@ -49,7 +56,10 @@ class HomepageMangaList extends StatelessWidget {
               );
             }
           } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
+            return AppErrorState(
+              message: AppLocalizations.of(context)?.networkError ??
+                  'Veuillez vérifier votre connexion internet',
+            );
           } else {
             return const SizedBox(
               height: 200.0,

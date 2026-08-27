@@ -20,6 +20,7 @@ class HttpStatus {
   static const int forbidden = 403;
   static const int notFound = 404;
   static const int conflict = 409;
+  static const int tooManyRequests = 429;
   static const int unprocessableEntity = 422;
   static const int internalServerError = 500;
   static const int badGateway = 502;
@@ -35,6 +36,7 @@ class HttpHeaders {
   static const String authorizationHeader = 'authorization';
   static const String contentTypeHeader = 'content-type';
   static const String acceptHeader = 'accept';
+  static const String acceptLanguageHeader = 'accept-language';
   static const String userAgentHeader = 'user-agent';
 }
 

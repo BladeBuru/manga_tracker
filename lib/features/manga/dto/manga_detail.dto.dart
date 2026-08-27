@@ -6,6 +6,11 @@ class MangaDetailDto {
   final num muId;
   final String title;
   final String? description;
+
+  /// Description traduite côté serveur (header Accept-Language).
+  /// Absente si la langue est `en` ou non supportée — `description` reste
+  /// TOUJOURS l'original anglais.
+  final String? translatedDescription;
   final String? status;
   final String? publicationStatus;
   final String year;
@@ -13,7 +18,19 @@ class MangaDetailDto {
   final String? mediumCoverUrl;
   final String? largeCoverUrl;
   final String rating;
+
+  /// Total EFFECTIF de chapitres = `max(total officiel, signalement user)`
+  /// (chantier A). C'est la valeur affichée (débloque l'UI au-delà du total
+  /// officiel).
   final int totalChapters;
+
+  /// Total OFFICIEL de chapitres (MangaUpdates), AVANT application du
+  /// signalement utilisateur. Le serveur valide un nouveau signalement contre
+  /// `officiel + 200` (chantier A) — c'est cette borne que le dialog doit
+  /// utiliser, pas le total effectif. `null` si inconnu (manga hors
+  /// bibliothèque / détail non enrichi) → le dialog retombe sur le total
+  /// effectif. Renseigné par `DetailBloc._enrichWithLibraryInfo`.
+  final int? officialTotalChapters;
   final bool? isCompleted;
   final List<AuthorDto>? authors;
   final List<String>? genres;
@@ -43,6 +60,7 @@ class MangaDetailDto {
     required this.muId,
     required this.title,
     this.description,
+    this.translatedDescription,
     this.status,
     this.publicationStatus,
     required this.year,
@@ -51,6 +69,7 @@ class MangaDetailDto {
     this.largeCoverUrl,
     required this.rating,
     required this.totalChapters,
+    this.officialTotalChapters,
     this.isCompleted,
     this.authors,
     this.genres,
@@ -96,6 +115,9 @@ class MangaDetailDto {
       muId: num.parse((j['muId'] ?? j['mu_id'] ?? 0).toString()),
       title: (j['title'] ?? '').toString(),
       description: (j['description'] ?? j['desc'])?.toString(),
+      translatedDescription:
+          (j['translatedDescription'] ?? j['translated_description'])
+              ?.toString(),
       status: j['status']?.toString(),
       publicationStatus: (j['publicationStatus'] ?? j['publication_status'])?.toString(),
       year: (j['year'] ?? '').toString(),
@@ -104,6 +126,9 @@ class MangaDetailDto {
       largeCoverUrl: (j['largeCoverUrl'] ?? j['large_cover_url'])?.toString(),
       rating: ratingStr,
       totalChapters: int.tryParse((j['totalChapters'] ?? j['total_chapters'] ?? 0).toString()) ?? 0,
+      officialTotalChapters: (j['officialTotalChapters'] ?? j['official_total_chapters']) == null
+          ? null
+          : int.tryParse((j['officialTotalChapters'] ?? j['official_total_chapters']).toString()),
       isCompleted: (j['completed'] ?? j['isCompleted']) as bool?,
       authors: authors,
       genres: genres,
@@ -153,11 +178,16 @@ class MangaDetailDto {
     int? readChaptersCount,
     ReadingStatus? readingStatus,
     String? customLink,
+    int? totalChapters,
+    int? officialTotalChapters,
+    String? translatedDescription,
   }) {
     return MangaDetailDto(
       muId: muId,
       title: title,
       description: description,
+      translatedDescription:
+          translatedDescription ?? this.translatedDescription,
       status: status,
       publicationStatus: publicationStatus,
       year: year,
@@ -165,7 +195,9 @@ class MangaDetailDto {
       mediumCoverUrl: mediumCoverUrl,
       largeCoverUrl: largeCoverUrl,
       rating: rating,
-      totalChapters: totalChapters,
+      totalChapters: totalChapters ?? this.totalChapters,
+      officialTotalChapters:
+          officialTotalChapters ?? this.officialTotalChapters,
       isCompleted: isCompleted,
       authors: authors,
       genres: genres,
@@ -190,6 +222,7 @@ class MangaDetailDto {
       'muId': muId,
       'title': title,
       'description': description,
+      'translatedDescription': translatedDescription,
       'status': status,
       'publicationStatus': publicationStatus,
       'year': year,
@@ -198,6 +231,7 @@ class MangaDetailDto {
       'largeCoverUrl': largeCoverUrl,
       'rating': rating,
       'totalChapters': totalChapters,
+      'officialTotalChapters': officialTotalChapters,
       'isCompleted': isCompleted,
       'authors': authors?.map((e) => e.toJson()).toList(),
       'genres': genres,

@@ -19,6 +19,7 @@ class HttpStatus {
   static const int forbidden = io.HttpStatus.forbidden; // 403
   static const int notFound = io.HttpStatus.notFound; // 404
   static const int conflict = io.HttpStatus.conflict; // 409
+  static const int tooManyRequests = io.HttpStatus.tooManyRequests; // 429
   static const int unprocessableEntity = io.HttpStatus.unprocessableEntity; // 422
   static const int internalServerError = io.HttpStatus.internalServerError; // 500
   static const int badGateway = io.HttpStatus.badGateway; // 502
@@ -33,6 +34,7 @@ class HttpHeaders {
   static const String authorizationHeader = io.HttpHeaders.authorizationHeader;
   static const String contentTypeHeader = io.HttpHeaders.contentTypeHeader;
   static const String acceptHeader = io.HttpHeaders.acceptHeader;
+  static const String acceptLanguageHeader = io.HttpHeaders.acceptLanguageHeader;
   static const String userAgentHeader = io.HttpHeaders.userAgentHeader;
 }
 

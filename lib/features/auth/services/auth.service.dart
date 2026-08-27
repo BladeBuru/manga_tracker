@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -365,7 +364,9 @@ class AuthService {
 
     for (var attempt = 0; attempt < maxRetries; attempt++) {
       debugPrint('🔐 AuthService Debug - Tentative ${attempt + 1}/$maxRetries');
-      
+
+      // Le context peut avoir été démonté entre deux tentatives (navigation).
+      if (!context.mounted) return false;
       final authenticated = await biometricService.authenticateWithBiometrics(context);
       debugPrint('🔐 AuthService Debug - Authentification biométrique réussie: $authenticated');
       

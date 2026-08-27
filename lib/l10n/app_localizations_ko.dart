@@ -523,6 +523,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chapter => '챕터';
 
   @override
+  String get chapterNotFound => '챕터를 찾을 수 없습니다';
+
+  @override
+  String get previousChapterTooltip => '이전 챕터';
+
+  @override
+  String get nextChapterTooltip => '다음 챕터';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2008,7 +2017,50 @@ class AppLocalizationsKo extends AppLocalizations {
   String get statsBonusTag => '외전';
 
   @override
-  String get statsNoHistory => '아직 기록된 독서가 없습니다. 리더에서 챕터를 완료하면 기록이 시작됩니다.';
+  String get statsNoHistory => '아직 기록된 독서가 없습니다. 진행 상황을 업데이트하면 기록이 시작됩니다.';
+
+  @override
+  String get reportMoreChaptersCta => '챕터 수 신고';
+
+  @override
+  String get reportMoreChaptersDialogTitle => '챕터 수 신고';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      '알려진 총 챕터 수보다 더 많이 읽으셨나요? 새로운 총 수를 입력하세요. 진행 상황에 반영되고 다른 독자들의 신고와 대조됩니다.';
+
+  @override
+  String get reportMoreChaptersInputLabel => '새 챕터 총 수';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return '총 수는 $total보다 커야 합니다.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return '총 수는 $max을(를) 초과할 수 없습니다.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => '신고';
+
+  @override
+  String get reportMoreChaptersSuccess => '감사합니다! 챕터 수가 업데이트되었습니다.';
+
+  @override
+  String get reportMoreChaptersError => '지금은 신고를 보낼 수 없습니다. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get reportMoreChaptersErrorInvalid =>
+      '그 사이에 알려진 총 화수가 변경되었습니다. 페이지를 새로고침한 후 다시 시도해 주세요.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      '최근에 신고를 너무 많이 보냈습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get reportMoreChaptersOffline => '오프라인에서는 사용할 수 없습니다.';
 
   @override
   String get recommendationsSleepersTitle => '💎 숨은 명작';

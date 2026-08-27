@@ -533,6 +533,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chapter => 'Kapitel';
 
   @override
+  String get chapterNotFound => 'Kapitel nicht gefunden';
+
+  @override
+  String get previousChapterTooltip => 'Vorheriges Kapitel';
+
+  @override
+  String get nextChapterTooltip => 'Nächstes Kapitel';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2073,7 +2082,52 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get statsNoHistory =>
-      'Noch keine Lektüre aufgezeichnet. Schließe ein Kapitel im Reader ab, um deinen Verlauf zu starten.';
+      'Noch keine Lektüre aufgezeichnet. Aktualisiere deinen Fortschritt, um deinen Verlauf zu starten.';
+
+  @override
+  String get reportMoreChaptersCta => 'Mehr Kapitel melden';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'Mehr Kapitel melden';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      'Hast du mehr Kapitel gelesen als die bekannte Gesamtzahl? Gib die neue Gesamtzahl an: Sie zählt für deinen Fortschritt und wird mit den Meldungen anderer Leser abgeglichen.';
+
+  @override
+  String get reportMoreChaptersInputLabel => 'Neue Kapitel-Gesamtzahl';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return 'Die Gesamtzahl muss größer als $total sein.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return 'Die Gesamtzahl darf $max nicht überschreiten.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => 'Melden';
+
+  @override
+  String get reportMoreChaptersSuccess =>
+      'Danke! Die Kapitelanzahl wurde aktualisiert.';
+
+  @override
+  String get reportMoreChaptersError =>
+      'Die Meldung kann gerade nicht gesendet werden. Versuche es später erneut.';
+
+  @override
+  String get reportMoreChaptersErrorInvalid =>
+      'Die bekannte Gesamtzahl hat sich inzwischen geändert. Lade die Seite neu und versuche es erneut.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Zu viele Meldungen in kurzer Zeit. Versuche es gleich noch einmal.';
+
+  @override
+  String get reportMoreChaptersOffline => 'Offline nicht verfügbar.';
 
   @override
   String get recommendationsSleepersTitle => '💎 Geheimtipps';

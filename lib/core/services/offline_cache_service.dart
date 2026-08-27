@@ -106,18 +106,47 @@ class OfflineCacheService {
   static const String _searchCacheKey = 'cached_search_';
   static const String _userInfoCacheKey = 'cached_user_info';
   static const String _recommendationsCacheKey = 'cached_recommendations';
+  // Marqueur d'exhaustivité du cache recos : `true` quand le fetch réseau a
+  // renvoyé MOINS que la limite demandée (le serveur n'a plus rien à donner).
+  // Permet de servir le cache même s'il contient moins d'items que la limite
+  // d'une vue paginée, au lieu de refetch à chaque affichage.
+  static const String _recommendationsExhaustiveKey =
+      'cached_recommendations_exhaustive';
   static const String _offlineQueueKey = 'offline_queue';
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
 
-  /// Cache la liste de recommandations personnalisées
-  Future<void> cacheRecommendations(List<MangaQuickViewDto> mangas) async {
+  /// Cache la liste de recommandations personnalisées.
+  ///
+  /// [exhaustive] : `true` si le fetch réseau a renvoyé MOINS d'items que la
+  /// limite demandée (⇒ le serveur n'a plus rien de plus). Le service pourra
+  /// alors servir ce cache même pour une limite supérieure, sans refetch.
+  Future<void> cacheRecommendations(
+    List<MangaQuickViewDto> mangas, {
+    bool exhaustive = false,
+  }) async {
     try {
       final json = mangas.map((m) => m.toJson()).toList();
       await _storage.writeSecureData(_recommendationsCacheKey, jsonEncode(json));
+      await _storage.writeSecureData(
+        _recommendationsExhaustiveKey,
+        exhaustive.toString(),
+      );
       await _updateCacheMetadata('recommendations', DateTime.now());
     } catch (e) {
       debugPrint('Erreur lors du cache des recommandations: $e');
+    }
+  }
+
+  /// Indique si le cache recos couvre l'intégralité des recos disponibles
+  /// côté serveur (cf. [cacheRecommendations] `exhaustive`).
+  Future<bool> isRecommendationsCacheExhaustive() async {
+    try {
+      final value = await _storage.readSecureData(_recommendationsExhaustiveKey);
+      return value == 'true';
+    } catch (e) {
+      debugPrint('Erreur lecture flag exhaustivité recos: $e');
+      return false;
     }
   }
 
@@ -326,6 +355,8 @@ class OfflineCacheService {
       final metadata = await getCacheMetadata();
       metadata.remove('recommendations');
       await _storage.writeSecureData(_cacheMetadataKey, jsonEncode(metadata));
+      // Le flag d'exhaustivité suit le cache : périmé aussi.
+      await _storage.deleteSecureData(_recommendationsExhaustiveKey);
     } catch (e) {
       debugPrint('Erreur invalidation cache recommandations: $e');
     }

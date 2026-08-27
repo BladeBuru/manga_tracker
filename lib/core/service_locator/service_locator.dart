@@ -3,6 +3,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
+import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
@@ -49,8 +50,12 @@ void setupServiceLocator() {
   getIt.registerSingleton<SearchHistoryService>(SearchHistoryService());
   getIt.registerSingletonWithDependencies<AuthService>(() => AuthService(),
       dependsOn: [StorageService]);
+  // LanguageService dans les dependsOn : HttpService injecte le header
+  // Accept-Language à chaque requête (l'enregistrement de LanguageService
+  // plus bas dans ce fichier n'est pas un problème — GetIt résout le graphe
+  // au moment de allReady(), pas à l'enregistrement).
   getIt.registerSingletonWithDependencies<HttpService>(() => HttpService(),
-      dependsOn: [StorageService, AuthService]);
+      dependsOn: [StorageService, AuthService, LanguageService]);
   getIt.registerSingleton<ValidatorService>(ValidatorService());
   getIt.registerSingletonWithDependencies<MangaService>(() => MangaService(),
       dependsOn: [HttpService]);
@@ -115,6 +120,11 @@ void setupServiceLocator() {
       },
       dependsOn: [HttpService, MangaService, ConnectivityService, OfflineCacheService]);
   
+  // Signalement « plus de chapitres » (chantier A) — après HttpService.
+  getIt.registerSingletonWithDependencies<ChapterReportService>(
+      () => ChapterReportService(),
+      dependsOn: [HttpService]);
+
   // SyncService après LibraryService
   getIt.registerSingletonAsync<SyncService>(
       () async {

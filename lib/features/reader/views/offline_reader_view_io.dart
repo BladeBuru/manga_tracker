@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
@@ -7,7 +8,6 @@ import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart';
@@ -130,17 +130,15 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
       final headIndex = html.indexOf('<head>');
       if (headIndex != -1) {
         final headEnd = html.indexOf('>', headIndex);
-        html = html.substring(0, headEnd + 1) + 
-               '\n<meta name="viewport" content="width=device-width, initial-scale=1">' +
-               html.substring(headEnd + 1);
+        html =
+            '${html.substring(0, headEnd + 1)}\n<meta name="viewport" content="width=device-width, initial-scale=1">${html.substring(headEnd + 1)}';
       }
     } else {
       // La meta viewport existe - la REMPLACER par une version simple
       final viewportEnd = html.indexOf('>', viewportIndex);
       if (viewportEnd != -1) {
-        html = html.substring(0, viewportIndex) +
-               '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-               html.substring(viewportEnd + 1);
+        html =
+            '${html.substring(0, viewportIndex)}<meta name="viewport" content="width=device-width, initial-scale=1">${html.substring(viewportEnd + 1)}';
       }
     }
     
@@ -281,7 +279,8 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Chapitre ${widget.chapterNumber}'),
+          title: Text(
+              '${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} ${widget.chapterNumber}'),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -290,10 +289,12 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
     if (_chapter == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Chapitre ${widget.chapterNumber}'),
+          title: Text(
+              '${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} ${widget.chapterNumber}'),
         ),
-        body: const Center(
-          child: Text('Chapitre non trouvé'),
+        body: Center(
+          child: Text(AppLocalizations.of(context)?.chapterNotFound ??
+              'Chapitre non trouvé'),
         ),
       );
     }
@@ -307,7 +308,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
         
         return PopScope(
           canPop: false,
-          onPopInvoked: (didPop) async {
+          onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             
             // Sauvegarder la position de scroll avant de quitter
@@ -319,33 +320,36 @@ class _OfflineReaderViewState extends State<OfflineReaderView> {
             if (!isNearEnd) {
               // Sauvegarder quand même la position de scroll pour la prochaine fois
               // mais ne pas marquer le chapitre comme terminé
-              if (mounted) {
+              if (context.mounted) {
                 Navigator.of(context).pop();
               }
               return;
             }
-            
+
             // Si proche de la fin, sauvegarder la progression et fermer
             await _saveChapterProgress();
-            if (mounted) {
+            if (context.mounted) {
               Navigator.of(context).pop();
             }
           },
           child: Scaffold(
             appBar: AppBar(
-              title: Text('${widget.mangaTitle} - Chapitre ${widget.chapterNumber}'),
+              title: Text(
+                  '${widget.mangaTitle} - ${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} ${widget.chapterNumber}'),
             actions: [
               if (previousChapter != null)
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => _navigateToChapter(previousChapter),
-                  tooltip: 'Chapitre précédent',
+                  tooltip: AppLocalizations.of(context)?.previousChapterTooltip ??
+                      'Chapitre précédent',
                 ),
               if (nextChapter != null)
                 IconButton(
                   icon: const Icon(Icons.arrow_forward),
                   onPressed: () => _navigateToChapter(nextChapter),
-                  tooltip: 'Chapitre suivant',
+                  tooltip: AppLocalizations.of(context)?.nextChapterTooltip ??
+                      'Chapitre suivant',
                 ),
             ],
           ),

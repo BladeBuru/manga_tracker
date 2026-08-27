@@ -535,6 +535,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chapter => 'Chapitre';
 
   @override
+  String get chapterNotFound => 'Chapitre non trouvé';
+
+  @override
+  String get previousChapterTooltip => 'Chapitre précédent';
+
+  @override
+  String get nextChapterTooltip => 'Chapitre suivant';
+
+  @override
   String chaptersCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -2076,7 +2085,52 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get statsNoHistory =>
-      'Aucune lecture enregistrée pour l’instant. Valide un chapitre depuis le lecteur pour démarrer ton historique.';
+      'Aucune lecture enregistrée pour l’instant. Mets à jour ta progression pour démarrer ton historique.';
+
+  @override
+  String get reportMoreChaptersCta => 'Signaler plus de chapitres';
+
+  @override
+  String get reportMoreChaptersDialogTitle => 'Signaler plus de chapitres';
+
+  @override
+  String get reportMoreChaptersExplainer =>
+      'Tu as lu plus de chapitres que le total connu ? Indique le nouveau total : il sera pris en compte pour ta progression et vérifié avec les signalements des autres lecteurs.';
+
+  @override
+  String get reportMoreChaptersInputLabel => 'Nouveau total de chapitres';
+
+  @override
+  String reportMoreChaptersInvalidLow(int total) {
+    return 'Le total doit être supérieur à $total.';
+  }
+
+  @override
+  String reportMoreChaptersInvalidHigh(int max) {
+    return 'Le total ne peut pas dépasser $max.';
+  }
+
+  @override
+  String get reportMoreChaptersSubmit => 'Signaler';
+
+  @override
+  String get reportMoreChaptersSuccess =>
+      'Merci ! Le nombre de chapitres a été mis à jour.';
+
+  @override
+  String get reportMoreChaptersError =>
+      'Impossible d’envoyer le signalement pour le moment. Réessaie plus tard.';
+
+  @override
+  String get reportMoreChaptersErrorInvalid =>
+      'Le total connu a changé entre-temps. Recharge la page et réessaie.';
+
+  @override
+  String get reportMoreChaptersErrorThrottled =>
+      'Trop de signalements envoyés récemment. Réessaie dans un moment.';
+
+  @override
+  String get reportMoreChaptersOffline => 'Indisponible hors ligne.';
 
   @override
   String get recommendationsSleepersTitle => '💎 Pépites cachées';

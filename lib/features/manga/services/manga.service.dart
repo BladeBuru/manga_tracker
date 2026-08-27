@@ -19,9 +19,6 @@ class MangaService {
   HttpService httpService = getIt<HttpService>();
   LibraryService get libraryService => getIt<LibraryService>();
 
-  var offsetTop = 1;
-  var offsetLatest = 1;
-
   Future<MangaService> init() async {
     return this;
   }
@@ -53,40 +50,21 @@ class MangaService {
   }
 
   Future<List<MangaQuickViewDto>> getTrendingMangas() async {
-    var queryParameters = {
-      'offset': offsetTop.toString(),
-      'limit': 25.toString(),
-    };
+    var queryParameters = {'offset': '1', 'limit': '25'};
     var url = buildApiUri('/mangas/trending', queryParameters);
     return getMangas(url);
   }
 
   Future<List<MangaQuickViewDto>> getPopularMangas() async {
-    var queryParameters = {
-      'offset': offsetTop.toString(),
-      'limit': 25.toString(),
-    };
+    var queryParameters = {'offset': '1', 'limit': '25'};
     var url = buildApiUri('/mangas/popular', queryParameters);
     return getMangas(url);
   }
 
-  Future<List<MangaQuickViewDto>> getNextPopularMangas() async {
-    offsetTop++;
-    return getPopularMangas();
-  }
-
   Future<List<MangaQuickViewDto>> getNewMangas() async {
-    var queryParameters = {
-      'offset': offsetTop.toString(),
-      'limit': 25.toString(),
-    };
+    var queryParameters = {'offset': '1', 'limit': '25'};
     Uri url = buildApiUri('/mangas/new', queryParameters);
     return getMangas(url);
-  }
-
-  Future<List<MangaQuickViewDto>> getNextLatestManga() async {
-    offsetLatest++;
-    return getNewMangas();
   }
 
   /// Recherche paginée de mangas.
