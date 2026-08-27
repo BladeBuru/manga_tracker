@@ -147,6 +147,39 @@ le code d'erreur (`adb logcat | grep GoogleSignInException`) pour confirmer.
 
 ## ✅ Problèmes Résolus
 
+### Progression perdue en silence quand le chapitre lu dépasse le total connu
+- **Feature** : reader / library
+- **Résolu le** : 2026-08-28
+- **Symptôme** : « MangaUpdates dit 79 chapitres, j'en ai lu 90 ». À la fermeture
+  du lecteur, l'utilisateur confirme « Vous avez bien lu jusqu'au 90 ? » → Oui,
+  et **rien n'est enregistré, sans aucun message**. Au retour sur la fiche, le
+  compteur est resté à l'ancienne valeur.
+- **Cause** : l'API cape `readChapters` au total effectif du manga et répond
+  **406** au-delà (`library.service.ts`, `updateChapter`). Côté app,
+  `LibraryService.saveChapterProgress` ne testait que `statusCode == 200` :
+  le 406 tombait dans le `return false` générique, `_lastCommitted` n'était
+  pas mis à jour et aucun retour n'était affiché (le `Notifier` n'est appelé
+  que sur succès).
+- **Solution** : paramètre **opt-in** `autoReportIfAboveTotal` sur
+  `saveChapterProgress`. Sur 406, il déclenche
+  `ChapterReportService.reportMoreChapters` (le signalement communautaire
+  existant) puis **un seul** rejeu du PUT — la progression aboutit et le total
+  du manga est corrigé pour tout le monde. Si le signalement est refusé
+  (400 bornes / 404 / 429 throttle / réseau), échec silencieux comme avant,
+  sans boucle ni blocage du flux de lecture.
+- **Pourquoi opt-in** : `web_view_io.dart` commite aussi sur simple navigation
+  vers le chapitre suivant (`_handleDetected`, `ChapterChangeType.nextChapter`),
+  sans confirmation. Un numéro mal détecté dans l'URL ne doit jamais alimenter
+  la base communautaire. Le flag n'est armé que sur les chemins d'assertion
+  explicite : dialogue « Valider la lecture » (`_onWillPop`), dialogue de saut
+  de chapitres (`_promptJumpConfirm`), et tap sur un chapitre depuis la fiche
+  détail (`DetailBloc._onSaveChapterProgress` + fallback `late_detail.view`).
+  Le reader offline n'a aucun dialogue de confirmation (garde near-end seule)
+  → volontairement laissé sans rattrapage.
+- **Effet de bord corrigé** : `HttpStatus.notAcceptable` (406) manquait dans les
+  deux shims `network_compat_io.dart` / `network_compat_web.dart`.
+- Tests : `test/features/library/services/library_service_chapter_progress_test.dart`.
+
 ### Reader : chapitre non détecté quand le numéro est un segment d'URL isolé
 - **Feature** : reader
 - **Résolu le** : 2026-08-25

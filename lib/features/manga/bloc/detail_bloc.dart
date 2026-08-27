@@ -476,7 +476,14 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
       
       debugPrint('🔍 Sauvegarde du chapitre dans le service...');
-      final success = await _libraryService.saveChapterProgress(event.muId, event.readChapters);
+      // Tap explicite de l'utilisateur sur un chapitre de la fiche : il
+      // affirme l'avoir lu. Si le total connu est dépassé, on signale
+      // automatiquement au lieu de perdre la progression en silence.
+      final success = await _libraryService.saveChapterProgress(
+        event.muId,
+        event.readChapters,
+        autoReportIfAboveTotal: true,
+      );
       debugPrint('🔍 Résultat de la sauvegarde: $success');
       
       if (success) {

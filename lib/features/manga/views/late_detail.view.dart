@@ -429,7 +429,13 @@ class _LateDetailViewState extends State<LateDetailView> {
         success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
       }
     } else {
-      success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+      // Progression en avant confirmée par un tap explicite : autoriser le
+      // signalement automatique si le total connu est dépassé.
+      success = await _libraryService.saveChapterProgress(
+        int.parse(mangaId),
+        newCount,
+        autoReportIfAboveTotal: true,
+      );
     }
 
     if (!success && mounted) {
