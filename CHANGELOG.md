@@ -5,6 +5,34 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/pas-interesse
+
+### Added
+- **« Pas intéressé / déjà vu » sur les recommandations** : un appui long sur une carte de recommandation propose d'écarter le titre, en demandant pourquoi — « déjà lu », « pas intéressé » ou « vu ailleurs » (animé, drama, film). Le titre disparaît alors de toutes les recommandations. Besoin d'origine : *« On me recommande One Piece et Naruto. Les deux, c'est les meilleurs, les plus connus. Sauf que moi je les ai — j'adore, mais je les ai vus en animé et je n'ai pas forcément envie de les relire. »* Aucun algorithme ne peut deviner ça, l'information n'existe nulle part ailleurs
+- **Annulation immédiate** : un SnackBar de 6 s propose « Annuler » juste après le rejet. Un rejet accidentel est réversible sur-le-champ, sans aller fouiller dans les réglages — ce qui compte d'autant plus que le titre écarté ne remonte plus nulle part et serait autrement introuvable
+- `RecommendationDismissalService` (`POST` / `DELETE /recommendations/dismissals/:muId`) + `DismissalReason` (valeurs de fil alignées sur l'API) + `DismissRecommendation` (event `HomePageBloc`)
+- i18n ×7 langues (14 clés `dismiss*`)
+
+### Changed
+- **Geste choisi : appui long, pas de bouton.** Une croix sur chaque carte encombrerait les trois écrans de recommandations et provoquerait des rejets accidentels. L'appui long ne coûte rien visuellement, n'entre pas en conflit avec l'appui simple (ouverture de la fiche) et reste annoncé aux lecteurs d'écran via un hint `Semantics`
+- `MangaCard` reçoit un `onLongPress` **optionnel**, nul partout ailleurs : bibliothèque, accueil (tendances / nouveautés / populaires), profil ami et fiche détail gardent exactement leur comportement
+- `DismissibleRecommendationCard` centralise le mapping `MangaQuickViewDto` → `MangaCard`, jusqu'ici dupliqué à l'identique dans les trois écrans (dont la règle « note `N/A` → aucune note »)
+- Retrait du titre adapté à chaque écran : liste paginée → retrait de `_items` **et décrément de `_offset`** (le serveur exclut désormais ce titre, sans ça la page suivante sauterait un élément) ; par genre → filtrage au rendu via un `Set` en state, les listes venant de `Future`s immuables (couvre aussi la section « Pépites », et une section vidée disparaît) ; accueil → event BLoC filtrant `recommendations` et `recommendationsByGenre`
+- Le cache local des recommandations (TTL 2 h sur la première page) est invalidé à chaque rejet et à chaque annulation. Sans ça le titre écarté réapparaîtrait pendant 2 h et le geste paraîtrait sans effet
+
+### Fixed
+- La feuille modale débordait de 35 px sur un petit écran : elle est désormais scrollable et `isScrollControlled`. Sans ce correctif, le bouton « Annuler » passe sous le pli dès que la police est agrandie — la sortie de secours devenait inatteignable
+
+### Notes d'implémentation
+- `RecommendationDismissalService` est enregistré en `registerLazySingleton` **sans `dependsOn`** : il résout `HttpService` et `OfflineCacheService` à l'appel et non à la construction. L'ordre du service locator n'est donc pas modifié — cf. l'écran blanc au lancement de la v0.12.1, causé par un `dependsOn` sur un type pas encore enregistré
+- Contrairement aux lectures de recommandations (qui avalent les erreurs pour ne pas casser l'écran), les erreurs de rejet sont remontées : un échec silencieux laisserait croire à l'utilisateur que c'est fait. Un 404 à l'annulation (rejet déjà supprimé) est en revanche traité comme un succès — le résultat voulu est atteint
+- Dépend de l'API `feat/pas-interesse` : **déployer l'API avant l'app**
+
+### Tests
+- +19 tests (76 → 95) : service (URL, body, valeurs de fil, invalidation du cache et son absence sur échec, 429/404/500, annulation), feuille modale (3 raisons, titre rappelé, valeur retournée par raison, fermeture sans choix), geste (appui long déclencheur, branchement sur `MangaCard`, hint d'accessibilité, `N/A` non affiché, carte sans callback inchangée)
+
+---
+
 ## [Unreleased] — correctifs navigation + progression de lecture
 
 ### Fixed

@@ -118,6 +118,10 @@ Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignor
 - ✅ **[Phase 8.1 — Mai 2026]** UI complète : `ShareMangaSheet` modal (multi-select amis avec checkboxes, message 280 chars, bouton Envoyer), `InboxPage` (cartes avec badge "Nouveau", tap pour ouvrir le manga, mark-as-seen auto au mount), bouton share dans AppBar de `detail_bloc_view.dart`, tile Inbox dans Profile. Route `/inbox`. 13 nouvelles clés × 7 langues = 91 traductions.
 - ✅ **[Phase 8.2 — Mai 2026]** Badge BottomNavBar (cf. Phase 6.2) inclut désormais les shares non-vues — service unifié + polling 60s.
 
+### Recommandations
+- ✅ Liste paginée, sections par genre, pépites cachées, cold start bibliothèque vide
+- ✅ **[2026-08-28]** « Pas intéressé / déjà vu » — appui long sur une carte → feuille modale (déjà lu / pas intéressé / vu ailleurs) → SnackBar avec annulation immédiate. `RecommendationDismissalService` (lazy singleton **sans `dependsOn`** : dépendances résolues à l'appel, l'ordre du service locator n'est pas touché), `DismissibleRecommendationCard` (centralise le mapping DTO → `MangaCard`, avant dupliqué ×3), `MangaCard.onLongPress` optionnel (nul ailleurs → aucun autre écran modifié), event `DismissRecommendation` sur `HomePageBloc`. Cache local invalidé à chaque rejet, sinon le titre revient pendant 2 h. i18n ×7 (14 clés). +19 tests.
+
 ### Mangas
 - ✅ Page d'accueil — `HomePageBloc`
 - ✅ Page de détails — `DetailBloc` (factory)

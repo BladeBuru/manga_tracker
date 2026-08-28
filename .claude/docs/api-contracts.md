@@ -47,6 +47,36 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 
 ---
 
+## Recommandations
+
+| Méthode | Route | Auth | Query / Corps | DTO Flutter |
+|---------|-------|------|---------------|-------------|
+| `GET` | `/recommendations` | JWT | `?limit=50&offset=0&genre=` | `List<MangaQuickViewDto>` |
+| `GET` | `/recommendations/by-genre` | JWT | `?topGenres=5&perGenre=10` | `Map<String, List<MangaQuickViewDto>>` |
+| `GET` | `/recommendations/sleepers` | JWT | `?limit=20` | `List<MangaQuickViewDto>` |
+| `POST` | `/recommendations/dismissals/:muId` | JWT | `{ reason }` | `DismissalDto` (201) |
+| `DELETE` | `/recommendations/dismissals/:muId` | JWT | — | — (204) |
+| `GET` | `/recommendations/dismissals` | JWT | — | `List<DismissalDto>` |
+
+### Rejets « pas intéressé / déjà vu »
+
+`reason` est **obligatoire** et vaut `already_read`, `not_interested` ou
+`seen_elsewhere` (cf. `DismissalReason.wireValue` — à garder aligné sur l'enum
+de l'API). Un titre écarté est retiré de **tous** les chemins de
+recommandation côté serveur : liste paginée, sections par genre, pépites,
+cold start, et recommandations de la fiche détail.
+
+Codes de retour utiles : `429` quota atteint (60 rejets/heure et par
+utilisateur), `404` manga inconnu au rejet ou rejet déjà annulé au retrait.
+Un `404` sur le `DELETE` est traité côté app comme un succès — le résultat
+voulu est atteint.
+
+⚠️ Après un rejet ou une annulation, **invalider le cache local des
+recommandations** (`OfflineCacheService.invalidateRecommendationsCache`) :
+la première page est mise en cache 2 h, sinon le titre écarté réapparaît.
+
+---
+
 ## Bibliothèque
 
 | Méthode | Route | Auth | Corps | DTO Flutter |
