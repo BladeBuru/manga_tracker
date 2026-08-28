@@ -17,6 +17,9 @@ Future<DismissalReason?> showDismissRecommendationSheet(
 }) {
   return showModalBottomSheet<DismissalReason>(
     context: context,
+    // Sans ca, la feuille est plafonnee a 9/16 de la hauteur d'ecran : avec
+    // une grande police, le bouton « Annuler » passait sous le pli.
+    isScrollControlled: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -39,8 +42,11 @@ class _DismissRecommendationSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
+    // Contenu scrollable : avec un gros facteur d'agrandissement de police
+    // ou sur un petit ecran, les trois raisons et leurs precisions depassent
+    // la hauteur disponible — la feuille doit defiler, pas deborder.
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.m,
           AppSpacing.m,
