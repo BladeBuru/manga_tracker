@@ -3802,6 +3802,90 @@ abstract class AppLocalizations {
   /// **'Indisponible hors ligne.'**
   String get reportMoreChaptersOffline;
 
+  /// Titre de la feuille modale ouverte par un appui long sur une carte de recommandation
+  ///
+  /// In fr, this message translates to:
+  /// **'Ne plus me recommander ce titre'**
+  String get dismissRecommendationSheetTitle;
+
+  /// Sous-titre de la feuille modale, rappelle le titre concerné et la réversibilité du choix
+  ///
+  /// In fr, this message translates to:
+  /// **'« {title} » disparaîtra de tes recommandations. Tu pourras revenir sur ce choix.'**
+  String dismissRecommendationSheetSubtitle(String title);
+
+  /// Raison de rejet : l'utilisateur a déjà lu ce manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà lu'**
+  String get dismissReasonAlreadyRead;
+
+  /// Précision sous la raison « déjà lu »
+  ///
+  /// In fr, this message translates to:
+  /// **'Je l’ai lu, plus rien à découvrir'**
+  String get dismissReasonAlreadyReadHint;
+
+  /// Raison de rejet : le titre ne correspond pas aux goûts de l'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas intéressé'**
+  String get dismissReasonNotInterested;
+
+  /// Précision sous la raison « pas intéressé »
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n’est pas mon genre'**
+  String get dismissReasonNotInterestedHint;
+
+  /// Raison de rejet : l'utilisateur connaît l'histoire par un autre média
+  ///
+  /// In fr, this message translates to:
+  /// **'Vu ailleurs'**
+  String get dismissReasonSeenElsewhere;
+
+  /// Précision sous la raison « vu ailleurs »
+  ///
+  /// In fr, this message translates to:
+  /// **'En animé, en drama ou au cinéma'**
+  String get dismissReasonSeenElsewhereHint;
+
+  /// SnackBar de confirmation après un rejet, avec l'action d'annulation
+  ///
+  /// In fr, this message translates to:
+  /// **'« {title} » n’apparaîtra plus dans tes recommandations'**
+  String dismissRecommendationSuccess(String title);
+
+  /// Action d'annulation immédiate dans le SnackBar de confirmation
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get dismissRecommendationUndo;
+
+  /// SnackBar affiché après l'annulation d'un rejet
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandation rétablie'**
+  String get dismissRecommendationUndone;
+
+  /// Erreur générique lors d'un rejet ou de son annulation
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d’écarter ce titre pour le moment. Réessaie plus tard.'**
+  String get dismissRecommendationError;
+
+  /// Message affiché quand le rejet est tenté sans connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Indisponible hors ligne.'**
+  String get dismissRecommendationOffline;
+
+  /// Indice d'accessibilité (Semantics) sur les cartes de recommandation
+  ///
+  /// In fr, this message translates to:
+  /// **'Appui long pour ne plus recommander ce titre'**
+  String get dismissRecommendationAccessibility;
+
   /// No description provided for @recommendationsSleepersTitle.
   ///
   /// In fr, this message translates to:

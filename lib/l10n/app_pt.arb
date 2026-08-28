@@ -1131,5 +1131,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "Não recomendar mais este título",
+  "dismissRecommendationSheetSubtitle": "«{title}» vai desaparecer das tuas recomendações. Podes mudar de ideias mais tarde.",
+  "dismissReasonAlreadyRead": "Já li",
+  "dismissReasonAlreadyReadHint": "Já li, não há nada de novo para descobrir",
+  "dismissReasonNotInterested": "Sem interesse",
+  "dismissReasonNotInterestedHint": "Não é o meu género",
+  "dismissReasonSeenElsewhere": "Vi noutro lado",
+  "dismissReasonSeenElsewhereHint": "Em anime, drama ou filme",
+  "dismissRecommendationSuccess": "«{title}» não voltará a aparecer nas tuas recomendações",
+  "dismissRecommendationUndo": "Anular",
+  "dismissRecommendationUndone": "Recomendação reposta",
+  "dismissRecommendationError": "Não foi possível descartar este título agora. Tenta mais tarde.",
+  "dismissRecommendationOffline": "Indisponível offline.",
+  "dismissRecommendationAccessibility": "Toque longo para deixar de recomendar este título",
   "recommendationsSleepersTitle": "💎 Joias escondidas"
 }

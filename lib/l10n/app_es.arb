@@ -1131,5 +1131,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "No recomendarme más este título",
+  "dismissRecommendationSheetSubtitle": "«{title}» desaparecerá de tus recomendaciones. Podrás cambiar de opinión.",
+  "dismissReasonAlreadyRead": "Ya leído",
+  "dismissReasonAlreadyReadHint": "Ya lo he leído, no queda nada por descubrir",
+  "dismissReasonNotInterested": "No me interesa",
+  "dismissReasonNotInterestedHint": "No es mi estilo",
+  "dismissReasonSeenElsewhere": "Visto en otro sitio",
+  "dismissReasonSeenElsewhereHint": "En anime, drama o película",
+  "dismissRecommendationSuccess": "«{title}» ya no aparecerá en tus recomendaciones",
+  "dismissRecommendationUndo": "Deshacer",
+  "dismissRecommendationUndone": "Recomendación restaurada",
+  "dismissRecommendationError": "No se ha podido descartar este título ahora mismo. Inténtalo más tarde.",
+  "dismissRecommendationOffline": "No disponible sin conexión.",
+  "dismissRecommendationAccessibility": "Mantén pulsado para dejar de recomendar este título",
   "recommendationsSleepersTitle": "💎 Joyas ocultas"
 }

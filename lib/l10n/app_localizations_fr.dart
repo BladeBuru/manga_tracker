@@ -2133,5 +2133,56 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Indisponible hors ligne.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'Ne plus me recommander ce titre';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '« $title » disparaîtra de tes recommandations. Tu pourras revenir sur ce choix.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Déjà lu';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Je l’ai lu, plus rien à découvrir';
+
+  @override
+  String get dismissReasonNotInterested => 'Pas intéressé';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Ce n’est pas mon genre';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Vu ailleurs';
+
+  @override
+  String get dismissReasonSeenElsewhereHint =>
+      'En animé, en drama ou au cinéma';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '« $title » n’apparaîtra plus dans tes recommandations';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Annuler';
+
+  @override
+  String get dismissRecommendationUndone => 'Recommandation rétablie';
+
+  @override
+  String get dismissRecommendationError =>
+      'Impossible d’écarter ce titre pour le moment. Réessaie plus tard.';
+
+  @override
+  String get dismissRecommendationOffline => 'Indisponible hors ligne.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Appui long pour ne plus recommander ce titre';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Pépites cachées';
 }

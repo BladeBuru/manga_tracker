@@ -1131,5 +1131,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "이 작품 추천 안 함",
+  "dismissRecommendationSheetSubtitle": "‘{title}’이(가) 추천 목록에서 사라집니다. 나중에 되돌릴 수 있어요.",
+  "dismissReasonAlreadyRead": "이미 읽음",
+  "dismissReasonAlreadyReadHint": "이미 읽어서 새로 볼 게 없어요",
+  "dismissReasonNotInterested": "관심 없음",
+  "dismissReasonNotInterestedHint": "제 취향이 아니에요",
+  "dismissReasonSeenElsewhere": "다른 곳에서 봄",
+  "dismissReasonSeenElsewhereHint": "애니메이션, 드라마 또는 영화로",
+  "dismissRecommendationSuccess": "‘{title}’이(가) 더 이상 추천에 표시되지 않습니다",
+  "dismissRecommendationUndo": "실행 취소",
+  "dismissRecommendationUndone": "추천을 되돌렸습니다",
+  "dismissRecommendationError": "지금은 이 작품을 제외할 수 없습니다. 나중에 다시 시도해 주세요.",
+  "dismissRecommendationOffline": "오프라인에서는 사용할 수 없습니다.",
+  "dismissRecommendationAccessibility": "길게 눌러 이 작품을 추천에서 제외",
   "recommendationsSleepersTitle": "💎 숨은 명작"
 }

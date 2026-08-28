@@ -2102,5 +2102,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Unavailable offline.';
 
   @override
+  String get dismissRecommendationSheetTitle => 'Stop recommending this title';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '“$title” will disappear from your recommendations. You can change your mind later.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Already read';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'I’ve read it, nothing left to discover';
+
+  @override
+  String get dismissReasonNotInterested => 'Not interested';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Not my kind of story';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Seen elsewhere';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'As an anime, a drama or a film';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '“$title” won’t show up in your recommendations any more';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Undo';
+
+  @override
+  String get dismissRecommendationUndone => 'Recommendation restored';
+
+  @override
+  String get dismissRecommendationError =>
+      'Couldn’t dismiss this title right now. Please try again later.';
+
+  @override
+  String get dismissRecommendationOffline => 'Unavailable offline.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Long press to stop recommending this title';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Hidden gems';
 }

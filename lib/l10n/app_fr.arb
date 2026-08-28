@@ -2190,5 +2190,71 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "Ne plus me recommander ce titre",
+  "@dismissRecommendationSheetTitle": {
+    "description": "Titre de la feuille modale ouverte par un appui long sur une carte de recommandation"
+  },
+  "dismissRecommendationSheetSubtitle": "« {title} » disparaîtra de tes recommandations. Tu pourras revenir sur ce choix.",
+  "@dismissRecommendationSheetSubtitle": {
+    "description": "Sous-titre de la feuille modale, rappelle le titre concerné et la réversibilité du choix",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "dismissReasonAlreadyRead": "Déjà lu",
+  "@dismissReasonAlreadyRead": {
+    "description": "Raison de rejet : l'utilisateur a déjà lu ce manga"
+  },
+  "dismissReasonAlreadyReadHint": "Je l’ai lu, plus rien à découvrir",
+  "@dismissReasonAlreadyReadHint": {
+    "description": "Précision sous la raison « déjà lu »"
+  },
+  "dismissReasonNotInterested": "Pas intéressé",
+  "@dismissReasonNotInterested": {
+    "description": "Raison de rejet : le titre ne correspond pas aux goûts de l'utilisateur"
+  },
+  "dismissReasonNotInterestedHint": "Ce n’est pas mon genre",
+  "@dismissReasonNotInterestedHint": {
+    "description": "Précision sous la raison « pas intéressé »"
+  },
+  "dismissReasonSeenElsewhere": "Vu ailleurs",
+  "@dismissReasonSeenElsewhere": {
+    "description": "Raison de rejet : l'utilisateur connaît l'histoire par un autre média"
+  },
+  "dismissReasonSeenElsewhereHint": "En animé, en drama ou au cinéma",
+  "@dismissReasonSeenElsewhereHint": {
+    "description": "Précision sous la raison « vu ailleurs »"
+  },
+  "dismissRecommendationSuccess": "« {title} » n’apparaîtra plus dans tes recommandations",
+  "@dismissRecommendationSuccess": {
+    "description": "SnackBar de confirmation après un rejet, avec l'action d'annulation",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "dismissRecommendationUndo": "Annuler",
+  "@dismissRecommendationUndo": {
+    "description": "Action d'annulation immédiate dans le SnackBar de confirmation"
+  },
+  "dismissRecommendationUndone": "Recommandation rétablie",
+  "@dismissRecommendationUndone": {
+    "description": "SnackBar affiché après l'annulation d'un rejet"
+  },
+  "dismissRecommendationError": "Impossible d’écarter ce titre pour le moment. Réessaie plus tard.",
+  "@dismissRecommendationError": {
+    "description": "Erreur générique lors d'un rejet ou de son annulation"
+  },
+  "dismissRecommendationOffline": "Indisponible hors ligne.",
+  "@dismissRecommendationOffline": {
+    "description": "Message affiché quand le rejet est tenté sans connexion"
+  },
+  "dismissRecommendationAccessibility": "Appui long pour ne plus recommander ce titre",
+  "@dismissRecommendationAccessibility": {
+    "description": "Indice d'accessibilité (Semantics) sur les cartes de recommandation"
+  },
   "recommendationsSleepersTitle": "💎 Pépites cachées"
 }

@@ -2130,5 +2130,55 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Offline nicht verfügbar.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'Diesen Titel nicht mehr empfehlen';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '„$title“ verschwindet aus deinen Empfehlungen. Du kannst es dir jederzeit anders überlegen.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Bereits gelesen';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Ich habe es gelesen, es gibt nichts mehr zu entdecken';
+
+  @override
+  String get dismissReasonNotInterested => 'Kein Interesse';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Nicht mein Genre';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Woanders gesehen';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'Als Anime, Drama oder Film';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '„$title“ erscheint nicht mehr in deinen Empfehlungen';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Rückgängig';
+
+  @override
+  String get dismissRecommendationUndone => 'Empfehlung wiederhergestellt';
+
+  @override
+  String get dismissRecommendationError =>
+      'Der Titel konnte gerade nicht ausgeblendet werden. Bitte versuche es später erneut.';
+
+  @override
+  String get dismissRecommendationOffline => 'Offline nicht verfügbar.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Lange drücken, um diesen Titel nicht mehr zu empfehlen';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Geheimtipps';
 }

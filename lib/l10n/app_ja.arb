@@ -1131,5 +1131,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "この作品をおすすめしない",
+  "dismissRecommendationSheetSubtitle": "「{title}」はおすすめに表示されなくなります。あとで元に戻せます。",
+  "dismissReasonAlreadyRead": "読んだことがある",
+  "dismissReasonAlreadyReadHint": "読了済みで、新しい発見はありません",
+  "dismissReasonNotInterested": "興味がない",
+  "dismissReasonNotInterestedHint": "好みではありません",
+  "dismissReasonSeenElsewhere": "他で見た",
+  "dismissReasonSeenElsewhereHint": "アニメ・ドラマ・映画で",
+  "dismissRecommendationSuccess": "「{title}」はおすすめに表示されなくなりました",
+  "dismissRecommendationUndo": "元に戻す",
+  "dismissRecommendationUndone": "おすすめを元に戻しました",
+  "dismissRecommendationError": "現在この作品を除外できません。しばらくしてからお試しください。",
+  "dismissRecommendationOffline": "オフラインでは利用できません。",
+  "dismissRecommendationAccessibility": "長押しでこの作品をおすすめから除外",
   "recommendationsSleepersTitle": "💎 隠れた名作"
 }

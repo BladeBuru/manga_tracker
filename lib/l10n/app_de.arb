@@ -1131,5 +1131,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "Diesen Titel nicht mehr empfehlen",
+  "dismissRecommendationSheetSubtitle": "„{title}“ verschwindet aus deinen Empfehlungen. Du kannst es dir jederzeit anders überlegen.",
+  "dismissReasonAlreadyRead": "Bereits gelesen",
+  "dismissReasonAlreadyReadHint": "Ich habe es gelesen, es gibt nichts mehr zu entdecken",
+  "dismissReasonNotInterested": "Kein Interesse",
+  "dismissReasonNotInterestedHint": "Nicht mein Genre",
+  "dismissReasonSeenElsewhere": "Woanders gesehen",
+  "dismissReasonSeenElsewhereHint": "Als Anime, Drama oder Film",
+  "dismissRecommendationSuccess": "„{title}“ erscheint nicht mehr in deinen Empfehlungen",
+  "dismissRecommendationUndo": "Rückgängig",
+  "dismissRecommendationUndone": "Empfehlung wiederhergestellt",
+  "dismissRecommendationError": "Der Titel konnte gerade nicht ausgeblendet werden. Bitte versuche es später erneut.",
+  "dismissRecommendationOffline": "Offline nicht verfügbar.",
+  "dismissRecommendationAccessibility": "Lange drücken, um diesen Titel nicht mehr zu empfehlen",
   "recommendationsSleepersTitle": "💎 Geheimtipps"
 }

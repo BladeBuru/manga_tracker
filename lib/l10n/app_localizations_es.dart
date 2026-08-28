@@ -2128,5 +2128,55 @@ class AppLocalizationsEs extends AppLocalizations {
   String get reportMoreChaptersOffline => 'No disponible sin conexión.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'No recomendarme más este título';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '«$title» desaparecerá de tus recomendaciones. Podrás cambiar de opinión.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Ya leído';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Ya lo he leído, no queda nada por descubrir';
+
+  @override
+  String get dismissReasonNotInterested => 'No me interesa';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'No es mi estilo';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Visto en otro sitio';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'En anime, drama o película';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '«$title» ya no aparecerá en tus recomendaciones';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Deshacer';
+
+  @override
+  String get dismissRecommendationUndone => 'Recomendación restaurada';
+
+  @override
+  String get dismissRecommendationError =>
+      'No se ha podido descartar este título ahora mismo. Inténtalo más tarde.';
+
+  @override
+  String get dismissRecommendationOffline => 'No disponible sin conexión.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Mantén pulsado para dejar de recomendar este título';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Joyas ocultas';
 }

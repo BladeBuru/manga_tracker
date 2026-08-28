@@ -1200,5 +1200,19 @@
       }
     }
   },
+  "dismissRecommendationSheetTitle": "Stop recommending this title",
+  "dismissRecommendationSheetSubtitle": "“{title}” will disappear from your recommendations. You can change your mind later.",
+  "dismissReasonAlreadyRead": "Already read",
+  "dismissReasonAlreadyReadHint": "I’ve read it, nothing left to discover",
+  "dismissReasonNotInterested": "Not interested",
+  "dismissReasonNotInterestedHint": "Not my kind of story",
+  "dismissReasonSeenElsewhere": "Seen elsewhere",
+  "dismissReasonSeenElsewhereHint": "As an anime, a drama or a film",
+  "dismissRecommendationSuccess": "“{title}” won’t show up in your recommendations any more",
+  "dismissRecommendationUndo": "Undo",
+  "dismissRecommendationUndone": "Recommendation restored",
+  "dismissRecommendationError": "Couldn’t dismiss this title right now. Please try again later.",
+  "dismissRecommendationOffline": "Unavailable offline.",
+  "dismissRecommendationAccessibility": "Long press to stop recommending this title",
   "recommendationsSleepersTitle": "💎 Hidden gems"
 }
