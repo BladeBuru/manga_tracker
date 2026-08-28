@@ -53,6 +53,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         errorPrefix:
             'Erreur lors du chargement des informations utilisateur'));
 
+    on<DismissRecommendation>(_onDismissRecommendation);
+
     _connectivitySubscription =
         _connectivityService.connectivityStream.listen((_) {});
   }
@@ -61,6 +63,29 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
   Future<void> close() {
     _connectivitySubscription?.cancel();
     return super.close();
+  }
+
+  /// Retire un titre ecarte des recommandations de l'etat courant.
+  ///
+  /// Les deux collections sont filtrees : `recommendations` (section de
+  /// l'accueil) et `recommendationsByGenre`, pour qu'un futur ecran qui
+  /// consommerait la seconde ne reaffiche pas le titre.
+  void _onDismissRecommendation(
+      DismissRecommendation event, Emitter<HomePageState> emit) {
+    final current = state;
+    if (current is! HomePageLoaded) return;
+
+    emit(current.copyWith(
+      recommendations: current.recommendations
+          .where((m) => m.muId != event.muId)
+          .toList(),
+      recommendationsByGenre: current.recommendationsByGenre.map(
+        (genre, list) => MapEntry(
+          genre,
+          list.where((m) => m.muId != event.muId).toList(),
+        ),
+      ),
+    ));
   }
 
   /// Charge la page d'accueil complete (initial load + fallback offline).

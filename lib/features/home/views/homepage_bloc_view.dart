@@ -10,7 +10,7 @@ import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
 import 'package:mangatracker/features/home/bloc/homepage_state.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
-import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../../core/components/filter_button.dart';
 import '../../../core/components/verify_email_banner.dart';
@@ -210,14 +210,14 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
               padding: const EdgeInsets.only(right: 12),
               child: SizedBox(
                 width: 120,
-                child: MangaCard(
-                  muId: manga.muId.toString(),
-                  mangaTitle: manga.title,
-                  mangaAuthor: manga.year.toString(),
-                  mediumImgPath: manga.mediumCoverUrl,
-                  rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-                      ? manga.rating
-                      : null,
+                child: DismissibleRecommendationCard(
+                  manga: manga,
+                  onDismissed: (muId) =>
+                      _homePageBloc.add(DismissRecommendation(muId)),
+                  // Annulation depuis le SnackBar : on recharge l'accueil.
+                  // Le rejet ayant ete supprime cote serveur ET le cache
+                  // local invalide, le titre revient a sa place de score.
+                  onRestored: (_) => _homePageBloc.add(const LoadHomePage()),
                 ),
               ),
             );

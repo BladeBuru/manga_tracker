@@ -26,6 +26,11 @@ class MangaCard extends StatelessWidget {
   /// Default `false` → comportement inchangé pour Home / Recos / Détail.
   final bool compactLibrary;
 
+  /// Geste d'appui long optionnel (rejet « pas intereste / deja vu » sur les
+  /// ecrans de recommandations). `null` partout ailleurs : la bibliotheque,
+  /// la home et le profil ami gardent le comportement d'origine.
+  final VoidCallback? onLongPress;
+
   const MangaCard({
     super.key,
     required this.mangaTitle,
@@ -37,6 +42,7 @@ class MangaCard extends StatelessWidget {
     this.readChapter,
     this.showDownloadedOnly = false, // Par défaut false
     this.compactLibrary = false,
+    this.onLongPress,
   });
 
   /// `true` si on a une vraie année (≠ "0" ni "0.0" ni vide) à afficher.
@@ -58,6 +64,7 @@ class MangaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onLongPress: onLongPress,
       onTap: () async {
         // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
         if (showDownloadedOnly) {

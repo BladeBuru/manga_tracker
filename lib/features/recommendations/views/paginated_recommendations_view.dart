@@ -6,7 +6,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
-import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -218,15 +218,29 @@ class _PaginatedRecommendationsViewState
       );
     }
     final manga = _items[index];
-    return MangaCard(
-      muId: manga.muId.toString(),
-      mangaTitle: manga.title,
-      mangaAuthor: manga.year.toString(),
-      mediumImgPath: manga.mediumCoverUrl,
-      rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-          ? manga.rating
-          : null,
+    return DismissibleRecommendationCard(
+      manga: manga,
+      onDismissed: _removeDismissed,
+      // Annulation depuis le SnackBar : on recharge depuis le serveur plutot
+      // que de reinserer a l'aveugle — le titre doit retrouver sa position
+      // de score, pas atterrir en fin de liste.
+      onRestored: (_) => _refresh(),
     );
+  }
+
+  /// Retire le titre ecarte de la liste deja chargee.
+  ///
+  /// `_offset` est decremente pour rester aligne sur ce que le serveur
+  /// renverra : celui-ci exclut desormais ce titre, donc la fenetre de
+  /// pagination glisse d'un cran. Sans ca, la page suivante sauterait un
+  /// element.
+  void _removeDismissed(num muId) {
+    if (!mounted) return;
+    setState(() {
+      final removed = _items.length;
+      _items.removeWhere((m) => m.muId == muId);
+      if (_items.length < removed && _offset > 0) _offset -= 1;
+    });
   }
 }
 
