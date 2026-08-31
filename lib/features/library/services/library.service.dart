@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
@@ -308,13 +309,32 @@ class LibraryService {
   // ─────────── UTILS & HELPERS ───────────
 
 
+  /// Entrée bibliothèque d'un manga, **avec repli sur le cache local**.
+  ///
+  /// C'est cette entrée qui porte « où j'en suis » : chapitres lus, statut de
+  /// lecture, total effectif. Sans repli, un chargement hors ligne du détail
+  /// perdait silencieusement la progression — la page s'affichait comme si le
+  /// manga n'était pas dans la bibliothèque, ce qui vide de son sens la
+  /// consultation hors ligne.
   Future<MangaQuickViewDto?> getLibraryEntry(int muId) async {
-    final library = await getUserSavedMangas();
+    List<MangaQuickViewDto>? library;
     try {
-      return library.firstWhere((manga) => manga.muId == muId);
+      library = await getUserSavedMangas();
+      // Rafraîchit le cache au passage : la progression reste consultable
+      // même si la bibliothèque n'a pas été ouverte récemment.
+      await _cacheService.cacheLibrary(library);
     } catch (e) {
-      return null;
+      // Un rejet explicite du serveur doit remonter (session morte).
+      if (!allowsCachedRead(classifyFailure(e))) rethrow;
+      debugPrint('📚 LibraryService: entrée bibliothèque servie depuis le cache');
+      library = await _cacheService.getCachedLibrary();
     }
+
+    if (library == null) return null;
+    for (final manga in library) {
+      if (manga.muId == muId) return manga;
+    }
+    return null;
   }
 
   /// Récupère la progression lue pour un manga, ou -1 si absent.

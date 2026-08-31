@@ -137,8 +137,15 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
   // ─── Offline banner ───────────────────────────────────────────────────────
 
   Widget _buildOfflineIndicator(HomePageState state) {
-    final isOffline = (state is HomePageLoaded && state.isOffline) ||
-        (state is HomePageError && state.isOffline);
+    // HomePageActionInProgress etait absent de ce test : le bandeau
+    // disparaissait pendant le rechargement d'une section, d'ou l'impression
+    // d'un indicateur qui apparait « parfois ».
+    final isOffline = switch (state) {
+      HomePageLoaded(:final isOffline) => isOffline,
+      HomePageError(:final isOffline) => isOffline,
+      HomePageActionInProgress(:final isOffline) => isOffline,
+      _ => false,
+    };
     if (!isOffline) return const SizedBox.shrink();
     final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
     // Refactor 2026-05-18 : utilise OfflineBanner du design system.

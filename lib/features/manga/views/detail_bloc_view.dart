@@ -189,8 +189,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           ),
           BlocBuilder<DetailBloc, DetailState>(
             builder: (context, state) {
-              final isOffline = state is DetailLoaded && state.isOffline ||
-                               state is DetailError && state.isOffline;
+              // DetailActionInProgress etait absent de ce test : le chip
+              // hors ligne disparaissait pendant chaque mutation, ce qui
+              // donnait l'impression d'un bandeau qui clignote.
+              final isOffline = switch (state) {
+                DetailLoaded(:final isOffline) => isOffline,
+                DetailError(:final isOffline) => isOffline,
+                DetailActionInProgress(:final isOffline) => isOffline,
+                _ => false,
+              };
 
               if (!isOffline) return const SizedBox.shrink();
               
@@ -231,11 +238,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         top: false,
         child: BlocConsumer<DetailBloc, DetailState>(
           listener: (context, state) {
-            if (state is DetailError) {
-              if (state.message.contains('InvalidCredentials') ||
-                  state.message.contains('Expired session')) {
-                widget.onRedirectToLogin();
-              }
+            // Redirection pilotee par un drapeau explicite, plus par le
+            // contenu du message : seule une session rejetee par le serveur
+            // renvoie au login. Un token expire hors ligne laisse l'ecran
+            // consultable depuis le cache.
+            if (state is DetailError && state.requiresLogin) {
+              widget.onRedirectToLogin();
             }
           },
           builder: (context, state) {
