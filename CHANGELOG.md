@@ -16,6 +16,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ### Added
 - **Porte de sortie quand la vérification ne passe pas.** Après 3 présentations du même défi en moins de 90 secondes, l'application cesse d'insister et propose d'ouvrir la page dans le navigateur du système, de réessayer, ou de fermer. Textes disponibles dans les 7 langues.
+- **Bouton « rafraîchir » dans le lecteur**, en action rapide. Il recharge la page sans vous faire perdre votre lecture : le chapitre reste celui que vous lisiez, et vous êtes ramené où vous en étiez. La position est enregistrée juste avant le rechargement — sans quoi tout ce que vous aviez lu depuis la dernière sauvegarde automatique aurait été perdu. Un rafraîchissement demandé par vous ne compte pas non plus comme un tour de la boucle de vérification anti-robot.
+
+### Changed
+- **La barre du lecteur est réorganisée en deux niveaux.** Elle affichait six commandes de front, dont un interrupteur et deux petites icônes collées l'une à l'autre. Ne restent visibles que les deux gestes qu'on fait *pendant* la lecture, sur la page en cours : **rafraîchir** et **le bloqueur de publicités**. Le reste — télécharger la page, copier l'URL, mode de désignation des pubs, explication du bloqueur — passe derrière un menu **trois points**.
+- **Le bouton du bloqueur de publicités agit maintenant vraiment sur la page affichée.** L'activer applique le blocage immédiatement, sans recharger, donc sans vous déplacer dans le chapitre. Le désactiver recharge la page : c'est nécessaire pour faire réapparaître ce qui avait déjà été retiré, et l'application vous le dit. Là encore, votre position de lecture est préservée.
+- **Accessibilité de la barre** : chaque action visible annonce son nom aux lecteurs d'écran, en plus de son infobulle. Le libellé du bloqueur décrit ce que le bouton va faire (« Activer » / « Désactiver »), son état étant annoncé séparément. Quatre textes du lecteur qui n'existaient qu'en français sont désormais traduits dans les 7 langues.
 
 ### Note
 Aucun mécanisme de résolution ou de contournement automatique d'une vérification anti-robot n'a été ajouté, et aucun n'est envisagé : l'objectif est uniquement de laisser une vérification légitime s'afficher et aboutir entre les mains de l'utilisateur.
