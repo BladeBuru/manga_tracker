@@ -5,6 +5,23 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — mode hors ligne
+
+### 🐛 Corrections
+
+- **Vos mangas restent consultables sans connexion.** Jusqu'ici, dès que votre session avait expiré, l'application refusait d'afficher quoi que ce soit hors connexion — même une fiche que vous veniez de consulter. Vous pouvez maintenant rouvrir le détail d'un manga déjà vu, votre bibliothèque et la page d'accueil dans le métro ou l'avion, sans réseau.
+- **Vous retrouvez votre progression hors connexion.** Le nombre de chapitres lus et le statut de lecture s'affichaient comme si le manga n'était pas dans votre bibliothèque quand vous étiez hors ligne. Ils sont désormais conservés et affichés.
+- **Le bandeau « hors ligne » ne joue plus à cache-cache.** Il apparaissait puis disparaissait sans raison apparente, notamment pendant une mise à jour de statut ou sur la recherche depuis un navigateur. Il s'affiche maintenant de façon fiable, et dès l'ouverture de l'écran quand l'appareil se sait déconnecté.
+- **Plus de chargement sans fin.** Ajouter un manga à sa bibliothèque sans connexion pouvait laisser la fiche bloquée sur une roue de chargement qu'il fallait quitter de force. L'action est mise en attente et l'écran vous rend la main.
+- **Un écran vide plutôt qu'un message d'erreur** quand vous ouvrez sans connexion un contenu jamais consulté auparavant.
+- Les statistiques affichent enfin leur bandeau hors ligne quand elles proviennent de données enregistrées.
+
+### 🔒 Sécurité
+
+- Consulter hors connexion ne contourne pas la connexion : seule la **lecture** de ce que vous aviez déjà vu est autorisée. Toute modification attend le retour du réseau, et si le serveur refuse votre session, l'application vous redemande de vous connecter comme avant.
+
+---
+
 ## [Unreleased] — correctifs navigation + progression de lecture
 
 ### Fixed

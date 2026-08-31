@@ -200,10 +200,24 @@ borderRadius: BorderRadius.circular(12)
 
 ## 📴 Mode offline-first
 
-- Détection offline via **`SocketException`** (pas `ConnectivityService`)
+- Détection d'échec via **`classifyFailure()`** (`core/network/failure_classifier.dart`).
+  ❌ **PLUS** `on SocketException` seul : code mort sur web (`ClientException` y est
+  levée) et aveugle aux tokens expirés. ❌ **JAMAIS** de détection par
+  `e.toString().contains(...)` : dart2js minifie en release web.
+- **Frontière de sécurité** : le cache est servi en **lecture** sur `network` et
+  `sessionExpired` (tokens expirés SANS verdict serveur) ; un rejet explicite du
+  serveur (`sessionRejected`, 401/403) renvoie au login sans servir le cache. Les
+  **écritures** exigent toujours une session valide → file d'attente hors ligne.
 - Fallback API → cache via `OfflineCacheService` / `CacheHelperService`
 - Queue actions offline → sync automatique à la reconnexion via `SyncService`
-- État BLoC : toujours inclure `isOffline` (et `pendingActions` si applicable)
+- État BLoC : toujours inclure `isOffline` (et `pendingActions` si applicable).
+  `isOffline` = « ces données viennent du cache ». Le **ré-évaluer** à chaque
+  échec, ne jamais l'hériter de l'état précédent. Les vues doivent le lire aussi
+  sur les états `*ActionInProgress`.
+- Un handler de mutation **émet toujours** un état, y compris sur erreur (sinon
+  le bloc reste bloqué sur `*ActionInProgress` → spinner sans issue).
+
+Voir [.claude/docs/offline-architecture.md](.claude/docs/offline-architecture.md).
 
 ---
 
