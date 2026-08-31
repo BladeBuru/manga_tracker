@@ -2115,4 +2115,48 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sessionRejectedAction => '再ログイン';
+
+  @override
+  String get challengeLoopTitle => '認証が完了しません';
+
+  @override
+  String get challengeLoopMessage =>
+      'このサイトのロボット認証が完了せず、繰り返し再読み込みされています。ブラウザでページを開いて認証を完了してから、こちらに戻ってください。';
+
+  @override
+  String get challengeLoopOpenBrowser => 'ブラウザで開く';
+
+  @override
+  String get readerRefresh => 'ページを再読み込み';
+
+  @override
+  String get readerMoreActions => 'その他の操作';
+
+  @override
+  String get readerDownloadPage => 'このページをダウンロード';
+
+  @override
+  String get adBlockerEnableAction => '広告ブロッカーを有効にする';
+
+  @override
+  String get adBlockerDisableAction => '広告ブロッカーを無効にする';
+
+  @override
+  String get adBlockerInteractiveEnable => '広告検出モードを有効にする';
+
+  @override
+  String get adBlockerInteractiveDisable => '広告検出モードを無効にする';
+
+  @override
+  String get adBlockerEnabledNotice => 'このページで広告ブロッカーを有効にしました。';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      '広告ブロッカーを無効にしました — コンテンツを復元するためページを再読み込みしました。';
+
+  @override
+  String get adBlockerInteractiveOnNotice => '検出モードがオンです — 広告をタップするとブロックします。';
+
+  @override
+  String get adBlockerInteractiveOffNotice => '検出モードがオフです。';
 }

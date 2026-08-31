@@ -2185,4 +2185,52 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sessionRejectedAction => 'Iniciar sessão novamente';
+
+  @override
+  String get challengeLoopTitle => 'Verificação bloqueada';
+
+  @override
+  String get challengeLoopMessage =>
+      'A verificação antirrobô deste site não é concluída: fica a recarregar sem parar. Abra a página no seu navegador para a concluir e depois volte aqui.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Abrir no navegador';
+
+  @override
+  String get readerRefresh => 'Atualizar a página';
+
+  @override
+  String get readerMoreActions => 'Mais ações';
+
+  @override
+  String get readerDownloadPage => 'Baixar esta página';
+
+  @override
+  String get adBlockerEnableAction => 'Ativar o bloqueador de anúncios';
+
+  @override
+  String get adBlockerDisableAction => 'Desativar o bloqueador de anúncios';
+
+  @override
+  String get adBlockerInteractiveEnable =>
+      'Ativar o modo de deteção de anúncios';
+
+  @override
+  String get adBlockerInteractiveDisable =>
+      'Desativar o modo de deteção de anúncios';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Bloqueador de anúncios ativado nesta página.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Bloqueador desativado — página recarregada para restaurar o conteúdo.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Modo de deteção ativo — toque num anúncio para o bloquear.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Modo de deteção desativado.';
 }

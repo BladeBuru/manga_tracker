@@ -3903,6 +3903,90 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Se reconnecter'**
   String get sessionRejectedAction;
+
+  /// Titre du dialogue affiche quand une verification anti-robot boucle
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification bloquée'**
+  String get challengeLoopTitle;
+
+  /// Explication de la boucle de verification et de la sortie proposee
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification anti-robot de ce site n\'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.'**
+  String get challengeLoopMessage;
+
+  /// Bouton ouvrant la page dans le navigateur externe
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans le navigateur'**
+  String get challengeLoopOpenBrowser;
+
+  /// Tooltip du bouton de rechargement de la page du lecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Rafraîchir la page'**
+  String get readerRefresh;
+
+  /// Tooltip du menu trois points de la barre du lecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus d\'actions'**
+  String get readerMoreActions;
+
+  /// Action de telechargement de la page courante
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger cette page'**
+  String get readerDownloadPage;
+
+  /// Action d'activation du bloqueur de publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer le bloqueur de publicités'**
+  String get adBlockerEnableAction;
+
+  /// Action de desactivation du bloqueur de publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver le bloqueur de publicités'**
+  String get adBlockerDisableAction;
+
+  /// Action d'activation du mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer le mode détection de pub'**
+  String get adBlockerInteractiveEnable;
+
+  /// Action de desactivation du mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver le mode détection de pub'**
+  String get adBlockerInteractiveDisable;
+
+  /// Message confirmant que le bloqueur agit sur la page courante
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités activé sur cette page.'**
+  String get adBlockerEnabledNotice;
+
+  /// Message indiquant que la page a ete rechargee pour retablir le contenu
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur désactivé — page rechargée pour rétablir le contenu.'**
+  String get adBlockerDisabledNotice;
+
+  /// Message expliquant le mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode détection activé — touchez une publicité pour la bloquer.'**
+  String get adBlockerInteractiveOnNotice;
+
+  /// Message de sortie du mode de designation
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode détection désactivé.'**
+  String get adBlockerInteractiveOffNotice;
 }
 
 class _AppLocalizationsDelegate

@@ -2188,4 +2188,50 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sessionRejectedAction => 'Erneut anmelden';
+
+  @override
+  String get challengeLoopTitle => 'Überprüfung blockiert';
+
+  @override
+  String get challengeLoopMessage =>
+      'Die Roboterprüfung dieser Seite wird nicht abgeschlossen – sie lädt immer wieder neu. Öffnen Sie die Seite im Browser, um sie abzuschließen, und kehren Sie dann hierher zurück.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Im Browser öffnen';
+
+  @override
+  String get readerRefresh => 'Seite aktualisieren';
+
+  @override
+  String get readerMoreActions => 'Weitere Aktionen';
+
+  @override
+  String get readerDownloadPage => 'Diese Seite herunterladen';
+
+  @override
+  String get adBlockerEnableAction => 'Werbeblocker aktivieren';
+
+  @override
+  String get adBlockerDisableAction => 'Werbeblocker deaktivieren';
+
+  @override
+  String get adBlockerInteractiveEnable => 'Anzeigenerkennung aktivieren';
+
+  @override
+  String get adBlockerInteractiveDisable => 'Anzeigenerkennung deaktivieren';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Werbeblocker auf dieser Seite aktiviert.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Werbeblocker deaktiviert — Seite neu geladen, um den Inhalt wiederherzustellen.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Erkennungsmodus an — tippen Sie auf eine Anzeige, um sie zu blockieren.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Erkennungsmodus aus.';
 }
