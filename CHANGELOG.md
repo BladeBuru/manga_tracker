@@ -5,6 +5,23 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — lecteur intégré face aux vérifications Cloudflare
+
+### Fixed
+- **La vérification anti-robot ne boucle plus indéfiniment.** Sur les sites protégés par Cloudflare, la page « Un instant… » se rechargeait sans fin sans jamais aboutir. La cause n'était pas le réseau mais le **nettoyage du DOM** effectué par le bloqueur de publicités : toutes les 2 secondes, il supprimait les éléments de la vérification elle-même. Trois règles étaient en cause — `iframe[sandbox]` (or le widget Turnstile de Cloudflare *est* un iframe sandboxé, donc la case à cocher disparaissait avant que l'utilisateur puisse la cliquer) ; `[data-cfasync]` (attribut de Cloudflare lui-même, pris pour un marqueur publicitaire) ; et surtout `className.includes('ad')`, une correspondance par sous-chaîne qui faisait passer « lo**ad**ing », « he**ad**er », « sh**ad**ow » ou « downlo**ad** » pour des publicités — alors que la page de vérification est précisément un écran de chargement. Le nettoyage suspend désormais toute action tant qu'une vérification est affichée, épargne systématiquement ses éléments, et ne reconnaît plus « ad » que comme mot entier.
+- **Le bloqueur de publicités pouvait rester actif pendant la vérification.** Le script injecté tournait sur un `setInterval` de 2 secondes et ne pouvait pas être arrêté : le désactiver côté application ne l'arrêtait pas dans la page. Il est maintenant explicitement arrêté dès qu'une vérification est détectée, et il ne s'empile plus à chaque chargement.
+- **Liste blanche stricte de l'infrastructure de vérification** (domaines Cloudflare, hCaptcha, reCAPTCHA, et endpoints `/cdn-cgi/` servis par le site lui-même) : ces requêtes ne peuvent plus être bloquées, et un défi servi depuis un domaine tiers reste navigable. La correspondance se fait par suffixe de domaine, de sorte qu'un hôte imitant `challenges.cloudflare.com` n'est pas autorisé.
+- **User-agent cohérent avec le moteur réel.** La WebView annonçait les jetons `; wv` et `Version/4.0`, qui décrivent un moteur ancien et bridé alors que le moteur exécuté est Chromium. Ils sont retirés, ainsi que l'identifiant de modèle `Build/…` ; les versions réelles de Chrome et d'Android sont conservées. L'URL initiale est chargée après application du user-agent, afin que la première requête le porte déjà.
+- **Persistance du cookie d'autorisation** rendue explicite (stockage DOM, base de données, cookies tiers, cache, hors navigation privée) et magasin de cookies partagé activé sur iOS, où il est désactivé par défaut.
+
+### Added
+- **Porte de sortie quand la vérification ne passe pas.** Après 3 présentations du même défi en moins de 90 secondes, l'application cesse d'insister et propose d'ouvrir la page dans le navigateur du système, de réessayer, ou de fermer. Textes disponibles dans les 7 langues.
+
+### Note
+Aucun mécanisme de résolution ou de contournement automatique d'une vérification anti-robot n'a été ajouté, et aucun n'est envisagé : l'objectif est uniquement de laisser une vérification légitime s'afficher et aboutir entre les mains de l'utilisateur.
+
+---
+
 ## [Unreleased] — correctifs navigation + progression de lecture
 
 ### Fixed
