@@ -1131,5 +1131,7 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Joyas ocultas"
+  "recommendationsSleepersTitle": "💎 Joyas ocultas",
+  "sessionRejectedBanner": "Sesión caducada: mostrando tus datos guardados",
+  "sessionRejectedAction": "Volver a iniciar sesión"
 }

@@ -3807,6 +3807,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'💎 Pépites cachées'**
   String get recommendationsSleepersTitle;
+
+  /// Bandeau non bloquant : la session a ete rejetee par le serveur, le contenu en cache reste consultable
+  ///
+  /// In fr, this message translates to:
+  /// **'Session expirée — voici vos données enregistrées'**
+  String get sessionRejectedBanner;
+
+  /// Action du bandeau de session rejetee : ouvre l'ecran de connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Se reconnecter'**
+  String get sessionRejectedAction;
 }
 
 class _AppLocalizationsDelegate

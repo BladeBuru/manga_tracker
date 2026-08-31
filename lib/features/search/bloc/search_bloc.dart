@@ -69,15 +69,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       // sur le web (package:http y leve ClientException), donc toute panne
       // reseau y tombait dans le catch generique -> SearchError sans bandeau.
       final mode = classifyFailure(e);
-      if (!allowsCachedRead(mode)) {
-        debugPrint('❌ SearchBloc: session rejetee sur "$query"');
-        if (!_isCurrentSearch(query)) return;
-        emit(SearchError(query));
-        return;
-      }
+      // Le cache est servi meme sur rejet serveur : ces resultats, cet
+      // utilisateur les a deja vus en etant authentifie.
       final cached = await _cacheService.getCachedSearchResults(query);
       if (!_isCurrentSearch(query)) return;
       final offline = showsOfflineIndicator(mode);
+      final reauth = requiresReauthPrompt(mode);
       if (cached != null && cached.isNotEmpty) {
         emit(SearchLoaded(
           query: query,
@@ -86,10 +83,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           page: 1,
           hasMore: false,
           isOffline: offline,
+          requiresReauth: reauth,
         ));
       } else {
         debugPrint('❌ SearchBloc: recherche "$query" échouée: $e');
-        emit(SearchError(query, isOffline: offline));
+        emit(SearchError(query, isOffline: offline, requiresReauth: reauth));
       }
     }
   }

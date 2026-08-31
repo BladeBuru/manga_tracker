@@ -153,13 +153,35 @@ void main() {
     });
 
     test(
-        'session rejetée par le serveur → erreur d\'authentification, PAS de '
-        'cache servi', () async {
+        'session rejetée par le serveur → le cache EST servi, avec invite de '
+        'reconnexion', () async {
       final cached = detailFixture();
       when(() => cacheHelper.getCachedMangaDetail(muId))
           .thenAnswer((_) async => cached);
-      // Verdict explicite du serveur (401/403 sur /auth/refresh) : on est
-      // joignable, donc l'utilisateur peut et doit se reconnecter.
+      // Verdict explicite du serveur (401/403). Décision produit :
+      // « l\'authentification ne peut pas empêcher de voir mes données ». Ce
+      // cache ne contient que ce que CET utilisateur avait déjà obtenu en
+      // étant authentifié — le réafficher ne révèle rien de nouveau.
+      when(() => mangaService.getMangaDetail(any()))
+          .thenThrow(InvalidCredentialsException('Refresh rejected by server'));
+
+      final bloc = DetailBloc();
+      addTearDown(bloc.close);
+      bloc.add(const LoadMangaDetail(muId));
+
+      final state = await settle(bloc);
+      expect(state, isA<DetailLoaded>(),
+          reason: 'plus d\'écran vide sur 401 : le cache doit être servi');
+      expect((state as DetailLoaded).requiresReauth, isTrue,
+          reason: 'l\'invitation à se reconnecter doit être affichée');
+      expect(state.isOffline, isFalse,
+          reason: 'l\'appareil EST joignable : « hors ligne » serait faux');
+    });
+
+    test('session rejetée + cache vide → état vide propre, invite conservée',
+        () async {
+      when(() => cacheHelper.getCachedMangaDetail(muId))
+          .thenAnswer((_) async => null);
       when(() => mangaService.getMangaDetail(any()))
           .thenThrow(InvalidCredentialsException('Refresh rejected by server'));
 
@@ -169,7 +191,7 @@ void main() {
 
       final state = await settle(bloc);
       expect(state, isA<DetailError>());
-      expect((state as DetailError).requiresLogin, isTrue);
+      expect((state as DetailError).requiresReauth, isTrue);
       expect(state.isOffline, isFalse);
     });
   });

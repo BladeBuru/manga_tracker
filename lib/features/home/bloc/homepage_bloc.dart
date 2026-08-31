@@ -131,7 +131,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
       emit(HomePageError(
         message: '$errorPrefix: $e',
         isOffline: showsOfflineIndicator(mode),
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
         cachedPopularMangas: current.popularMangas,
         cachedNewMangas: current.newMangas,
         cachedTrendingMangas: current.trendingMangas,

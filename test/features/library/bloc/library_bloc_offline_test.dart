@@ -123,11 +123,13 @@ void main() {
       final state = await settle(bloc);
       expect(state, isA<LibraryError>());
       expect((state as LibraryError).isOffline, isTrue);
-      expect(state.requiresLogin, isFalse);
+      expect(state.requiresReauth, isFalse);
     });
 
-    test('session rejetée par le serveur → login requis, pas de cache',
+    test('session rejetée par le serveur → le cache EST servi, avec invite',
         () async {
+      // Décision produit 2026-08-31 : « si j\'ai les données en cache, c\'est
+      // que j\'étais censé pouvoir les voir ». Un 401 n\'efface plus l\'écran.
       when(() => cacheHelper.getCachedLibrary())
           .thenAnswer((_) async => [manga(1, 'Berserk')]);
       when(() => libraryService.getUserSavedMangas())
@@ -138,8 +140,27 @@ void main() {
       bloc.add(const LoadLibrary());
 
       final state = await settle(bloc);
+      expect(state, isA<LibraryLoaded>());
+      expect((state as LibraryLoaded).mangas, hasLength(1));
+      expect(state.requiresReauth, isTrue,
+          reason: 'invitation à se reconnecter, non bloquante');
+      expect(state.isOffline, isFalse,
+          reason: 'le serveur répond : ce n\'est pas du hors-ligne');
+    });
+
+    test('session rejetée + cache vide → état vide propre, invite conservée',
+        () async {
+      when(() => cacheHelper.getCachedLibrary()).thenAnswer((_) async => []);
+      when(() => libraryService.getUserSavedMangas())
+          .thenThrow(InvalidCredentialsException('Refresh rejected by server'));
+
+      final bloc = LibraryBloc();
+      addTearDown(bloc.close);
+      bloc.add(const LoadLibrary());
+
+      final state = await settle(bloc);
       expect(state, isA<LibraryError>());
-      expect((state as LibraryError).requiresLogin, isTrue);
+      expect((state as LibraryError).requiresReauth, isTrue);
       expect(state.isOffline, isFalse);
     });
   });

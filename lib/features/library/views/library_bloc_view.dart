@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/components/search_bar.dart' show CustomSearchBar;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
@@ -216,6 +217,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: OfflineBanner(),
           ),
+        if (state.requiresReauth) _reauthBanner(),
         LibraryActionBanner(action: state.action),
         Expanded(child: _buildFutureList(state.mangas)),
       ],
@@ -233,10 +235,20 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OfflineBanner(pendingActions: state.pendingActions),
           ),
+        if (state.requiresReauth) _reauthBanner(),
         Expanded(child: _buildFutureList(state.mangas)),
       ],
     );
   }
+
+  /// Invitation non bloquante a se reconnecter : la bibliotheque en cache
+  /// reste affichee et navigable derriere.
+  Widget _reauthBanner() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SessionRejectedBanner(
+          onReconnect: () => context.push('/login'),
+        ),
+      );
 
   Widget _searchPadding() => Padding(
         padding: const EdgeInsets.all(16.0),

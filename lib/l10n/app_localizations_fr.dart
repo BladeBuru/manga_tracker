@@ -2134,4 +2134,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Pépites cachées';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Session expirée — voici vos données enregistrées';
+
+  @override
+  String get sessionRejectedAction => 'Se reconnecter';
 }

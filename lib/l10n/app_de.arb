@@ -1131,5 +1131,7 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Geheimtipps"
+  "recommendationsSleepersTitle": "💎 Geheimtipps",
+  "sessionRejectedBanner": "Sitzung abgelaufen – gespeicherte Daten werden angezeigt",
+  "sessionRejectedAction": "Erneut anmelden"
 }

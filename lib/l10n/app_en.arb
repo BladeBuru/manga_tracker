@@ -1200,5 +1200,7 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Hidden gems"
+  "recommendationsSleepersTitle": "💎 Hidden gems",
+  "sessionRejectedBanner": "Session expired — showing your saved data",
+  "sessionRejectedAction": "Sign in again"
 }

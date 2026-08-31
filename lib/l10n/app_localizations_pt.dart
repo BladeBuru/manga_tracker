@@ -2128,4 +2128,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Joias escondidas';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Sessão expirada — a mostrar os seus dados guardados';
+
+  @override
+  String get sessionRejectedAction => 'Iniciar sessão novamente';
 }

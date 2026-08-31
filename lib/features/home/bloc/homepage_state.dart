@@ -36,6 +36,12 @@ class HomePageLoaded extends HomePageState {
   final int pendingActions;
   final bool isStale;
 
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
   const HomePageLoaded({
     required this.popularMangas,
     required this.newMangas,
@@ -45,6 +51,7 @@ class HomePageLoaded extends HomePageState {
     this.user,
     this.isOffline = false,
     this.pendingActions = 0,
+    this.requiresReauth = false,
     bool? stale,
   }) : isStale = stale ?? false;
 
@@ -59,6 +66,7 @@ class HomePageLoaded extends HomePageState {
         isOffline,
         pendingActions,
         isStale,
+        requiresReauth,
       ];
 
   /// Créer une copie avec de nouveaux paramètres
@@ -72,6 +80,7 @@ class HomePageLoaded extends HomePageState {
     bool? isOffline,
     int? pendingActions,
     bool? stale,
+    bool? requiresReauth,
   }) {
     return HomePageLoaded(
       popularMangas: popularMangas ?? this.popularMangas,
@@ -84,6 +93,7 @@ class HomePageLoaded extends HomePageState {
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
       stale: stale ?? this.isStale,
+      requiresReauth: requiresReauth ?? this.requiresReauth,
     );
   }
 }
@@ -97,9 +107,11 @@ class HomePageError extends HomePageState {
   final List<MangaQuickViewDto>? cachedTrendingMangas;
   final UserDto? cachedUser;
 
-  /// Le serveur a explicitement rejeté la session : reconnexion nécessaire.
-  /// Distinct de [isOffline], où le cache reste consultable.
-  final bool requiresLogin;
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
 
   const HomePageError({
     required this.message,
@@ -108,11 +120,11 @@ class HomePageError extends HomePageState {
     this.cachedNewMangas,
     this.cachedTrendingMangas,
     this.cachedUser,
-    this.requiresLogin = false,
+    this.requiresReauth = false,
   });
 
   @override
-  List<Object?> get props => [message, isOffline, cachedPopularMangas, cachedNewMangas, cachedTrendingMangas, cachedUser, requiresLogin];
+  List<Object?> get props => [message, isOffline, cachedPopularMangas, cachedNewMangas, cachedTrendingMangas, cachedUser, requiresReauth];
 }
 
 /// Action en cours (chargement d'une section)
@@ -124,7 +136,13 @@ class HomePageActionInProgress extends HomePageState {
   final UserDto? user;
   final String action;
   final bool isOffline;
-  
+
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
   const HomePageActionInProgress({
     required this.popularMangas,
     required this.newMangas,
@@ -133,8 +151,9 @@ class HomePageActionInProgress extends HomePageState {
     this.user,
     required this.action,
     this.isOffline = false,
+    this.requiresReauth = false,
   });
-  
+
   @override
-  List<Object?> get props => [popularMangas, newMangas, trendingMangas, recommendations, user, action, isOffline];
+  List<Object?> get props => [popularMangas, newMangas, trendingMangas, recommendations, user, action, isOffline, requiresReauth];
 }

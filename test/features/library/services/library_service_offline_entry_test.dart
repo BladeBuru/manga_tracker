@@ -23,6 +23,8 @@ class MockMangaService extends Mock implements MangaService {}
 
 class FakeUri extends Fake implements Uri {}
 
+class FakeOfflineAction extends Fake implements OfflineAction {}
+
 /// Entrée bibliothèque telle que mise en cache : elle porte la progression.
 MangaQuickViewDto entry(num muId) => MangaQuickViewDto(
       muId: muId,
@@ -42,6 +44,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakeUri());
+    registerFallbackValue(FakeOfflineAction());
     registerFallbackValue(<MangaQuickViewDto>[]);
     // Sans dotenv, buildApiUri() leve NotInitializedError AVANT l'appel HTTP :
     // le test passerait pour une mauvaise raison (repli cache sur une erreur
@@ -109,17 +112,36 @@ void main() {
       expect(await service.getLibraryEntry(42), isNull);
     });
 
-    test('session rejetée par le serveur → l\'exception remonte', () async {
-      // Frontiere de securite : pas de repli cache sur un verdict serveur.
+    test('session rejetée par le serveur → la progression vient du cache',
+        () async {
+      // Frontière de sécurité révisée (2026-08-31) : la LECTURE sert le
+      // cache même sur verdict serveur. « Où j\'en suis » ne doit pas
+      // disparaître de l\'écran détail : cette progression, cet utilisateur
+      // l\'a déjà obtenue en étant authentifié.
       when(() => http.getWithAuthTokens(any()))
           .thenThrow(InvalidCredentialsException('Refresh rejected by server'));
-      // Stubbe malgre tout : on veut prouver que le cache n'est PAS consulte,
-      // pas faire echouer l'appel sur un mock manquant.
       when(() => cache.getCachedLibrary()).thenAnswer((_) async => [entry(42)]);
 
-      await expectLater(service.getLibraryEntry(42),
+      final result = await service.getLibraryEntry(42);
+
+      expect(result?.readChapters, 132);
+      verify(() => cache.getCachedLibrary()).called(1);
+    });
+
+    test('ÉCRITURE avec session rejetée → refusée, jamais mise en file',
+        () async {
+      // Le pendant de la règle ci-dessus : on assouplit la lecture, JAMAIS
+      // l\'écriture. Mettre en file une mutation dont la session est morte
+      // serait un faux succès — SyncService la rejouerait indéfiniment.
+      when(() => connectivity.isConnected).thenReturn(true);
+      when(() => cache.queueOfflineAction(any())).thenAnswer((_) async {});
+      when(() => http.postWithAuthTokens(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
+          .thenThrow(InvalidCredentialsException('Refresh rejected by server'));
+
+      await expectLater(service.addMangaToLibrary(42),
           throwsA(isA<InvalidCredentialsException>()));
-      verifyNever(() => cache.getCachedLibrary());
+      verifyNever(() => cache.queueOfflineAction(any()));
     });
   });
 }

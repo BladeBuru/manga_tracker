@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
@@ -146,6 +147,22 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
       HomePageActionInProgress(:final isOffline) => isOffline,
       _ => false,
     };
+    // Session rejetee : invitation non bloquante, l'accueil en cache reste
+    // affiche derriere. Distinct du bandeau hors ligne (l'appareil repond).
+    final requiresReauth = switch (state) {
+      HomePageLoaded(:final requiresReauth) => requiresReauth,
+      HomePageError(:final requiresReauth) => requiresReauth,
+      HomePageActionInProgress(:final requiresReauth) => requiresReauth,
+      _ => false,
+    };
+    if (requiresReauth) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: SessionRejectedBanner(
+          onReconnect: () => context.push('/login'),
+        ),
+      );
+    }
     if (!isOffline) return const SizedBox.shrink();
     final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
     // Refactor 2026-05-18 : utilise OfflineBanner du design system.

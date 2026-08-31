@@ -25,29 +25,39 @@ class DetailLoaded extends DetailState {
   final bool isOffline;
   final int pendingActions;
   final bool isStale;
-  
+
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
   const DetailLoaded({
     required this.mangaDetail,
     this.isOffline = false,
     this.pendingActions = 0,
+    this.requiresReauth = false,
     bool? stale,
   }) : isStale = stale ?? false;
-  
+
   @override
-  List<Object> get props => [mangaDetail, isOffline, pendingActions, isStale];
-  
+  List<Object> get props =>
+      [mangaDetail, isOffline, pendingActions, isStale, requiresReauth];
+
   /// Créer une copie avec de nouveaux paramètres
   DetailLoaded copyWith({
     MangaDetailDto? mangaDetail,
     bool? isOffline,
     int? pendingActions,
     bool? isStale,
+    bool? requiresReauth,
   }) {
     return DetailLoaded(
       mangaDetail: mangaDetail ?? this.mangaDetail,
       isOffline: isOffline ?? this.isOffline,
       pendingActions: pendingActions ?? this.pendingActions,
       stale: isStale ?? this.isStale,
+      requiresReauth: requiresReauth ?? this.requiresReauth,
     );
   }
 }
@@ -58,21 +68,22 @@ class DetailError extends DetailState {
   final bool isOffline;
   final MangaDetailDto? cachedMangaDetail;
 
-  /// Le serveur a explicitement rejeté la session : l'utilisateur doit se
-  /// reconnecter. Distinct de [isOffline], où l'on n'a simplement pas pu
-  /// joindre le serveur et où le cache reste consultable.
-  final bool requiresLogin;
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
 
   const DetailError({
     required this.message,
     this.isOffline = false,
     this.cachedMangaDetail,
-    this.requiresLogin = false,
+    this.requiresReauth = false,
   });
 
   @override
   List<Object?> get props =>
-      [message, isOffline, cachedMangaDetail, requiresLogin];
+      [message, isOffline, cachedMangaDetail, requiresReauth];
 }
 
 /// Action en cours (ajout, suppression, etc.)
@@ -80,13 +91,20 @@ class DetailActionInProgress extends DetailState {
   final MangaDetailDto mangaDetail;
   final String action;
   final bool isOffline;
-  
+
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
   const DetailActionInProgress({
     required this.mangaDetail,
     required this.action,
     this.isOffline = false,
+    this.requiresReauth = false,
   });
-  
+
   @override
-  List<Object> get props => [mangaDetail, action, isOffline];
+  List<Object> get props => [mangaDetail, action, isOffline, requiresReauth];
 }

@@ -26,16 +26,23 @@ class StatsBloc extends Bloc<StatsEvent, StatsState> {
       final result = await _statsService.getUserStatsWithSource();
       // isOffline reflète la SOURCE réelle de la donnée : sans ça, le
       // bandeau hors ligne des stats n'était jamais atteignable.
-      emit(StatsLoaded(stats: result.stats, isOffline: result.fromStaleCache));
+      emit(StatsLoaded(
+        stats: result.stats,
+        // Un rejet serveur sert le cache SANS se dire « hors ligne » :
+        // l'appareil est joignable, c'est la session qui est morte.
+        isOffline: result.fromStaleCache && !result.requiresReauth,
+        requiresReauth: result.requiresReauth,
+      ));
     } catch (e) {
       // Le service tente déjà un fallback cache — si on arrive ici, pas de
-      // cache disponible.
+      // cache disponible : état vide propre, invite conservée.
       final mode = classifyFailure(e);
       emit(StatsError(
         showsOfflineIndicator(mode)
             ? 'Hors ligne et aucune statistique en cache.'
             : e.toString(),
         isOffline: showsOfflineIndicator(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -48,12 +55,17 @@ class StatsBloc extends Bloc<StatsEvent, StatsState> {
       await _statsService.invalidateCache();
       final result =
           await _statsService.getUserStatsWithSource(forceRefresh: true);
-      emit(StatsLoaded(stats: result.stats, isOffline: result.fromStaleCache));
+      emit(StatsLoaded(
+        stats: result.stats,
+        isOffline: result.fromStaleCache && !result.requiresReauth,
+        requiresReauth: result.requiresReauth,
+      ));
     } catch (e) {
       final mode = classifyFailure(e);
       emit(StatsError(
         showsOfflineIndicator(mode) ? 'Hors ligne.' : e.toString(),
         isOffline: showsOfflineIndicator(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }

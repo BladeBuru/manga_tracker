@@ -2103,4 +2103,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Hidden gems';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Session expired — showing your saved data';
+
+  @override
+  String get sessionRejectedAction => 'Sign in again';
 }

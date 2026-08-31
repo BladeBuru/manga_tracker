@@ -130,27 +130,17 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     } catch (e) {
       final mode = classifyFailure(e);
 
-      // Verdict explicite du serveur (401/403) : la session est morte alors
-      // que l'appareil est joignable. On renvoie vers le login SANS servir le
-      // cache — sinon l'utilisateur navigue dans ses données en croyant être
-      // connecté.
-      if (!allowsCachedRead(mode)) {
-        debugPrint('⚠️ DetailBloc: Session rejetée par le serveur');
-        emit(DetailError(
-          message: 'Authentification requise',
-          isOffline: false,
-          requiresLogin: true,
-        ));
-        return;
-      }
-
-      // Réseau injoignable OU tokens expirés localement : dans les deux cas
-      // on n'a pas pu joindre le serveur, donc on sert ce qu'on a déjà vu.
-      // C'est le cas d'usage « je regarde où j'en suis dans le train ».
+      // Le cache est servi dans TOUS les modes d'échec, y compris un rejet
+      // explicite du serveur (401/403) : il ne contient que ce que CET
+      // utilisateur avait déjà obtenu en étant authentifié, le lui réafficher
+      // ne révèle rien de nouveau. C'est le cas d'usage « je regarde où j'en
+      // suis dans le train ». Sur rejet, on ajoute une invitation à se
+      // reconnecter — non bloquante.
       debugPrint(
           '⚠️ DetailBloc: chargement impossible ($mode), repli sur le cache...');
 
       final offline = showsOfflineIndicator(mode);
+      final reauth = requiresReauthPrompt(mode);
       try {
         final fallbackDetail = enrichedCachedDetail ??
             await _cacheHelper.getCachedMangaDetail(event.muId);
@@ -161,17 +151,21 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
             isOffline: offline,
             pendingActions: await _getPendingActionsCount(),
             stale: true,
+            requiresReauth: reauth,
           ));
         } else {
+          // Cache vide : état vide propre, l'invite de reconnexion subsiste.
           emit(DetailError(
             message: e.toString(),
             isOffline: offline,
+            requiresReauth: reauth,
           ));
         }
       } catch (cacheError) {
         emit(DetailError(
           message: e.toString(),
           isOffline: offline,
+          requiresReauth: reauth,
         ));
       }
     }
@@ -310,7 +304,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
       // affichait un spinner plein ecran sans issue.
       final mode = classifyFailure(e);
-      if (allowsCachedRead(mode)) {
+      // ÉCRITURE : une session rejetée ne met RIEN en file d'attente et
+      // n'applique rien localement — la mutation est refusée, et l'invite de
+      // reconnexion s'affiche par-dessus le contenu resté consultable.
+      if (!requiresReauthPrompt(mode)) {
         // Hors ligne / session expiree : l'action part en file d'attente,
         // on rend la main sur le detail en cache avec le bandeau.
         emit(currentState.copyWith(
@@ -322,7 +319,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
-          requiresLogin: true,
+          requiresReauth: true,
         ));
       }
     }
@@ -381,7 +378,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
       // affichait un spinner plein ecran sans issue.
       final mode = classifyFailure(e);
-      if (allowsCachedRead(mode)) {
+      // ÉCRITURE : une session rejetée ne met RIEN en file d'attente et
+      // n'applique rien localement — la mutation est refusée, et l'invite de
+      // reconnexion s'affiche par-dessus le contenu resté consultable.
+      if (!requiresReauthPrompt(mode)) {
         // Hors ligne / session expiree : l'action part en file d'attente,
         // on rend la main sur le detail en cache avec le bandeau.
         emit(currentState.copyWith(
@@ -393,7 +393,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
-          requiresLogin: true,
+          requiresReauth: true,
         ));
       }
     }
@@ -451,7 +451,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
       // affichait un spinner plein ecran sans issue.
       final mode = classifyFailure(e);
-      if (allowsCachedRead(mode)) {
+      // ÉCRITURE : une session rejetée ne met RIEN en file d'attente et
+      // n'applique rien localement — la mutation est refusée, et l'invite de
+      // reconnexion s'affiche par-dessus le contenu resté consultable.
+      if (!requiresReauthPrompt(mode)) {
         // Hors ligne / session expiree : l'action part en file d'attente,
         // on rend la main sur le detail en cache avec le bandeau.
         emit(currentState.copyWith(
@@ -463,7 +466,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
-          requiresLogin: true,
+          requiresReauth: true,
         ));
       }
     }
@@ -596,7 +599,10 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
       // affichait un spinner plein ecran sans issue.
       final mode = classifyFailure(e);
-      if (allowsCachedRead(mode)) {
+      // ÉCRITURE : une session rejetée ne met RIEN en file d'attente et
+      // n'applique rien localement — la mutation est refusée, et l'invite de
+      // reconnexion s'affiche par-dessus le contenu resté consultable.
+      if (!requiresReauthPrompt(mode)) {
         // Hors ligne / session expiree : l'action part en file d'attente,
         // on rend la main sur le detail en cache avec le bandeau.
         emit(currentState.copyWith(
@@ -608,7 +614,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
-          requiresLogin: true,
+          requiresReauth: true,
         ));
       }
     }

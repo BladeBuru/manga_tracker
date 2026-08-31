@@ -1131,5 +1131,7 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 隠れた名作"
+  "recommendationsSleepersTitle": "💎 隠れた名作",
+  "sessionRejectedBanner": "セッションの有効期限が切れました — 保存済みのデータを表示しています",
+  "sessionRejectedAction": "再ログイン"
 }

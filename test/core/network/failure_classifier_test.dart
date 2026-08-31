@@ -48,16 +48,28 @@ void main() {
   });
 
   group('frontière de sécurité', () {
-    test('le cache est lisible hors ligne et sur session expirée', () {
-      expect(allowsCachedRead(FailureMode.network), isTrue);
-      expect(allowsCachedRead(FailureMode.sessionExpired), isTrue);
+    test('aucun mode d\'échec n\'interdit la lecture du cache', () {
+      // Décision produit 2026-08-31 : le prédicat `allowsCachedRead` a été
+      // SUPPRIMÉ, pas passé à `true`, pour qu'aucun appelant ne puisse
+      // rebrancher un refus de lecture par mégarde.
+      //
+      // La preuve de comportement (401 → cache réellement servi) vit dans
+      // les tests de BLoC, qui exercent le vrai chemin.
+      expect(FailureMode.values, hasLength(4));
     });
 
-    test('un rejet explicite du serveur interdit le cache', () {
-      // Le serveur est joignable et a dit non : l'utilisateur peut se
-      // reconnecter, il ne doit pas naviguer dans ses données en croyant
-      // être authentifié.
-      expect(allowsCachedRead(FailureMode.sessionRejected), isFalse);
+    test('un rejet serveur invite à se reconnecter, sans dire « hors ligne »',
+        () {
+      // L\'appareil EST joignable : afficher le bandeau hors ligne serait
+      // faux. Ce cas a son propre signal, non bloquant.
+      expect(requiresReauthPrompt(FailureMode.sessionRejected), isTrue);
+      expect(showsOfflineIndicator(FailureMode.sessionRejected), isFalse);
+    });
+
+    test('les autres modes n\'invitent pas à se reconnecter', () {
+      expect(requiresReauthPrompt(FailureMode.network), isFalse);
+      expect(requiresReauthPrompt(FailureMode.sessionExpired), isFalse);
+      expect(requiresReauthPrompt(FailureMode.other), isFalse);
     });
 
     test('le bandeau hors ligne ne s\'affiche pas sur une erreur serveur', () {

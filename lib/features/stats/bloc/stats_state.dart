@@ -18,10 +18,20 @@ class StatsLoaded extends StatsState {
   final UserStatsDto stats;
   final bool isOffline;
 
-  const StatsLoaded({required this.stats, this.isOffline = false});
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
+  const StatsLoaded({
+    required this.stats,
+    this.isOffline = false,
+    this.requiresReauth = false,
+  });
 
   @override
-  List<Object?> get props => [stats, isOffline];
+  List<Object?> get props => [stats, isOffline, requiresReauth];
 }
 
 class StatsError extends StatsState {
@@ -31,7 +41,14 @@ class StatsError extends StatsState {
   /// serveur) : l'écran doit dire « hors ligne », pas « erreur ».
   final bool isOffline;
 
-  const StatsError(this.message, {this.isOffline = false});
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
+  const StatsError(this.message,
+      {this.isOffline = false, this.requiresReauth = false});
   @override
-  List<Object?> get props => [message, isOffline];
+  List<Object?> get props => [message, isOffline, requiresReauth];
 }

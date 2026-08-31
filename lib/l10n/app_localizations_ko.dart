@@ -2064,4 +2064,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 숨은 명작';
+
+  @override
+  String get sessionRejectedBanner => '세션이 만료되었습니다 — 저장된 데이터를 표시합니다';
+
+  @override
+  String get sessionRejectedAction => '다시 로그인';
 }

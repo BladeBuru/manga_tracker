@@ -98,20 +98,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       ));
     } catch (e) {
       final mode = classifyFailure(e);
-
-      // Verdict explicite du serveur : session morte alors que l'appareil est
-      // joignable → login, sans servir le cache.
-      if (!allowsCachedRead(mode)) {
-        debugPrint('⚠️ LibraryBloc: Session rejetée par le serveur');
-        emit(LibraryError(
-          message: 'Authentification requise',
-          isOffline: false,
-          requiresLogin: true,
-        ));
-        return;
+      // Le cache est servi dans TOUS les modes d'échec, rejet serveur
+      // compris : il ne contient que ce que cet utilisateur avait déjà
+      // obtenu en étant authentifié. Sur rejet, on ajoute une invitation à
+      // se reconnecter — non bloquante, le contenu reste consultable.
+      final reauth = requiresReauthPrompt(mode);
+      if (reauth) {
+        debugPrint('⚠️ LibraryBloc: session rejetée — cache servi + invite');
       }
-
-      // Réseau injoignable OU tokens expirés localement : on sert le cache.
       debugPrint('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
       debugPrint('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
@@ -127,12 +121,16 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
             isOffline: showsOfflineIndicator(mode),
             pendingActions: pendingActions,
             stale: true,
+            requiresReauth: reauth,
           ));
         } else {
+          // Cache vide : état vide propre, pas un crash — et l'invitation à
+          // se reconnecter reste visible si la session a été rejetée.
           debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');
           emit(LibraryError(
             message: e.toString(),
             isOffline: showsOfflineIndicator(mode),
+            requiresReauth: reauth,
           ));
         }
       } catch (cacheError) {
@@ -140,6 +138,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         emit(LibraryError(
           message: e.toString(),
           isOffline: showsOfflineIndicator(mode),
+          requiresReauth: reauth,
         ));
       }
     }
@@ -178,7 +177,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -216,7 +215,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -254,7 +253,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -292,7 +291,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -330,7 +329,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
@@ -368,7 +367,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         // erreur générique, sans bandeau hors ligne.
         isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
-        requiresLogin: !allowsCachedRead(mode),
+        requiresReauth: requiresReauthPrompt(mode),
       ));
     }
   }
