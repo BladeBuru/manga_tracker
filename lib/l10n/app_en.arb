@@ -1214,5 +1214,7 @@
   "dismissRecommendationError": "Couldn’t dismiss this title right now. Please try again later.",
   "dismissRecommendationOffline": "Unavailable offline.",
   "dismissRecommendationAccessibility": "Long press to stop recommending this title",
-  "recommendationsSleepersTitle": "💎 Hidden gems"
+  "recommendationsSleepersTitle": "💎 Hidden gems",
+  "sessionRejectedBanner": "Session expired — showing your saved data",
+  "sessionRejectedAction": "Sign in again"
 }

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
+import 'package:mangatracker/features/auth/exceptions/session_expired.exception.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 
 import '../service_locator/service_locator.dart';
@@ -62,7 +63,10 @@ class HttpService {
       final refreshToken = await _storage.readSecureData('refreshToken');
       if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
         debugPrint('❌ HttpService: Les deux tokens sont expirés');
-        await _auth.logout(); // purge pour éviter de retenter au prochain boot
+        // Tokens seulement : le cache DOIT survivre a un 401, c'est
+        // precisement le cas ou l'on veut continuer a servir ce que
+        // l'utilisateur a deja consulte (cf. failure_classifier.dart).
+        await _auth.clearSessionTokens();
         throw InvalidCredentialsException('Both tokens expired');
       }
 
@@ -74,7 +78,7 @@ class HttpService {
           res = await _performRequest(method, url, headers: headers, body: body);
           if (res.statusCode == HttpStatus.unauthorized) {
             debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');
-            await _auth.logout();
+            await _auth.clearSessionTokens();
             throw InvalidCredentialsException('Invalid credentials');
           }
           debugPrint('✅ HttpService: Requête réussie après refresh');
@@ -85,7 +89,7 @@ class HttpService {
         case RefreshResult.rejected:
           // Le serveur a dit non : tokens morts, on purge et on force login.
           debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
-          await _auth.logout();
+          await _auth.clearSessionTokens();
           throw InvalidCredentialsException('Refresh rejected by server');
       }
     }
@@ -131,8 +135,12 @@ class HttpService {
           return headers;
         }
       } catch (_) {}
-      debugPrint('❌ HttpService: Les deux tokens sont expirés');
-      throw InvalidCredentialsException('Both tokens expired');
+      // Aucun verdict serveur ici : les tokens sont expirés d'après l'horloge
+      // locale, on n'a rien demandé à l'API. La session est peut-être morte,
+      // mais on ne le SAIT pas → lecture du cache autorisée (le BLoC bascule
+      // en mode consultation hors ligne), écritures toujours refusées.
+      debugPrint('❌ HttpService: Les deux tokens sont expirés localement');
+      throw SessionExpiredException('Both tokens expired');
     }
 
     // Refresh token valide : vérifier la connectivité
@@ -144,10 +152,12 @@ class HttpService {
           headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
           return headers;
         }
-        throw InvalidCredentialsException('No connection and no access token');
+        // Hors ligne et aucun token à présenter : là encore, pas de verdict
+        // serveur → le cache reste lisible.
+        throw SessionExpiredException('No connection and no access token');
       }
     } catch (e) {
-      if (e is InvalidCredentialsException) rethrow;
+      if (e is SessionExpiredException) rethrow;
       // ConnectivityService non disponible → on continue
     }
 
@@ -162,7 +172,7 @@ class HttpService {
       case RefreshResult.rejected:
         // Tokens morts côté serveur → purge locale et force login.
         debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
-        await _auth.logout();
+        await _auth.clearSessionTokens();
         throw InvalidCredentialsException('Refresh rejected by server');
     }
 

@@ -1,6 +1,6 @@
 # Problèmes Connus — Manga Tracker Flutter
 
-**Dernière mise à jour :** Juillet 2026
+**Dernière mise à jour :** Août 2026
 
 ---
 
@@ -146,6 +146,64 @@ le code d'erreur (`adb logcat | grep GoogleSignInException`) pour confirmer.
 ---
 
 ## ✅ Problèmes Résolus
+
+### Mode hors ligne : cache jamais servi quand le token est expiré
+- **Feature** : manga (détail) / library / home / search / stats
+- **Résolu le** : 2026-08-31
+- **Sévérité** : 🔴 Critique (le mode hors ligne était inutilisable)
+
+**Symptôme utilisateur** : « Si le token n'est pas valide, ça ne l'affiche pas. »
+Le détail d'un manga déjà consulté restait inaccessible hors ligne, et le
+bandeau hors ligne apparaissait de façon erratique.
+
+**Causes racines (deux, distinctes)** :
+
+1. **Chemin d'erreur d'authentification jamais relié au cache.**
+   `HttpService._addAuthHeaders` (`http_service.dart:135`) levait
+   `InvalidCredentialsException` dès que les deux tokens étaient expirés
+   *d'après l'horloge locale*, sans avoir contacté le serveur. Les BLoCs
+   interceptaient cette exception **avant** le repli sur le cache, par
+   comparaison de chaîne, puis `return` sec :
+   `detail_bloc.dart:126-135`, `library_bloc.dart:97-103`,
+   `homepage_bloc.dart:139-142`. Le détail déjà rendu depuis le cache était
+   donc remplacé par un écran d'erreur, avec `isOffline: false` — d'où
+   l'absence simultanée de contenu **et** de bandeau.
+
+2. **Progression de lecture non mise en cache.**
+   `LibraryService.getLibraryEntry` appelait `getUserSavedMangas()`, qui part
+   au réseau sans aucun repli. C'est cette entrée qui porte « où j'en suis »
+   (chapitres lus, statut). Hors ligne, l'exception était avalée par
+   `DetailBloc._enrichWithLibraryInfo`, qui renvoyait le détail **non
+   enrichi** : la fiche s'affichait comme si le manga n'était pas dans la
+   bibliothèque. Même une fois la cause n°1 corrigée, le cas d'usage
+   « je regarde où j'en suis dans le train » restait cassé.
+
+**Causes secondaires du bandeau erratique** :
+- `on SocketException` est du **code mort sur le web** : `package:http` y lève
+  `ClientException`. Toute panne réseau web tombait dans le `catch` générique
+  → `isOffline: false` (`search_bloc.dart`).
+- La détection par chaîne `e.toString().contains('InvalidCredentialsException')`
+  reposait sur `Object.toString()` — que dart2js minifie en release web — car
+  la classe n'avait **pas** de `toString()`.
+- Les 6 handlers de mutation de `LibraryBloc` et `_section()` de `HomePageBloc`
+  **héritaient** `isOffline` de l'état précédent au lieu de le ré-évaluer.
+- `DetailActionInProgress` / `HomePageActionInProgress` n'étaient pas consultés
+  par les vues → le bandeau disparaissait pendant chaque mutation.
+- `StatsLoaded.isOffline` n'était jamais renseigné → `StatsOfflineBanner`
+  inatteignable.
+- Les 4 handlers de mutation de `DetailBloc` n'émettaient **rien** hors ligne →
+  bloc bloqué sur `DetailActionInProgress`, spinner plein écran sans issue.
+
+**Solution** : taxonomie d'échec centralisée dans
+`lib/core/network/failure_classifier.dart` (`network`, `sessionExpired`,
+`sessionRejected`, `other`) + nouvelle `SessionExpiredException` pour le cas
+« plus de credentials utilisables, **aucun verdict serveur** ». Le cache est
+servi en lecture pour `network` et `sessionExpired` ; seul un rejet explicite
+du serveur (401/403) renvoie au login sans servir le cache. Voir
+`.claude/docs/offline-architecture.md` pour la frontière de sécurité complète.
+
+**Tests** : 26 tests (classifier, DetailBloc, LibraryBloc, LibraryService,
+SearchBloc web). Un test rouge a d'abord reproduit le bug.
 
 ### Progression perdue en silence quand le chapitre lu dépasse le total connu
 - **Feature** : reader / library

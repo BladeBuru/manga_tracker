@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
@@ -189,8 +190,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           ),
           BlocBuilder<DetailBloc, DetailState>(
             builder: (context, state) {
-              final isOffline = state is DetailLoaded && state.isOffline ||
-                               state is DetailError && state.isOffline;
+              // DetailActionInProgress etait absent de ce test : le chip
+              // hors ligne disparaissait pendant chaque mutation, ce qui
+              // donnait l'impression d'un bandeau qui clignote.
+              final isOffline = switch (state) {
+                DetailLoaded(:final isOffline) => isOffline,
+                DetailError(:final isOffline) => isOffline,
+                DetailActionInProgress(:final isOffline) => isOffline,
+                _ => false,
+              };
 
               if (!isOffline) return const SizedBox.shrink();
               
@@ -231,12 +239,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         top: false,
         child: BlocConsumer<DetailBloc, DetailState>(
           listener: (context, state) {
-            if (state is DetailError) {
-              if (state.message.contains('InvalidCredentials') ||
-                  state.message.contains('Expired session')) {
-                widget.onRedirectToLogin();
-              }
-            }
+            // Plus AUCUNE redirection automatique ici. Une session rejetee
+            // affiche desormais `SessionRejectedBanner` par-dessus le contenu
+            // en cache : l'authentification ne doit pas empecher de revoir des
+            // donnees que cet utilisateur avait deja obtenues. Le retour au
+            // login reste a portee de clic, via l'action du bandeau.
           },
           builder: (context, state) {
             if (state is DetailLoading) {
@@ -264,6 +271,14 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    if (state.requiresReauth)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.m),
+                        child: SessionRejectedBanner(
+                          onReconnect: widget.onRedirectToLogin,
+                        ),
+                      ),
                     Icon(
                       state.isOffline ? Icons.cloud_off : Icons.error,
                       size: 64,
@@ -320,6 +335,16 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
     return Column(
       children: [
+        // Session rejetee : le detail en cache reste entierement consultable,
+        // l'invitation a se reconnecter s'affiche au-dessus sans le masquer.
+        if (state.requiresReauth)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.m, AppSpacing.s, AppSpacing.m, 0),
+            child: SessionRejectedBanner(
+              onReconnect: widget.onRedirectToLogin,
+            ),
+          ),
         Expanded(
           child: Column(
             children: [

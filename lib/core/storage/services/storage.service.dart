@@ -64,6 +64,17 @@ class StorageService {
     return await _secureStorage.containsKey(key: key);
   }
 
+  /// Liste les cles presentes, **sans lire les valeurs**.
+  ///
+  /// Utilise par la purge du cache a la deconnexion, qui doit balayer des
+  /// familles de cles a cardinalite variable (`cached_manga_detail_<muId>`,
+  /// `cached_search_<query>`). Passer par `readAllSecureData()` chargerait
+  /// aussi les tokens en memoire pour rien.
+  Future<List<String>> secureKeys() async {
+    final all = await _secureStorage.readAll();
+    return all.keys.toList();
+  }
+
   Future<List<StorageItem>> readAllSecureData() async {
     var allData = await _secureStorage.readAll();
     return allData.entries.map((e) => StorageItem(e.key, e.value)).toList();

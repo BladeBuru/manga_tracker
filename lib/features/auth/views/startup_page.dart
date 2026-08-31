@@ -106,8 +106,12 @@ class _StartupPageState extends State<StartupPage> {
             // 401/403 explicite du serveur : la session est morte (purge DB,
             // secret JWT changé, etc.). Pas la peine de naviguer dans le cache,
             // l'user n'est PAS authentifié — on purge et on renvoie au login.
-            debugPrint('❌ StartupPage: Refresh rejeté par le serveur → logout + login');
-            await authService.logout();
+            debugPrint('❌ StartupPage: Refresh rejeté → tokens purgés, cache gardé');
+            // `clearSessionTokens()` et NON `logout()` : purger le cache ici
+            // annulerait la decision produit (« si j'ai les donnees en cache,
+            // c'est que j'etais cense pouvoir les voir »). L'utilisateur
+            // retrouve sa bibliotheque, avec une invite a se reconnecter.
+            await authService.clearSessionTokens();
             // Avant de pousser vers /login, on tente quand même la biométrie
             // (si l'user l'a configurée, ça lui évite de retaper son mdp).
             await _tryBiometricThenGoToLogin();

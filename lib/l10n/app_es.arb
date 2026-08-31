@@ -1145,5 +1145,7 @@
   "dismissRecommendationError": "No se ha podido descartar este título ahora mismo. Inténtalo más tarde.",
   "dismissRecommendationOffline": "No disponible sin conexión.",
   "dismissRecommendationAccessibility": "Mantén pulsado para dejar de recomendar este título",
-  "recommendationsSleepersTitle": "💎 Joyas ocultas"
+  "recommendationsSleepersTitle": "💎 Joyas ocultas",
+  "sessionRejectedBanner": "Sesión caducada: mostrando tus datos guardados",
+  "sessionRejectedAction": "Volver a iniciar sesión"
 }

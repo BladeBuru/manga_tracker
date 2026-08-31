@@ -116,6 +116,36 @@ class OfflineCacheService {
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
 
+  /// Identite du proprietaire du cache (`sub` du JWT), pour detecter un
+  /// changement de compte : se connecter avec un autre utilisateur sans
+  /// deconnexion prealable doit purger le cache du precedent.
+  static const String ownerIdKey = 'cache_owner_id';
+
+  /// **Inventaire des cles a purger a la deconnexion** — cf.
+  /// `offline_cache_purge.dart`. Toute nouvelle cle de cache utilisateur
+  /// DOIT etre ajoutee ici (ou porter le prefixe `cached_`), sinon elle
+  /// resterait lisible par l'utilisateur suivant sur un appareil partage.
+  static const List<String> userScopedExactKeys = <String>[
+    _libraryCacheKey,
+    _homePageCacheKey,
+    _userInfoCacheKey,
+    _recommendationsCacheKey,
+    _recommendationsExhaustiveKey,
+    _offlineQueueKey,
+    _lastSyncKey,
+    _cacheMetadataKey,
+    ownerIdKey,
+  ];
+
+  /// Prefixes de cles a cardinalite variable : un detail par manga consulte,
+  /// une entree par recherche. Le balayage `cached_` ramasse aussi les caches
+  /// tenus hors de ce service (`cached_user_stats`, `cached_friends`).
+  static const List<String> userScopedKeyPrefixes = <String>[
+    _mangaDetailCacheKey,
+    _searchCacheKey,
+    'cached_',
+  ];
+
   /// Cache la liste de recommandations personnalisées.
   ///
   /// [exhaustive] : `true` si le fetch réseau a renvoyé MOINS d'items que la
@@ -362,19 +392,12 @@ class OfflineCacheService {
     }
   }
 
-  /// Nettoie tout le cache
-  Future<void> clearAllCache() async {
-    try {
-      await _storage.deleteSecureData(_libraryCacheKey);
-      await _storage.deleteSecureData(_homePageCacheKey);
-      await _storage.deleteSecureData(_userInfoCacheKey);
-      await _storage.deleteSecureData(_offlineQueueKey);
-      await _storage.deleteSecureData(_lastSyncKey);
-      await _storage.deleteSecureData(_cacheMetadataKey);
-    } catch (e) {
-      debugPrint('Erreur lors du nettoyage complet du cache: $e');
-    }
-  }
+  // `clearAllCache()` supprime (2026-08-31) : il se disait « complet » mais
+  // oubliait les details manga (`cached_manga_detail_*`), les recherches
+  // (`cached_search_*`) et les recommandations — un piege maintenant que la
+  // purge est la contrepartie de securite du cache servi sur session
+  // rejetee. Utiliser `purgeUserScopedCache()` (offline_cache_purge.dart),
+  // qui balaie aussi les familles de cles prefixees.
   
   /// Met à jour les métadonnées du cache
   Future<void> _updateCacheMetadata(String cacheType, DateTime timestamp) async {

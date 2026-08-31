@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' show ClientException;
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -146,6 +147,30 @@ void main() {
         bloc.state,
         isA<SearchLoaded>().having((s) => s.query, 'query', 'one piece'),
       );
+    });
+
+    test('should fall back to cache on a web network failure', () async {
+      // Sur le web, package:http leve ClientException (jamais
+      // SocketException) : ce cas tombait avant dans le catch generique et
+      // affichait une erreur sans bandeau hors ligne.
+      final cached = [manga(1, 'Naruto')];
+      when(() => mangaService.searchForMangas('naruto',
+              page: 1, limit: SearchBloc.pageSize))
+          .thenThrow(ClientException('XMLHttpRequest error'));
+      when(() => cacheService.getCachedSearchResults('naruto'))
+          .thenAnswer((_) async => cached);
+
+      final expectation = expectLater(
+        bloc.stream,
+        emitsInOrder([
+          const SearchLoading('naruto'),
+          isA<SearchLoaded>()
+              .having((s) => s.results, 'results', cached)
+              .having((s) => s.isOffline, 'isOffline', true),
+        ]),
+      );
+      bloc.add(const SearchRequested('naruto'));
+      await expectation;
     });
 
     test('should emit offline error when offline without cache', () async {

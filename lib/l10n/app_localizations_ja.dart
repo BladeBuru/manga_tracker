@@ -2109,4 +2109,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 隠れた名作';
+
+  @override
+  String get sessionRejectedBanner => 'セッションの有効期限が切れました — 保存済みのデータを表示しています';
+
+  @override
+  String get sessionRejectedAction => '再ログイン';
 }

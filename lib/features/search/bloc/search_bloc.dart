@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -64,9 +64,17 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         page: page.page,
         hasMore: page.hasMore,
       ));
-    } on SocketException {
+    } catch (e) {
+      // Un seul chemin d'echec : `on SocketException` seul etait du code mort
+      // sur le web (package:http y leve ClientException), donc toute panne
+      // reseau y tombait dans le catch generique -> SearchError sans bandeau.
+      final mode = classifyFailure(e);
+      // Le cache est servi meme sur rejet serveur : ces resultats, cet
+      // utilisateur les a deja vus en etant authentifie.
       final cached = await _cacheService.getCachedSearchResults(query);
       if (!_isCurrentSearch(query)) return;
+      final offline = showsOfflineIndicator(mode);
+      final reauth = requiresReauthPrompt(mode);
       if (cached != null && cached.isNotEmpty) {
         emit(SearchLoaded(
           query: query,
@@ -74,15 +82,13 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           totalHits: cached.length,
           page: 1,
           hasMore: false,
-          isOffline: true,
+          isOffline: offline,
+          requiresReauth: reauth,
         ));
       } else {
-        emit(SearchError(query, isOffline: true));
+        debugPrint('❌ SearchBloc: recherche "$query" échouée: $e');
+        emit(SearchError(query, isOffline: offline, requiresReauth: reauth));
       }
-    } catch (e) {
-      debugPrint('❌ SearchBloc: recherche "$query" échouée: $e');
-      if (!_isCurrentSearch(query)) return;
-      emit(SearchError(query));
     }
   }
 

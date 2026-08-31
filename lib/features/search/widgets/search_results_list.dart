@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import 'package:mangatracker/features/search/bloc/search_bloc.dart';
@@ -90,6 +91,11 @@ class _SearchResultsListState extends State<SearchResultsList> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.m),
             child: OfflineBanner(),
+          ),
+        if (state.requiresReauth)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.m),
+            child: SessionRejectedBanner(),
           ),
         Padding(
           padding: const EdgeInsets.fromLTRB(

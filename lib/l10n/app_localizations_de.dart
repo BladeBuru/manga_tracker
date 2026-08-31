@@ -2181,4 +2181,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Geheimtipps';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Sitzung abgelaufen – gespeicherte Daten werden angezeigt';
+
+  @override
+  String get sessionRejectedAction => 'Erneut anmelden';
 }

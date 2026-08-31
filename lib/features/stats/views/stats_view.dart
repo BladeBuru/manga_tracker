@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/stats/bloc/stats_bloc.dart';
@@ -91,6 +93,7 @@ class _StatsScaffold extends StatelessWidget {
               child: _StatsContent(
                 stats: state.stats,
                 isOffline: state.isOffline,
+                requiresReauth: state.requiresReauth,
               ),
             );
           }
@@ -104,7 +107,16 @@ class _StatsScaffold extends StatelessWidget {
 class _StatsContent extends StatelessWidget {
   final UserStatsDto stats;
   final bool isOffline;
-  const _StatsContent({required this.stats, required this.isOffline});
+
+  /// Session rejetee : invitation non bloquante, les stats en cache restent
+  /// affichees dessous.
+  final bool requiresReauth;
+
+  const _StatsContent({
+    required this.stats,
+    required this.isOffline,
+    required this.requiresReauth,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +141,12 @@ class _StatsContent extends StatelessWidget {
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: StatsOfflineBanner(),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (requiresReauth) ...[
+                SessionRejectedBanner(
+                  onReconnect: () => context.push('/login'),
                 ),
                 const SizedBox(height: 12),
               ],

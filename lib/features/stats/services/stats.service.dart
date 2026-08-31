@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:http/http.dart' show Response;
 import 'package:mangatracker/core/network/http_service.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
@@ -32,10 +33,23 @@ class StatsService {
   /// 2. Sinon, fetch réseau ; en cas de succès, met à jour le cache.
   /// 3. En cas d'échec réseau, fallback sur le cache (même expiré) pour
   ///    éviter un écran vide. Si pas de cache → on remonte l'exception.
-  Future<UserStatsDto> getUserStats({bool forceRefresh = false}) async {
+  Future<UserStatsDto> getUserStats({bool forceRefresh = false}) async =>
+      (await getUserStatsWithSource(forceRefresh: forceRefresh)).stats;
+
+  /// Comme [getUserStats], mais indique si la donnée a été servie depuis un
+  /// cache périmé faute d'avoir pu joindre le serveur.
+  ///
+  /// Sans cette information, `StatsLoaded.isOffline` restait toujours `false`
+  /// et le bandeau hors ligne des stats était inatteignable.
+  Future<({UserStatsDto stats, bool fromStaleCache, bool requiresReauth})>
+      getUserStatsWithSource({
+    bool forceRefresh = false,
+  }) async {
     if (!forceRefresh) {
       final cached = await _readFreshCache();
-      if (cached != null) return cached;
+      if (cached != null) {
+        return (stats: cached, fromStaleCache: false, requiresReauth: false);
+      }
     }
 
     try {
@@ -47,13 +61,20 @@ class StatsService {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final stats = UserStatsDto.fromJson(data);
       await _writeCache(stats);
-      return stats;
+      return (stats: stats, fromStaleCache: false, requiresReauth: false);
     } catch (e) {
       // Fallback sur le cache même expiré pour éviter un écran vide.
       final stale = await _readCacheIgnoringTtl();
       if (stale != null) {
         debugPrint('StatsService: réseau KO, fallback cache stale ($e)');
-        return stale;
+        // Le mode d'échec remonte au BLoC : sur rejet serveur il doit
+        // afficher l'invite de reconnexion PAR-DESSUS les stats en cache,
+        // et surtout pas le bandeau « hors ligne » (l'appareil est joignable).
+        return (
+          stats: stale,
+          fromStaleCache: true,
+          requiresReauth: requiresReauthPrompt(classifyFailure(e)),
+        );
       }
       rethrow;
     }

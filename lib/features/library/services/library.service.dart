@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
+import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
@@ -64,9 +66,8 @@ class LibraryService {
         if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.addManga(muId));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(OfflineAction.addManga(muId), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -111,9 +112,9 @@ class LibraryService {
         }
         return false;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(
+            OfflineAction.saveChapterProgress(muId, readChapters), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -156,9 +157,9 @@ class LibraryService {
     } catch (e) {
       // Réseau tombé entre le signalement et le rejeu : on ne perd pas la
       // progression, elle repart par la queue offline comme d'habitude.
-      await _cacheService
-          .queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
-      return false;
+      // Un rejet de session, lui, remonte au lieu d'être mis en file.
+      return await _queueUnlessRejected(
+          OfflineAction.saveChapterProgress(muId, readChapters), e);
     }
   }
 
@@ -178,9 +179,8 @@ class LibraryService {
         if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.removeManga(muId));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(OfflineAction.removeManga(muId), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -208,9 +208,9 @@ class LibraryService {
         if (success) await _cacheService.invalidateRecommendationsCache();
         return success;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.updateMangaStatus(muId, status));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(
+            OfflineAction.updateMangaStatus(muId, status), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -235,9 +235,9 @@ class LibraryService {
         // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.updateCustomLink(muId, customLink));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(
+            OfflineAction.updateCustomLink(muId, customLink), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -294,9 +294,8 @@ class LibraryService {
         // Cache en mémoire désactivé - plus besoin de le vider
         return success;
       } catch (e) {
-        // En cas d'erreur réseau, ajouter à la queue
-        await _cacheService.queueOfflineAction(OfflineAction.deleteCustomLink(muId));
-        return false;
+        // Rejet de session => refus, pas de mise en file.
+        return await _queueUnlessRejected(OfflineAction.deleteCustomLink(muId), e);
       }
     } else {
       // Mode hors ligne : ajouter à la queue
@@ -305,16 +304,50 @@ class LibraryService {
     }
   }
 
+  /// Met une mutation en file d'attente hors ligne — **sauf** si le serveur a
+  /// explicitement rejeté la session.
+  ///
+  /// Frontière de sécurité (cf. `failure_classifier.dart`) : la LECTURE est
+  /// assouplie, l'ÉCRITURE ne l'est pas. Une mutation tentée avec une session
+  /// morte est **refusée** et l'exception remonte au BLoC, qui affichera
+  /// l'invitation à se reconnecter. La mettre en file serait un faux succès :
+  /// `SyncService` la rejouerait indéfiniment sans jamais pouvoir aboutir.
+  Future<bool> _queueUnlessRejected(OfflineAction action, Object error) async {
+    if (requiresReauthPrompt(classifyFailure(error))) throw error;
+    await _cacheService.queueOfflineAction(action);
+    return false;
+  }
+
   // ─────────── UTILS & HELPERS ───────────
 
 
+  /// Entrée bibliothèque d'un manga, **avec repli sur le cache local**.
+  ///
+  /// C'est cette entrée qui porte « où j'en suis » : chapitres lus, statut de
+  /// lecture, total effectif. Sans repli, un chargement hors ligne du détail
+  /// perdait silencieusement la progression — la page s'affichait comme si le
+  /// manga n'était pas dans la bibliothèque, ce qui vide de son sens la
+  /// consultation hors ligne.
   Future<MangaQuickViewDto?> getLibraryEntry(int muId) async {
-    final library = await getUserSavedMangas();
+    List<MangaQuickViewDto>? library;
     try {
-      return library.firstWhere((manga) => manga.muId == muId);
+      library = await getUserSavedMangas();
+      // Rafraîchit le cache au passage : la progression reste consultable
+      // même si la bibliothèque n'a pas été ouverte récemment.
+      await _cacheService.cacheLibrary(library);
     } catch (e) {
-      return null;
+      // LECTURE : le cache est servi dans tous les modes d'échec, rejet
+      // serveur compris. Sans ça, « où j'en suis » disparaissait de l'écran
+      // détail alors que la progression était déjà en cache localement.
+      debugPrint('📚 LibraryService: entrée bibliothèque servie depuis le cache');
+      library = await _cacheService.getCachedLibrary();
     }
+
+    if (library == null) return null;
+    for (final manga in library) {
+      if (manga.muId == muId) return manga;
+    }
+    return null;
   }
 
   /// Récupère la progression lue pour un manga, ou -1 si absent.
@@ -355,7 +388,9 @@ class LibraryService {
       return data.map((e) => MangaQuickViewDto.fromJson(e)).toList();
     }
     if (res.statusCode == HttpStatus.forbidden) {
-      throw Exception('Non autorisé à accéder à la ressource');
+      // Verdict explicite du serveur : doit se classer en `sessionRejected`
+      // (une `Exception` nue tombait dans `FailureMode.other`).
+      throw InvalidCredentialsException('403 sur ${url.path}');
     }
     throw Exception('HTTP ${res.statusCode} : ${res.body}');
   }
@@ -380,7 +415,7 @@ class LibraryService {
 
     if (res.statusCode == expectStatus) return true;
     if (res.statusCode == HttpStatus.forbidden) {
-      throw Exception('Non autorisé à modifier la bibliothèque');
+      throw InvalidCredentialsException('403 sur ${url.path}');
     }
     return false;
   }

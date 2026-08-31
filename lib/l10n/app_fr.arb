@@ -2256,5 +2256,13 @@
   "@dismissRecommendationAccessibility": {
     "description": "Indice d'accessibilité (Semantics) sur les cartes de recommandation"
   },
-  "recommendationsSleepersTitle": "💎 Pépites cachées"
+  "recommendationsSleepersTitle": "💎 Pépites cachées",
+  "sessionRejectedBanner": "Session expirée — voici vos données enregistrées",
+  "@sessionRejectedBanner": {
+    "description": "Bandeau non bloquant : la session a ete rejetee par le serveur, le contenu en cache reste consultable"
+  },
+  "sessionRejectedAction": "Se reconnecter",
+  "@sessionRejectedAction": {
+    "description": "Action du bandeau de session rejetee : ouvre l'ecran de connexion"
+  }
 }

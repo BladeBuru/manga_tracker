@@ -30,6 +30,12 @@ class SearchLoaded extends SearchState {
   final bool loadMoreFailed;
   final bool isOffline;
 
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
   const SearchLoaded({
     required this.query,
     required this.results,
@@ -39,6 +45,7 @@ class SearchLoaded extends SearchState {
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
     this.isOffline = false,
+    this.requiresReauth = false,
   });
 
   SearchLoaded copyWith({
@@ -49,6 +56,7 @@ class SearchLoaded extends SearchState {
     bool? isLoadingMore,
     bool? loadMoreFailed,
     bool? isOffline,
+    bool? requiresReauth,
   }) {
     return SearchLoaded(
       query: query,
@@ -59,6 +67,7 @@ class SearchLoaded extends SearchState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
       isOffline: isOffline ?? this.isOffline,
+      requiresReauth: requiresReauth ?? this.requiresReauth,
     );
   }
 
@@ -72,6 +81,7 @@ class SearchLoaded extends SearchState {
         isLoadingMore,
         loadMoreFailed,
         isOffline,
+        requiresReauth,
       ];
 }
 
@@ -79,8 +89,15 @@ class SearchError extends SearchState {
   final String query;
   final bool isOffline;
 
-  const SearchError(this.query, {this.isOffline = false});
+  /// Le serveur a rejeté la session (401/403) : l'utilisateur est invité à se
+  /// reconnecter, **sans être bloqué**. Le contenu en cache reste affiché
+  /// derrière l'invitation — cf. `failure_classifier.dart`, frontière de
+  /// sécurité. Ne jamais rebrancher une redirection forcée dessus.
+  final bool requiresReauth;
+
+  const SearchError(this.query,
+      {this.isOffline = false, this.requiresReauth = false});
 
   @override
-  List<Object?> get props => [query, isOffline];
+  List<Object?> get props => [query, isOffline, requiresReauth];
 }
