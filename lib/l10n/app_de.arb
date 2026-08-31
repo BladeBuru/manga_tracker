@@ -1147,5 +1147,19 @@
   "dismissRecommendationAccessibility": "Lange drücken, um diesen Titel nicht mehr zu empfehlen",
   "recommendationsSleepersTitle": "💎 Geheimtipps",
   "sessionRejectedBanner": "Sitzung abgelaufen – gespeicherte Daten werden angezeigt",
-  "sessionRejectedAction": "Erneut anmelden"
+  "sessionRejectedAction": "Erneut anmelden",
+  "challengeLoopTitle": "Überprüfung blockiert",
+  "challengeLoopMessage": "Die Roboterprüfung dieser Seite wird nicht abgeschlossen – sie lädt immer wieder neu. Öffnen Sie die Seite im Browser, um sie abzuschließen, und kehren Sie dann hierher zurück.",
+  "challengeLoopOpenBrowser": "Im Browser öffnen",
+  "readerRefresh": "Seite aktualisieren",
+  "readerMoreActions": "Weitere Aktionen",
+  "readerDownloadPage": "Diese Seite herunterladen",
+  "adBlockerEnableAction": "Werbeblocker aktivieren",
+  "adBlockerDisableAction": "Werbeblocker deaktivieren",
+  "adBlockerInteractiveEnable": "Anzeigenerkennung aktivieren",
+  "adBlockerInteractiveDisable": "Anzeigenerkennung deaktivieren",
+  "adBlockerEnabledNotice": "Werbeblocker auf dieser Seite aktiviert.",
+  "adBlockerDisabledNotice": "Werbeblocker deaktiviert — Seite neu geladen, um den Inhalt wiederherzustellen.",
+  "adBlockerInteractiveOnNotice": "Erkennungsmodus an — tippen Sie auf eine Anzeige, um sie zu blockieren.",
+  "adBlockerInteractiveOffNotice": "Erkennungsmodus aus."
 }

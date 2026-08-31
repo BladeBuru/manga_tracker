@@ -1147,5 +1147,19 @@
   "dismissRecommendationAccessibility": "Mantén pulsado para dejar de recomendar este título",
   "recommendationsSleepersTitle": "💎 Joyas ocultas",
   "sessionRejectedBanner": "Sesión caducada: mostrando tus datos guardados",
-  "sessionRejectedAction": "Volver a iniciar sesión"
+  "sessionRejectedAction": "Volver a iniciar sesión",
+  "challengeLoopTitle": "Verificación bloqueada",
+  "challengeLoopMessage": "La verificación antirrobot de este sitio no se completa: se recarga una y otra vez. Abre la página en tu navegador para completarla y luego vuelve aquí.",
+  "challengeLoopOpenBrowser": "Abrir en el navegador",
+  "readerRefresh": "Actualizar la página",
+  "readerMoreActions": "Más acciones",
+  "readerDownloadPage": "Descargar esta página",
+  "adBlockerEnableAction": "Activar el bloqueador de anuncios",
+  "adBlockerDisableAction": "Desactivar el bloqueador de anuncios",
+  "adBlockerInteractiveEnable": "Activar el modo de detección de anuncios",
+  "adBlockerInteractiveDisable": "Desactivar el modo de detección de anuncios",
+  "adBlockerEnabledNotice": "Bloqueador de anuncios activado en esta página.",
+  "adBlockerDisabledNotice": "Bloqueador desactivado — se recargó la página para restaurar el contenido.",
+  "adBlockerInteractiveOnNotice": "Modo de detección activo — toca un anuncio para bloquearlo.",
+  "adBlockerInteractiveOffNotice": "Modo de detección desactivado."
 }

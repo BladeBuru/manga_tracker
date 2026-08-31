@@ -1147,5 +1147,19 @@
   "dismissRecommendationAccessibility": "길게 눌러 이 작품을 추천에서 제외",
   "recommendationsSleepersTitle": "💎 숨은 명작",
   "sessionRejectedBanner": "세션이 만료되었습니다 — 저장된 데이터를 표시합니다",
-  "sessionRejectedAction": "다시 로그인"
+  "sessionRejectedAction": "다시 로그인",
+  "challengeLoopTitle": "인증이 완료되지 않음",
+  "challengeLoopMessage": "이 사이트의 로봇 확인이 완료되지 않고 계속 새로고침됩니다. 브라우저에서 페이지를 열어 인증을 완료한 후 다시 돌아오세요.",
+  "challengeLoopOpenBrowser": "브라우저에서 열기",
+  "readerRefresh": "페이지 새로고침",
+  "readerMoreActions": "추가 작업",
+  "readerDownloadPage": "이 페이지 다운로드",
+  "adBlockerEnableAction": "광고 차단기 켜기",
+  "adBlockerDisableAction": "광고 차단기 끄기",
+  "adBlockerInteractiveEnable": "광고 감지 모드 켜기",
+  "adBlockerInteractiveDisable": "광고 감지 모드 끄기",
+  "adBlockerEnabledNotice": "이 페이지에서 광고 차단기를 켰습니다.",
+  "adBlockerDisabledNotice": "광고 차단기를 꺼습니다 — 콘텐츠를 복원하기 위해 페이지를 새로고침했습니다.",
+  "adBlockerInteractiveOnNotice": "감지 모드 켜짐 — 광고를 탭하면 차단됩니다.",
+  "adBlockerInteractiveOffNotice": "감지 모드 꺼짐."
 }

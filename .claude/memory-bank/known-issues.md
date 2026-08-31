@@ -145,6 +145,64 @@ le code d'erreur (`adb logcat | grep GoogleSignInException`) pour confirmer.
 
 ---
 
+### Les `ContentBlocker` du lecteur n'ont jamais été actifs
+- **Module** : `features/manga/views/web_view_io.dart` + `ad_blocker_service.dart`
+- **Sévérité** : 🟡 Moyenne
+- **Découvert le** : 2026-08-31 (en diagnostiquant la boucle Cloudflare)
+- **Statut** : Actif — **non corrigé volontairement**
+
+**Description** : `_cachedBlockers` est peuplé par un `await` lancé depuis
+`initState`, mais `build()` s'exécute avant que ce `Future` n'aboutisse. La
+WebView est donc créée avec `contentBlockers: []`. Or `initialSettings` n'est
+lu **qu'une seule fois, à la création** : le widget `InAppWebView` n'a aucun
+`didUpdateWidget`, et `PlatformViewLink` ne rappelle `onCreatePlatformView`
+que si le `viewType` change (ce qui n'arrive jamais). Le `setState()` de
+`_loadBlockers()` / `_reloadBlockers()` ne pousse donc rien vers le natif.
+
+**Conséquence** : la couche `ContentBlocker` (règle `BLOCK` sur les domaines
+de pub **et** règle `CSS_DISPLAY_NONE`) est inerte depuis toujours. Le seul
+blocage réellement effectif est le script JavaScript injecté.
+
+**Pourquoi non corrigé ici** : l'activer via `controller.setSettings(...)`
+rendrait soudainement actives des règles CSS très agressives
+(`div[id*='ad-']`, `div[class*='ad-']`, `iframe[style*='z-index']`…) qui n'ont
+jamais tourné en production. Risque de régression sur les sites qui
+fonctionnent aujourd'hui — hors périmètre du correctif Cloudflare, à traiter
+comme un chantier à part avec sa propre campagne de test.
+
+**Solution** : appeler `controller.setSettings(settings: …)` après le
+chargement des blockers, après avoir revu et resserré la liste de sélecteurs
+CSS. Attention : côté natif, tout `setSettings` portant un `contentBlockers`
+non nul **remplace** la liste de règles entière.
+
+---
+
+### `androidShouldInterceptRequest` ne se déclenche jamais
+- **Module** : `features/manga/views/web_view_io.dart`, `features/reader/views/offline_reader_view_io.dart`
+- **Sévérité** : 🟡 Moyenne
+- **Découvert le** : 2026-08-31
+- **Statut** : Actif — **non corrigé volontairement**
+
+**Description** : le callback est branché sous son **nom déprécié**. Or côté
+natif, `InAppWebViewClient.shouldInterceptRequest` est conditionné à
+`customSettings.useShouldInterceptRequest` (défaut `false`), et l'inférence
+automatique de ce réglage côté Dart ne teste que le nom moderne
+(`params.shouldInterceptRequest`), jamais `androidShouldInterceptRequest`.
+Le réglage n'étant pas posé explicitement, l'événement natif n'est jamais émis.
+
+**Conséquence** : le blocage réseau supplémentaire côté Android est mort, et
+la garde « ne pas bloquer les domaines de captcha » qu'il contient ne s'exécute
+pas non plus (elle n'était donc ni utile ni nuisible).
+
+**Pourquoi non corrigé ici** : l'activer mettrait en service un chemin de
+blocage jamais exercé en production. Même raisonnement que ci-dessus.
+
+**Solution** : renommer le callback en `shouldInterceptRequest` (l'inférence
+posera alors le réglage), ou poser `useShouldInterceptRequest: true`
+explicitement — puis retester le blocage de pub sur les sites de référence.
+
+---
+
 ## ✅ Problèmes Résolus
 
 ### Mode hors ligne : cache jamais servi quand le token est expiré
@@ -204,6 +262,70 @@ du serveur (401/403) renvoie au login sans servir le cache. Voir
 
 **Tests** : 26 tests (classifier, DetailBloc, LibraryBloc, LibraryService,
 SearchBloc web). Un test rouge a d'abord reproduit le bug.
+### Lecteur : la vérification anti-robot Cloudflare bouclait indéfiniment
+- **Feature** : reader
+- **Plateforme** : Android (code mobile-only)
+- **Résolu le** : 2026-08-31
+- **Symptôme** : « tous les sites avec Cloudflare fonctionnent moins bien.
+  Parfois il n'arrive même pas à résoudre la vérification de robot. Il boucle,
+  il échoue, il boucle, il échoue. » La page « Un instant… » se rechargeait
+  sans fin sans jamais aboutir.
+- **Cause racine** : le **nettoyage du DOM** du bloqueur de publicités
+  (`ad_blocker_service.dart`, script injecté par `buildAdBlockScript`)
+  supprimait — `el.remove()`, toutes les 2 s — les éléments de la vérification
+  elle-même. Trois règles en cause :
+  1. `iframe[sandbox]` : le widget **Turnstile de Cloudflare est un iframe
+     sandboxé**. La case à cocher était retirée du DOM avant que l'utilisateur
+     puisse la cliquer → défi jamais complété → rechargement → boucle.
+  2. `[data-cfasync]` : c'est l'attribut **de Cloudflare** (opt-out Rocket
+     Loader), porté par les scripts du défi, traité comme marqueur publicitaire.
+  3. `el.className.includes('ad')` / `el.id.includes('ad')` : correspondance par
+     **sous-chaîne**, donc « lo**ad**ing », « he**ad**er », « sh**ad**ow »,
+     « downlo**ad** », « bre**ad**crumb » correspondaient tous — or la page de
+     vérification est précisément un écran de chargement.
+  Aggravant : le script tournait sur un `setInterval` de 2 s **impossible à
+  arrêter**, et un nouvel observateur + intervalle étaient empilés à chaque
+  `onLoadStop`. Désactiver le bloqueur côté Flutter ne l'arrêtait donc pas
+  dans la page.
+- **Hypothèses explicitement écartées** (vérifiées, non retenues) :
+  - *Filtrage réseau par motif d'URL* : aucune URL Cloudflare ne correspond ni
+    à `denyHosts` (`shouldBlockRequest`) ni à la regex `ContentBlocker`
+    (vérifié par confrontation des motifs aux URL réelles `/cdn-cgi/…` et
+    `challenges.cloudflare.com`). Ce n'était **pas** la cause.
+  - *Cookies / stockage* : `domStorageEnabled`, `databaseEnabled`,
+    `thirdPartyCookiesEnabled` et `cacheEnabled` valent **déjà `true` par
+    défaut** dans flutter_inappwebview 6.x. `cf_clearance` persistait donc.
+    Réglages rendus explicites malgré tout, et `sharedCookiesEnabled` activé
+    pour iOS (défaut `false`).
+  - *JavaScript / moteur* : `javaScriptEnabled: true` était déjà posé ;
+    `mediaPlaybackRequiresUserGesture` et le mixed content ne concernent pas
+    un défi servi en HTTPS.
+- **Solution** :
+  - `ChallengeAllowlist` — liste blanche stricte (domaines Cloudflare /
+    hCaptcha / reCAPTCHA + endpoints `/cdn-cgi/`), correspondance par
+    **suffixe** de domaine et non par `contains`, branchée sur
+    `shouldBlockRequest` et `isAllowedDomain`.
+  - Nettoyage DOM suspendu tant qu'un défi est affiché, éléments de défi et
+    leurs ancêtres toujours épargnés, « ad » reconnu comme **mot entier**.
+  - Script rendu **arrêtable** (`window.__mtAdBlock.stop()`) et idempotent ;
+    arrêt explicite dès détection d'un défi.
+  - `WebViewUserAgent` — retrait des jetons `; wv`, `Version/4.0` et
+    `Build/…`, en conservant les versions réelles de Chrome et d'Android.
+    L'URL initiale est chargée **après** application du UA.
+  - `ChallengeLoopDetector` + `ChallengeEscapeDialog` — au bout de 3
+    présentations du même défi en < 90 s, l'application cesse de boucler et
+    propose l'ouverture dans le navigateur système (i18n 7 langues).
+- **Refusé volontairement** : aucune résolution automatisée de CAPTCHA, aucune
+  falsification de jeton, aucun service tiers de contournement. L'objectif est
+  de laisser une vérification légitime s'afficher et aboutir entre les mains
+  de l'utilisateur.
+- **Non prouvable en test unitaire** : le comportement réel face à un vrai
+  défi Cloudflare dépend de l'infrastructure distante. Les tests couvrent la
+  liste blanche, la détection de boucle, la construction du user-agent et
+  l'absence des sélecteurs fautifs — **pas** le succès effectif d'un défi.
+- Tests : `test/features/reader/challenge_allowlist_test.dart`,
+  `challenge_loop_detector_test.dart`, `web_view_user_agent_test.dart`,
+  `ad_blocker_challenge_test.dart`.
 
 ### Progression perdue en silence quand le chapitre lu dépasse le total connu
 - **Feature** : reader / library
