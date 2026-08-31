@@ -1203,5 +1203,16 @@
   "recommendationsSleepersTitle": "💎 Hidden gems",
   "challengeLoopTitle": "Verification stuck",
   "challengeLoopMessage": "This site's robot check isn't completing — it keeps reloading. Open the page in your browser to finish it, then come back here.",
-  "challengeLoopOpenBrowser": "Open in browser"
+  "challengeLoopOpenBrowser": "Open in browser",
+  "readerRefresh": "Refresh page",
+  "readerMoreActions": "More actions",
+  "readerDownloadPage": "Download this page",
+  "adBlockerEnableAction": "Enable the ad blocker",
+  "adBlockerDisableAction": "Disable the ad blocker",
+  "adBlockerInteractiveEnable": "Enable ad detection mode",
+  "adBlockerInteractiveDisable": "Disable ad detection mode",
+  "adBlockerEnabledNotice": "Ad blocker enabled on this page.",
+  "adBlockerDisabledNotice": "Ad blocker disabled — page reloaded to restore the content.",
+  "adBlockerInteractiveOnNotice": "Detection mode on — tap an ad to block it.",
+  "adBlockerInteractiveOffNotice": "Detection mode off."
 }

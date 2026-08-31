@@ -1134,5 +1134,16 @@
   "recommendationsSleepersTitle": "💎 Joias escondidas",
   "challengeLoopTitle": "Verificação bloqueada",
   "challengeLoopMessage": "A verificação antirrobô deste site não é concluída: fica a recarregar sem parar. Abra a página no seu navegador para a concluir e depois volte aqui.",
-  "challengeLoopOpenBrowser": "Abrir no navegador"
+  "challengeLoopOpenBrowser": "Abrir no navegador",
+  "readerRefresh": "Atualizar a página",
+  "readerMoreActions": "Mais ações",
+  "readerDownloadPage": "Baixar esta página",
+  "adBlockerEnableAction": "Ativar o bloqueador de anúncios",
+  "adBlockerDisableAction": "Desativar o bloqueador de anúncios",
+  "adBlockerInteractiveEnable": "Ativar o modo de deteção de anúncios",
+  "adBlockerInteractiveDisable": "Desativar o modo de deteção de anúncios",
+  "adBlockerEnabledNotice": "Bloqueador de anúncios ativado nesta página.",
+  "adBlockerDisabledNotice": "Bloqueador desativado — página recarregada para restaurar o conteúdo.",
+  "adBlockerInteractiveOnNotice": "Modo de deteção ativo — toque num anúncio para o bloquear.",
+  "adBlockerInteractiveOffNotice": "Modo de deteção desativado."
 }

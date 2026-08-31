@@ -2074,4 +2074,38 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get challengeLoopOpenBrowser => '브라우저에서 열기';
+
+  @override
+  String get readerRefresh => '페이지 새로고침';
+
+  @override
+  String get readerMoreActions => '추가 작업';
+
+  @override
+  String get readerDownloadPage => '이 페이지 다운로드';
+
+  @override
+  String get adBlockerEnableAction => '광고 차단기 켜기';
+
+  @override
+  String get adBlockerDisableAction => '광고 차단기 끄기';
+
+  @override
+  String get adBlockerInteractiveEnable => '광고 감지 모드 켜기';
+
+  @override
+  String get adBlockerInteractiveDisable => '광고 감지 모드 끄기';
+
+  @override
+  String get adBlockerEnabledNotice => '이 페이지에서 광고 차단기를 켰습니다.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      '광고 차단기를 꺼습니다 — 콘텐츠를 복원하기 위해 페이지를 새로고침했습니다.';
+
+  @override
+  String get adBlockerInteractiveOnNotice => '감지 모드 켜짐 — 광고를 탭하면 차단됩니다.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => '감지 모드 꺼짐.';
 }

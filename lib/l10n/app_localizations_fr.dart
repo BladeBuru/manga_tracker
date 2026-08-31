@@ -2144,4 +2144,41 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get challengeLoopOpenBrowser => 'Ouvrir dans le navigateur';
+
+  @override
+  String get readerRefresh => 'Rafraîchir la page';
+
+  @override
+  String get readerMoreActions => 'Plus d\'actions';
+
+  @override
+  String get readerDownloadPage => 'Télécharger cette page';
+
+  @override
+  String get adBlockerEnableAction => 'Activer le bloqueur de publicités';
+
+  @override
+  String get adBlockerDisableAction => 'Désactiver le bloqueur de publicités';
+
+  @override
+  String get adBlockerInteractiveEnable => 'Activer le mode détection de pub';
+
+  @override
+  String get adBlockerInteractiveDisable =>
+      'Désactiver le mode détection de pub';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Bloqueur de publicités activé sur cette page.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Bloqueur désactivé — page rechargée pour rétablir le contenu.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Mode détection activé — touchez une publicité pour la bloquer.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Mode détection désactivé.';
 }

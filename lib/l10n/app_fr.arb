@@ -2202,5 +2202,49 @@
   "challengeLoopOpenBrowser": "Ouvrir dans le navigateur",
   "@challengeLoopOpenBrowser": {
     "description": "Bouton ouvrant la page dans le navigateur externe"
+  },
+  "readerRefresh": "Rafraîchir la page",
+  "@readerRefresh": {
+      "description": "Tooltip du bouton de rechargement de la page du lecteur"
+  },
+  "readerMoreActions": "Plus d'actions",
+  "@readerMoreActions": {
+      "description": "Tooltip du menu trois points de la barre du lecteur"
+  },
+  "readerDownloadPage": "Télécharger cette page",
+  "@readerDownloadPage": {
+      "description": "Action de telechargement de la page courante"
+  },
+  "adBlockerEnableAction": "Activer le bloqueur de publicités",
+  "@adBlockerEnableAction": {
+      "description": "Action d'activation du bloqueur de publicites"
+  },
+  "adBlockerDisableAction": "Désactiver le bloqueur de publicités",
+  "@adBlockerDisableAction": {
+      "description": "Action de desactivation du bloqueur de publicites"
+  },
+  "adBlockerInteractiveEnable": "Activer le mode détection de pub",
+  "@adBlockerInteractiveEnable": {
+      "description": "Action d'activation du mode de designation des publicites"
+  },
+  "adBlockerInteractiveDisable": "Désactiver le mode détection de pub",
+  "@adBlockerInteractiveDisable": {
+      "description": "Action de desactivation du mode de designation des publicites"
+  },
+  "adBlockerEnabledNotice": "Bloqueur de publicités activé sur cette page.",
+  "@adBlockerEnabledNotice": {
+      "description": "Message confirmant que le bloqueur agit sur la page courante"
+  },
+  "adBlockerDisabledNotice": "Bloqueur désactivé — page rechargée pour rétablir le contenu.",
+  "@adBlockerDisabledNotice": {
+      "description": "Message indiquant que la page a ete rechargee pour retablir le contenu"
+  },
+  "adBlockerInteractiveOnNotice": "Mode détection activé — touchez une publicité pour la bloquer.",
+  "@adBlockerInteractiveOnNotice": {
+      "description": "Message expliquant le mode de designation des publicites"
+  },
+  "adBlockerInteractiveOffNotice": "Mode détection désactivé.",
+  "@adBlockerInteractiveOffNotice": {
+      "description": "Message de sortie du mode de designation"
   }
 }

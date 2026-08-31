@@ -1134,5 +1134,16 @@
   "recommendationsSleepersTitle": "💎 隠れた名作",
   "challengeLoopTitle": "認証が完了しません",
   "challengeLoopMessage": "このサイトのロボット認証が完了せず、繰り返し再読み込みされています。ブラウザでページを開いて認証を完了してから、こちらに戻ってください。",
-  "challengeLoopOpenBrowser": "ブラウザで開く"
+  "challengeLoopOpenBrowser": "ブラウザで開く",
+  "readerRefresh": "ページを再読み込み",
+  "readerMoreActions": "その他の操作",
+  "readerDownloadPage": "このページをダウンロード",
+  "adBlockerEnableAction": "広告ブロッカーを有効にする",
+  "adBlockerDisableAction": "広告ブロッカーを無効にする",
+  "adBlockerInteractiveEnable": "広告検出モードを有効にする",
+  "adBlockerInteractiveDisable": "広告検出モードを無効にする",
+  "adBlockerEnabledNotice": "このページで広告ブロッカーを有効にしました。",
+  "adBlockerDisabledNotice": "広告ブロッカーを無効にしました — コンテンツを復元するためページを再読み込みしました。",
+  "adBlockerInteractiveOnNotice": "検出モードがオンです — 広告をタップするとブロックします。",
+  "adBlockerInteractiveOffNotice": "検出モードがオフです。"
 }
