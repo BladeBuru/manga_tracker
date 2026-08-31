@@ -3,6 +3,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/services/custom_selectors.service.dart';
+import 'package:mangatracker/features/reader/services/challenge_allowlist.dart';
 
 /// Service pour gérer le blocage de publicités dans les WebViews
 class AdBlockerService {
@@ -145,7 +146,6 @@ class AdBlockerService {
             iframe[data-cbi],
             iframe[style*='position: fixed'],
             iframe[style*='z-index'],
-            iframe[sandbox],
             iframe[data-asg-handled],
             div[id*='google_ads'],
             div[class*='google-ad'],
@@ -272,7 +272,10 @@ class AdBlockerService {
       'iframe[src*="pemsrv"]', 'iframe[src*="pubfuture"]',
       'iframe[src*="adxbid"]', 'iframe[src*="kueezrtb"]',
       'iframe[src*="monetixads"]', 'iframe[data-cbi]',
-      'iframe[sandbox]', 'iframe[data-asg-handled]',
+      // NB : `iframe[sandbox]` a été retiré volontairement — le widget
+      // Turnstile de Cloudflare est un iframe sandboxé ; le sélectionner
+      // supprimait la vérification elle-même toutes les 2 secondes.
+      'iframe[data-asg-handled]',
       'ins.adsbygoogle', '[data-ad-slot]', '[data-ad-client]',
       '.PUBFUTURE', '[class*="pf-"]', '[id*="pf-"]',
       '[class*="pf-config"]', '[class*="pf-wrapper"]',
@@ -293,7 +296,10 @@ class AdBlockerService {
       'div.flex.flex-wrap.gap-2:has(script[src*="pubadx"]), div.flex.flex-wrap.gap-2:has(script[src*="tapioni"]), div.flex.flex-wrap.gap-2:has(script[src*="chnsrv"]), div.flex.flex-wrap.gap-2:has(script[src*="noritesfarrago"]), div.flex.flex-wrap.gap-2:has([id*="bg-ssp-"]), div.flex.flex-wrap.gap-2:has([data-funnel]), div.flex.flex-wrap.gap-2:has([data-asg-ins])',
       'div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="pubadx"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="tapioni"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has(script[src*="chnsrv"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([id*="bg-ssp-"]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([data-funnel]), div.flex.flex-wrap.gap-2.items-center.justify-center:has([data-asg-ins])',
       // Attributs data-* suspects
-      '[data-asg-ins]', '[data-spots]', '[data-funnel]', '[data-bg]', '[data-cfasync]',
+      // NB : `[data-cfasync]` a été retiré volontairement — c'est l'attribut
+      // de Cloudflare lui-même (opt-out Rocket Loader), porté par les
+      // scripts du défi.
+      '[data-asg-ins]', '[data-spots]', '[data-funnel]', '[data-bg]',
       '[data-aa]', '[data-keywords]', '[data-zoneid]', '[data-processed]',
       // Scripts suspects
       'script[src*="pubadx"]', 'script[src*="tapioni"]', 'script[src*="chnsrv"]', 'script[src*="noritesfarrago"]',
@@ -308,6 +314,12 @@ class AdBlockerService {
     // Échapper les sélecteurs pour JavaScript
     final escapedSelectors = allSelectors.map((s) => "'${s.replaceAll("'", "\\'")}'").join(', ');
 
+    // Groupe de sélecteurs protégeant les défis anti-robot. Les sélecteurs
+    // ne contiennent que des guillemets doubles : l'encadrement par des
+    // apostrophes côté JavaScript est donc sûr.
+    final challengeSelectorGroup =
+        ChallengeAllowlist.challengeSelectorGroup.replaceAll("'", "\\'");
+
     return """
     (function() {
       // Supprimer les éléments publicitaires spécifiques
@@ -315,22 +327,61 @@ class AdBlockerService {
         $escapedSelectors
       ];
       
+      // --- Protection des vérifications anti-robot -----------------------
+      // Sélecteurs identifiant un défi (Cloudflare Turnstile, hCaptcha,
+      // reCAPTCHA). Aucun élément de défi ne doit JAMAIS être supprimé :
+      // le retirer empêche la vérification d'aboutir et la page se recharge
+      // en boucle.
+      const CHALLENGE_SELECTORS = '$challengeSelectorGroup';
+
+      // Un défi est-il présent sur la page ?
+      function pageHasChallenge() {
+        try {
+          return !!document.querySelector(CHALLENGE_SELECTORS);
+        } catch(e) { return false; }
+      }
+
+      // L'élément est-il un élément de défi, ou contenu dans un défi, ou
+      // contient-il un défi ?
+      function isChallengeElement(el) {
+        if (!el || el.nodeType !== 1) return false;
+        try {
+          if (el.closest && el.closest(CHALLENGE_SELECTORS)) return true;
+          if (el.querySelector && el.querySelector(CHALLENGE_SELECTORS)) return true;
+        } catch(e) {}
+        return false;
+      }
+
+      // « ad » reconnu comme mot entier et non comme sous-chaîne : sans cela
+      // « loading », « header », « shadow », « download », « breadcrumb »
+      // étaient tous pris pour des publicités — y compris l'écran de
+      // chargement de la page de vérification Cloudflare.
+      function hasAdToken(value) {
+        if (!value || typeof value !== 'string') return false;
+        return value.toLowerCase().split(/[^a-z0-9]+/).some(function(t) {
+          return t === 'ad' || t === 'ads';
+        });
+      }
+
       // Fonction pour détecter intelligemment si un élément est une pub
       function isAdElement(el) {
         if (!el || el.nodeType !== 1) return false;
-        
+
+        // Garde-fou prioritaire : ne jamais toucher à un défi.
+        if (isChallengeElement(el)) return false;
+
         // Vérifier par ID
-        if (el.id && (el.id.includes('ad') || el.id.includes('pf-') || 
-            el.id.includes('asg-') || el.id.includes('bg-ssp-') || 
+        if (el.id && (hasAdToken(el.id) || el.id.includes('pf-') ||
+            el.id.includes('asg-') || el.id.includes('bg-ssp-') ||
             el.id.includes('note-') || el.id.includes('dl-banner-') ||
             el.id.includes('bg-container-') || el.id.includes('pa-dsp-') ||
             el.id.match(/bg-ssp-\\d+/) || el.id.match(/pa-\\d+/))) {
           return true;
         }
-        
+
         // Vérifier par classe
-        if (el.className && typeof el.className === 'string' && 
-            (el.className.includes('ad') || el.className.includes('PUBFUTURE') || 
+        if (el.className && typeof el.className === 'string' &&
+            (hasAdToken(el.className) || el.className.includes('PUBFUTURE') ||
              el.className.includes('pf-') || el.className.includes('gfpl-') ||
              el.className.includes('bg-ssp-') || el.className.includes('bg-container-') ||
              el.className.includes('bg-dsp-') || el.className.match(/qtxo[A-Za-z0-9]+/))) {
@@ -338,8 +389,10 @@ class AdBlockerService {
         }
         
         // Vérifier par attributs data-*
+        // L'attribut Cloudflare data-cfasync est volontairement absent de
+        // cette liste : ce n'est pas un marqueur publicitaire.
         const adDataAttrs = ['data-unit', 'data-banner-id', 'data-asg-handled', 'data-funnel',
-                             'data-icon', 'data-bg', 'data-asg-ins', 'data-spots', 'data-cfasync',
+                             'data-icon', 'data-bg', 'data-asg-ins', 'data-spots',
                              'data-aa', 'data-keywords', 'data-zoneid', 'data-processed'];
         if (adDataAttrs.some(attr => el.hasAttribute(attr))) {
           return true;
@@ -404,10 +457,16 @@ class AdBlockerService {
       
       // Fonction pour supprimer les éléments publicitaires
       function removeAds() {
+        // Tant qu'une vérification anti-robot est affichée, on ne touche à
+        // RIEN. Une page de défi ne contient de toute façon aucune publicité,
+        // et le moindre retrait d'élément empêche la vérification d'aboutir.
+        if (pageHasChallenge()) return;
+
         // Supprimer avec les sélecteurs CSS
         adSelectors.forEach(selector => {
           try {
             document.querySelectorAll(selector).forEach(el => {
+              if (isChallengeElement(el)) return;
               // Vérifier que ce n'est pas une image du chapitre
               const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
               if (!isChapterImage) {
@@ -416,7 +475,7 @@ class AdBlockerService {
             });
           } catch(e) {}
         });
-        
+
         // Détection intelligente supplémentaire
         try {
           document.querySelectorAll('div, script, iframe, ins').forEach(el => {
@@ -447,32 +506,72 @@ class AdBlockerService {
         } catch(e) {}
       }
       
-      // Exécuter immédiatement
-      removeAds();
-      
-      // Observer les changements du DOM pour supprimer les nouvelles pubs
-      const observer = new MutationObserver(function(mutations) {
+      // Arrêter une instance précédente : sans cela, chaque `onLoadStop`
+      // (navigation SPA comprise) empilait un observateur et un intervalle
+      // de plus, tous impossibles à arrêter.
+      if (window.__mtAdBlock && window.__mtAdBlock.stop) {
+        try { window.__mtAdBlock.stop(); } catch(e) {}
+      }
+
+      const observer = new MutationObserver(function() {
         removeAds();
       });
-      
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-      
-      // Nettoyer périodiquement (toutes les 2 secondes)
-      setInterval(removeAds, 2000);
+
+      const intervalId = setInterval(removeAds, 2000);
+
+      // Registre permettant à l'application d'arrêter le nettoyage — par
+      // exemple dès qu'une vérification anti-robot est détectée.
+      window.__mtAdBlock = {
+        stop: function() {
+          try { observer.disconnect(); } catch(e) {}
+          try { clearInterval(intervalId); } catch(e) {}
+        },
+        removeAds: removeAds
+      };
+
+      if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+
+      // Exécuter immédiatement
+      removeAds();
     })();
     """;
   }
 
+  /// Arrête le nettoyage DOM déjà injecté dans la page.
+  ///
+  /// Indispensable dès qu'une vérification anti-robot apparaît : le script
+  /// injecté tourne sur un `setInterval` de 2 s et survit aux changements
+  /// d'état côté Flutter. Sans cet arrêt explicite, il continuerait à
+  /// nettoyer le DOM du défi même après désactivation du bloqueur.
+  Future<void> stopAdBlockScript(InAppWebViewController? controller) async {
+    if (controller == null) return;
+    try {
+      await controller.evaluateJavascript(
+        source: 'if (window.__mtAdBlock && window.__mtAdBlock.stop) '
+            '{ window.__mtAdBlock.stop(); }',
+      );
+    } catch (e) {
+      // WebView détruite ou page en cours de changement : sans conséquence.
+      debugPrint('⚠️ AdBlockerService - Arrêt du script impossible: $e');
+    }
+  }
+
   /// Vérifie si une URL doit être bloquée
   bool shouldBlockRequest(String url) {
+    // Liste blanche prioritaire : jamais bloquer l'infrastructure d'un défi
+    // anti-robot, sans quoi la vérification ne peut pas aboutir et la page
+    // se recharge indéfiniment.
+    if (ChallengeAllowlist.isChallengeUrl(url)) return false;
     return denyHosts.any((h) => url.contains(h));
   }
 
   /// Vérifie si un domaine est autorisé (pas dans la liste de blocage)
   bool isAllowedDomain(String host, String originHost) {
+    // Un défi peut être servi depuis un domaine tiers (Turnstile) : il doit
+    // rester navigable même s'il n'appartient pas au provider d'origine.
+    if (ChallengeAllowlist.isChallengeHost(host)) return true;
     // Vérifier si c'est un domaine de publicité
     if (denyHosts.contains(host)) return false;
     // Vérifier si c'est le même provider (même domaine de base)
