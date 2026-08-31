@@ -14,6 +14,7 @@ import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/features/manga/bloc/detail_state.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
+import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -45,6 +46,10 @@ void main() {
   late StreamController<bool> connectivityController;
 
   const muId = 42;
+
+  setUpAll(() {
+    registerFallbackValue(ReadingStatus.reading);
+  });
 
   setUp(() {
     mangaService = MockMangaService();
@@ -193,6 +198,70 @@ void main() {
       expect(state, isA<DetailError>());
       expect((state as DetailError).requiresReauth, isTrue);
       expect(state.isOffline, isFalse);
+    });
+  });
+
+  group('DetailBloc — ecriture avec session rejetee', () {
+    /// Amene le bloc a un DetailLoaded en ligne, prealable a la mutation.
+    Future<DetailBloc> loadedBloc() async {
+      when(() => connectivityService.isConnected).thenReturn(true);
+      when(() => cacheHelper.getCachedMangaDetail(any()))
+          .thenAnswer((_) async => null);
+      when(() => mangaService.getMangaDetail(any()))
+          .thenAnswer((_) async => detailFixture());
+      final bloc = DetailBloc();
+      addTearDown(bloc.close);
+      bloc.add(const LoadMangaDetail(muId));
+      await bloc.stream.firstWhere((s) => s is DetailLoaded);
+      return bloc;
+    }
+
+    test('une mutation refusee n\'est JAMAIS appliquee comme un succes',
+        () async {
+      final bloc = await loadedBloc();
+      // On assouplit la lecture, jamais l\'ecriture : la session est morte,
+      // la mutation doit etre refusee.
+      when(() => libraryService.addMangaToLibrary(any()))
+          .thenThrow(InvalidCredentialsException('Refresh rejected'));
+
+      bloc.add(const AddToLibrary(muId));
+      final state = await bloc.stream.firstWhere((s) => s is DetailError);
+
+      expect((state as DetailError).requiresReauth, isTrue);
+      expect(state.isOffline, isFalse,
+          reason: 'le serveur repond : ce n\'est pas du hors-ligne');
+      // Le detail conserve est celui d\'AVANT la mutation : rien n\'a ete
+      // applique localement, l\'utilisateur ne voit pas un faux succes.
+      expect(state.cachedMangaDetail?.inLibrary, isNot(true));
+    });
+
+    test('une mutation refusee ne compte pas comme action en attente',
+        () async {
+      final bloc = await loadedBloc();
+      when(() => libraryService.updateMangaStatus(any(), any()))
+          .thenThrow(InvalidCredentialsException('Refresh rejected'));
+
+      bloc.add(const UpdateReadingStatus(ReadingStatus.reading));
+      final state = await bloc.stream.firstWhere((s) => s is DetailError);
+
+      // Une session morte ne produit pas de travail « en attente » :
+      // SyncService le rejouerait indefiniment sans jamais aboutir.
+      expect(state, isA<DetailError>());
+      expect((state as DetailError).requiresReauth, isTrue);
+    });
+
+    test('hors ligne, la mutation part bien en file d\'attente', () async {
+      final bloc = await loadedBloc();
+      // Contre-preuve : le durcissement ne casse pas la file hors ligne.
+      when(() => libraryService.addMangaToLibrary(any()))
+          .thenThrow(const SocketException('offline'));
+
+      bloc.add(const AddToLibrary(muId));
+      final state = await bloc.stream.firstWhere(
+          (s) => s is DetailLoaded && s.isOffline);
+
+      expect((state as DetailLoaded).pendingActions, greaterThan(0));
+      expect(state.requiresReauth, isFalse);
     });
   });
 }
