@@ -57,15 +57,22 @@ class DetailError extends DetailState {
   final String message;
   final bool isOffline;
   final MangaDetailDto? cachedMangaDetail;
-  
+
+  /// Le serveur a explicitement rejeté la session : l'utilisateur doit se
+  /// reconnecter. Distinct de [isOffline], où l'on n'a simplement pas pu
+  /// joindre le serveur et où le cache reste consultable.
+  final bool requiresLogin;
+
   const DetailError({
     required this.message,
     this.isOffline = false,
     this.cachedMangaDetail,
+    this.requiresLogin = false,
   });
-  
+
   @override
-  List<Object?> get props => [message, isOffline, cachedMangaDetail];
+  List<Object?> get props =>
+      [message, isOffline, cachedMangaDetail, requiresLogin];
 }
 
 /// Action en cours (ajout, suppression, etc.)

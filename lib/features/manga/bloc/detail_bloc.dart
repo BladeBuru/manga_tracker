@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -78,9 +79,12 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     if (cachedDetail != null) {
       enrichedCachedDetail = await _enrichWithLibraryInfo(event.muId, cachedDetail);
       final pendingCached = await _getPendingActionsCount();
+      // Si l'appareil se sait déjà hors ligne, le bandeau doit apparaître
+      // TOUT DE SUITE — pas seulement après l'échec de la requête. C'est ce
+      // décalage qui faisait clignoter/disparaître l'indicateur.
       emit(DetailLoaded(
         mangaDetail: enrichedCachedDetail,
-        isOffline: false,
+        isOffline: !_connectivityService.isConnected,
         pendingActions: pendingCached,
         stale: true,
       ));
@@ -124,39 +128,50 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         });
       }
     } catch (e) {
-      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
-      if (e.toString().contains('InvalidCredentialsException')) {
-        debugPrint('⚠️ DetailBloc: Erreur d\'authentification');
+      final mode = classifyFailure(e);
+
+      // Verdict explicite du serveur (401/403) : la session est morte alors
+      // que l'appareil est joignable. On renvoie vers le login SANS servir le
+      // cache — sinon l'utilisateur navigue dans ses données en croyant être
+      // connecté.
+      if (!allowsCachedRead(mode)) {
+        debugPrint('⚠️ DetailBloc: Session rejetée par le serveur');
         emit(DetailError(
           message: 'Authentification requise',
           isOffline: false,
+          requiresLogin: true,
         ));
         return;
       }
-      
-      // Erreur réseau détectée : on est offline
-      debugPrint('⚠️ Erreur de chargement du manga, tentative de récupération depuis le cache...');
-      
+
+      // Réseau injoignable OU tokens expirés localement : dans les deux cas
+      // on n'a pas pu joindre le serveur, donc on sert ce qu'on a déjà vu.
+      // C'est le cas d'usage « je regarde où j'en suis dans le train ».
+      debugPrint(
+          '⚠️ DetailBloc: chargement impossible ($mode), repli sur le cache...');
+
+      final offline = showsOfflineIndicator(mode);
       try {
-        final fallbackDetail = enrichedCachedDetail ?? await _cacheHelper.getCachedMangaDetail(event.muId);
+        final fallbackDetail = enrichedCachedDetail ??
+            await _cacheHelper.getCachedMangaDetail(event.muId);
         if (fallbackDetail != null) {
-          debugPrint('✅ Données du manga chargées depuis le cache (mode offline)');
+          debugPrint('✅ Détail manga servi depuis le cache (hors ligne)');
           emit(DetailLoaded(
             mangaDetail: fallbackDetail,
-            isOffline: true,
+            isOffline: offline,
             pendingActions: await _getPendingActionsCount(),
             stale: true,
           ));
         } else {
           emit(DetailError(
             message: e.toString(),
-            isOffline: true,
+            isOffline: offline,
           ));
         }
       } catch (cacheError) {
         emit(DetailError(
           message: e.toString(),
-          isOffline: true,
+          isOffline: offline,
         ));
       }
     }

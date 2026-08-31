@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
+import 'package:mangatracker/features/auth/exceptions/session_expired.exception.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 
 import '../service_locator/service_locator.dart';
@@ -131,8 +132,12 @@ class HttpService {
           return headers;
         }
       } catch (_) {}
-      debugPrint('❌ HttpService: Les deux tokens sont expirés');
-      throw InvalidCredentialsException('Both tokens expired');
+      // Aucun verdict serveur ici : les tokens sont expirés d'après l'horloge
+      // locale, on n'a rien demandé à l'API. La session est peut-être morte,
+      // mais on ne le SAIT pas → lecture du cache autorisée (le BLoC bascule
+      // en mode consultation hors ligne), écritures toujours refusées.
+      debugPrint('❌ HttpService: Les deux tokens sont expirés localement');
+      throw SessionExpiredException('Both tokens expired');
     }
 
     // Refresh token valide : vérifier la connectivité
@@ -144,10 +149,12 @@ class HttpService {
           headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
           return headers;
         }
-        throw InvalidCredentialsException('No connection and no access token');
+        // Hors ligne et aucun token à présenter : là encore, pas de verdict
+        // serveur → le cache reste lisible.
+        throw SessionExpiredException('No connection and no access token');
       }
     } catch (e) {
-      if (e is InvalidCredentialsException) rethrow;
+      if (e is SessionExpiredException) rethrow;
       // ConnectivityService non disponible → on continue
     }
 
