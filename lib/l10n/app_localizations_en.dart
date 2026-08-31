@@ -2103,4 +2103,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Hidden gems';
+
+  @override
+  String get challengeLoopTitle => 'Verification stuck';
+
+  @override
+  String get challengeLoopMessage =>
+      'This site\'s robot check isn\'t completing — it keeps reloading. Open the page in your browser to finish it, then come back here.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Open in browser';
 }

@@ -1131,5 +1131,8 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Joias escondidas"
+  "recommendationsSleepersTitle": "💎 Joias escondidas",
+  "challengeLoopTitle": "Verificação bloqueada",
+  "challengeLoopMessage": "A verificação antirrobô deste site não é concluída: fica a recarregar sem parar. Abra a página no seu navegador para a concluir e depois volte aqui.",
+  "challengeLoopOpenBrowser": "Abrir no navegador"
 }

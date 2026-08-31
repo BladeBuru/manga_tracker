@@ -2128,4 +2128,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Joias escondidas';
+
+  @override
+  String get challengeLoopTitle => 'Verificação bloqueada';
+
+  @override
+  String get challengeLoopMessage =>
+      'A verificação antirrobô deste site não é concluída: fica a recarregar sem parar. Abra a página no seu navegador para a concluir e depois volte aqui.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Abrir no navegador';
 }

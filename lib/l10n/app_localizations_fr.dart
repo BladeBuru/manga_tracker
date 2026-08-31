@@ -2134,4 +2134,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Pépites cachées';
+
+  @override
+  String get challengeLoopTitle => 'Vérification bloquée';
+
+  @override
+  String get challengeLoopMessage =>
+      'La vérification anti-robot de ce site n\'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Ouvrir dans le navigateur';
 }

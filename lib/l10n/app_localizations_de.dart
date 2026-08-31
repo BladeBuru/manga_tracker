@@ -2131,4 +2131,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Geheimtipps';
+
+  @override
+  String get challengeLoopTitle => 'Überprüfung blockiert';
+
+  @override
+  String get challengeLoopMessage =>
+      'Die Roboterprüfung dieser Seite wird nicht abgeschlossen – sie lädt immer wieder neu. Öffnen Sie die Seite im Browser, um sie abzuschließen, und kehren Sie dann hierher zurück.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Im Browser öffnen';
 }

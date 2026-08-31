@@ -2063,4 +2063,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 隠れた名作';
+
+  @override
+  String get challengeLoopTitle => '認証が完了しません';
+
+  @override
+  String get challengeLoopMessage =>
+      'このサイトのロボット認証が完了せず、繰り返し再読み込みされています。ブラウザでページを開いて認証を完了してから、こちらに戻ってください。';
+
+  @override
+  String get challengeLoopOpenBrowser => 'ブラウザで開く';
 }

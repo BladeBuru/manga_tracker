@@ -23,6 +23,10 @@ import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart'
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
 import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
+import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
+import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
+import 'package:mangatracker/features/reader/services/web_view_user_agent.dart';
+import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
 import 'dart:async';
 
@@ -75,6 +79,10 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   bool _captchaDetected = false; // Indique si un captcha est détecté
   bool _adBlockerWasEnabled = true; // Mémorise l'état du bloqueur avant désactivation pour captcha
 
+  // Détection des vérifications anti-robot qui bouclent
+  final _loopDetector = ChallengeLoopDetector();
+  late final Future<String?> _userAgentFuture;
+
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
     return await _adBlockerService.getBlockers(
@@ -95,6 +103,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     ChapterLinkResolver.init(CustomSelectorsService());
     _lastCommitted = widget.initialLastRead;
     _originHost = Uri.parse(widget.initialUrl).host;
+    // Résolu ici pour être disponible AVANT la toute première requête.
+    _userAgentFuture = _resolveUserAgent();
     _loadAdBlockerPreference();
     // Charger les blockers de manière asynchrone
     _loadBlockers();
@@ -166,11 +176,82 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     }
   }
 
+  /// Récupère le user-agent réel de la WebView et en retire les jetons qui
+  /// décrivent mal le moteur (voir [WebViewUserAgent]).
+  Future<String?> _resolveUserAgent() async {
+    try {
+      final defaultUa = await InAppWebViewController.getDefaultUserAgent();
+      return WebViewUserAgent.normalize(defaultUa);
+    } catch (e) {
+      debugPrint('⚠️ User-agent par défaut illisible, valeur inchangée: $e');
+      return null;
+    }
+  }
+
+  /// Applique le user-agent normalisé PUIS déclenche le chargement initial.
+  ///
+  /// L'URL n'est volontairement pas passée en `initialUrlRequest` : la
+  /// première requête (celle qui déclenche la vérification anti-robot) doit
+  /// déjà porter le bon user-agent.
+  Future<void> _applyUserAgentAndLoad(InAppWebViewController controller) async {
+    try {
+      final ua = await _userAgentFuture;
+      if (ua != null) {
+        await controller.setSettings(
+          settings: ReaderWebViewSettings.build(
+            // Volontairement vide : les `ContentBlocker` ne sont pas actifs
+            // aujourd'hui (le cache est encore vide à la création de la
+            // WebView). Les activer ici serait un changement de comportement
+            // distinct — voir known-issues.md.
+            contentBlockers: const [],
+            userAgent: ua,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ Application du user-agent impossible: $e');
+    }
+    try {
+      await controller.loadUrl(
+        urlRequest: URLRequest(url: WebUri(widget.initialUrl)),
+      );
+    } catch (e) {
+      debugPrint('⚠️ Chargement initial impossible: $e');
+    }
+  }
+
+  /// La vérification boucle : on cesse d'insister et on propose une sortie.
+  Future<void> _handleChallengeLoop(WebUri url) async {
+    final action = await ChallengeEscapeDialog.show(
+      context: context,
+      url: url.toString(),
+    );
+    if (action == ChallengeEscapeAction.retry && mounted) {
+      _loopDetector.reset();
+      await _controller?.reload();
+    }
+  }
+
   /// Détecte la présence d'un captcha et désactive temporairement le bloqueur de pub
   Future<void> _detectAndHandleCaptcha(InAppWebViewController controller, WebUri url) async {
     try {
       final captchaType = await _captchaDetectionService.detectCaptcha(controller);
-      
+
+      if (captchaType != null) {
+        // Le script de nettoyage déjà injecté tourne sur un intervalle de 2 s
+        // et survivrait au changement d'état : il faut l'arrêter dans la page.
+        await _adBlockerService.stopAdBlockScript(controller);
+
+        // Compter les présentations successives. Au-delà du seuil, on cesse
+        // de boucler et on propose la sortie vers le navigateur externe.
+        if (_loopDetector.recordChallenge(url.toString()) && mounted) {
+          await _handleChallengeLoop(url);
+          return;
+        }
+      } else {
+        _loopDetector.recordSuccess();
+      }
+
       if (captchaType != null && _adBlockerEnabled) {
         // Captcha détecté, désactiver temporairement le bloqueur
         if (!_captchaDetected) {
@@ -944,16 +1025,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           ],
         ),
         body: InAppWebView(
-          initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
-          initialSettings: InAppWebViewSettings(
-            javaScriptEnabled: true,
-            mediaPlaybackRequiresUserGesture: true,
+          // Pas d'`initialUrlRequest` : le chargement est déclenché dans
+          // `onWebViewCreated`, une fois le user-agent normalisé appliqué.
+          initialSettings: ReaderWebViewSettings.build(
             contentBlockers: _cachedBlockers,
-            allowsInlineMediaPlayback: true,
-            iframeAllow: "camera; microphone",
-            iframeAllowFullscreen: true,
           ),
-          onWebViewCreated: (c) {
+          onWebViewCreated: (c) async {
             _controller = c;
             // Ajouter le handler JavaScript pour le mode interactif
             c.addJavaScriptHandler(handlerName: 'onAdBlockClick', callback: (args) async {
@@ -962,6 +1039,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 await _handleAdBlockClick(selector);
               }
             });
+            await _applyUserAgentAndLoad(c);
           },
 
           // 1) Nouvelle navigation principale - Blocage strict des redirections

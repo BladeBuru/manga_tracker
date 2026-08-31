@@ -2129,4 +2129,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 Joyas ocultas';
+
+  @override
+  String get challengeLoopTitle => 'Verificación bloqueada';
+
+  @override
+  String get challengeLoopMessage =>
+      'La verificación antirrobot de este sitio no se completa: se recarga una y otra vez. Abre la página en tu navegador para completarla y luego vuelve aquí.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Abrir en el navegador';
 }

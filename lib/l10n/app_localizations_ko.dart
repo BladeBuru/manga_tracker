@@ -2064,4 +2064,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get recommendationsSleepersTitle => '💎 숨은 명작';
+
+  @override
+  String get challengeLoopTitle => '인증이 완료되지 않음';
+
+  @override
+  String get challengeLoopMessage =>
+      '이 사이트의 로봇 확인이 완료되지 않고 계속 새로고침됩니다. 브라우저에서 페이지를 열어 인증을 완료한 후 다시 돌아오세요.';
+
+  @override
+  String get challengeLoopOpenBrowser => '브라우저에서 열기';
 }

@@ -1131,5 +1131,8 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 隠れた名作"
+  "recommendationsSleepersTitle": "💎 隠れた名作",
+  "challengeLoopTitle": "認証が完了しません",
+  "challengeLoopMessage": "このサイトのロボット認証が完了せず、繰り返し再読み込みされています。ブラウザでページを開いて認証を完了してから、こちらに戻ってください。",
+  "challengeLoopOpenBrowser": "ブラウザで開く"
 }

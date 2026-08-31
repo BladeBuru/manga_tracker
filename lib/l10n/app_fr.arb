@@ -2190,5 +2190,17 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Pépites cachées"
+  "recommendationsSleepersTitle": "💎 Pépites cachées",
+  "challengeLoopTitle": "Vérification bloquée",
+  "@challengeLoopTitle": {
+    "description": "Titre du dialogue affiche quand une verification anti-robot boucle"
+  },
+  "challengeLoopMessage": "La vérification anti-robot de ce site n'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.",
+  "@challengeLoopMessage": {
+    "description": "Explication de la boucle de verification et de la sortie proposee"
+  },
+  "challengeLoopOpenBrowser": "Ouvrir dans le navigateur",
+  "@challengeLoopOpenBrowser": {
+    "description": "Bouton ouvrant la page dans le navigateur externe"
+  }
 }

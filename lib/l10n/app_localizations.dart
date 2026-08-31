@@ -3807,6 +3807,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'💎 Pépites cachées'**
   String get recommendationsSleepersTitle;
+
+  /// Titre du dialogue affiche quand une verification anti-robot boucle
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification bloquée'**
+  String get challengeLoopTitle;
+
+  /// Explication de la boucle de verification et de la sortie proposee
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification anti-robot de ce site n\'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.'**
+  String get challengeLoopMessage;
+
+  /// Bouton ouvrant la page dans le navigateur externe
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans le navigateur'**
+  String get challengeLoopOpenBrowser;
 }
 
 class _AppLocalizationsDelegate

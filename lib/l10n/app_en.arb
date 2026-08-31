@@ -1200,5 +1200,8 @@
       }
     }
   },
-  "recommendationsSleepersTitle": "💎 Hidden gems"
+  "recommendationsSleepersTitle": "💎 Hidden gems",
+  "challengeLoopTitle": "Verification stuck",
+  "challengeLoopMessage": "This site's robot check isn't completing — it keeps reloading. Open the page in your browser to finish it, then come back here.",
+  "challengeLoopOpenBrowser": "Open in browser"
 }
