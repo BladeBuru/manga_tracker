@@ -204,10 +204,22 @@ borderRadius: BorderRadius.circular(12)
   ❌ **PLUS** `on SocketException` seul : code mort sur web (`ClientException` y est
   levée) et aveugle aux tokens expirés. ❌ **JAMAIS** de détection par
   `e.toString().contains(...)` : dart2js minifie en release web.
-- **Frontière de sécurité** : le cache est servi en **lecture** sur `network` et
-  `sessionExpired` (tokens expirés SANS verdict serveur) ; un rejet explicite du
-  serveur (`sessionRejected`, 401/403) renvoie au login sans servir le cache. Les
-  **écritures** exigent toujours une session valide → file d'attente hors ligne.
+- 🔒 **Frontière de sécurité (révisée 2026-08-31)** : le cache est servi en
+  **lecture** dans **TOUS** les modes d'échec, `sessionRejected` (401/403)
+  compris. Décision produit : *« l'authentification ne peut pas empêcher de voir
+  mes données ; si elles sont en cache, c'est que j'étais censé pouvoir les
+  voir »*. Le cache ne contient que ce que **cet** utilisateur avait déjà obtenu
+  en étant authentifié. Sur rejet → `SessionRejectedBanner`, invitation **non
+  bloquante** ; ❌ **jamais** de redirection forcée.
+  Les **écritures** restent inchangées : session valide exigée, sinon file
+  d'attente hors ligne — et une session **rejetée** est refusée sans mise en
+  file (elle ne pourrait jamais se synchroniser).
+- 🔑 **Contrepartie obligatoire** : `AuthService.logout()` **purge le cache**
+  (`purgeUserScopedCache()`), tout comme un changement de compte
+  (`cache_owner_id`). Sans ça, sur un appareil partagé, le cache du précédent
+  utilisateur resterait lisible. ⚠️ L'invalidation **automatique** (401 dans
+  `HttpService`, refresh rejeté au boot) appelle `clearSessionTokens()`, qui
+  **conserve** le cache — y purger annulerait toute la règle ci-dessus.
 - Fallback API → cache via `OfflineCacheService` / `CacheHelperService`
 - Queue actions offline → sync automatique à la reconnexion via `SyncService`
 - État BLoC : toujours inclure `isOffline` (et `pendingActions` si applicable).

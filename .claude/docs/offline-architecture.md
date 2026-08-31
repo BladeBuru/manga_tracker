@@ -31,42 +31,125 @@ Toute la détection passe désormais par `lib/core/network/failure_classifier.da
 enum FailureMode { network, sessionExpired, sessionRejected, other }
 
 FailureMode classifyFailure(Object error);
-bool allowsCachedRead(FailureMode mode);      // tout sauf sessionRejected
 bool showsOfflineIndicator(FailureMode mode); // network | sessionExpired
+bool requiresReauthPrompt(FailureMode mode);  // sessionRejected
 ```
 
-| Mode | Déclenché par | Cache servi ? | Bandeau ? |
-|------|---------------|---------------|-----------|
-| `network` | `SocketException` (mobile), `ClientException` (web), `TimeoutException` | ✅ | ✅ |
-| `sessionExpired` | `SessionExpiredException` — tokens expirés localement ou refresh impossible faute de réseau | ✅ | ✅ |
-| `sessionRejected` | `InvalidCredentialsException`, `InvalidTokenException` — **verdict explicite du serveur** (401/403) | ❌ | ❌ (→ login) |
-| `other` | 5xx, parsing, bug | ✅ | ❌ |
+> `allowsCachedRead()` **n'existe plus** (supprimé le 2026-08-31, et non passé
+> à `true`, pour qu'aucun appelant ne puisse rebrancher un refus de lecture par
+> mégarde). Le cache est servi dans tous les modes.
+
+| Mode | Déclenché par | Cache servi ? | Bandeau |
+|------|---------------|---------------|---------|
+| `network` | `SocketException` (mobile), `ClientException` (web), `TimeoutException` | oui | hors ligne |
+| `sessionExpired` | `SessionExpiredException` — tokens expirés localement ou refresh impossible faute de réseau | oui | hors ligne |
+| `sessionRejected` | `InvalidCredentialsException`, `InvalidTokenException` — **verdict explicite du serveur** (401/403) | oui | **reconnexion** (non bloquant) |
+| `other` | 5xx, parsing, bug | oui | aucun |
+
+Les deux bandeaux sont distincts **à dessein** : sur `sessionRejected`
+l'appareil EST joignable, afficher « hors ligne » serait un mensonge.
 
 ---
 
-## 🔒 Frontière de sécurité (à ne pas déplacer sans y réfléchir)
+## 🔒 Frontière de sécurité
 
-Le mode hors ligne assouplit la **lecture du cache**, **jamais**
-l'authentification.
+> **Décision produit du 2026-08-31.** Mots du propriétaire :
+> « **L'authentification ne peut pas empêcher le fait de voir mes données. Si
+> j'ai les données qui sont en cache, c'est que j'étais censé pouvoir les
+> voir.** »
 
-- **Lecture** : autorisée dès qu'on n'a pas pu joindre le serveur — y compris
-  avec des tokens expirés. C'est le cas d'usage explicite : consulter hors
-  connexion ce qu'on a déjà vu (« savoir où j'en suis dans le train »). Aucune
-  donnée nouvelle n'est révélée : le cache ne contient que ce que cet
-  utilisateur avait déjà obtenu en étant authentifié.
-- **Écriture** : toujours refusée sans session valide. Les mutations partent
-  dans la file d'attente hors ligne et ne sont appliquées côté serveur qu'après
-  un refresh réussi.
-- **Rejet explicite du serveur** : si l'API répond 401/403, l'appareil est
-  joignable — donc l'utilisateur *peut* se reconnecter. La session est morte,
-  le cache n'est pas servi et l'écran redirige vers le login (drapeau
-  `requiresLogin` sur les états d'erreur). Sans ça, l'utilisateur naviguerait
-  dans ses données en croyant être connecté.
-- Un refresh est retenté dès que le réseau revient (`SyncService`).
+Le mode hors ligne assouplit la **lecture du cache**, **jamais** l'écriture.
+
+### Lecture — assouplie à tous les modes d'échec
+
+Le cache est servi **quel que soit l'échec**, rejet serveur (401/403) compris.
+
+Pourquoi c'est sûr : le cache local ne contient que ce que **cet** utilisateur
+avait déjà obtenu **en étant authentifié**. Le lui réafficher ne révèle rien de
+nouveau. Un écran vide ou une redirection forcée ne protégeait aucune donnée —
+elle masquait seulement ce qu'il avait déjà légitimement vu.
+
+Sur `sessionRejected`, l'écran affiche `SessionRejectedBanner` : une invitation
+**non bloquante** à se reconnecter, par-dessus le contenu resté consultable.
+Le drapeau d'état s'appelle `requiresReauth` (ex-`requiresLogin`, renommé parce
+que l'ancien nom portait une redirection qui n'existe plus).
+
+❌ **Ne jamais rebrancher un `Navigator.push('/login')` sur ce drapeau.**
+
+### Écriture — inchangée
+
+Toute mutation exige une session valide :
+
+| Situation | Comportement |
+|-----------|--------------|
+| Hors ligne / réseau KO | mise en **file d'attente** (`offline_queue`), rejouée par `SyncService` |
+| Session **rejetée** (401/403) | **refusée**, l'exception remonte — *pas* de mise en file |
+| En ligne, session valide | appliquée normalement |
+
+Une mutation dont la session est morte n'est **jamais** mise en file : ce serait
+un faux succès, `SyncService` la rejouant indéfiniment sans jamais aboutir.
+C'est le rôle de `LibraryService._queueUnlessRejected()`.
+
+Corollaire : un 403 sur `/library` lève `InvalidCredentialsException` (et non
+une `Exception` nue, qui se classait à tort en `FailureMode.other` et faisait
+donc mettre en file un vrai refus serveur).
+
+### 🔑 Contrepartie : la déconnexion purge le cache
+
+**C'est cette purge qui rend l'assouplissement acceptable.** Sans elle, sur un
+appareil partagé — ou après un changement de compte — le cache de l'utilisateur
+précédent resterait consultable par le suivant. Ce serait, cette fois, une
+vraie fuite.
+
+`OfflineCacheService.purgeUserScopedCache()`
+(`core/services/offline_cache_purge.dart`) efface les clés exactes **et** les
+familles préfixées, que le code ne peut pas énumérer à l'avance :
+
+| Clé / famille | Contenu |
+|---------------|---------|
+| `cached_library` | bibliothèque |
+| `cached_manga_detail_<muId>` | fiches manga consultées |
+| `cached_homepage` | accueil |
+| `cached_search_<query>` | résultats de recherche |
+| `cached_user_info` | profil |
+| `cached_recommendations` / `_exhaustive` | recommandations |
+| `cached_user_stats` / `_at` | statistiques |
+| `cached_friends` / `_at` | amis |
+| `offline_queue` | actions en attente |
+| `last_sync_timestamp`, `cache_metadata` | métadonnées |
+| `cache_owner_id` | propriétaire du cache |
+
+Le balayage du préfixe `cached_` ramasse aussi les caches tenus **hors** de ce
+service. `secure_credentials` (biométrie) survit volontairement : se reconnecter
+ne doit pas imposer de retaper son mot de passe.
+
+**Toute nouvelle clé de cache utilisateur doit être ajoutée à
+`userScopedExactKeys`, ou porter le préfixe `cached_`.**
+
+### ⚠️ Deux chemins à ne surtout pas confondre
+
+| Méthode | Quand | Tokens | Cache |
+|---------|-------|--------|-------|
+| `AuthService.logout()` | déconnexion **voulue** : profil, suppression de compte, refus RGPD | effacés | **purgé** |
+| `AuthService.clearSessionTokens()` | invalidation **automatique** : 401 dans `HttpService`, refresh rejeté au boot | effacés | **conservé** |
+
+Purger dans le chemin automatique annulerait toute la décision produit : c'est
+précisément le moment où l'on veut continuer à servir le cache.
+
+### Changement de compte
+
+`cache_owner_id` porte le `sub` du JWT. À chaque connexion réussie,
+`adoptCacheOwner()` compare :
+
+- **même utilisateur** → cache conservé (pas de refetch inutile) ;
+- **utilisateur différent** → purge, puis adoption ;
+- **propriétaire inconnu / identité illisible** → purge par défaut. Sur un
+  appareil partagé, le doute profite à la confidentialité.
 
 `SessionExpiredException` (tokens expirés, **sans** verdict serveur) et
-`InvalidCredentialsException` (verdict serveur) sont deux types distincts
-précisément pour porter cette frontière dans le système de types.
+`InvalidCredentialsException` (verdict serveur) restent deux types distincts :
+ils ne servent plus à autoriser ou refuser le cache, mais à choisir **quel
+bandeau** afficher, et à refuser les écritures.
 
 ---
 
@@ -105,6 +188,9 @@ Cache JSON via `shared_preferences`.
 | `cached_search_<query>` | `List<MangaQuickViewDto>` | 24h |
 | `cached_user_info` | `UserInformationDto` | 7 jours |
 | `offline_queue` | `List<OfflineAction>` | Persistant |
+| `cache_owner_id` | `sub` du JWT propriétaire du cache | Persistant |
+
+Toutes ces clés sont purgées à la déconnexion (cf. frontière de sécurité).
 
 ```dart
 // Sauvegarder
@@ -181,19 +267,17 @@ Future<void> _onLoad(LoadEvent event, Emitter<MyState> emit) async {
   } catch (e) {
     final mode = classifyFailure(e);
 
-    // Verdict explicite du serveur : login, sans servir le cache.
-    if (!allowsCachedRead(mode)) {
-      emit(MyError('Authentification requise', requiresLogin: true));
-      return;
-    }
-
-    // Hors ligne OU session expirée : on sert ce que l'utilisateur a déjà vu.
+    // Le cache est servi dans TOUS les modes, rejet serveur compris.
     final offline = showsOfflineIndicator(mode);
+    final reauth = requiresReauthPrompt(mode);
+
     final cached = await _cacheService.getCachedData();
     if (cached != null && cached.isNotEmpty) {
-      emit(MyLoaded(data: cached, isOffline: offline, stale: true));
+      emit(MyLoaded(
+        data: cached, isOffline: offline, stale: true, requiresReauth: reauth));
     } else {
-      emit(MyError(e.toString(), isOffline: offline)); // état vide, pas un crash
+      // État vide propre, pas un crash — l'invite de reconnexion subsiste.
+      emit(MyError(e.toString(), isOffline: offline, requiresReauth: reauth));
     }
   }
 }
@@ -203,6 +287,10 @@ Future<void> _onLoad(LoadEvent event, Emitter<MyState> emit) async {
 - `on SocketException` comme seul filet → code mort sur web, rate les tokens.
 - `e.toString().contains('...Exception')` → minifié par dart2js en release web.
 - `return` avant le repli cache sur une erreur d'authentification.
+- Rebrancher une redirection `/login` sur `requiresReauth` → re-masque du
+  contenu que l'utilisateur a déjà vu.
+- Appeler `logout()` depuis un chemin d'invalidation automatique → purge le
+  cache au moment exact où il fallait le servir.
 - Un handler de mutation qui n'émet **rien** sur un chemin d'erreur → le bloc
   reste bloqué sur `*ActionInProgress` et l'écran affiche un spinner sans issue.
 
@@ -224,13 +312,16 @@ Future<void> _onAddToLibrary(AddToLibrary event, Emitter<DetailState> emit) asyn
   } catch (e) {
     // INVARIANT : ne jamais sortir sans emit, sinon spinner infini.
     final mode = classifyFailure(e);
-    if (allowsCachedRead(mode)) {
+    // ÉCRITURE : une session rejetée ne met RIEN en file et n'applique rien
+    // localement — sinon SyncService rejouerait indéfiniment une action qui
+    // ne peut pas aboutir.
+    if (!requiresReauthPrompt(mode)) {
       emit(current.copyWith(
         isOffline: showsOfflineIndicator(mode),
         pendingActions: current.pendingActions + 1,
       ));
     } else {
-      emit(DetailError(message: e.toString(), requiresLogin: true));
+      emit(DetailError(message: e.toString(), requiresReauth: true));
     }
   }
 }
@@ -245,6 +336,10 @@ Toujours afficher quand `state.isOffline == true`.
 ```dart
 if (state.isOffline)
   OfflineBanner(pendingActions: state.pendingActions),
+
+// Session rejetée : invitation, jamais redirection.
+if (state.requiresReauth)
+  SessionRejectedBanner(onReconnect: () => context.push('/login')),
 ```
 
 Composant : `core/components/offline_banner.dart` (`AppColors.warning`,

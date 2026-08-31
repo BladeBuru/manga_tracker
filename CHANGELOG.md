@@ -15,10 +15,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 - **Plus de chargement sans fin.** Ajouter un manga à sa bibliothèque sans connexion pouvait laisser la fiche bloquée sur une roue de chargement qu'il fallait quitter de force. L'action est mise en attente et l'écran vous rend la main.
 - **Un écran vide plutôt qu'un message d'erreur** quand vous ouvrez sans connexion un contenu jamais consulté auparavant.
 - Les statistiques affichent enfin leur bandeau hors ligne quand elles proviennent de données enregistrées.
+- **Une session expirée ne vous prive plus de vos données.** Quand le serveur ne reconnaissait plus votre session, l'application vidait l'écran et vous renvoyait à la connexion — y compris pour des fiches que vous veniez de consulter. Désormais votre bibliothèque, vos fiches, l'accueil, vos recherches et vos statistiques restent affichés, avec un bandeau discret qui vous propose de vous reconnecter quand vous le souhaitez. Rien ne vous bloque.
 
 ### 🔒 Sécurité
 
-- Consulter hors connexion ne contourne pas la connexion : seule la **lecture** de ce que vous aviez déjà vu est autorisée. Toute modification attend le retour du réseau, et si le serveur refuse votre session, l'application vous redemande de vous connecter comme avant.
+- Consulter hors connexion ne contourne pas la connexion : seule la **lecture** de ce que vous aviez déjà vu est autorisée. Toute modification (marquer un chapitre, modifier votre bibliothèque, noter) exige toujours une session valide et attend le retour du réseau — elle n'est jamais appliquée « pour de faux » sur votre appareil.
+- **La déconnexion efface maintenant les données enregistrées sur l'appareil.** C'est la contrepartie du point ci-dessus : puisque le contenu enregistré reste visible même quand la session est refusée, il ne doit plus rien rester une fois que vous vous déconnectez. Bibliothèque, fiches manga, accueil, recherches, profil, statistiques et amis sont supprimés à la déconnexion et à la suppression de compte. Vos identifiants biométriques, eux, sont conservés pour vous éviter de retaper votre mot de passe.
+- **Changement de compte sur un appareil partagé** : se connecter avec un autre compte efface d'abord les données enregistrées du précédent. En cas de doute sur le propriétaire des données, elles sont effacées.
 
 ---
 
