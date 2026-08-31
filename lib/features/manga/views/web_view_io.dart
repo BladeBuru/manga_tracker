@@ -26,6 +26,7 @@ import 'package:mangatracker/features/reader/services/captcha_detection_service.
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
+import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
 import 'dart:async';
 
@@ -149,7 +150,17 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     });
   }
 
+  /// Bascule le bloqueur de publicités **et applique l'effet à la page en
+  /// cours**.
+  ///
+  /// Rafraîchir `_cachedBlockers` ne suffirait pas : `initialSettings` n'est
+  /// lu qu'à la création de la WebView, donc la couche `ContentBlocker` est
+  /// inerte (voir known-issues.md). Le seul blocage réellement actif est le
+  /// script injecté — c'est donc lui qu'il faut piloter, sinon le bouton
+  /// n'aurait aucun effet visible.
   Future<void> _toggleAdBlocker(bool enabled) async {
+    // Résolu avant tout `await` : le contexte ne survit pas aux gaps async.
+    final l10n = AppLocalizations.of(context);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('ad_blocker_enabled', enabled);
     setState(() {
@@ -159,10 +170,88 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         _captchaDetected = false;
       }
     });
-    // Recharger les blockers
+    // Tenu à jour pour la prochaine création de WebView.
     await _reloadBlockers();
-    // Recharger la page pour appliquer les changements
-    await _controller?.reload();
+
+    final controller = _controller;
+    if (controller == null) return;
+
+    if (enabled) {
+      // Injection immédiate : l'effet est visible sans rechargement, donc
+      // sans rien coûter à la position de lecture.
+      try {
+        final script = await _buildAdBlockScript();
+        await controller.evaluateJavascript(source: script);
+        _notifier.info(l10n?.adBlockerEnabledNotice ??
+            'Bloqueur de publicités activé sur cette page.');
+      } catch (e) {
+        debugPrint('⚠️ Injection du script de blocage impossible: $e');
+      }
+      return;
+    }
+
+    // Désactivation : arrêter le script suspend le nettoyage, mais ne fait pas
+    // réapparaître ce qu'il a déjà retiré du DOM (`el.remove()` est
+    // irréversible). Un rechargement est donc nécessaire pour rétablir la
+    // page — on passe par `_refreshPage` pour préserver la lecture en cours.
+    await _adBlockerService.stopAdBlockScript(controller);
+    _notifier.info(l10n?.adBlockerDisabledNotice ??
+        'Bloqueur désactivé — page rechargée pour rétablir le contenu.');
+    await _refreshPage();
+  }
+
+  /// Recharge la page courante en préservant le contexte de lecture.
+  ///
+  /// Le chapitre est repéré par l'URL, que `reload()` conserve :
+  /// `_currentChapter` reste donc valide et `detectChapterChange` conclut à
+  /// `noChange`, si bien qu'aucun chapitre n'est validé par mégarde.
+  ///
+  /// La position de défilement, elle, n'est écrite que par le timer
+  /// périodique : on la sauvegarde explicitement avant de recharger, sans
+  /// quoi tout ce qui a été lu depuis le dernier tick serait perdu.
+  /// `onLoadStop` la restaure ensuite pour le chapitre courant.
+  Future<void> _refreshPage() async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    final chapter = _currentChapter;
+    if (chapter != null) {
+      await _scrollPositionService.saveScrollPosition(
+        controller,
+        widget.muId,
+        chapter,
+      );
+    }
+    // Autorise `onLoadStop` à restaurer de nouveau après le rechargement.
+    _hasRestoredScroll = false;
+    // Un rechargement demandé par l'utilisateur est un geste délibéré : il ne
+    // doit pas compter comme un tour de la boucle de vérification anti-robot.
+    _loopDetector.reset();
+
+    await controller.reload();
+  }
+
+  /// Exécute une action choisie dans le menu « trois points ».
+  Future<void> _handleOverflowAction(ReaderOverflowAction action) async {
+    switch (action) {
+      case ReaderOverflowAction.downloadPage:
+        final success = await _downloadCurrentPage();
+        // Si autoDownload est activé et que le téléchargement a réussi,
+        // fermer la webview
+        if (widget.autoDownload && success && mounted) {
+          Navigator.of(context).pop();
+        }
+        break;
+      case ReaderOverflowAction.copyUrl:
+        await _copyCurrentUrl();
+        break;
+      case ReaderOverflowAction.toggleInteractiveAdBlock:
+        await _toggleInteractiveAdBlockMode();
+        break;
+      case ReaderOverflowAction.adBlockerInfo:
+        await _showAdBlockerInfo();
+        break;
+    }
   }
 
   /// Recharge les blockers en mettant à jour le cache
@@ -262,6 +351,8 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   }
 
   Future<void> _toggleInteractiveAdBlockMode() async {
+    // Résolu avant tout `await` : le contexte ne survit pas aux gaps async.
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _interactiveAdBlockMode = !_interactiveAdBlockMode;
     });
@@ -269,10 +360,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     if (_controller == null) return;
 
     if (_interactiveAdBlockMode) {
-      _notifier.info("Mode détection activé - Cliquez sur une pub pour la bloquer automatiquement");
+      _notifier.info(l10n?.adBlockerInteractiveOnNotice ??
+          'Mode détection activé — touchez une publicité pour la bloquer.');
       await _adBlockerService.injectInteractiveAdBlockScript(_controller!);
     } else {
-      _notifier.info("Mode détection désactivé");
+      _notifier.info(l10n?.adBlockerInteractiveOffNotice ??
+          'Mode détection désactivé.');
       await _adBlockerService.removeInteractiveAdBlockScript(_controller!);
     }
   }
@@ -917,65 +1010,12 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
           actions: [
-            // Bouton pour télécharger la page actuelle
-            IconButton(
-              icon: const Icon(Icons.download),
-              onPressed: () async {
-                final success = await _downloadCurrentPage();
-                // Si autoDownload est activé et que le téléchargement a réussi, fermer la webview
-                if (widget.autoDownload && success && mounted) {
-                  Navigator.of(context).pop();
-                }
-              },
-              tooltip: 'Télécharger cette page',
-            ),
-            // Bouton pour copier l'URL
-            IconButton(
-              icon: const Icon(Icons.copy),
-              onPressed: _copyCurrentUrl,
-              tooltip: AppLocalizations.of(context)?.copyUrl ?? 'Copier l\'URL',
-            ),
-            // Toggle pour activer/désactiver le bloqueur de pub avec icône
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icône d'information
-                IconButton(
-                  icon: const Icon(Icons.info_outline, size: 20),
-                  onPressed: _showAdBlockerInfo,
-                  tooltip: AppLocalizations.of(context)?.adBlockerTooltip ?? 'Informations sur le bloqueur de pub',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 4),
-                // Bouton pour le mode interactif de détection de pub
-                IconButton(
-                  icon: Icon(
-                    _interactiveAdBlockMode ? Icons.touch_app : Icons.touch_app_outlined,
-                    size: 20,
-                    color: _interactiveAdBlockMode ? Colors.orange : Colors.grey,
-                  ),
-                  onPressed: _toggleInteractiveAdBlockMode,
-                  tooltip: _interactiveAdBlockMode 
-                    ? 'Mode détection activé - Cliquez sur une pub pour la bloquer'
-                    : 'Activer le mode détection de pub',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 4),
-                // Icône de blocage au lieu du texte
-                Icon(
-                  _adBlockerEnabled ? Icons.block : Icons.block_outlined,
-                  size: 20,
-                  color: _adBlockerEnabled ? Colors.red : Colors.grey,
-                ),
-                const SizedBox(width: 4),
-                // Switch
-                Switch(
-                  value: _adBlockerEnabled,
-                  onChanged: _toggleAdBlocker,
-                ),
-              ],
+            ReaderActionBar(
+              adBlockerEnabled: _adBlockerEnabled,
+              interactiveAdBlockMode: _interactiveAdBlockMode,
+              onRefresh: _refreshPage,
+              onToggleAdBlocker: _toggleAdBlocker,
+              onOverflowAction: _handleOverflowAction,
             ),
           ],
         ),
