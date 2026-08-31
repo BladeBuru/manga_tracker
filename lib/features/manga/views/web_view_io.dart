@@ -25,7 +25,6 @@ import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
 import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
-import 'package:mangatracker/features/reader/services/web_view_user_agent.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
 import 'dart:async';
@@ -104,7 +103,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     _lastCommitted = widget.initialLastRead;
     _originHost = Uri.parse(widget.initialUrl).host;
     // Résolu ici pour être disponible AVANT la toute première requête.
-    _userAgentFuture = _resolveUserAgent();
+    _userAgentFuture = ReaderWebViewSettings.resolveUserAgent();
     _loadAdBlockerPreference();
     // Charger les blockers de manière asynchrone
     _loadBlockers();
@@ -173,50 +172,6 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       setState(() {
         // Forcer la mise à jour pour recharger les blockers
       });
-    }
-  }
-
-  /// Récupère le user-agent réel de la WebView et en retire les jetons qui
-  /// décrivent mal le moteur (voir [WebViewUserAgent]).
-  Future<String?> _resolveUserAgent() async {
-    try {
-      final defaultUa = await InAppWebViewController.getDefaultUserAgent();
-      return WebViewUserAgent.normalize(defaultUa);
-    } catch (e) {
-      debugPrint('⚠️ User-agent par défaut illisible, valeur inchangée: $e');
-      return null;
-    }
-  }
-
-  /// Applique le user-agent normalisé PUIS déclenche le chargement initial.
-  ///
-  /// L'URL n'est volontairement pas passée en `initialUrlRequest` : la
-  /// première requête (celle qui déclenche la vérification anti-robot) doit
-  /// déjà porter le bon user-agent.
-  Future<void> _applyUserAgentAndLoad(InAppWebViewController controller) async {
-    try {
-      final ua = await _userAgentFuture;
-      if (ua != null) {
-        await controller.setSettings(
-          settings: ReaderWebViewSettings.build(
-            // Volontairement vide : les `ContentBlocker` ne sont pas actifs
-            // aujourd'hui (le cache est encore vide à la création de la
-            // WebView). Les activer ici serait un changement de comportement
-            // distinct — voir known-issues.md.
-            contentBlockers: const [],
-            userAgent: ua,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('⚠️ Application du user-agent impossible: $e');
-    }
-    try {
-      await controller.loadUrl(
-        urlRequest: URLRequest(url: WebUri(widget.initialUrl)),
-      );
-    } catch (e) {
-      debugPrint('⚠️ Chargement initial impossible: $e');
     }
   }
 
@@ -1039,7 +994,11 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 await _handleAdBlockClick(selector);
               }
             });
-            await _applyUserAgentAndLoad(c);
+            await ReaderWebViewSettings.applyUserAgentAndLoad(
+              controller: c,
+              initialUrl: widget.initialUrl,
+              userAgent: _userAgentFuture,
+            );
           },
 
           // 1) Nouvelle navigation principale - Blocage strict des redirections

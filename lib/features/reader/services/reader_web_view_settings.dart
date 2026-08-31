@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mangatracker/features/reader/services/web_view_user_agent.dart';
 
 /// Fabrique les réglages de la WebView du lecteur.
 ///
@@ -45,5 +47,56 @@ class ReaderWebViewSettings {
       incognito: false,
       clearCache: false,
     );
+  }
+
+  /// Récupère le user-agent réel de la WebView et en retire les jetons qui
+  /// décrivent mal le moteur (voir [WebViewUserAgent]).
+  ///
+  /// Renvoie `null` si le user-agent par défaut est illisible : l'appelant
+  /// laisse alors la valeur de la plateforme intacte.
+  static Future<String?> resolveUserAgent() async {
+    try {
+      final defaultUa = await InAppWebViewController.getDefaultUserAgent();
+      return WebViewUserAgent.normalize(defaultUa);
+    } catch (e) {
+      debugPrint('⚠️ User-agent par défaut illisible, valeur inchangée: $e');
+      return null;
+    }
+  }
+
+  /// Applique le user-agent normalisé PUIS déclenche le chargement initial.
+  ///
+  /// L'URL n'est volontairement pas passée en `initialUrlRequest` : la
+  /// première requête — celle qui déclenche la vérification anti-robot — doit
+  /// déjà porter le bon user-agent.
+  static Future<void> applyUserAgentAndLoad({
+    required InAppWebViewController controller,
+    required String initialUrl,
+    required Future<String?> userAgent,
+  }) async {
+    try {
+      final ua = await userAgent;
+      if (ua != null) {
+        await controller.setSettings(
+          settings: build(
+            // Volontairement vide : les `ContentBlocker` ne sont pas actifs
+            // aujourd'hui (le cache est encore vide à la création de la
+            // WebView). Les activer ici serait un changement de comportement
+            // distinct — voir known-issues.md.
+            contentBlockers: const [],
+            userAgent: ua,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ Application du user-agent impossible: $e');
+    }
+    try {
+      await controller.loadUrl(
+        urlRequest: URLRequest(url: WebUri(initialUrl)),
+      );
+    } catch (e) {
+      debugPrint('⚠️ Chargement initial impossible: $e');
+    }
   }
 }
