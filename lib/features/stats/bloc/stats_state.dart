@@ -26,7 +26,12 @@ class StatsLoaded extends StatsState {
 
 class StatsError extends StatsState {
   final String message;
-  const StatsError(this.message);
+
+  /// L'échec vient d'une indisponibilité réseau (et non d'une erreur
+  /// serveur) : l'écran doit dire « hors ligne », pas « erreur ».
+  final bool isOffline;
+
+  const StatsError(this.message, {this.isOffline = false});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isOffline];
 }

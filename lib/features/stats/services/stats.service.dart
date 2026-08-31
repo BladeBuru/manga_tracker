@@ -32,10 +32,20 @@ class StatsService {
   /// 2. Sinon, fetch réseau ; en cas de succès, met à jour le cache.
   /// 3. En cas d'échec réseau, fallback sur le cache (même expiré) pour
   ///    éviter un écran vide. Si pas de cache → on remonte l'exception.
-  Future<UserStatsDto> getUserStats({bool forceRefresh = false}) async {
+  Future<UserStatsDto> getUserStats({bool forceRefresh = false}) async =>
+      (await getUserStatsWithSource(forceRefresh: forceRefresh)).stats;
+
+  /// Comme [getUserStats], mais indique si la donnée a été servie depuis un
+  /// cache périmé faute d'avoir pu joindre le serveur.
+  ///
+  /// Sans cette information, `StatsLoaded.isOffline` restait toujours `false`
+  /// et le bandeau hors ligne des stats était inatteignable.
+  Future<({UserStatsDto stats, bool fromStaleCache})> getUserStatsWithSource({
+    bool forceRefresh = false,
+  }) async {
     if (!forceRefresh) {
       final cached = await _readFreshCache();
-      if (cached != null) return cached;
+      if (cached != null) return (stats: cached, fromStaleCache: false);
     }
 
     try {
@@ -47,13 +57,13 @@ class StatsService {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final stats = UserStatsDto.fromJson(data);
       await _writeCache(stats);
-      return stats;
+      return (stats: stats, fromStaleCache: false);
     } catch (e) {
       // Fallback sur le cache même expiré pour éviter un écran vide.
       final stale = await _readCacheIgnoringTtl();
       if (stale != null) {
         debugPrint('StatsService: réseau KO, fallback cache stale ($e)');
-        return stale;
+        return (stats: stale, fromStaleCache: true);
       }
       rethrow;
     }

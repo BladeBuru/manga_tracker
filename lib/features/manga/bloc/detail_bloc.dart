@@ -306,12 +306,23 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
     } catch (e) {
       // En cas d'exception, vérifier si c'est à cause du mode offline
-      final isNowOffline = !_connectivityService.isConnected;
-      if (!isNowOffline) {
+      // INVARIANT : ne jamais sortir d'un handler de mutation sans emit —
+      // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
+      // affichait un spinner plein ecran sans issue.
+      final mode = classifyFailure(e);
+      if (allowsCachedRead(mode)) {
+        // Hors ligne / session expiree : l'action part en file d'attente,
+        // on rend la main sur le detail en cache avec le bandeau.
+        emit(currentState.copyWith(
+          isOffline: showsOfflineIndicator(mode),
+          pendingActions: currentState.pendingActions + 1,
+        ));
+      } else {
         emit(DetailError(
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
+          requiresLogin: true,
         ));
       }
     }
@@ -366,12 +377,23 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
     } catch (e) {
       // En cas d'exception, vérifier si c'est à cause du mode offline
-      final isNowOffline = !_connectivityService.isConnected;
-      if (!isNowOffline) {
+      // INVARIANT : ne jamais sortir d'un handler de mutation sans emit —
+      // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
+      // affichait un spinner plein ecran sans issue.
+      final mode = classifyFailure(e);
+      if (allowsCachedRead(mode)) {
+        // Hors ligne / session expiree : l'action part en file d'attente,
+        // on rend la main sur le detail en cache avec le bandeau.
+        emit(currentState.copyWith(
+          isOffline: showsOfflineIndicator(mode),
+          pendingActions: currentState.pendingActions + 1,
+        ));
+      } else {
         emit(DetailError(
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
+          requiresLogin: true,
         ));
       }
     }
@@ -425,12 +447,23 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
     } catch (e) {
       // En cas d'exception, vérifier si c'est à cause du mode offline
-      final isNowOffline = !_connectivityService.isConnected;
-      if (!isNowOffline) {
+      // INVARIANT : ne jamais sortir d'un handler de mutation sans emit —
+      // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
+      // affichait un spinner plein ecran sans issue.
+      final mode = classifyFailure(e);
+      if (allowsCachedRead(mode)) {
+        // Hors ligne / session expiree : l'action part en file d'attente,
+        // on rend la main sur le detail en cache avec le bandeau.
+        emit(currentState.copyWith(
+          isOffline: showsOfflineIndicator(mode),
+          pendingActions: currentState.pendingActions + 1,
+        ));
+      } else {
         emit(DetailError(
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
+          requiresLogin: true,
         ));
       }
     }
@@ -559,12 +592,23 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       }
     } catch (e) {
       // Exception uniquement si on est online
-      final isNowOffline = !_connectivityService.isConnected;
-      if (!isNowOffline) {
+      // INVARIANT : ne jamais sortir d'un handler de mutation sans emit —
+      // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
+      // affichait un spinner plein ecran sans issue.
+      final mode = classifyFailure(e);
+      if (allowsCachedRead(mode)) {
+        // Hors ligne / session expiree : l'action part en file d'attente,
+        // on rend la main sur le detail en cache avec le bandeau.
+        emit(currentState.copyWith(
+          isOffline: showsOfflineIndicator(mode),
+          pendingActions: currentState.pendingActions + 1,
+        ));
+      } else {
         emit(DetailError(
           message: e.toString(),
           isOffline: false,
           cachedMangaDetail: currentState.mangaDetail,
+          requiresLogin: true,
         ));
       }
     }
