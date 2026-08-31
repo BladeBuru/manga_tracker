@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 
 import '../../manga/widgets/manga_card.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/utils/responsive_layout.dart';
 
 class HomePage extends StatefulWidget {
@@ -36,6 +37,10 @@ class _HomePageState extends State<HomePage> with ResponsiveLayoutMixin {
   String? displayUsername;
   bool hasAlreadyBeenRedirected = false;
   bool _isOffline = false;
+
+  /// Le serveur a rejete la session : invitation non bloquante a se
+  /// reconnecter, affichee par-dessus le contenu en cache.
+  bool _requiresReauth = false;
 
   UserInformationDto? user;
   late Future<List<MangaQuickViewDto>> trendingMangas;
@@ -111,21 +116,22 @@ class _HomePageState extends State<HomePage> with ResponsiveLayoutMixin {
           });
         })
         .catchError((err) {
-          if (!mounted || hasAlreadyBeenRedirected) return;
+          if (!mounted) return;
           _errorHandler();
         }, test: (err) => err is InvalidCredentialsException);
   }
 
+  /// Session rejetee par le serveur pendant un chargement.
+  ///
+  /// Ne deconnecte plus et ne redirige plus : purger le cache et renvoyer au
+  /// login masquait a l'utilisateur des donnees qu'il avait deja obtenues en
+  /// etant authentifie. On se contente d'afficher l'invitation non bloquante
+  /// a se reconnecter, par-dessus le contenu en cache.
   void _errorHandler() {
-    if (!hasAlreadyBeenRedirected && context.mounted) {
-      authService.logout();
-      redirectToLoginPage();
-      notifier.error( 'Expired session');
-      if (!mounted || hasAlreadyBeenRedirected) return;
-      setState(() {
-        hasAlreadyBeenRedirected = true;
-      });
-    }
+    if (!mounted || _requiresReauth) return;
+    setState(() {
+      _requiresReauth = true;
+    });
   }
 
   void redirectToLoginPage() {
@@ -157,6 +163,11 @@ class _HomePageState extends State<HomePage> with ResponsiveLayoutMixin {
             // Indicateur de mode hors ligne (refactor 2026-05-18 vers
             // primitive OfflineBanner du design system, plus de Colors.orange).
             if (_isOffline) const OfflineBanner(),
+
+            // Session rejetee : invitation, pas redirection. Le contenu en
+            // cache reste affiche dessous.
+            if (_requiresReauth)
+              SessionRejectedBanner(onReconnect: redirectToLoginPage),
 
             const SizedBox(height: 20),
             Row(

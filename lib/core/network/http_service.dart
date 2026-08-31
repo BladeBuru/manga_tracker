@@ -63,7 +63,10 @@ class HttpService {
       final refreshToken = await _storage.readSecureData('refreshToken');
       if (refreshToken == null || _auth.isTokenExpired(refreshToken)) {
         debugPrint('❌ HttpService: Les deux tokens sont expirés');
-        await _auth.logout(); // purge pour éviter de retenter au prochain boot
+        // Tokens seulement : le cache DOIT survivre a un 401, c'est
+        // precisement le cas ou l'on veut continuer a servir ce que
+        // l'utilisateur a deja consulte (cf. failure_classifier.dart).
+        await _auth.clearSessionTokens();
         throw InvalidCredentialsException('Both tokens expired');
       }
 
@@ -75,7 +78,7 @@ class HttpService {
           res = await _performRequest(method, url, headers: headers, body: body);
           if (res.statusCode == HttpStatus.unauthorized) {
             debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');
-            await _auth.logout();
+            await _auth.clearSessionTokens();
             throw InvalidCredentialsException('Invalid credentials');
           }
           debugPrint('✅ HttpService: Requête réussie après refresh');
@@ -86,7 +89,7 @@ class HttpService {
         case RefreshResult.rejected:
           // Le serveur a dit non : tokens morts, on purge et on force login.
           debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
-          await _auth.logout();
+          await _auth.clearSessionTokens();
           throw InvalidCredentialsException('Refresh rejected by server');
       }
     }
@@ -169,7 +172,7 @@ class HttpService {
       case RefreshResult.rejected:
         // Tokens morts côté serveur → purge locale et force login.
         debugPrint('❌ HttpService: Refresh rejeté par le serveur, logout forcé');
-        await _auth.logout();
+        await _auth.clearSessionTokens();
         throw InvalidCredentialsException('Refresh rejected by server');
     }
 

@@ -115,6 +115,11 @@ class _ProfileState extends State<Profile> {
     if (!confirmed) return;
     try {
       await _userService.deleteAccount();
+      // Le compte n'existe plus : le cache local doit partir avec lui, sinon
+      // ses donnees resteraient lisibles sur l'appareil. `my_data_view` le
+      // faisait deja, pas ce chemin-ci.
+      await _authService.logout();
+      if (!mounted) return;
       _redirectToLoginPage();
       _notifier.success(l10n.accountDeletedSuccess);
     } catch (_) {

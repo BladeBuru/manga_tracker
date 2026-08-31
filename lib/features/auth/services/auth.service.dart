@@ -11,6 +11,8 @@ import 'package:mangatracker/features/auth/views/google_auth_js_helper_stub.dart
     if (dart.library.html) 'package:mangatracker/features/auth/views/google_auth_js_helper_web.dart';
 import 'package:mangatracker/features/auth/views/google_auth_webview.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/offline_cache_purge.dart';
+import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
@@ -71,6 +73,8 @@ class AuthService {
         var data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        // Changement de compte : purge le cache du precedent utilisateur.
+        await _adoptCacheOwner();
         // Ne plus sauvegarder automatiquement les identifiants biométriques
         // La sauvegarde se fera uniquement si l'utilisateur active la biométrie
         return data;
@@ -285,7 +289,15 @@ class AuthService {
     return utf8.decode(base64Url.decode(output));
   }
 
-  Future<void> logout() async {
+  /// Efface les tokens **sans toucher au cache**.
+  ///
+  /// C'est le chemin de l'invalidation AUTOMATIQUE de session : 401 intercepté
+  /// par `HttpService`, refresh rejeté au démarrage. Le cache doit survivre —
+  /// c'est exactement le cas où l'on veut continuer à afficher ce que
+  /// l'utilisateur a déjà consulté (cf. `failure_classifier.dart`).
+  ///
+  /// Pour une déconnexion voulue par l'utilisateur, utiliser [logout].
+  Future<void> clearSessionTokens() async {
     // Race condition fix : si l'user logout puis se reconnecte immédiatement,
     // les `deleteSecureData` non-awaités pouvaient s'exécuter APRÈS le nouveau
     // `writeSecureData` du login suivant → tokens du nouveau login effacés.
@@ -293,6 +305,68 @@ class AuthService {
     await storageService.deleteSecureData('accessToken');
     // Note : ne supprime pas `secure_credentials` (identifiants biométriques)
     // pour permettre la réactivation biométrique sans re-saisie.
+  }
+
+  /// Déconnexion **explicite** de l'utilisateur : tokens **et cache local**.
+  ///
+  /// La purge du cache est la contrepartie indispensable de l'assouplissement
+  /// de lecture (le cache est désormais servi même sur session rejetée) :
+  /// sans elle, sur un appareil partagé, le cache de l'utilisateur précédent
+  /// resterait consultable par le suivant.
+  ///
+  /// ⚠️ Ne PAS appeler depuis un chemin d'invalidation automatique — utiliser
+  /// [clearSessionTokens].
+  Future<void> logout() async {
+    await clearSessionTokens();
+    await _purgeCache();
+  }
+
+  /// Purge le cache local, si le service est disponible.
+  ///
+  /// Résolu **paresseusement** : `AuthService` est enregistré AVANT
+  /// `OfflineCacheService` dans `service_locator.dart`, donc en faire un champ
+  /// d'instance planterait à la construction (régression d'écran blanc
+  /// connue). L'ordre d'enregistrement n'est pas modifiable.
+  Future<void> _purgeCache() async {
+    try {
+      if (!getIt.isRegistered<OfflineCacheService>()) return;
+      await getIt<OfflineCacheService>().purgeUserScopedCache();
+    } catch (e) {
+      // Une purge impossible ne doit jamais empêcher de se déconnecter.
+      debugPrint('⚠️ AuthService: purge du cache impossible: $e');
+    }
+  }
+
+  /// Déclare le porteur des tokens courants propriétaire du cache, en purgeant
+  /// si le compte a changé.
+  ///
+  /// Couvre le « changement de compte » : se connecter avec un autre
+  /// utilisateur sans s'être déconnecté d'abord.
+  Future<void> _adoptCacheOwner() async {
+    try {
+      if (!getIt.isRegistered<OfflineCacheService>()) return;
+      final accessToken = await storageService.readSecureData('accessToken');
+      await getIt<OfflineCacheService>().adoptCacheOwner(
+        _userIdFromToken(accessToken),
+      );
+    } catch (e) {
+      debugPrint('⚠️ AuthService: adoption du cache impossible: $e');
+    }
+  }
+
+  /// Identifiant utilisateur porté par le JWT (`sub`, sinon `email`).
+  ///
+  /// `null` si illisible : `adoptCacheOwner` purgera alors par défaut, le
+  /// doute devant profiter à la confidentialité.
+  String? _userIdFromToken(String? token) {
+    if (token == null) return null;
+    try {
+      final payload = parseJwt(token, 1);
+      final sub = payload['sub'] ?? payload['userId'] ?? payload['email'];
+      return sub?.toString();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveCredentialsWithBiometric(String email, String password) async {
@@ -465,6 +539,7 @@ class AuthService {
         final data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
+        await _adoptCacheOwner();
         debugPrint('✅ AuthService: Connexion Google mobile réussie');
         return GoogleLoginResult.success;
       } else {
@@ -522,6 +597,7 @@ class AuthService {
 
     await storageService.writeSecureData('accessToken', result.accessToken);
     await storageService.writeSecureData('refreshToken', result.refreshToken);
+    await _adoptCacheOwner();
     debugPrint('✅ AuthService: Connexion Google web réussie');
     return GoogleLoginResult.success;
   }
@@ -542,6 +618,7 @@ class AuthService {
     if (refreshToken.isNotEmpty) {
       await storageService.writeSecureData('refreshToken', refreshToken);
     }
+    await _adoptCacheOwner();
     debugPrint('✅ AuthService: Tokens persistés via persistTokens()');
   }
 
