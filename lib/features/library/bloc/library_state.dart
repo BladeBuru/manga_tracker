@@ -57,15 +57,20 @@ class LibraryError extends LibraryState {
   final String message;
   final bool isOffline;
   final List<MangaQuickViewDto>? cachedMangas;
-  
+
+  /// Le serveur a explicitement rejeté la session : reconnexion nécessaire.
+  /// Distinct de [isOffline], où le cache reste consultable.
+  final bool requiresLogin;
+
   const LibraryError({
     required this.message,
     this.isOffline = false,
     this.cachedMangas,
+    this.requiresLogin = false,
   });
-  
+
   @override
-  List<Object?> get props => [message, isOffline, cachedMangas];
+  List<Object?> get props => [message, isOffline, cachedMangas, requiresLogin];
 }
 
 /// Action en cours (ajout, suppression, etc.)

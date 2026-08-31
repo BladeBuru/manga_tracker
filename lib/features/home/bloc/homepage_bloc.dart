@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -70,9 +71,12 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
     final cache = await _loader.snapshotCache();
     if (cache.hasData) {
+      // Bandeau immediat si l'appareil se sait deja hors ligne, au lieu
+      // d'attendre l'echec de la requete.
       emit(cache.toLoaded(
         pendingActions: await _loader.getPendingActionsCount(),
         stale: true,
+        isOffline: !_connectivityService.isConnected,
       ));
     } else {
       emit(const HomePageLoading());
@@ -121,9 +125,13 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     try {
       emit(apply(current, await fetch()));
     } catch (e) {
+      // L'état réseau est RE-ÉVALUÉ : hériter de `current` laissait une
+      // section échouée hors ligne s'afficher sans bandeau.
+      final mode = classifyFailure(e);
       emit(HomePageError(
         message: '$errorPrefix: $e',
-        isOffline: current.isOffline,
+        isOffline: showsOfflineIndicator(mode),
+        requiresLogin: !allowsCachedRead(mode),
         cachedPopularMangas: current.popularMangas,
         cachedNewMangas: current.newMangas,
         cachedTrendingMangas: current.trendingMangas,

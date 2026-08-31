@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -64,9 +65,11 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       final List<MangaQuickViewDto> cachedList = cachedMangas;
       // Enrichir les mangas avec les informations sur les nouveaux chapitres
       final enrichedCachedList = await _enrichWithNewChapters(cachedList);
+      // Bandeau immédiat si l'appareil se sait déjà hors ligne, au lieu
+      // d'attendre l'échec de la requête réseau.
       emit(LibraryLoaded(
         mangas: enrichedCachedList,
-        isOffline: false,
+        isOffline: !_connectivityService.isConnected,
         pendingActions: pendingCached,
         stale: true,
       ));
@@ -94,17 +97,21 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         stale: false,
       ));
     } catch (e) {
-      // Ne pas traiter InvalidCredentialsException comme une erreur réseau
-      if (e.toString().contains('InvalidCredentialsException')) {
-        debugPrint('⚠️ LibraryBloc: Erreur d\'authentification, redirection vers login');
+      final mode = classifyFailure(e);
+
+      // Verdict explicite du serveur : session morte alors que l'appareil est
+      // joignable → login, sans servir le cache.
+      if (!allowsCachedRead(mode)) {
+        debugPrint('⚠️ LibraryBloc: Session rejetée par le serveur');
         emit(LibraryError(
           message: 'Authentification requise',
           isOffline: false,
+          requiresLogin: true,
         ));
         return;
       }
-      
-      // Erreur réseau détectée : on est offline
+
+      // Réseau injoignable OU tokens expirés localement : on sert le cache.
       debugPrint('⚠️ LibraryBloc: Erreur de chargement de la bibliothèque: $e');
       debugPrint('⚠️ LibraryBloc: Tentative de récupération depuis le cache...');
       
@@ -117,7 +124,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
           emit(LibraryLoaded(
             mangas: enrichedMangas,
-            isOffline: true,
+            isOffline: showsOfflineIndicator(mode),
             pendingActions: pendingActions,
             stale: true,
           ));
@@ -125,14 +132,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');
           emit(LibraryError(
             message: e.toString(),
-            isOffline: true,
+            isOffline: showsOfflineIndicator(mode),
           ));
         }
       } catch (cacheError) {
         debugPrint('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
         emit(LibraryError(
           message: e.toString(),
-          isOffline: true,
+          isOffline: showsOfflineIndicator(mode),
         ));
       }
     }
@@ -163,10 +170,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }
@@ -196,10 +208,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }
@@ -229,10 +246,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }
@@ -262,10 +284,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }
@@ -295,10 +322,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }
@@ -328,10 +360,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         ));
       }
     } catch (e) {
+      final mode = classifyFailure(e);
       emit(LibraryError(
         message: e.toString(),
-        isOffline: currentState.isOffline,
+        // L'état réseau doit être RE-ÉVALUÉ ici : hériter de currentState
+        // faisait passer une action échouée faute de connexion pour une
+        // erreur générique, sans bandeau hors ligne.
+        isOffline: showsOfflineIndicator(mode),
         cachedMangas: currentState.mangas,
+        requiresLogin: !allowsCachedRead(mode),
       ));
     }
   }

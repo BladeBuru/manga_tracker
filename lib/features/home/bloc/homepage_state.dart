@@ -96,7 +96,11 @@ class HomePageError extends HomePageState {
   final List<MangaQuickViewDto>? cachedNewMangas;
   final List<MangaQuickViewDto>? cachedTrendingMangas;
   final UserDto? cachedUser;
-  
+
+  /// Le serveur a explicitement rejeté la session : reconnexion nécessaire.
+  /// Distinct de [isOffline], où le cache reste consultable.
+  final bool requiresLogin;
+
   const HomePageError({
     required this.message,
     this.isOffline = false,
@@ -104,10 +108,11 @@ class HomePageError extends HomePageState {
     this.cachedNewMangas,
     this.cachedTrendingMangas,
     this.cachedUser,
+    this.requiresLogin = false,
   });
-  
+
   @override
-  List<Object?> get props => [message, isOffline, cachedPopularMangas, cachedNewMangas, cachedTrendingMangas, cachedUser];
+  List<Object?> get props => [message, isOffline, cachedPopularMangas, cachedNewMangas, cachedTrendingMangas, cachedUser, requiresLogin];
 }
 
 /// Action en cours (chargement d'une section)
