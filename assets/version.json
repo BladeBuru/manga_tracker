@@ -1,8 +1,22 @@
 {
-  "latestVersion": "0.12.3",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.12.3/MangaTracker.apk",
+  "latestVersion": "0.13.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.13.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.13.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Vous pouvez écarter une recommandation qui ne vous intéresse pas — « déjà lu », « pas intéressé » ou « vu ailleurs » — et elle ne reviendra plus",
+        "- Un bouton pour recharger la page de lecture, sans perdre votre position",
+        "⚡ Améliorations",
+        "- La barre du lecteur est réorganisée : les actions utiles pendant la lecture restent visibles, les autres sont regroupées sous un menu",
+        "🐛 Corrections",
+        "- Vos mangas restent consultables sans connexion : la fiche, votre progression et votre bibliothèque s'affichent même quand le réseau manque ou que votre session a expiré",
+        "- Les sites protégés par une vérification anti-robot se chargent de nouveau ; si la vérification échoue malgré tout, l'application vous propose d'ouvrir la page dans votre navigateur au lieu de tourner en boucle",
+        "- Le bandeau « hors connexion » s'affiche désormais de façon fiable, au lieu d'apparaître par intermittence"
+      ]
+    },
     {
       "version": "0.12.3",
       "notes": [
