@@ -131,6 +131,7 @@ class HomeCacheSnapshot {
     required int pendingActions,
     required bool stale,
     bool isOffline = false,
+    bool requiresReauth = false,
   }) {
     return HomePageLoaded(
       popularMangas: popular ?? const <MangaQuickViewDto>[],
@@ -140,6 +141,7 @@ class HomeCacheSnapshot {
       isOffline: isOffline,
       pendingActions: pendingActions,
       stale: stale,
+      requiresReauth: requiresReauth,
     );
   }
 }

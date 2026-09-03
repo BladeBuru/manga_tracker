@@ -2063,5 +2063,102 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportMoreChaptersOffline => '오프라인에서는 사용할 수 없습니다.';
 
   @override
+  String get dismissRecommendationSheetTitle => '이 작품 추천 안 함';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '‘$title’이(가) 추천 목록에서 사라집니다. 나중에 되돌릴 수 있어요.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => '이미 읽음';
+
+  @override
+  String get dismissReasonAlreadyReadHint => '이미 읽어서 새로 볼 게 없어요';
+
+  @override
+  String get dismissReasonNotInterested => '관심 없음';
+
+  @override
+  String get dismissReasonNotInterestedHint => '제 취향이 아니에요';
+
+  @override
+  String get dismissReasonSeenElsewhere => '다른 곳에서 봄';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => '애니메이션, 드라마 또는 영화로';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '‘$title’이(가) 더 이상 추천에 표시되지 않습니다';
+  }
+
+  @override
+  String get dismissRecommendationUndo => '실행 취소';
+
+  @override
+  String get dismissRecommendationUndone => '추천을 되돌렸습니다';
+
+  @override
+  String get dismissRecommendationError =>
+      '지금은 이 작품을 제외할 수 없습니다. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get dismissRecommendationOffline => '오프라인에서는 사용할 수 없습니다.';
+
+  @override
+  String get dismissRecommendationAccessibility => '길게 눌러 이 작품을 추천에서 제외';
+
+  @override
   String get recommendationsSleepersTitle => '💎 숨은 명작';
+
+  @override
+  String get sessionRejectedBanner => '세션이 만료되었습니다 — 저장된 데이터를 표시합니다';
+
+  @override
+  String get sessionRejectedAction => '다시 로그인';
+
+  @override
+  String get challengeLoopTitle => '인증이 완료되지 않음';
+
+  @override
+  String get challengeLoopMessage =>
+      '이 사이트의 로봇 확인이 완료되지 않고 계속 새로고침됩니다. 브라우저에서 페이지를 열어 인증을 완료한 후 다시 돌아오세요.';
+
+  @override
+  String get challengeLoopOpenBrowser => '브라우저에서 열기';
+
+  @override
+  String get readerRefresh => '페이지 새로고침';
+
+  @override
+  String get readerMoreActions => '추가 작업';
+
+  @override
+  String get readerDownloadPage => '이 페이지 다운로드';
+
+  @override
+  String get adBlockerEnableAction => '광고 차단기 켜기';
+
+  @override
+  String get adBlockerDisableAction => '광고 차단기 끄기';
+
+  @override
+  String get adBlockerInteractiveEnable => '광고 감지 모드 켜기';
+
+  @override
+  String get adBlockerInteractiveDisable => '광고 감지 모드 끄기';
+
+  @override
+  String get adBlockerEnabledNotice => '이 페이지에서 광고 차단기를 켰습니다.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      '광고 차단기를 꺼습니다 — 콘텐츠를 복원하기 위해 페이지를 새로고침했습니다.';
+
+  @override
+  String get adBlockerInteractiveOnNotice => '감지 모드 켜짐 — 광고를 탭하면 차단됩니다.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => '감지 모드 꺼짐.';
 }

@@ -2127,5 +2127,110 @@ class AppLocalizationsPt extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Indisponível offline.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'Não recomendar mais este título';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '«$title» vai desaparecer das tuas recomendações. Podes mudar de ideias mais tarde.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Já li';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Já li, não há nada de novo para descobrir';
+
+  @override
+  String get dismissReasonNotInterested => 'Sem interesse';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Não é o meu género';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Vi noutro lado';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'Em anime, drama ou filme';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '«$title» não voltará a aparecer nas tuas recomendações';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Anular';
+
+  @override
+  String get dismissRecommendationUndone => 'Recomendação reposta';
+
+  @override
+  String get dismissRecommendationError =>
+      'Não foi possível descartar este título agora. Tenta mais tarde.';
+
+  @override
+  String get dismissRecommendationOffline => 'Indisponível offline.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Toque longo para deixar de recomendar este título';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Joias escondidas';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Sessão expirada — a mostrar os seus dados guardados';
+
+  @override
+  String get sessionRejectedAction => 'Iniciar sessão novamente';
+
+  @override
+  String get challengeLoopTitle => 'Verificação bloqueada';
+
+  @override
+  String get challengeLoopMessage =>
+      'A verificação antirrobô deste site não é concluída: fica a recarregar sem parar. Abra a página no seu navegador para a concluir e depois volte aqui.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Abrir no navegador';
+
+  @override
+  String get readerRefresh => 'Atualizar a página';
+
+  @override
+  String get readerMoreActions => 'Mais ações';
+
+  @override
+  String get readerDownloadPage => 'Baixar esta página';
+
+  @override
+  String get adBlockerEnableAction => 'Ativar o bloqueador de anúncios';
+
+  @override
+  String get adBlockerDisableAction => 'Desativar o bloqueador de anúncios';
+
+  @override
+  String get adBlockerInteractiveEnable =>
+      'Ativar o modo de deteção de anúncios';
+
+  @override
+  String get adBlockerInteractiveDisable =>
+      'Desativar o modo de deteção de anúncios';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Bloqueador de anúncios ativado nesta página.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Bloqueador desativado — página recarregada para restaurar o conteúdo.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Modo de deteção ativo — toque num anúncio para o bloquear.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Modo de deteção desativado.';
 }

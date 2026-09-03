@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | recommendations     |
-| Version       | 0.2.0               |
-| Date          | 2026-06-19          |
-| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
+| Version       | 0.3.0               |
+| Date          | 2026-09-04          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 + Chantier correctifs-août |
 
 ---
 
@@ -45,6 +45,9 @@ Le module s'articule autour de trois couches :
 | `lib/features/manga/services/manga.service.dart` | `getMangaRecommendations(muId)` : recommandations similaires fiche détail | lignes 148-204 |
 | `test/features/manga/dto/manga_recommendation_view_dto_test.dart` | Tests non-régression du DTO | ~109 |
 | `lib/features/manga/services/recommendation.service.dart` (méthode ajoutée) | NEW — `getSleeperHits()` : mangas « pépites cachées » (note Bayésienne élevée, popularité faible) | — |
+| `lib/features/recommendations/services/recommendation_dismissal.service.dart` | NEW (chantier correctifs-août) — `dismissRecommendation(muId, reason)`, `undismissRecommendation(muId)`. Lazy singleton **sans `dependsOn`** (résolution des dépendances à l'appel). | ~95 |
+| `lib/features/recommendations/widgets/dismissible_recommendation_card.dart` | NEW (chantier correctifs-août) — Wrapper `MangaCard` avec `onLongPress` → feuille modale de raison + SnackBar d'annulation 6 s. Centralise le mapping `MangaQuickViewDto → MangaCard`, auparavant dupliqué ×3. | ~180 |
+| `lib/features/manga/widgets/manga_card.dart` | MODIF (chantier correctifs-août) — Paramètre `onLongPress` **optionnel** ajouté. Nul partout sauf dans `DismissibleRecommendationCard` → aucun autre écran impacté. | — |
 
 ---
 
@@ -66,8 +69,10 @@ La vue par genre (`getRecommendationsByGenre`) n'utilise pas de cache — retour
 |---------|-------|-------------|------|
 | `GET` | `/recommendations?limit=N&offset=N` | Liste paginée par score décroissant | JWT obligatoire |
 | `GET` | `/recommendations/by-genre?topGenres=N&perGenre=N` | Map `{genre: [mangas]}` des top genres | JWT obligatoire |
-| `GET` | `/recommendations/sleeper-hits` | NEW — Liste de pépites cachées (note Bayésienne, faible popularité) | JWT obligatoire |
+| `GET` | `/recommendations/sleeper-hits` | Liste de pépites cachées (note Bayésienne, faible popularité) | JWT obligatoire |
 | `GET` | `/mangas/recommendations/:muId` | Recommandations similaires d'un manga (fiche détail) | JWT obligatoire |
+| `POST` | `/recommendations/dismissals/:muId` | Rejeter un manga des recommandations. Body : `{ reason: "alreadyRead" \| "notInterested" \| "seenElsewhere" }` | JWT obligatoire |
+| `DELETE` | `/recommendations/dismissals/:muId` | Annuler un rejet (SnackBar 6 s). 404 traité comme succès (rejet déjà supprimé = résultat voulu atteint). | JWT obligatoire |
 
 **Comportements HTTP notables :**
 
@@ -106,6 +111,19 @@ Vue par genre avec breakpoints séparés :
 
 **Invalidation cache sur mutation bibliothèque** — `OfflineCacheService.invalidateRecommendationsCache()` est appelé depuis les mutations de bibliothèque (ajout, suppression, changement de statut) pour invalider le cache `cached_recommendations`. Les recos sont ainsi régénérées au prochain fetch afin de refléter la bibliothèque mise à jour.
 
+**Rejet de recommandation « Pas intéressé / Déjà vu » (chantier correctifs-août)** — `DismissibleRecommendationCard` emballe chaque `MangaCard` dans les trois écrans de recommandations. Un appui long ouvre une feuille modale proposant trois raisons (`DismissalReason.alreadyRead`, `notInterested`, `seenElsewhere`). Sur confirmation, `RecommendationDismissalService.dismissRecommendation` est appelé, puis un SnackBar de 6 s propose l'annulation. Un appui long accidentel est donc réversible immédiatement sans aller dans les réglages.
+
+Stratégies de retrait adaptées à chaque écran :
+- **Liste paginée** : retrait de `_items` + **décrément de `_offset`** (le serveur exclut le titre, sans décrément la page suivante sauterait un élément).
+- **Par genre** : filtrage au rendu via un `Set` en state (listes provenant de `Future`s immuables) ; une section vidée disparaît.
+- **Accueil** : event BLoC `DismissRecommendation` filtrant `recommendations` et `recommendationsByGenre` dans `HomePageBloc`.
+
+Le cache local (TTL 2 h sur la première page) est invalidé à chaque rejet **et** à chaque annulation réussie. Sans ça, le titre écarté réapparaîtrait pendant 2 h.
+
+Les erreurs de rejet sont **remontées** (contrairement aux lectures qui les avalent silencieusement) : un échec silencieux laisserait croire à l'utilisateur que le rejet est effectif. Un 404 à l'annulation est traité comme un succès.
+
+`RecommendationDismissalService` est enregistré en `registerLazySingleton` **sans `dependsOn`** : il résout `HttpService` et `OfflineCacheService` à l'appel. L'ordre du service locator n'est pas touché (évite l'écran blanc causé par un `dependsOn` sur un type pas encore enregistré, cf. hotfix v0.12.1).
+
 **Responsive `AppBreakpoints`** — Les breakpoints de grille (3/4/5/6 colonnes) et le centrage `AppContentWidth` (1100px) sont désormais délégués à `AppBreakpoints` (`lib/core/theme/app_breakpoints.dart`) plutôt qu'être définis localement dans chaque vue. Les valeurs 600/800/1200 px restent identiques.
 
 **Deux DTOs distincts pour deux contextes** :
@@ -131,6 +149,7 @@ Vue par genre avec breakpoints séparés :
 | Fichier | Ce qu'il teste | Statut |
 |---------|---------------|--------|
 | `test/features/manga/dto/manga_recommendation_view_dto_test.dart` | Non-régression `MangaRecommendationView.fromJson` : null safety muId/title, rating 0/null → "N/A", readingStatus null → readLater, inLibrary absent → false, muId string | Existant |
+| `test/features/recommendations/` (suite chantier correctifs-août, 19 tests) | Service : URL, body, valeurs `DismissalReason`, invalidation cache (et son absence sur échec), 429/404/500, annulation. Feuille modale : 3 raisons, titre rappelé, valeur retournée par raison, fermeture sans choix. Geste : appui long déclencheur, branchement sur `MangaCard`, hint d'accessibilité, note `N/A` non affichée, carte sans callback inchangée. | Ajouté chantier correctifs-août |
 | Tests `PaginatedRecommendationsView` | Logique de pagination, chargement au scroll, refresh | Absent |
 | Tests `RecommendationsByGenreView` | FutureBuilder, filtrage genres vides, refresh | Absent |
 | Tests `RecommendationService` | Fallback cache, comportement 401/403, silent errors | Absent |

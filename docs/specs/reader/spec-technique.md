@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | reader              |
-| Version       | 0.2.0               |
-| Date          | 2026-06-19          |
-| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 |
+| Version       | 0.3.0               |
+| Date          | 2026-09-04          |
+| Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 + Chantier correctifs-août |
 
 ---
 
@@ -88,6 +88,24 @@ go_router /manga/:muId/read-offline?chapter=N
 | `lib/features/manga/views/web_view_io.dart` | NEW — Appel `recordChapterLog(muId, chapter)` fire-and-forget à chaque changement de chapitre détecté (branché sur `_handleDetected`) |
 | `lib/features/reader/views/offline_reader_view_io.dart` | NEW — Appel `recordChapterLog(muId, chapter)` fire-and-forget au chargement d'un chapitre hors-ligne |
 
+**Ajouts chantier correctifs-août (fix/reader-cloudflare) :**
+
+| Fichier | Rôle | Lignes (approx.) |
+|---------|------|-----------------|
+| `lib/features/reader/services/challenge_allowlist.dart` | Liste blanche stricte des domaines de vérification anti-robot (Cloudflare, hCaptcha, reCAPTCHA, `/cdn-cgi/`). Correspondance par suffixe de domaine. | ~85 |
+| `lib/features/reader/services/challenge_loop_detector.dart` | Détecteur de boucle de défi : déclenche `ChallengeEscapeDialog` après 3 présentations du même défi en < 90 s. Réinitialise sur changement de défi ou résolution. | ~68 |
+| `lib/features/reader/services/web_view_user_agent.dart` | Construit l'UA honnête : retire `; wv`, `Version/4.0` et `Build/…`, conserve les vraies versions Chrome et Android. | ~42 |
+| `lib/features/reader/services/reader_web_view_settings.dart` | Centralise les `InAppWebViewSettings` du lecteur. Persistance cookie, DOM/DB/third-party activés explicitement, `sharedCookiesEnabled: true` sur iOS. | ~55 |
+| `lib/features/reader/widgets/challenge_escape_dialog.dart` | Dialog i18n ×7 langues proposant « Ouvrir dans le navigateur / Réessayer / Fermer » après détection de boucle. | ~110 |
+| `lib/features/reader/widgets/reader_action_bar.dart` | Barre d'actions du lecteur à deux niveaux : actions rapides (Rafraîchir, Bloqueur de pub) + menu trois points (Télécharger la page, Copier URL, Mode interactif, Aide). | ~195 |
+
+**Modifications chantier correctifs-août sur fichiers existants :**
+
+| Fichier | Modification |
+|---------|-------------|
+| `lib/features/reader/services/ad_blocker_service.dart` | Script JS : nettoyage suspendu pendant un défi actif, éléments `[data-cfasync]`/`iframe[sandbox]` épargnés, `'ad'` reconnu en tant que **mot entier** (`\bad\b`) et non sous-chaîne. Script rendu arrêtable via `window.__mtAdBlock.stop()` et idempotent (ne s'empile plus à chaque rechargement). |
+| `lib/features/manga/views/web_view_io.dart` | Amorçage du user-agent via `WebViewUserAgent.apply(controller)` avant le premier chargement. URL initiale chargée **après** application du UA. Barre d'actions remplacée par `ReaderActionBar`. Branchement `ChallengeLoopDetector` + `ChallengeEscapeDialog`. |
+
 ---
 
 ## Schéma BDD (si applicable)
@@ -137,8 +155,22 @@ Le bloqueur de pub opère en deux couches indépendantes :
 
 Sur Android, un troisième niveau via `androidShouldInterceptRequest` retourne une réponse HTTP 403 pour les requêtes vers les domaines de la liste.
 
-### Captcha-aware ad-blocker
-Quand un captcha est détecté (dans l'URL via `urlContainsCaptcha`, au niveau du domaine via `isCaptchaDomain`, ou dans le DOM via injection JS), le bloqueur est mis en pause (`_adBlockerEnabled = false`, `_captchaDetected = true`). L'état précédent est mémorisé dans `_adBlockerWasEnabled` pour permettre la réactivation après résolution. La résolution est détectée par la présence du cookie `cf_clearance`.
+### Captcha-aware ad-blocker (révisé chantier correctifs-août)
+Quand un défi anti-robot est détecté, le bloqueur est mis en pause (`_adBlockerEnabled = false`, `_captchaDetected = true`) **et** le script JS est explicitement arrêté via `window.__mtAdBlock.stop()`. Sans cet arrêt, le `setInterval` interne continuait à s'exécuter même après désactivation côté Flutter. Le script est désormais idempotent (une seule instance active) et ne s'empile plus à chaque `onLoadStop`.
+
+Le nettoyage DOM épargnait déjà les iframes, mais la correspondance `el.className.includes('ad')` et `el.id.includes('ad')` — par sous-chaîne — supprimait des éléments légitimes. Elle est remplacée par une correspondance en **mot entier** (`\bad\b`). Les attributs `[data-cfasync]` et `iframe[sandbox]` sont explicitement protégés.
+
+### Liste blanche des vérifications anti-robot (ChallengeAllowlist)
+`ChallengeAllowlist` centralise une liste stricte de domaines et préfixes de chemin correspondant aux vérifications légitimes : domaines Cloudflare (`challenges.cloudflare.com`, `cloudflare.com`), hCaptcha (`hcaptcha.com`), reCAPTCHA (`google.com/recaptcha`), et endpoints `/cdn-cgi/` servis par le site lui-même. La correspondance se fait par **suffixe** de domaine (pas par `contains`) : un hôte imitant `challenges.cloudflare.com` dans un sous-domaine tiers n'est pas autorisé. Branché sur `shouldBlockRequest` et `isAllowedDomain`.
+
+### Détecteur de boucle de défi (ChallengeLoopDetector)
+`ChallengeLoopDetector` compte les présentations du même défi Cloudflare (même URL de défi ou même empreinte DOM). Après 3 présentations en moins de 90 secondes, il notifie `web_view_io.dart` qui affiche `ChallengeEscapeDialog` — proposant d'ouvrir dans le navigateur système, de réessayer, ou de fermer. Un rechargement demandé explicitement par l'utilisateur (bouton Rafraîchir) ne compte pas comme une présentation de boucle. Le compteur se réinitialise sur changement de défi ou sur résolution (cookie `cf_clearance` présent).
+
+### User-agent honnête (WebViewUserAgent)
+`WebViewUserAgent.apply(controller)` retire les jetons `; wv` et `Version/4.0` (qui signalent un moteur ancien/bridé alors que le moteur réel est Chromium) et le jeton `Build/…` (identifiant de modèle spécifique). Les vraies versions de Chrome et d'Android sont conservées. L'URL initiale est chargée **après** application du UA, de sorte que la première requête HTTP le porte déjà.
+
+### Barre d'actions à deux niveaux (ReaderActionBar)
+`ReaderActionBar` remplace l'ancienne barre à 6 commandes à plat. Actions rapides (toujours visibles) : Rafraîchir + Bloqueur de pub. Actions secondaires (menu trois points) : Télécharger la page, Copier l'URL, Mode de désignation des publicités, Aide. Le bouton Bloqueur agit **immédiatement** sur la page active (activation) ou recharge avec préservation de position (désactivation — nécessaire pour faire réapparaître les éléments déjà retirés). Textes i18n ×7 langues.
 
 ### Sélecteurs personnalisés extensibles
 `AdBlockerService` et `ChapterLinkResolver` consultent `CustomSelectorsService` pour charger des règles spécifiques au domaine. Type `adBlocker` = sélecteur CSS à masquer. Type `urlPattern` = regex pour extraire le numéro de chapitre depuis l'URL. Cela permet à l'utilisateur d'étendre les règles via l'UI "Custom Selectors" sans mise à jour de l'application.
@@ -178,6 +210,9 @@ Si un chapitre téléchargé ne possède pas de `htmlPath` mais a des `imagePath
 
 | Fichier | Ce qu'il teste | Statut |
 |---------|---------------|--------|
-| — | Aucun test pour le module reader | Absent |
+| `test/features/reader/challenge_allowlist_test.dart` | Liste blanche : domaines autorisés, correspondance suffixe (pas sous-chaîne), rejet d'un hôte imitateur | Ajouté chantier correctifs-août |
+| `test/features/reader/challenge_loop_detector_test.dart` | Comptage des défis, déclenchement après 3 occurrences en < 90 s, réinitialisation sur changement de défi, exemption du bouton Rafraîchir | Ajouté chantier correctifs-août |
+| `test/features/reader/web_view_user_agent_test.dart` | Retrait des jetons `; wv` / `Version/4.0` / `Build/…`, conservation des vraies versions Chrome et Android | Ajouté chantier correctifs-août |
+| `test/features/reader/ad_blocker_challenge_test.dart` | Absence des sélecteurs fautifs (`iframe[sandbox]`, `[data-cfasync]`, correspondance sous-chaîne `'ad'`) dans le script produit par `buildAdBlockScript`, arrêtabilité du script | Ajouté chantier correctifs-août |
 
-Le module reader n'a aucun test unitaire ou widget test. Les services (`AdBlockerService`, `CaptchaDetectionService`, `ScrollPositionService`, `WebViewNavigationService`) et les utils (`ChapterLinkResolver`, `ReadingProgressHelper`) sont testables en isolation mais non couverts.
+**Note** : les services `AdBlockerService`, `CaptchaDetectionService`, `ScrollPositionService`, `WebViewNavigationService` et les utils `ChapterLinkResolver`, `ReadingProgressHelper` restent non couverts hors des cas ci-dessus. Le comportement effectif face à un vrai défi Cloudflare ne peut pas être prouvé en test unitaire (dépend de l'infrastructure distante).

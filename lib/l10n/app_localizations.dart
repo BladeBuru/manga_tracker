@@ -3802,11 +3802,191 @@ abstract class AppLocalizations {
   /// **'Indisponible hors ligne.'**
   String get reportMoreChaptersOffline;
 
+  /// Titre de la feuille modale ouverte par un appui long sur une carte de recommandation
+  ///
+  /// In fr, this message translates to:
+  /// **'Ne plus me recommander ce titre'**
+  String get dismissRecommendationSheetTitle;
+
+  /// Sous-titre de la feuille modale, rappelle le titre concerné et la réversibilité du choix
+  ///
+  /// In fr, this message translates to:
+  /// **'« {title} » disparaîtra de tes recommandations. Tu pourras revenir sur ce choix.'**
+  String dismissRecommendationSheetSubtitle(String title);
+
+  /// Raison de rejet : l'utilisateur a déjà lu ce manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà lu'**
+  String get dismissReasonAlreadyRead;
+
+  /// Précision sous la raison « déjà lu »
+  ///
+  /// In fr, this message translates to:
+  /// **'Je l’ai lu, plus rien à découvrir'**
+  String get dismissReasonAlreadyReadHint;
+
+  /// Raison de rejet : le titre ne correspond pas aux goûts de l'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas intéressé'**
+  String get dismissReasonNotInterested;
+
+  /// Précision sous la raison « pas intéressé »
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce n’est pas mon genre'**
+  String get dismissReasonNotInterestedHint;
+
+  /// Raison de rejet : l'utilisateur connaît l'histoire par un autre média
+  ///
+  /// In fr, this message translates to:
+  /// **'Vu ailleurs'**
+  String get dismissReasonSeenElsewhere;
+
+  /// Précision sous la raison « vu ailleurs »
+  ///
+  /// In fr, this message translates to:
+  /// **'En animé, en drama ou au cinéma'**
+  String get dismissReasonSeenElsewhereHint;
+
+  /// SnackBar de confirmation après un rejet, avec l'action d'annulation
+  ///
+  /// In fr, this message translates to:
+  /// **'« {title} » n’apparaîtra plus dans tes recommandations'**
+  String dismissRecommendationSuccess(String title);
+
+  /// Action d'annulation immédiate dans le SnackBar de confirmation
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get dismissRecommendationUndo;
+
+  /// SnackBar affiché après l'annulation d'un rejet
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandation rétablie'**
+  String get dismissRecommendationUndone;
+
+  /// Erreur générique lors d'un rejet ou de son annulation
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d’écarter ce titre pour le moment. Réessaie plus tard.'**
+  String get dismissRecommendationError;
+
+  /// Message affiché quand le rejet est tenté sans connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Indisponible hors ligne.'**
+  String get dismissRecommendationOffline;
+
+  /// Indice d'accessibilité (Semantics) sur les cartes de recommandation
+  ///
+  /// In fr, this message translates to:
+  /// **'Appui long pour ne plus recommander ce titre'**
+  String get dismissRecommendationAccessibility;
+
   /// No description provided for @recommendationsSleepersTitle.
   ///
   /// In fr, this message translates to:
   /// **'💎 Pépites cachées'**
   String get recommendationsSleepersTitle;
+
+  /// Bandeau non bloquant : la session a ete rejetee par le serveur, le contenu en cache reste consultable
+  ///
+  /// In fr, this message translates to:
+  /// **'Session expirée — voici vos données enregistrées'**
+  String get sessionRejectedBanner;
+
+  /// Action du bandeau de session rejetee : ouvre l'ecran de connexion
+  ///
+  /// In fr, this message translates to:
+  /// **'Se reconnecter'**
+  String get sessionRejectedAction;
+
+  /// Titre du dialogue affiche quand une verification anti-robot boucle
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification bloquée'**
+  String get challengeLoopTitle;
+
+  /// Explication de la boucle de verification et de la sortie proposee
+  ///
+  /// In fr, this message translates to:
+  /// **'La vérification anti-robot de ce site n\'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.'**
+  String get challengeLoopMessage;
+
+  /// Bouton ouvrant la page dans le navigateur externe
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans le navigateur'**
+  String get challengeLoopOpenBrowser;
+
+  /// Tooltip du bouton de rechargement de la page du lecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Rafraîchir la page'**
+  String get readerRefresh;
+
+  /// Tooltip du menu trois points de la barre du lecteur
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus d\'actions'**
+  String get readerMoreActions;
+
+  /// Action de telechargement de la page courante
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger cette page'**
+  String get readerDownloadPage;
+
+  /// Action d'activation du bloqueur de publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer le bloqueur de publicités'**
+  String get adBlockerEnableAction;
+
+  /// Action de desactivation du bloqueur de publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver le bloqueur de publicités'**
+  String get adBlockerDisableAction;
+
+  /// Action d'activation du mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer le mode détection de pub'**
+  String get adBlockerInteractiveEnable;
+
+  /// Action de desactivation du mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver le mode détection de pub'**
+  String get adBlockerInteractiveDisable;
+
+  /// Message confirmant que le bloqueur agit sur la page courante
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur de publicités activé sur cette page.'**
+  String get adBlockerEnabledNotice;
+
+  /// Message indiquant que la page a ete rechargee pour retablir le contenu
+  ///
+  /// In fr, this message translates to:
+  /// **'Bloqueur désactivé — page rechargée pour rétablir le contenu.'**
+  String get adBlockerDisabledNotice;
+
+  /// Message expliquant le mode de designation des publicites
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode détection activé — touchez une publicité pour la bloquer.'**
+  String get adBlockerInteractiveOnNotice;
+
+  /// Message de sortie du mode de designation
+  ///
+  /// In fr, this message translates to:
+  /// **'Mode détection désactivé.'**
+  String get adBlockerInteractiveOffNotice;
 }
 
 class _AppLocalizationsDelegate

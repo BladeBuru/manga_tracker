@@ -118,6 +118,18 @@ Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignor
 - ✅ **[Phase 8.1 — Mai 2026]** UI complète : `ShareMangaSheet` modal (multi-select amis avec checkboxes, message 280 chars, bouton Envoyer), `InboxPage` (cartes avec badge "Nouveau", tap pour ouvrir le manga, mark-as-seen auto au mount), bouton share dans AppBar de `detail_bloc_view.dart`, tile Inbox dans Profile. Route `/inbox`. 13 nouvelles clés × 7 langues = 91 traductions.
 - ✅ **[Phase 8.2 — Mai 2026]** Badge BottomNavBar (cf. Phase 6.2) inclut désormais les shares non-vues — service unifié + polling 60s.
 
+### Recommandations
+- ✅ Liste paginée, sections par genre, pépites cachées, cold start bibliothèque vide
+- ✅ **[2026-08-28]** « Pas intéressé / déjà vu » — appui long sur une carte → feuille modale (déjà lu / pas intéressé / vu ailleurs) → SnackBar avec annulation immédiate. `RecommendationDismissalService` (lazy singleton **sans `dependsOn`** : dépendances résolues à l'appel, l'ordre du service locator n'est pas touché), `DismissibleRecommendationCard` (centralise le mapping DTO → `MangaCard`, avant dupliqué ×3), `MangaCard.onLongPress` optionnel (nul ailleurs → aucun autre écran modifié), event `DismissRecommendation` sur `HomePageBloc`. Cache local invalidé à chaque rejet, sinon le titre revient pendant 2 h. i18n ×7 (14 clés). +19 tests.
+
+### Mode hors ligne (correctifs-août)
+- ✅ **[2026-08-31]** Mode offline réparé et frontière assouplie — cause racine : l'exception `InvalidCredentialsException` levée localement (sans appel réseau) et la détection `on SocketException` (code mort sur web) empêchaient le repli sur le cache. Solution : `failure_classifier.dart` (taxonomie 4 modes), `SessionExpiredException` (credentials absents = sessionExpired), cache servi en lecture sur `network`, `sessionExpired` **et** `sessionRejected` (401/403 — décision produit : l'authentification ne peut pas bloquer des données déjà en cache). Contrepartie : `AuthService.logout()` purge le cache via `offline_cache_purge.dart` ; `clearSessionTokens()` (invalidation automatique) le conserve. `SessionRejectedBanner` non bloquant. 26 tests (classifier, DetailBloc, LibraryBloc, LibraryService, SearchBloc web).
+- ✅ **[2026-08-31]** Progression de lecture conservée hors ligne — `LibraryService.getLibraryEntry` dispose d'un repli cache ; avant, la fiche s'affichait comme si le manga n'était pas dans la bibliothèque.
+
+### Lecteur intégré (correctifs-août)
+- ✅ **[2026-08-31]** Correctif boucle Cloudflare — cause racine : le script du bloqueur de publicités supprimait les éléments de la vérification Cloudflare du DOM (iframe Turnstile = `iframe[sandbox]`, attribut `[data-cfasync]`, correspondance sous-chaîne sur « ad »). Solution : `ChallengeAllowlist` (liste blanche domaines CF/hCaptcha/reCAPTCHA par suffixe), nettoyage DOM suspendu pendant un défi, « ad » reconnu en mot entier, script rendu arrêtable et idempotent, `WebViewUserAgent` (retrait `; wv`/`Version/4.0`/`Build/…`), `ChallengeLoopDetector` + `ChallengeEscapeDialog` (porte de sortie après 3 défis en 90 s). i18n ×7. 4 fichiers de tests unitaires.
+- ✅ **[2026-08-31]** Barre d'actions du lecteur à deux niveaux — `ReaderActionBar` : actions rapides (Rafraîchir, Bloqueur) + menu trois points (Télécharger, Copier URL, Mode interactif, Aide). Bouton Rafraîchir préserve la position de lecture.
+
 ### Mangas
 - ✅ Page d'accueil — `HomePageBloc`
 - ✅ Page de détails — `DetailBloc` (factory)
@@ -276,9 +288,12 @@ Demandée par l'user le 2026-05-18 — **à faire dans une session dédiée**, p
 ## 🐛 Bugs résolus (résumé)
 
 - ✅ Race conditions `DetailBloc` → factory dans GetIt
-- ✅ Faux positifs offline → détection via `SocketException`
+- ✅ Faux positifs offline → détection via `SocketException` *(supersédé — voir ci-dessous)*
 - ✅ Perte actions offline → gestion échecs `SyncService`
 - ✅ `readChaptersCount` incorrect après suppression → reset explicite
+- ✅ **[2026-08-31]** Mode hors ligne inutilisable (token expiré, token rejeté) → `classifyFailure()` + frontière assouplie + `SessionExpiredException`
+- ✅ **[2026-08-31]** Boucle Cloudflare indéfinie dans le lecteur → bloqueur JS réécrit, `ChallengeAllowlist`, `ChallengeLoopDetector`
+- ✅ **[2026-08-31]** Progression de lecture perdue hors ligne → `LibraryService.getLibraryEntry` avec repli cache
 
 > Voir `.claude/memory-bank/known-issues.md` pour le détail (et 7 problèmes actifs détectés à l'audit cross-platform de mai 2026).
 

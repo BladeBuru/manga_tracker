@@ -8,6 +8,7 @@ import 'package:mangatracker/features/library/services/chapter_report.service.da
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
+import 'package:mangatracker/features/recommendations/services/recommendation_dismissal.service.dart';
 import 'package:mangatracker/features/profile/services/change_password.service.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
@@ -70,6 +71,13 @@ void setupServiceLocator() {
   getIt.registerSingletonWithDependencies<RecommendationService>(
       () => RecommendationService(),
       dependsOn: [HttpService]);
+  // Rejets « pas interesse / deja vu » sur les recommandations.
+  // registerLazySingleton SANS dependsOn : le service resout HttpService et
+  // OfflineCacheService a l'appel, pas a la construction. Il est donc
+  // insensible a l'ordre d'enregistrement ci-dessus, qui n'est pas modifie
+  // (cf. la regression d'ecran blanc documentee lignes 52-57).
+  getIt.registerLazySingleton<RecommendationDismissalService>(
+      () => const RecommendationDismissalService());
   getIt.registerLazySingleton<BiometricService>(() => BiometricService());
   getIt.registerSingletonWithDependencies<UserService>(() => UserService(),
       dependsOn: [HttpService]);

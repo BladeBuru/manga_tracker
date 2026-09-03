@@ -2062,5 +2062,101 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reportMoreChaptersOffline => 'オフラインでは利用できません。';
 
   @override
+  String get dismissRecommendationSheetTitle => 'この作品をおすすめしない';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '「$title」はおすすめに表示されなくなります。あとで元に戻せます。';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => '読んだことがある';
+
+  @override
+  String get dismissReasonAlreadyReadHint => '読了済みで、新しい発見はありません';
+
+  @override
+  String get dismissReasonNotInterested => '興味がない';
+
+  @override
+  String get dismissReasonNotInterestedHint => '好みではありません';
+
+  @override
+  String get dismissReasonSeenElsewhere => '他で見た';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'アニメ・ドラマ・映画で';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '「$title」はおすすめに表示されなくなりました';
+  }
+
+  @override
+  String get dismissRecommendationUndo => '元に戻す';
+
+  @override
+  String get dismissRecommendationUndone => 'おすすめを元に戻しました';
+
+  @override
+  String get dismissRecommendationError => '現在この作品を除外できません。しばらくしてからお試しください。';
+
+  @override
+  String get dismissRecommendationOffline => 'オフラインでは利用できません。';
+
+  @override
+  String get dismissRecommendationAccessibility => '長押しでこの作品をおすすめから除外';
+
+  @override
   String get recommendationsSleepersTitle => '💎 隠れた名作';
+
+  @override
+  String get sessionRejectedBanner => 'セッションの有効期限が切れました — 保存済みのデータを表示しています';
+
+  @override
+  String get sessionRejectedAction => '再ログイン';
+
+  @override
+  String get challengeLoopTitle => '認証が完了しません';
+
+  @override
+  String get challengeLoopMessage =>
+      'このサイトのロボット認証が完了せず、繰り返し再読み込みされています。ブラウザでページを開いて認証を完了してから、こちらに戻ってください。';
+
+  @override
+  String get challengeLoopOpenBrowser => 'ブラウザで開く';
+
+  @override
+  String get readerRefresh => 'ページを再読み込み';
+
+  @override
+  String get readerMoreActions => 'その他の操作';
+
+  @override
+  String get readerDownloadPage => 'このページをダウンロード';
+
+  @override
+  String get adBlockerEnableAction => '広告ブロッカーを有効にする';
+
+  @override
+  String get adBlockerDisableAction => '広告ブロッカーを無効にする';
+
+  @override
+  String get adBlockerInteractiveEnable => '広告検出モードを有効にする';
+
+  @override
+  String get adBlockerInteractiveDisable => '広告検出モードを無効にする';
+
+  @override
+  String get adBlockerEnabledNotice => 'このページで広告ブロッカーを有効にしました。';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      '広告ブロッカーを無効にしました — コンテンツを復元するためページを再読み込みしました。';
+
+  @override
+  String get adBlockerInteractiveOnNotice => '検出モードがオンです — 広告をタップするとブロックします。';
+
+  @override
+  String get adBlockerInteractiveOffNotice => '検出モードがオフです。';
 }

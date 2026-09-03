@@ -2133,5 +2133,110 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Indisponible hors ligne.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'Ne plus me recommander ce titre';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '« $title » disparaîtra de tes recommandations. Tu pourras revenir sur ce choix.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Déjà lu';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Je l’ai lu, plus rien à découvrir';
+
+  @override
+  String get dismissReasonNotInterested => 'Pas intéressé';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Ce n’est pas mon genre';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Vu ailleurs';
+
+  @override
+  String get dismissReasonSeenElsewhereHint =>
+      'En animé, en drama ou au cinéma';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '« $title » n’apparaîtra plus dans tes recommandations';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Annuler';
+
+  @override
+  String get dismissRecommendationUndone => 'Recommandation rétablie';
+
+  @override
+  String get dismissRecommendationError =>
+      'Impossible d’écarter ce titre pour le moment. Réessaie plus tard.';
+
+  @override
+  String get dismissRecommendationOffline => 'Indisponible hors ligne.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Appui long pour ne plus recommander ce titre';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Pépites cachées';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Session expirée — voici vos données enregistrées';
+
+  @override
+  String get sessionRejectedAction => 'Se reconnecter';
+
+  @override
+  String get challengeLoopTitle => 'Vérification bloquée';
+
+  @override
+  String get challengeLoopMessage =>
+      'La vérification anti-robot de ce site n\'aboutit pas : elle se recharge en boucle. Ouvrez la page dans votre navigateur pour la terminer, puis revenez ici.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Ouvrir dans le navigateur';
+
+  @override
+  String get readerRefresh => 'Rafraîchir la page';
+
+  @override
+  String get readerMoreActions => 'Plus d\'actions';
+
+  @override
+  String get readerDownloadPage => 'Télécharger cette page';
+
+  @override
+  String get adBlockerEnableAction => 'Activer le bloqueur de publicités';
+
+  @override
+  String get adBlockerDisableAction => 'Désactiver le bloqueur de publicités';
+
+  @override
+  String get adBlockerInteractiveEnable => 'Activer le mode détection de pub';
+
+  @override
+  String get adBlockerInteractiveDisable =>
+      'Désactiver le mode détection de pub';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Bloqueur de publicités activé sur cette page.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Bloqueur désactivé — page rechargée pour rétablir le contenu.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Mode détection activé — touchez une publicité pour la bloquer.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Mode détection désactivé.';
 }

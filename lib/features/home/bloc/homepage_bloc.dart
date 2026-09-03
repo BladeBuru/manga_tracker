@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -53,6 +54,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
         errorPrefix:
             'Erreur lors du chargement des informations utilisateur'));
 
+    on<DismissRecommendation>(_onDismissRecommendation);
+
     _connectivitySubscription =
         _connectivityService.connectivityStream.listen((_) {});
   }
@@ -63,6 +66,29 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     return super.close();
   }
 
+  /// Retire un titre ecarte des recommandations de l'etat courant.
+  ///
+  /// Les deux collections sont filtrees : `recommendations` (section de
+  /// l'accueil) et `recommendationsByGenre`, pour qu'un futur ecran qui
+  /// consommerait la seconde ne reaffiche pas le titre.
+  void _onDismissRecommendation(
+      DismissRecommendation event, Emitter<HomePageState> emit) {
+    final current = state;
+    if (current is! HomePageLoaded) return;
+
+    emit(current.copyWith(
+      recommendations: current.recommendations
+          .where((m) => m.muId != event.muId)
+          .toList(),
+      recommendationsByGenre: current.recommendationsByGenre.map(
+        (genre, list) => MapEntry(
+          genre,
+          list.where((m) => m.muId != event.muId).toList(),
+        ),
+      ),
+    ));
+  }
+
   /// Charge la page d'accueil complete (initial load + fallback offline).
   Future<void> _onLoadHomePage(
       LoadHomePage event, Emitter<HomePageState> emit) async {
@@ -70,9 +96,12 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
     final cache = await _loader.snapshotCache();
     if (cache.hasData) {
+      // Bandeau immediat si l'appareil se sait deja hors ligne, au lieu
+      // d'attendre l'echec de la requete.
       emit(cache.toLoaded(
         pendingActions: await _loader.getPendingActionsCount(),
         stale: true,
+        isOffline: !_connectivityService.isConnected,
       ));
     } else {
       emit(const HomePageLoading());
@@ -121,9 +150,13 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     try {
       emit(apply(current, await fetch()));
     } catch (e) {
+      // L'état réseau est RE-ÉVALUÉ : hériter de `current` laissait une
+      // section échouée hors ligne s'afficher sans bandeau.
+      final mode = classifyFailure(e);
       emit(HomePageError(
         message: '$errorPrefix: $e',
-        isOffline: current.isOffline,
+        isOffline: showsOfflineIndicator(mode),
+        requiresReauth: requiresReauthPrompt(mode),
         cachedPopularMangas: current.popularMangas,
         cachedNewMangas: current.newMangas,
         cachedTrendingMangas: current.trendingMangas,

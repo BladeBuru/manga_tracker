@@ -37,3 +37,18 @@ class LoadTrendingMangas extends HomePageEvent {
 class LoadUserInfo extends HomePageEvent {
   const LoadUserInfo();
 }
+
+/// Retirer de l'accueil un titre ecarte par l'utilisateur
+/// (« pas interesse / deja vu »).
+///
+/// Le serveur a deja enregistre le rejet : cet event ne fait que refleter
+/// la decision dans l'etat courant, sans refetch. Le BLoC etant un lazy
+/// singleton, le titre reste absent tant que l'accueil n'est pas recharge.
+class DismissRecommendation extends HomePageEvent {
+  final num muId;
+
+  const DismissRecommendation(this.muId);
+
+  @override
+  List<Object?> get props => [muId];
+}

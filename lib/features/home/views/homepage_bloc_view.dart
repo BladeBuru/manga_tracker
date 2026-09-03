@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
 import 'package:mangatracker/features/home/bloc/homepage_state.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
-import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../../core/components/filter_button.dart';
 import '../../../core/components/verify_email_banner.dart';
@@ -137,8 +138,31 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
   // ─── Offline banner ───────────────────────────────────────────────────────
 
   Widget _buildOfflineIndicator(HomePageState state) {
-    final isOffline = (state is HomePageLoaded && state.isOffline) ||
-        (state is HomePageError && state.isOffline);
+    // HomePageActionInProgress etait absent de ce test : le bandeau
+    // disparaissait pendant le rechargement d'une section, d'ou l'impression
+    // d'un indicateur qui apparait « parfois ».
+    final isOffline = switch (state) {
+      HomePageLoaded(:final isOffline) => isOffline,
+      HomePageError(:final isOffline) => isOffline,
+      HomePageActionInProgress(:final isOffline) => isOffline,
+      _ => false,
+    };
+    // Session rejetee : invitation non bloquante, l'accueil en cache reste
+    // affiche derriere. Distinct du bandeau hors ligne (l'appareil repond).
+    final requiresReauth = switch (state) {
+      HomePageLoaded(:final requiresReauth) => requiresReauth,
+      HomePageError(:final requiresReauth) => requiresReauth,
+      HomePageActionInProgress(:final requiresReauth) => requiresReauth,
+      _ => false,
+    };
+    if (requiresReauth) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: SessionRejectedBanner(
+          onReconnect: () => context.push('/login'),
+        ),
+      );
+    }
     if (!isOffline) return const SizedBox.shrink();
     final pendingActions = state is HomePageLoaded ? state.pendingActions : 0;
     // Refactor 2026-05-18 : utilise OfflineBanner du design system.
@@ -210,14 +234,14 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
               padding: const EdgeInsets.only(right: 12),
               child: SizedBox(
                 width: 120,
-                child: MangaCard(
-                  muId: manga.muId.toString(),
-                  mangaTitle: manga.title,
-                  mangaAuthor: manga.year.toString(),
-                  mediumImgPath: manga.mediumCoverUrl,
-                  rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-                      ? manga.rating
-                      : null,
+                child: DismissibleRecommendationCard(
+                  manga: manga,
+                  onDismissed: (muId) =>
+                      _homePageBloc.add(DismissRecommendation(muId)),
+                  // Annulation depuis le SnackBar : on recharge l'accueil.
+                  // Le rejet ayant ete supprime cote serveur ET le cache
+                  // local invalide, le titre revient a sa place de score.
+                  onRestored: (_) => _homePageBloc.add(const LoadHomePage()),
                 ),
               ),
             );

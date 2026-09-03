@@ -4,7 +4,7 @@ import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
-import 'package:mangatracker/features/manga/widgets/manga_card.dart';
+import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -30,6 +30,17 @@ class _RecommendationsByGenreViewState
   late Future<Map<String, List<MangaQuickViewDto>>> _byGenreFuture;
   late Future<List<MangaQuickViewDto>> _sleepersFuture;
 
+  /// Titres ecartes pendant cette session d'affichage.
+  ///
+  /// Les listes viennent de `Future`s immuables passees en `MapEntry` aux
+  /// sections : on ne peut pas en retirer un element. On filtre donc au
+  /// rendu, ce qui couvre d'un coup les sections par genre ET la section
+  /// « Pepites » sans dupliquer la logique.
+  ///
+  /// Vide a chaque rechargement : le serveur exclut deja les titres ecartes,
+  /// le filtre local n'a plus rien a rattraper.
+  final Set<num> _dismissedMuIds = <num>{};
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +48,7 @@ class _RecommendationsByGenreViewState
   }
 
   void _load() {
+    _dismissedMuIds.clear();
     _byGenreFuture = getIt<RecommendationService>()
         .getRecommendationsByGenre(topGenres: 5, perGenre: 10);
     // Pépites : sorties récentes bien notées (Bayésien) mais peu visibles —
@@ -47,6 +59,18 @@ class _RecommendationsByGenreViewState
   Future<void> _refresh() async {
     setState(_load);
     await _byGenreFuture;
+  }
+
+  void _onDismissed(num muId) {
+    if (!mounted) return;
+    setState(() => _dismissedMuIds.add(muId));
+  }
+
+  /// Annulation depuis le SnackBar : le titre redevient recommandable, on le
+  /// reaffiche a sa place d'origine (la liste chargee n'a pas bouge).
+  void _onRestored(num muId) {
+    if (!mounted) return;
+    setState(() => _dismissedMuIds.remove(muId));
   }
 
   @override
@@ -114,9 +138,19 @@ class _RecommendationsByGenreViewState
                   itemCount: entries.length + 1,
                   itemBuilder: (context, index) {
                     if (index == 0) {
-                      return _SleepersSection(future: _sleepersFuture);
+                      return _SleepersSection(
+                        future: _sleepersFuture,
+                        dismissedMuIds: _dismissedMuIds,
+                        onDismissed: _onDismissed,
+                        onRestored: _onRestored,
+                      );
                     }
-                    return _GenreSection(entry: entries[index - 1]);
+                    return _GenreSection(
+                      entry: entries[index - 1],
+                      dismissedMuIds: _dismissedMuIds,
+                      onDismissed: _onDismissed,
+                      onRestored: _onRestored,
+                    );
                   },
                 ),
               );
@@ -141,7 +175,16 @@ class _RecommendationsByGenreViewState
 /// l'API ne renvoie rien : la page reste utilisable sans cette section.
 class _SleepersSection extends StatelessWidget {
   final Future<List<MangaQuickViewDto>> future;
-  const _SleepersSection({required this.future});
+  final Set<num> dismissedMuIds;
+  final ValueChanged<num> onDismissed;
+  final ValueChanged<num> onRestored;
+
+  const _SleepersSection({
+    required this.future,
+    required this.dismissedMuIds,
+    required this.onDismissed,
+    required this.onRestored,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +199,9 @@ class _SleepersSection extends StatelessWidget {
             l10n?.recommendationsSleepersTitle ?? '💎 Pépites cachées',
             sleepers,
           ),
+          dismissedMuIds: dismissedMuIds,
+          onDismissed: onDismissed,
+          onRestored: onRestored,
         );
       },
     );
@@ -164,11 +210,27 @@ class _SleepersSection extends StatelessWidget {
 
 class _GenreSection extends StatelessWidget {
   final MapEntry<String, List<MangaQuickViewDto>> entry;
-  const _GenreSection({required this.entry});
+  final Set<num> dismissedMuIds;
+  final ValueChanged<num> onDismissed;
+  final ValueChanged<num> onRestored;
+
+  const _GenreSection({
+    required this.entry,
+    required this.dismissedMuIds,
+    required this.onDismissed,
+    required this.onRestored,
+  });
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
+    // Filtrage au rendu des titres ecartes : la liste source vient d'un
+    // Future immuable et ne peut pas etre mutee. Une section qui se vide
+    // entierement disparait plutot que d'afficher un genre sans titre.
+    final mangas = entry.value
+        .where((m) => !dismissedMuIds.contains(m.muId))
+        .toList();
+    if (mangas.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
       child: Column(
@@ -193,21 +255,17 @@ class _GenreSection extends StatelessWidget {
             height: 220,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: entry.value.length,
+              itemCount: mangas.length,
               itemBuilder: (context, index) {
-                final manga = entry.value[index];
+                final manga = mangas[index];
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: SizedBox(
                     width: 120,
-                    child: MangaCard(
-                      muId: manga.muId.toString(),
-                      mangaTitle: manga.title,
-                      mangaAuthor: manga.year.toString(),
-                      mediumImgPath: manga.mediumCoverUrl,
-                      rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-                          ? manga.rating
-                          : null,
+                    child: DismissibleRecommendationCard(
+                      manga: manga,
+                      onDismissed: onDismissed,
+                      onRestored: onRestored,
                     ),
                   ),
                 );

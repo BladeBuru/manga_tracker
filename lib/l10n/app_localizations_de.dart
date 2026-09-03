@@ -2130,5 +2130,108 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reportMoreChaptersOffline => 'Offline nicht verfügbar.';
 
   @override
+  String get dismissRecommendationSheetTitle =>
+      'Diesen Titel nicht mehr empfehlen';
+
+  @override
+  String dismissRecommendationSheetSubtitle(String title) {
+    return '„$title“ verschwindet aus deinen Empfehlungen. Du kannst es dir jederzeit anders überlegen.';
+  }
+
+  @override
+  String get dismissReasonAlreadyRead => 'Bereits gelesen';
+
+  @override
+  String get dismissReasonAlreadyReadHint =>
+      'Ich habe es gelesen, es gibt nichts mehr zu entdecken';
+
+  @override
+  String get dismissReasonNotInterested => 'Kein Interesse';
+
+  @override
+  String get dismissReasonNotInterestedHint => 'Nicht mein Genre';
+
+  @override
+  String get dismissReasonSeenElsewhere => 'Woanders gesehen';
+
+  @override
+  String get dismissReasonSeenElsewhereHint => 'Als Anime, Drama oder Film';
+
+  @override
+  String dismissRecommendationSuccess(String title) {
+    return '„$title“ erscheint nicht mehr in deinen Empfehlungen';
+  }
+
+  @override
+  String get dismissRecommendationUndo => 'Rückgängig';
+
+  @override
+  String get dismissRecommendationUndone => 'Empfehlung wiederhergestellt';
+
+  @override
+  String get dismissRecommendationError =>
+      'Der Titel konnte gerade nicht ausgeblendet werden. Bitte versuche es später erneut.';
+
+  @override
+  String get dismissRecommendationOffline => 'Offline nicht verfügbar.';
+
+  @override
+  String get dismissRecommendationAccessibility =>
+      'Lange drücken, um diesen Titel nicht mehr zu empfehlen';
+
+  @override
   String get recommendationsSleepersTitle => '💎 Geheimtipps';
+
+  @override
+  String get sessionRejectedBanner =>
+      'Sitzung abgelaufen – gespeicherte Daten werden angezeigt';
+
+  @override
+  String get sessionRejectedAction => 'Erneut anmelden';
+
+  @override
+  String get challengeLoopTitle => 'Überprüfung blockiert';
+
+  @override
+  String get challengeLoopMessage =>
+      'Die Roboterprüfung dieser Seite wird nicht abgeschlossen – sie lädt immer wieder neu. Öffnen Sie die Seite im Browser, um sie abzuschließen, und kehren Sie dann hierher zurück.';
+
+  @override
+  String get challengeLoopOpenBrowser => 'Im Browser öffnen';
+
+  @override
+  String get readerRefresh => 'Seite aktualisieren';
+
+  @override
+  String get readerMoreActions => 'Weitere Aktionen';
+
+  @override
+  String get readerDownloadPage => 'Diese Seite herunterladen';
+
+  @override
+  String get adBlockerEnableAction => 'Werbeblocker aktivieren';
+
+  @override
+  String get adBlockerDisableAction => 'Werbeblocker deaktivieren';
+
+  @override
+  String get adBlockerInteractiveEnable => 'Anzeigenerkennung aktivieren';
+
+  @override
+  String get adBlockerInteractiveDisable => 'Anzeigenerkennung deaktivieren';
+
+  @override
+  String get adBlockerEnabledNotice =>
+      'Werbeblocker auf dieser Seite aktiviert.';
+
+  @override
+  String get adBlockerDisabledNotice =>
+      'Werbeblocker deaktiviert — Seite neu geladen, um den Inhalt wiederherzustellen.';
+
+  @override
+  String get adBlockerInteractiveOnNotice =>
+      'Erkennungsmodus an — tippen Sie auf eine Anzeige, um sie zu blockieren.';
+
+  @override
+  String get adBlockerInteractiveOffNotice => 'Erkennungsmodus aus.';
 }

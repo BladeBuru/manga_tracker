@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | library             |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-09-04          |
+| Source        | Rétro-ingénierie + Chantier correctifs-août |
 
 ---
 
@@ -151,6 +151,13 @@ readAt: DateTime             — Timestamp de lecture (ISO 8601)
 - **Responsive layout** : `LayoutBuilder` dans `LibraryBlocView` — contrainte max 1100px avec padding 32px au-delà de 1200px, padding 24px entre 600-1200px, plein écran en dessous.
 - **Persistance mode vue** : `static bool? _cachedViewMode` en mémoire + `shared_preferences` pour la persistance entre sessions.
 
+**Modifications chantier correctifs-août (fix/offline-cache) :**
+
+- **Taxonomie d'échec centralisée** : `LibraryBloc` utilise désormais `classifyFailure()` (`lib/core/network/failure_classifier.dart`) au lieu de `on SocketException`. Les 4 modes : `network` (réseau injoignable), `sessionExpired` (credentials locaux absents — `SessionExpiredException`), `sessionRejected` (401/403 du serveur), `other`. Le cache est servi en lecture pour `network` et `sessionExpired` ; pour `sessionRejected`, le cache est également servi en lecture (décision produit révisée 2026-08-31 : *« l'authentification ne peut pas empêcher de voir mes données »* — `SessionRejectedBanner` non bloquant est affiché à la place d'une redirection forcée).
+- **Handlers de mutation toujours émettants** : chaque handler de mutation de `LibraryBloc` (`AddManga`, `RemoveManga`, `UpdateStatus`, `SaveProgress`, `UpdateLink`, `DeleteLink`) émet toujours un état, y compris sur erreur ou hors ligne. Avant, un handler muet laissait le BLoC bloqué sur `LibraryActionInProgress` → spinner sans issue.
+- **`isOffline` ré-évalué à chaque échec** : plus d'héritage de `isOffline` de l'état précédent dans les 6 handlers de mutation. `isOffline` = « ces données viennent du cache » ; le ré-évaluer évite qu'un état `isOffline: true` survive après une mutation réussie.
+- **Progression de lecture mise en cache** : `LibraryService.getLibraryEntry` dispose maintenant d'un repli cache pour `getUserSavedMangas()`. Avant, une exception réseau était avalée par `DetailBloc._enrichWithLibraryInfo`, qui retournait la fiche sans enrichissement — le manga s'affichait hors ligne comme si l'utilisateur ne l'avait pas dans sa bibliothèque.
+
 ---
 
 ## Décisions techniques documentées en spec (non-ADR)
@@ -167,6 +174,6 @@ readAt: DateTime             — Timestamp de lecture (ISO 8601)
 
 | Fichier | Ce qu'il teste | Statut |
 |---------|---------------|--------|
-| Aucun   | —             | Absent |
-
-Le module `library` n'a aucun test unitaire ni widget test. Les features `auth` et `manga` ont des tests partiels, mais `library` n'en a pas.
+| `test/features/library/bloc/library_bloc_offline_test.dart` | LibraryBloc : cache servi sur réseau mort, sur token expiré, sur rejet 401/403 (SessionRejected) ; handlers de mutation toujours émettants hors ligne | Ajouté chantier correctifs-août |
+| `test/features/library/services/library_service_offline_entry_test.dart` | LibraryService.getLibraryEntry : repli cache quand réseau indisponible ; progression préservée hors ligne | Ajouté chantier correctifs-août |
+| `test/core/network/failure_classifier_test.dart` | `classifyFailure()` : taxonomie 4 cas (network/sessionExpired/sessionRejected/other), SocketException, ClientException web, SessionExpiredException, 401, 403 | Ajouté chantier correctifs-août |

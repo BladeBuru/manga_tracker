@@ -3,9 +3,9 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | auth                |
-| Version       | 0.1.0               |
-| Date          | 2026-06-04          |
-| Source        | Rétro-ingénierie    |
+| Version       | 0.2.0               |
+| Date          | 2026-09-04          |
+| Source        | Rétro-ingénierie + Chantier correctifs-août |
 
 ---
 
@@ -74,6 +74,8 @@ Le module dépend également de `features/profile/services/gdpr.service.dart` po
 | `lib/features/auth/widgets/consent_checkbox.dart` | Case à cocher RGPD non pré-cochée avec lien légal cliquable | ~94 |
 | `lib/features/auth/widgets/social_login_buttons.dart` | Row Google + Apple buttons outlined 52px | ~112 |
 | `lib/features/profile/services/gdpr.service.dart` | Articles 15/20 + consentement (recordConsent, getConsentStatus) | ~127 |
+| `lib/features/auth/exceptions/session_expired.exception.dart` | NEW (chantier correctifs-août) — `SessionExpiredException` : levée par `HttpService` quand les deux tokens manquent avant même tout appel réseau. Distincte de `InvalidCredentialsException` : signifie « pas de credentials utilisables, verdict sans verdict serveur ». Utilisée par `classifyFailure()` pour categoriser le mode `sessionExpired`. | ~12 |
+| `lib/core/services/offline_cache_purge.dart` | NEW (chantier correctifs-août) — `purgeUserScopedCache()` : efface toutes les clés de cache appartenant à l'utilisateur courant (`cached_library`, `cached_manga_detail_*`, `cached_homepage`, `cached_search_*`, `cached_user_info`, `cached_recommendations`, etc.). Appelé par `AuthService.logout()` et sur changement de compte (`cache_owner_id` différent). | ~65 |
 
 ---
 
@@ -121,6 +123,17 @@ Les 4 formulaires auth (`LoginCubit`, `RegisterCubit`, `ForgotPasswordCubit`, `R
 
 ### Stockage sécurisé via `flutter_secure_storage`
 Tokens JWT stockés dans Keystore Android / Keychain iOS / WebCrypto Web. Les identifiants biométriques (`secure_credentials`) sont stockés avec `writeSecureDataBiometric` — interface différente qui nécessite une authentification biométrique pour la lecture (`readSecureDataBiometric`). Ce choix est visible dans `pubspec.yaml`.
+
+### `logout()` vs `clearSessionTokens()` — contrepartie du cache offline (chantier correctifs-août)
+
+La frontière offline révisée (2026-08-31) introduit une distinction critique entre deux méthodes d'invalidation de session :
+
+| Méthode | Appelée par | Purge le cache ? | Pourquoi |
+|---------|-------------|-----------------|---------|
+| `AuthService.logout()` | Bouton Déconnexion, changement de compte | **Oui** — `purgeUserScopedCache()` | La déconnexion est un geste explicite de l'utilisateur. Sur un appareil partagé, le cache du compte précédent ne doit plus être lisible. |
+| `clearSessionTokens()` | 401/403 automatique dans `HttpService`, refresh rejeté au boot (`startup_page.dart`) | **Non** — conserve le cache | L'invalidation automatique ne signifie pas déconnexion voulue. Le cache doit rester disponible pour le mode offline (c'est précisément la valeur de la règle révisée). Y purger annulerait toute la logique `sessionRejected → cache servi`. |
+
+Un dev qui appelle `clearSessionTokens()` en pensant "nettoyer la session" et y ajoute une purge du cache **casserait silencieusement la règle offline** : l'utilisateur ne pourrait plus voir ses données même si elles sont en cache et qu'il était auparavant authentifié.
 
 ### Platform-split Google OAuth via `kIsWeb`
 `AuthService.loginWithGoogle()` dispatch sur `kIsWeb` pour sélectionner la stratégie : SDK natif `google_sign_in` sur mobile, `GoogleAuthWebView` sur web. La WebView utilise le pattern conditional export pour les helpers JS (`google_auth_js_helper_web.dart` / `google_auth_js_helper_stub.dart`).

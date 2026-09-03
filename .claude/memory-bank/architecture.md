@@ -87,17 +87,21 @@ UI (View) → Event → BLoC → State → UI (View)
 | `SyncService` | Singleton | Synchronisation offline |
 | `LanguageService` | Singleton | Langue + persistance |
 | `NotificationService` | Singleton | Notifs locales (Android-only actuellement) |
+| `OfflineCachePurgeService` | — (fonction utilitaire) | `purgeUserScopedCache()` — efface le cache de l'utilisateur courant (appelé par `logout()` et changement de compte uniquement) |
+| `RecommendationDismissalService` | Lazy singleton (sans `dependsOn`) | Rejet et annulation de rejet de recommandations |
 
 ---
 
 ## Mode offline-first
 
 1. Appel API → succès → mise en cache → état `isOffline: false`
-2. Appel API → `SocketException` → cache → état `isOffline: true`
+2. Appel API → échec → `classifyFailure()` → cache → état `isOffline: true`
 3. Actions offline → queue dans `OfflineCacheService`
 4. Reconnexion → `SyncService` traite la queue automatiquement
 
-**Règle** : Détecter l'offline via `SocketException`, PAS via `ConnectivityService`.
+**Règle** : Détecter l'offline via **`classifyFailure()`** (`lib/core/network/failure_classifier.dart`), PAS via `on SocketException` seul. Les 4 modes : `network` (réseau mort), `sessionExpired` (credentials absents localement), `sessionRejected` (401/403 serveur), `other`. Le cache est servi en lecture pour les 4 modes (décision produit 2026-08-31). Sur `sessionRejected` → `SessionRejectedBanner` non bloquant.
+
+**Contrepartie purge** : `AuthService.logout()` appelle `purgeUserScopedCache()`. `clearSessionTokens()` (invalidation automatique) **ne purge pas** — sinon l'utilisateur perdrait ses données en cache malgré une authentification précédente valide.
 
 ---
 
