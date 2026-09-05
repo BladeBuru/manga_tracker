@@ -1,0 +1,43 @@
+# Garde-fou anti-régression : analyse statique + tests sur CHAQUE PR et sur
+# master. Avant ce workflow, aucun test Flutter ne tournait en CI : une
+# fonctionnalité pouvait disparaître (ex. protection anti-redirection du
+# lecteur, v0.13.0) sans qu'aucun signal ne l'arrête avant la release.
+#
+# À déclarer comme « status check » obligatoire sur master (Settings →
+# Branches) sous le nom du job : « Analyse & tests Flutter ».
+name: Flutter CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Analyse & tests Flutter
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Traductions générées
+        run: flutter gen-l10n
+
+      - name: Analyse statique (erreurs et avertissements bloquants)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Tests
+        run: flutter test --reporter expanded
