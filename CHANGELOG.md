@@ -5,6 +5,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — statut « En cours » automatique
+
+### ⚡ Améliorations
+
+- **Un manga « À jour » repasse tout seul « En cours » dès qu'un nouveau chapitre sort.** Vous aviez lu jusqu'au chapitre 39 et le 40 vient de paraître ? Vous n'êtes plus à jour : le statut change automatiquement, sans rien avoir à faire. Cela vaut que le nouveau chapitre soit repéré par l'application (vérification de votre lien de lecture en arrière-plan ou à l'ouverture de la fiche) ou par le serveur, même application fermée. Le manga remonte en tête de votre bibliothèque pour que vous le voyiez tout de suite.
+- **Le changement est visible immédiatement** dans la bibliothèque et sur la fiche du manga, et il est conservé si vous consultez votre bibliothèque hors connexion.
+- **Rien d'autre ne bouge.** Les statuts « À lire plus tard » et « Terminé » ne sont jamais modifiés. Marquer un manga « À jour » vous-même reste possible : seule la sortie d'un nouveau chapitre le remet « En cours ». Et quand vous atteignez le dernier chapitre, le passage à « À jour » ou « Terminé » fonctionne comme avant.
+
+> Fonctionne pleinement avec la version du serveur publiée en même temps (à mettre en ligne en premier).
+
 ## [Unreleased] — feat/pas-interesse
 
 ### Added
