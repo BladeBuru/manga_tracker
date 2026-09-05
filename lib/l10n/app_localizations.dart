@@ -3987,6 +3987,222 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Mode détection désactivé.'**
   String get adBlockerInteractiveOffNotice;
+
+  /// Titre de la section d'accueil listant les dernieres sorties du catalogue
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernières sorties'**
+  String get homeSectionLatest;
+
+  /// Titre de la section d'accueil des titres les plus populaires
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce qui marche le mieux'**
+  String get homeSectionPopular;
+
+  /// Titre de la section d'accueil des titres les mieux notes
+  ///
+  /// In fr, this message translates to:
+  /// **'Les mieux notés'**
+  String get homeSectionTopRated;
+
+  /// Titre de la section d'accueil filtree sur le type Manga (Japon)
+  ///
+  /// In fr, this message translates to:
+  /// **'Manga'**
+  String get homeSectionTypeManga;
+
+  /// Titre de la section d'accueil filtree sur le type Manhwa (Coree)
+  ///
+  /// In fr, this message translates to:
+  /// **'Manhwa'**
+  String get homeSectionTypeManhwa;
+
+  /// Titre de la section d'accueil filtree sur le type Manhua (Chine)
+  ///
+  /// In fr, this message translates to:
+  /// **'Manhua'**
+  String get homeSectionTypeManhua;
+
+  /// Titre d'une section d'accueil filtree sur un genre
+  ///
+  /// In fr, this message translates to:
+  /// **'Genre : {genre}'**
+  String homeSectionGenre(String genre);
+
+  /// Titre d'une section d'accueil filtree sur une annee de sortie
+  ///
+  /// In fr, this message translates to:
+  /// **'Les sorties de {year}'**
+  String homeSectionYear(String year);
+
+  /// Titre de la section d'accueil des titres plebiscites par la communaute
+  ///
+  /// In fr, this message translates to:
+  /// **'Le choix de la communauté'**
+  String get homeSectionCommunity;
+
+  /// Titre de la section d'accueil des titres bien notes mais peu connus
+  ///
+  /// In fr, this message translates to:
+  /// **'Pépites cachées'**
+  String get homeSectionHiddenGems;
+
+  /// Bouton ouvrant la page complete d'une section d'accueil
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get homeSectionSeeAll;
+
+  /// Libelle d'accessibilite du bouton Tout voir d'une section
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir toute la section {title}'**
+  String homeSectionSeeAllAccessibility(String title);
+
+  /// Titre de l'etat vide de l'accueil quand aucune section n'est disponible
+  ///
+  /// In fr, this message translates to:
+  /// **'Rien à afficher pour le moment'**
+  String get homeSectionsEmptyTitle;
+
+  /// Sous-titre de l'etat vide de l'accueil
+  ///
+  /// In fr, this message translates to:
+  /// **'Tirez vers le bas pour actualiser le catalogue.'**
+  String get homeSectionsEmptySubtitle;
+
+  /// Message d'erreur quand les sections de l'accueil ne peuvent pas etre chargees
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger l\'accueil pour le moment.'**
+  String get homeSectionsLoadError;
+
+  /// Message affiche sur la page Tout voir quand la section est inconnue du serveur (404)
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette section n\'existe plus.'**
+  String get homeSectionNotFound;
+
+  /// Message d'erreur de la page Tout voir d'une section
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger cette section.'**
+  String get homeSectionLoadError;
+
+  /// Message affiche quand la page suivante d'une section ne peut pas etre chargee
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger la suite.'**
+  String get homeSectionLoadMoreFailed;
+
+  /// Etat vide de la page Tout voir d'une section
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun titre dans cette section pour le moment.'**
+  String get homeSectionEmpty;
+
+  /// Pied de liste quand toutes les pages d'une section ont ete chargees
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez tout vu'**
+  String get homeSectionEndOfList;
+
+  /// Nombre total de titres d'une section (page Tout voir)
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun titre} =1{1 titre} other{{count} titres}}'**
+  String homeSectionTitlesCount(int count);
+
+  /// Nom traduit du genre Romance
+  ///
+  /// In fr, this message translates to:
+  /// **'Romance'**
+  String get genreRomance;
+
+  /// Nom traduit du genre Drama
+  ///
+  /// In fr, this message translates to:
+  /// **'Drame'**
+  String get genreDrama;
+
+  /// Nom traduit du genre Fantasy
+  ///
+  /// In fr, this message translates to:
+  /// **'Fantasy'**
+  String get genreFantasy;
+
+  /// Nom traduit du genre Comedy
+  ///
+  /// In fr, this message translates to:
+  /// **'Comédie'**
+  String get genreComedy;
+
+  /// Nom traduit du genre Slice of Life
+  ///
+  /// In fr, this message translates to:
+  /// **'Tranche de vie'**
+  String get genreSliceOfLife;
+
+  /// Nom traduit du genre Action
+  ///
+  /// In fr, this message translates to:
+  /// **'Action'**
+  String get genreAction;
+
+  /// Nom traduit du genre School Life
+  ///
+  /// In fr, this message translates to:
+  /// **'Vie scolaire'**
+  String get genreSchoolLife;
+
+  /// Nom traduit du genre Supernatural
+  ///
+  /// In fr, this message translates to:
+  /// **'Surnaturel'**
+  String get genreSupernatural;
+
+  /// Nom traduit du genre Adventure
+  ///
+  /// In fr, this message translates to:
+  /// **'Aventure'**
+  String get genreAdventure;
+
+  /// Nom traduit du genre Historical
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique'**
+  String get genreHistorical;
+
+  /// Nom traduit du genre Mystery
+  ///
+  /// In fr, this message translates to:
+  /// **'Mystère'**
+  String get genreMystery;
+
+  /// Nom traduit du genre Psychological
+  ///
+  /// In fr, this message translates to:
+  /// **'Psychologique'**
+  String get genrePsychological;
+
+  /// Nom traduit du genre Sci-fi
+  ///
+  /// In fr, this message translates to:
+  /// **'Science-fiction'**
+  String get genreSciFi;
+
+  /// Nom traduit du genre Horror
+  ///
+  /// In fr, this message translates to:
+  /// **'Horreur'**
+  String get genreHorror;
+
+  /// Nom traduit du genre Martial Arts
+  ///
+  /// In fr, this message translates to:
+  /// **'Arts martiaux'**
+  String get genreMartialArts;
 }
 
 class _AppLocalizationsDelegate

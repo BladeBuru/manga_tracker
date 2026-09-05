@@ -5,6 +5,21 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/home-catalog-sections
+
+### ✨ Nouveautés
+
+- **Découvrez de nouvelles sections sur l'accueil.** L'accueil ne se limite plus à trois listes : il vous propose désormais de nombreuses rangées à faire défiler, comme un catalogue — les dernières sorties, ce qui marche le mieux, les mieux notés, le choix de la communauté, des pépites cachées, mais aussi des sélections par type (manga, manhwa, manhua), par genre (action, fantasy, romance…) et par année (« Les sorties de 2014 »…). De nouvelles sections pourront apparaître au fil du temps sans mise à jour de l'application.
+- **Un bouton « Tout voir » sur chaque section** ouvre la sélection complète dans une grille qui se remplit au fur et à mesure que vous faites défiler, avec le nombre total de titres.
+- **Le type de chaque œuvre est indiqué sur sa couverture** (manga, manhwa, manhua), pour repérer d'un coup d'œil ce qui vous plaît.
+- Les titres des sections et des genres les plus courants s'affichent dans votre langue.
+
+### ⚡ Améliorations
+
+- L'accueil s'affiche avec des aperçus de chargement plutôt qu'une roue qui tourne, et s'adapte aux tablettes et aux grands écrans (cartes plus grandes, davantage visibles).
+- Sans connexion, l'accueil et les sections déjà consultées restent disponibles, avec le bandeau habituel.
+- Tirez vers le bas pour actualiser l'ensemble de l'accueil, recommandations comprises.
+
 ## [Unreleased] — statut « En cours » automatique
 
 ### ⚡ Améliorations

@@ -27,6 +27,13 @@ class MangaQuickViewDto {
   final List<String>? associated;
   final bool hasNewChapters;
 
+  /// Type d'oeuvre (`Manga`, `Manhwa`, `Manhua`…). Optionnel : renvoye par
+  /// les sections de l'accueil (`/mangas/home/sections`), absent ailleurs.
+  final String? type;
+
+  /// Genres (`Action`, `Romance`…). Optionnel, meme provenance que [type].
+  final List<String>? genres;
+
   const MangaQuickViewDto({
     required this.muId,
     required this.title,
@@ -40,6 +47,8 @@ class MangaQuickViewDto {
     this.userReportedTotalChapters,
     this.associated,
     this.hasNewChapters = false,
+    this.type,
+    this.genres,
   });
 
   /// URL proxy stable côté API (Phase 4) — auto-refresh côté serveur si
@@ -95,7 +104,17 @@ class MangaQuickViewDto {
             json['user_reported_total_chapters'],
         associated: (json['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
         hasNewChapters: json['hasNewChapters'] as bool? ?? false,
+        // Champs optionnels des sections d'accueil : tolerants a l'absence
+        // ET a un type inattendu (une chaine vide vaut « inconnu »).
+        type: _optionalString(json['type']),
+        genres: (json['genres'] as List?)?.map((e) => e.toString()).toList(),
     );
+  }
+
+  static String? _optionalString(dynamic raw) {
+    if (raw == null) return null;
+    final value = raw.toString().trim();
+    return value.isEmpty ? null : value;
   }
   
   Map<String, dynamic> toJson() {
@@ -112,6 +131,8 @@ class MangaQuickViewDto {
       'userReportedTotalChapters': userReportedTotalChapters,
       'associated': associated,
       'hasNewChapters': hasNewChapters,
+      'type': type,
+      'genres': genres,
     };
   }
 }
