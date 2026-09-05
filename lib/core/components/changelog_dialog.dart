@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 import '../services/app_update_service.dart';
 import '../services/translation_service.dart';
 import '../services/language_service.dart';
@@ -239,9 +240,10 @@ class _ChangelogDialogState extends State<ChangelogDialog> {
     final changelogToDisplay = _translatedChangelogInfo ?? widget.changelogInfo;
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
-      title: const Text("Quoi de neuf ?"),
+      title: Text(l10n.whatsNew),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,7 +286,7 @@ class _ChangelogDialogState extends State<ChangelogDialog> {
             Navigator.of(context).pop();
             widget.onClose?.call();
           },
-          child: const Text("Super !"),
+          child: Text(l10n.great),
         ),
       ],
     );
