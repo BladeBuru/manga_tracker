@@ -740,14 +740,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contactUs => 'Contact Us';
 
   @override
-  String get downloads => 'Téléchargements';
+  String get downloads => 'Downloads';
 
   @override
-  String get manageDownloads => 'Gérer les téléchargements';
+  String get manageDownloads => 'Manage downloads';
 
   @override
-  String get manageDownloadsSubtitle =>
-      'Voir et supprimer les chapitres téléchargés';
+  String get manageDownloadsSubtitle => 'View and delete downloaded chapters';
 
   @override
   String get discordLinkError => 'Unable to open Discord link';

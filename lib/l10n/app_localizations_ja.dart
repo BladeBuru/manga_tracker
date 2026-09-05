@@ -728,14 +728,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get contactUs => 'お問い合わせ';
 
   @override
-  String get downloads => 'Téléchargements';
+  String get downloads => 'ダウンロード';
 
   @override
-  String get manageDownloads => 'Gérer les téléchargements';
+  String get manageDownloads => 'ダウンロードを管理';
 
   @override
-  String get manageDownloadsSubtitle =>
-      'Voir et supprimer les chapitres téléchargés';
+  String get manageDownloadsSubtitle => 'ダウンロードした章の確認と削除';
 
   @override
   String get discordLinkError => 'Discordリンクを開けません';
@@ -789,218 +788,207 @@ class AppLocalizationsJa extends AppLocalizations {
   String get linkFormatDetected => '章の形式が検出されました！進行状況は自動的に保存されます。';
 
   @override
-  String get linkAddCustomPattern =>
-      'Ajouter un pattern personnalisé pour ce format';
+  String get linkAddCustomPattern => 'この形式用のカスタムパターンを追加';
 
   @override
-  String get customSelectors => 'Sélecteurs personnalisés';
+  String get customSelectors => 'カスタムセレクター';
 
   @override
-  String get manageCustomSelectors => 'Gérer les sélecteurs';
+  String get manageCustomSelectors => 'セレクターを管理';
 
   @override
   String get manageCustomSelectorsSubtitle =>
-      'Ajoutez des sélecteurs CSS personnalisés pour bloquer des publicités ou identifier le contenu';
+      '広告のブロックやコンテンツの識別に使うカスタムCSSセレクターを追加します';
 
   @override
-  String get addCustomSelector => 'Ajouter un sélecteur';
+  String get addCustomSelector => 'セレクターを追加';
 
   @override
-  String get selectorDomainLabel => 'Domaine (ex: exemple.com)';
+  String get selectorDomainLabel => 'ドメイン（例：example.com）';
 
   @override
-  String get selectorCssLabel => 'Sélecteur CSS';
+  String get selectorCssLabel => 'CSSセレクター';
 
   @override
-  String get selectorTypeLabel => 'Type de sélecteur';
+  String get selectorTypeLabel => 'セレクターの種類';
 
   @override
-  String get selectorTypeUrlPattern => 'Pattern d\'URL';
+  String get selectorTypeUrlPattern => 'URLパターン';
 
   @override
-  String get selectorUrlPatternLabel => 'Pattern d\'URL (regex)';
+  String get selectorUrlPatternLabel => 'URLパターン（正規表現）';
 
   @override
-  String get selectorUrlPatternHint =>
-      'Exemple : /chapter-(\\d+)/ pour détecter /chapter-22';
+  String get selectorUrlPatternHint => '例：/chapter-(\\d+)/ で /chapter-22 を検出';
 
   @override
-  String get selectorExamplesUrlPattern => 'Exemples de patterns d\'URL :';
+  String get selectorExamplesUrlPattern => 'URLパターンの例：';
 
   @override
-  String get selectorExampleUrlPattern => 'Exemple : /chapter-22';
+  String get selectorExampleUrlPattern => '例：/chapter-22';
 
   @override
   String get selectorExampleUrlPatternExplanation =>
-      'Si votre site utilise \"/chapter-22\" dans l\'URL et que le système ne le détecte pas automatiquement :';
+      'サイトのURLに「/chapter-22」が含まれているのに、システムが自動検出しない場合：';
 
   @override
   String get selectorUrlPatternExampleDesc =>
-      'Utilisez une expression régulière (regex) avec (\\d+) pour capturer le numéro du chapitre.\n\nCe pattern sera appliqué à TOUS les sites.\n\nExemples de patterns :\n• /chapter-(\\d+)/ → détecte /chapter-22\n• /chapppter-(\\d+)/ → détecte /chapppter-22 (avec 3 p)\n• /manga/chapter-(\\d+)/ → détecte /manga/chapter-22\n• /episode-(\\d+)/ → détecte /episode-22';
+      '(\\d+) を含む正規表現（regex）を使って章番号を取得します。\n\nこのパターンはすべてのサイトに適用されます。\n\nパターンの例：\n• /chapter-(\\d+)/ → /chapter-22 を検出\n• /chapppter-(\\d+)/ → /chapppter-22 を検出（pが3つ）\n• /manga/chapter-(\\d+)/ → /manga/chapter-22 を検出\n• /episode-(\\d+)/ → /episode-22 を検出';
 
   @override
   String get selectorUrlPatternGlobal =>
-      'Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+      'このパターンはすべてのサイトに適用されます。ドメインを指定する必要はありません。';
 
   @override
-  String get selectorTypeAdBlocker => 'Bloqueur de publicités';
+  String get selectorTypeAdBlocker => '広告ブロッカー';
 
   @override
-  String get selectorTypeChapterContent => 'Contenu du chapitre';
+  String get selectorTypeChapterContent => '章のコンテンツ';
 
   @override
-  String get selectorDescriptionLabel => 'Description (optionnel)';
+  String get selectorDescriptionLabel => '説明（任意）';
 
   @override
-  String get selectorDescriptionHint => 'Description du sélecteur';
+  String get selectorDescriptionHint => 'セレクターの説明';
 
   @override
-  String get selectorRequiredFields => 'Tous les champs sont requis';
+  String get selectorRequiredFields => 'すべての項目が必須です';
 
   @override
-  String get selectorAdded => 'Sélecteur ajouté';
+  String get selectorAdded => 'セレクターを追加しました';
 
   @override
-  String get deleteSelector => 'Supprimer le sélecteur';
+  String get deleteSelector => 'セレクターを削除';
 
   @override
-  String get deleteSelectorConfirm =>
-      'Êtes-vous sûr de vouloir supprimer ce sélecteur ?';
+  String get deleteSelectorConfirm => 'このセレクターを削除してもよろしいですか？';
 
   @override
-  String get selectorDeleted => 'Sélecteur supprimé';
+  String get selectorDeleted => 'セレクターを削除しました';
 
   @override
-  String get selectorsExported => 'Sélecteurs exportés dans le presse-papiers';
+  String get selectorsExported => 'セレクターをクリップボードにエクスポートしました';
 
   @override
-  String get importSelectors => 'Importer des sélecteurs';
+  String get importSelectors => 'セレクターをインポート';
 
   @override
-  String get selectorsJsonLabel => 'JSON des sélecteurs';
+  String get selectorsJsonLabel => 'セレクターのJSON';
 
   @override
-  String get import => 'Importer';
+  String get import => 'インポート';
 
   @override
   String selectorsImported(String count) {
-    return '$count sélecteur(s) importé(s)';
+    return '$count件のセレクターをインポートしました';
   }
 
   @override
   String get selectorsReadyToShare =>
-      'Sélecteurs prêts à être partagés ! Collez le JSON dans Discord.';
+      'セレクターを共有する準備ができました！JSONをDiscordに貼り付けてください。';
 
   @override
-  String get exportSelectors => 'Exporter';
+  String get exportSelectors => 'エクスポート';
 
   @override
-  String get shareSelectors => 'Partager';
+  String get shareSelectors => '共有';
 
   @override
-  String get noCustomSelectors => 'Aucun sélecteur personnalisé';
+  String get noCustomSelectors => 'カスタムセレクターはありません';
 
   @override
-  String get addFirstSelector =>
-      'Ajoutez votre premier sélecteur pour commencer';
+  String get addFirstSelector => '最初のセレクターを追加して始めましょう';
 
   @override
-  String get selectorExamples => 'Exemples';
+  String get selectorExamples => '例';
 
   @override
-  String get selectorExamplesAdBlocker =>
-      'Exemples pour bloquer des publicités :';
+  String get selectorExamplesAdBlocker => '広告をブロックする例：';
 
   @override
-  String get selectorExampleAd1 => 'Bannière publicitaire';
+  String get selectorExampleAd1 => '広告バナー';
 
   @override
-  String get selectorExampleAd2 => 'Publicité par ID';
+  String get selectorExampleAd2 => 'IDで指定した広告';
 
   @override
-  String get selectorExampleAd3 => 'Iframe publicitaire';
+  String get selectorExampleAd3 => '広告のiframe';
 
   @override
-  String get selectorExampleAd4 => 'Script publicitaire';
+  String get selectorExampleAd4 => '広告スクリプト';
 
   @override
-  String get selectorExamplesChapter =>
-      'Exemples pour identifier le contenu du chapitre :';
+  String get selectorExamplesChapter => '章のコンテンツを識別する例：';
 
   @override
-  String get selectorExampleChapter1 => 'Conteneur de chapitre';
+  String get selectorExampleChapter1 => '章のコンテナ';
 
   @override
-  String get selectorExampleChapter2 => 'Lecteur de manga';
+  String get selectorExampleChapter2 => 'マンガリーダー';
 
   @override
-  String get selectorExampleChapter3 => 'Images du chapitre';
+  String get selectorExampleChapter3 => '章の画像';
 
   @override
-  String get selectorExampleChapter4 => 'Contenu de lecture';
+  String get selectorExampleChapter4 => '読書コンテンツ';
 
   @override
-  String get selectorExampleChapter5 => 'Format manga/chapitre-22';
+  String get selectorExampleChapter5 => 'manga/chapter-22 形式';
 
   @override
   String get selectorExampleChapter5Explanation =>
-      'Exemple concret : Si votre URL est \"monsite.com/manga/chapitre-22\"';
+      '具体例：URLが「mysite.com/manga/chapter-22」の場合';
 
   @override
   String get selectorUrlFormatDetected =>
-      'BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+      '朗報：URL内の「/manga/chapter-22」形式は、すでにシステムが自動的に検出します！\n\nサイトがURLでこの形式のみを使用している場合、CSSセレクターを追加する必要はありません。';
 
   @override
-  String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
+  String get selectorWhenNeeded => 'CSSセレクターを追加するのはどんなとき？';
 
   @override
-  String get selectorPracticalExample => 'Exemple pratique :';
+  String get selectorPracticalExample => '実践例：';
 
   @override
   String get selectorExampleScenario =>
-      'Cas : Votre site utilise \"/chapppter-22\" (avec 3 p) au lieu de \"/chapter-22\"';
+      'ケース：サイトが「/chapter-22」ではなく「/chapppter-22」（pが3つ）を使用している';
 
   @override
-  String get selectorStep1 =>
-      'Ouvrez la page du chapitre dans votre navigateur';
+  String get selectorStep1 => 'ブラウザで章のページを開く';
 
   @override
-  String get selectorStep2 =>
-      'Appuyez sur F12 pour ouvrir les outils de développement';
+  String get selectorStep2 => 'F12キーを押して開発者ツールを開く';
 
   @override
-  String get selectorStep3 =>
-      'Cliquez sur l\'icône \"Inspecter\" (ou Ctrl+Shift+C)';
+  String get selectorStep3 => '「検証」アイコンをクリック（または Ctrl+Shift+C）';
 
   @override
-  String get selectorStep4 =>
-      'Cliquez sur le conteneur qui contient les images du chapitre';
+  String get selectorStep4 => '章の画像を含むコンテナをクリック';
 
   @override
-  String get selectorStep5 =>
-      'Dans le code HTML, trouvez la classe ou l\'ID du conteneur';
+  String get selectorStep5 => 'HTMLコード内でコンテナのクラスまたはIDを探す';
 
   @override
-  String get selectorFillForm => 'Remplissez le formulaire :';
+  String get selectorFillForm => 'フォームに入力する：';
 
   @override
   String get selectorCssWhenNeededDesc =>
-      'UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+      'ページのHTMLコンテンツを識別するために特定のセレクターが必要な場合のみ使用してください。\n\nシステムがすでにURLから章を正しく検出している場合、CSSセレクターを追加する必要はありません。\n\nCSSセレクターを追加するのは次の場合のみです：\n• システムが章のコンテンツを正しく検出しない\n• このサイト特有の広告をブロックしたい\n• サイトがコンテンツに特殊なクラス/IDを使用している\n\nセレクターの見つけ方：ページを開き（F12 → 検証）、章の画像を含むコンテナを見つけて、そのクラスまたはIDを使用します（例：.manga-content、#chapter-images）';
 
   @override
   String get selectorDomainExampleDesc =>
-      'Mettez uniquement le nom de domaine (sans http://, sans www, sans le chemin /manga/chapitre-22)';
+      'ドメイン名のみを入力してください（http://、www、パス /manga/chapter-22 は不要）';
 
   @override
-  String get selectorOtherExamples => 'Autres exemples courants :';
+  String get selectorOtherExamples => 'その他のよくある例：';
 
   @override
   String get selectorExampleChapter5Desc =>
-      'Pour les sites utilisant le format manga/chapitre-22 dans leurs URLs. Exemple : si votre URL est \"site.com/manga/chapitre-22\", utilisez ces sélecteurs pour identifier le contenu.';
+      'URLに manga/chapter-22 形式を使用しているサイト向け。例：URLが「site.com/manga/chapter-22」の場合、これらのセレクターを使ってコンテンツを識別します。';
 
   @override
   String get selectorExamplesHint =>
-      'Astuce : Utilisez les outils de développement de votre navigateur (F12) pour inspecter les éléments et trouver les sélecteurs CSS appropriés.';
+      'ヒント：ブラウザの開発者ツール（F12）で要素を検証し、適切なCSSセレクターを見つけましょう。';
 
   @override
   String get captchaDetected => 'CAPTCHAが検出されました - 広告ブロッカーが一時的に無効になりました';
