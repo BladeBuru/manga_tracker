@@ -5,6 +5,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — fix/i18n-changelog-dialog
+
+### 🐛 Corrections
+- **L'écran « Quoi de neuf ? » parle enfin votre langue.** À chaque mise à jour, son titre et le bouton pour le refermer restaient en français, quelle que soit la langue choisie dans l'application. Ils sont désormais traduits dans les 7 langues, comme le reste de l'interface.
+
+### Notes d'implémentation
+- `ChangelogDialog` : les deux libellés en dur passent par `AppLocalizations` via les clés `whatsNew` et `great`, déjà présentes dans les 7 ARB mais jamais utilisées — aucune clé ajoutée, fichiers générés inchangés (`flutter gen-l10n` sans diff).
+- +3 widget tests (`test/core/components/changelog_dialog_test.dart`) : rendu en anglais, rendu en français, fermeture + callback `onClose`.
+- Reste en dur dans ce dialog : le préfixe « Version » (clé ARB `version` disponible) et le mot « build » — hors périmètre de ce correctif.
+
 ## [Unreleased] — feat/pas-interesse
 
 ### Added
