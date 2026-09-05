@@ -30,6 +30,11 @@ import 'package:mangatracker/features/auth/views/verify_email.view.dart';
 // Shell
 import 'package:mangatracker/features/home/views/bottom_navbar.dart';
 
+// Accueil catalogue — page « Tout voir » d'une section
+import 'package:mangatracker/features/home/dto/home_section.dto.dart';
+import 'package:mangatracker/features/home/dto/home_section_kind.dart';
+import 'package:mangatracker/features/home/views/home_section_page.dart';
+
 // Manga
 import 'package:mangatracker/features/manga/views/detail_bloc_view.dart';
 import 'package:mangatracker/features/manga/views/web_view.dart';
@@ -72,6 +77,18 @@ class MangaDetailExtras {
   final String? title;
   final String? coverPath;
   const MangaDetailExtras({this.title, this.coverPath});
+}
+
+/// Extras passés via `context.push('/home/section/:id', extra: ...)` —
+/// titre + icône affichés immédiatement, avant la réponse de l'API (sur
+/// F5 web sans extras, la page les déduit de la réponse elle-même).
+class HomeSectionExtras {
+  final HomeSectionKind kind;
+  final HomeSectionParams params;
+  const HomeSectionExtras({
+    required this.kind,
+    this.params = HomeSectionParams.none,
+  });
 }
 
 /// Extras passés via `context.push('/friends/:userId', extra: ...)` —
@@ -174,6 +191,20 @@ GoRouter buildAppRouter() {
         path: '/home',
         name: 'home',
         builder: (context, state) => const BottomNavbar(),
+        routes: [
+          // /home/section/:id — page « Tout voir » d'une section de
+          // l'accueil catalogue (grille paginée). L'id est encodé côté
+          // appelant (`type%3AManhwa`) ; go_router le décode.
+          GoRoute(
+            path: 'section/:id',
+            name: 'home-section',
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              final extras = state.extra as HomeSectionExtras?;
+              return HomeSectionPage(sectionId: id, extras: extras);
+            },
+          ),
+        ],
       ),
 
       // ──────────────────────────────────────────────────────────────

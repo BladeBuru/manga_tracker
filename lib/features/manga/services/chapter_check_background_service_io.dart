@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
+import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
 import 'package:mangatracker/features/manga/services/chapter_check_service.dart';
 import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/features/manga/services/notification_service.dart';
@@ -18,6 +19,8 @@ class ChapterCheckBackgroundService {
   final NewChapterService _newChapterService = NewChapterService();
   final NotificationService _notificationService = NotificationService();
   final NotificationPreferencesService _notificationPreferences = NotificationPreferencesService();
+  final ReadingStatusAutoUpdateService _statusAutoUpdate =
+      ReadingStatusAutoUpdateService();
 
   /// Initialise le service de vérification en arrière-plan
   Future<void> initialize() async {
@@ -124,7 +127,17 @@ class ChapterCheckBackgroundService {
             await _newChapterService.addNewChapter(muId, nextChapter);
             newChaptersFound++;
             debugPrint('✅ ChapterCheckBackgroundService: Nouveau chapitre détecté pour ${manga.title}: $nextChapter');
-            
+
+            // Règle produit : un nouveau chapitre sur un manga « à jour »
+            // → « en cours ». Détection locale (site de scan), invisible
+            // pour l'API : c'est à l'app de prévenir le serveur.
+            await _statusAutoUpdate.onNewChapterDetected(
+              muId: muId,
+              status: manga.readingStatus,
+              readChapters: readChapters,
+              chapter: nextChapter,
+            );
+
             // Envoyer une notification seulement si les notifications sont activées
             final notificationsEnabled = await _notificationPreferences.areNewChapterNotificationsEnabled();
             if (notificationsEnabled) {

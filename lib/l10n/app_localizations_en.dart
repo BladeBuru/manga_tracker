@@ -852,7 +852,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorUrlPatternGlobal =>
-      'ℹ️ The pattern will be applied to ALL sites. No need to specify a domain.';
+      'The pattern will be applied to ALL sites. No need to specify a domain.';
 
   @override
   String get selectorTypeAdBlocker => 'Ad Blocker';
@@ -958,7 +958,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorUrlFormatDetected =>
-      '✅ GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.';
+      'GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.';
 
   @override
   String get selectorWhenNeeded => 'When to add a CSS selector?';
@@ -992,7 +992,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorCssWhenNeededDesc =>
-      '⚠️ ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)';
+      'ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)';
 
   @override
   String get selectorDomainExampleDesc =>
@@ -2151,7 +2151,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Long press to stop recommending this title';
 
   @override
-  String get recommendationsSleepersTitle => '💎 Hidden gems';
+  String get recommendationsSleepersTitle => 'Hidden gems';
 
   @override
   String get sessionRejectedBanner =>
@@ -2204,4 +2204,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => 'Detection mode off.';
+
+  @override
+  String get homeSectionLatest => 'Latest releases';
+
+  @override
+  String get homeSectionPopular => 'What\'s hot right now';
+
+  @override
+  String get homeSectionTopRated => 'Top rated';
+
+  @override
+  String get homeSectionTypeManga => 'Manga';
+
+  @override
+  String get homeSectionTypeManhwa => 'Manhwa';
+
+  @override
+  String get homeSectionTypeManhua => 'Manhua';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return 'Genre: $genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return 'Releases from $year';
+  }
+
+  @override
+  String get homeSectionCommunity => 'Community picks';
+
+  @override
+  String get homeSectionHiddenGems => 'Hidden gems';
+
+  @override
+  String get homeSectionSeeAll => 'See all';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return 'See the whole $title section';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => 'Nothing to show yet';
+
+  @override
+  String get homeSectionsEmptySubtitle => 'Pull down to refresh the catalog.';
+
+  @override
+  String get homeSectionsLoadError =>
+      'The home page can\'t be loaded right now.';
+
+  @override
+  String get homeSectionNotFound => 'This section no longer exists.';
+
+  @override
+  String get homeSectionLoadError => 'This section can\'t be loaded.';
+
+  @override
+  String get homeSectionLoadMoreFailed => 'Couldn\'t load more titles.';
+
+  @override
+  String get homeSectionEmpty => 'No titles in this section yet.';
+
+  @override
+  String get homeSectionEndOfList => 'You\'ve seen it all';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count titles',
+      one: '1 title',
+      zero: 'No titles',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => 'Romance';
+
+  @override
+  String get genreDrama => 'Drama';
+
+  @override
+  String get genreFantasy => 'Fantasy';
+
+  @override
+  String get genreComedy => 'Comedy';
+
+  @override
+  String get genreSliceOfLife => 'Slice of Life';
+
+  @override
+  String get genreAction => 'Action';
+
+  @override
+  String get genreSchoolLife => 'School Life';
+
+  @override
+  String get genreSupernatural => 'Supernatural';
+
+  @override
+  String get genreAdventure => 'Adventure';
+
+  @override
+  String get genreHistorical => 'Historical';
+
+  @override
+  String get genreMystery => 'Mystery';
+
+  @override
+  String get genrePsychological => 'Psychological';
+
+  @override
+  String get genreSciFi => 'Sci-fi';
+
+  @override
+  String get genreHorror => 'Horror';
+
+  @override
+  String get genreMartialArts => 'Martial Arts';
 }

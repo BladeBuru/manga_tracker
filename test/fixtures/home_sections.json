@@ -1,0 +1,206 @@
+{
+  "generatedAt": "2026-09-05T10:00:00.000Z",
+  "sections": [
+    {
+      "id": "latest",
+      "kind": "latest",
+      "params": {},
+      "items": [
+        {
+          "muId": 101,
+          "title": "Solo Leveling",
+          "year": "2018",
+          "mediumCoverUrl": "https://cdn.test/covers/101.jpg",
+          "largeCoverUrl": "https://cdn.test/covers/101_large.jpg",
+          "rating": 9.2,
+          "type": "Manhwa",
+          "genres": ["Action", "Fantasy", "Adventure"]
+        },
+        {
+          "muId": 102,
+          "title": "Frieren",
+          "year": "2020",
+          "mediumCoverUrl": "https://cdn.test/covers/102.jpg",
+          "largeCoverUrl": "https://cdn.test/covers/102_large.jpg",
+          "rating": 9.0,
+          "type": "Manga",
+          "genres": ["Fantasy", "Slice of Life"]
+        }
+      ]
+    },
+    {
+      "id": "popular",
+      "kind": "popular",
+      "params": {},
+      "items": [
+        {
+          "muId": 201,
+          "title": "One Piece",
+          "year": "1997",
+          "mediumCoverUrl": "https://cdn.test/covers/201.jpg",
+          "largeCoverUrl": "https://cdn.test/covers/201_large.jpg",
+          "rating": 9.1,
+          "type": "Manga",
+          "genres": ["Action", "Adventure", "Comedy"]
+        }
+      ]
+    },
+    {
+      "id": "top_rated",
+      "kind": "top_rated",
+      "params": {},
+      "items": [
+        {
+          "muId": 301,
+          "title": "Vagabond",
+          "year": "1998",
+          "mediumCoverUrl": "https://cdn.test/covers/301.jpg",
+          "largeCoverUrl": null,
+          "rating": 9.4,
+          "type": "Manga",
+          "genres": ["Historical", "Martial Arts", "Drama"]
+        }
+      ]
+    },
+    {
+      "id": "type:Manhwa",
+      "kind": "type",
+      "params": { "type": "Manhwa" },
+      "items": [
+        {
+          "muId": 401,
+          "title": "Tower of God",
+          "year": "2010",
+          "mediumCoverUrl": "https://cdn.test/covers/401.jpg",
+          "largeCoverUrl": "https://cdn.test/covers/401_large.jpg",
+          "rating": 8.7,
+          "type": "Manhwa",
+          "genres": ["Action", "Fantasy"]
+        }
+      ]
+    },
+    {
+      "id": "type:Manhua",
+      "kind": "type",
+      "params": { "type": "Manhua" },
+      "items": [
+        {
+          "muId": 402,
+          "title": "Tales of Demons and Gods",
+          "year": "2015",
+          "mediumCoverUrl": "https://cdn.test/covers/402.jpg",
+          "largeCoverUrl": null,
+          "rating": 8.1,
+          "type": "Manhua",
+          "genres": ["Action", "Fantasy", "Martial Arts"]
+        }
+      ]
+    },
+    {
+      "id": "type:Manga",
+      "kind": "type",
+      "params": { "type": "Manga" },
+      "items": [
+        {
+          "muId": 403,
+          "title": "Berserk",
+          "year": "1989",
+          "mediumCoverUrl": "https://cdn.test/covers/403.jpg",
+          "largeCoverUrl": null,
+          "rating": 9.3,
+          "type": "Manga",
+          "genres": ["Action", "Fantasy", "Horror"]
+        }
+      ]
+    },
+    {
+      "id": "genre:Action",
+      "kind": "genre",
+      "params": { "genre": "Action" },
+      "items": [
+        {
+          "muId": 501,
+          "title": "Jujutsu Kaisen",
+          "year": "2018",
+          "mediumCoverUrl": "https://cdn.test/covers/501.jpg",
+          "largeCoverUrl": null,
+          "rating": 8.6,
+          "type": "Manga",
+          "genres": ["Action", "Supernatural"]
+        }
+      ]
+    },
+    {
+      "id": "year:2014",
+      "kind": "year",
+      "params": { "year": 2014 },
+      "items": [
+        {
+          "muId": 601,
+          "title": "My Hero Academia",
+          "year": "2014",
+          "mediumCoverUrl": "https://cdn.test/covers/601.jpg",
+          "largeCoverUrl": null,
+          "rating": 8.2,
+          "type": "Manga",
+          "genres": ["Action", "School Life"]
+        }
+      ]
+    },
+    {
+      "id": "community",
+      "kind": "community",
+      "params": {},
+      "items": [
+        {
+          "muId": 701,
+          "title": "Vinland Saga",
+          "year": "2005",
+          "mediumCoverUrl": "https://cdn.test/covers/701.jpg",
+          "largeCoverUrl": null,
+          "rating": 9.0,
+          "type": "Manga",
+          "genres": ["Historical", "Action", "Drama"]
+        }
+      ]
+    },
+    {
+      "id": "hidden_gems",
+      "kind": "hidden_gems",
+      "params": {},
+      "items": [
+        {
+          "muId": 801,
+          "title": "Sousou no Frieren Gaiden",
+          "year": "2023",
+          "mediumCoverUrl": "https://cdn.test/covers/801.jpg",
+          "largeCoverUrl": null,
+          "rating": null,
+          "type": "Manga",
+          "genres": ["Fantasy"]
+        }
+      ]
+    },
+    {
+      "id": "editorial:staff-picks",
+      "kind": "editorial_pick",
+      "params": { "theme": "staff" },
+      "items": [
+        {
+          "muId": 901,
+          "title": "Section inconnue, a ignorer",
+          "year": "2026",
+          "mediumCoverUrl": null,
+          "largeCoverUrl": null,
+          "rating": 7.0
+        }
+      ]
+    },
+    {
+      "id": "year:1999",
+      "kind": "year",
+      "params": { "year": 1999 },
+      "items": []
+    }
+  ]
+}

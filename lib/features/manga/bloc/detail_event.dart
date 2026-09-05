@@ -53,6 +53,18 @@ class UpdateReadingStatus extends DetailEvent {
   List<Object> get props => [status];
 }
 
+/// Le statut a été basculé **automatiquement** (nouveau chapitre détecté sur
+/// un manga « à jour » → « en cours »). Reflet local uniquement : la mutation
+/// est déjà partie via `ReadingStatusAutoUpdateService`, aucun appel réseau.
+class ReadingStatusAutoFlipped extends DetailEvent {
+  final ReadingStatus status;
+
+  const ReadingStatusAutoFlipped(this.status);
+
+  @override
+  List<Object> get props => [status];
+}
+
 /// Sauvegarder la progression de lecture
 class SaveChapterProgress extends DetailEvent {
   final int muId;

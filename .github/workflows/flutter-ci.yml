@@ -1,0 +1,55 @@
+# Garde-fou anti-régression : analyse statique + tests sur CHAQUE PR et sur
+# master. Avant ce workflow, aucun test Flutter ne tournait en CI : une
+# fonctionnalité pouvait disparaître (ex. protection anti-redirection du
+# lecteur, v0.13.0) sans qu'aucun signal ne l'arrête avant la release.
+#
+# À déclarer comme « status check » obligatoire sur master (Settings →
+# Branches) sous le nom du job : « Analyse & tests Flutter ».
+name: Flutter CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Analyse & tests Flutter
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      # `pubspec.yaml` déclare `assets/env/.env.development` et
+      # `.env.production` comme assets ; ils sont gitignorés (URL d'API par
+      # environnement). Sans eux, l'analyseur émet un avertissement
+      # `asset_does_not_exist` — bloquant — et les tests ne peuvent pas
+      # construire le bundle d'assets. Des valeurs factices suffisent : aucun
+      # test ne contacte le réseau.
+      - name: Fichiers d'environnement factices (assets gitignorés)
+        run: |
+          mkdir -p assets/env
+          printf 'MT_API_URL=http://localhost:3001\n' > assets/env/.env.development
+          printf 'MT_API_URL=https://api.example.invalid\n' > assets/env/.env.production
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Traductions générées
+        run: flutter gen-l10n
+
+      - name: Analyse statique (erreurs et avertissements bloquants)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Tests
+        run: flutter test --reporter expanded

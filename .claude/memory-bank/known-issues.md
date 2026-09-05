@@ -6,6 +6,63 @@
 
 ## 🐛 Problèmes Actifs
 
+### Lecteur : la vérification anti-robot Cloudflare n'aboutit pas sur certains sites
+- **Module** : `features/manga/views/web_view_io.dart`, `features/reader/services/*`
+- **Sévérité** : 🔴 Haute (bloque la lecture sur les sites concernés)
+- **Découvert le** : 2026-08-31 · **Réexaminé le** : 2026-09-05
+- **Statut** : Actif — partiellement traité, **non reproductible sans appareil**
+
+**Symptôme** : la page « Un instant… / Vérifiez que vous êtes un humain »
+boucle ou échoue dans le lecteur intégré, alors que la même page passe dans
+le navigateur du téléphone. Le bloqueur de pub désactivé ne change rien.
+Cela **fonctionnait auparavant** pendant longtemps, sans changement côté app.
+
+**Ce qui a été vérifié (2026-09-05)** :
+- Cloudflare documente officiellement que *« WebViews in mobile applications
+  may have limited functionality compared to full browsers »* et que
+  *« in-app browsers often have restricted JavaScript capabilities »*
+  (Supported browsers) ; ses pages de dépannage citent comme causes de boucle
+  un *« embedded context such as a webview or cross-origin iframe »*, un
+  cookie `cf_clearance` non posé/inutilisable, et *« browser extensions, such
+  as ad blockers or privacy tools, that may block standard browser headers or
+  the necessary challenge scripts »*.
+- Depuis WebView M116 (sept. 2023), la WebView Android envoie des indices
+  client `Sec-CH-UA` de marque **« Android WebView »** à chaque requête ; les
+  détections anti-robot les lisent. Un UA modifié ne contenant plus le UA par
+  défaut **supprime** ces indices (Chromium) → incohérence « dit Chrome, n'a
+  pas les en-têtes de Chrome ». La normalisation du UA de v0.13.0 est donc
+  retirée (décision du 2026-09-05).
+- Ticket flutter_inappwebview #2834 (mai 2026, ouvert) : *native Android
+  WebView apps pass Cloudflare Turnstile challenges on identical devices and
+  networks, while flutter_inappwebview apps get blocked* ; demande de pouvoir
+  supprimer/modifier `Sec-CH-UA`. Le différenciateur probable est donc dans
+  l'environnement JavaScript injecté par le plugin (pont
+  `window.flutter_inappwebview`, scripts utilitaires) plutôt que dans la
+  WebView elle-même.
+- Ce que 6.1.5 (dernière stable, 23 mois) permet : rien pour limiter les
+  scripts injectés. 6.2.0-beta.3 introduit `pluginScriptsForMainFrameOnly`,
+  `pluginScriptsOriginAllowList`, `javaScriptBridgeEnabled`,
+  `javaScriptBridgeForMainFrameOnly`.
+
+**Traité** : liste blanche de l'infrastructure de défi, nettoyage DOM
+suspendu pendant un défi, script arrêtable, cookies persistants, UA intact,
+en-tête `X-Requested-With` retiré, détection de boucle + sortie vers le
+navigateur système (aucune résolution automatisée : refus de principe).
+
+**Pistes restantes (à tester SUR APPAREIL, avec un site de référence)** :
+1. Comparer en conditions réelles : même page dans le lecteur, dans Chrome,
+   et dans une WebView « nue » (petite app de test) — pour confirmer ou
+   infirmer la piste « scripts injectés par le plugin ».
+2. Si confirmée : passer à flutter_inappwebview 6.2.x dès qu'une stable sort
+   (ou bêta sur une branche de test) et poser `pluginScriptsForMainFrameOnly:
+   true` + `javaScriptBridgeForMainFrameOnly: true` (le widget Turnstile est
+   un iframe tiers) — voire couper le pont pendant un défi.
+3. Solution de repli produit : ouvrir le chapitre dans un **Custom Tab**
+   Chrome (cookies et moteur du navigateur système) — perd le suivi de
+   chapitre et le bloqueur, à réserver aux sites qui échouent.
+
+---
+
 ### Google Sign-In : OAuth client **Android** absent de la console GCP
 - **Module** : auth (Google Sign-In mobile)
 - **Sévérité** : 🔴 Critique (la connexion Google ne fonctionne pas du tout)
@@ -170,10 +227,12 @@ jamais tourné en production. Risque de régression sur les sites qui
 fonctionnent aujourd'hui — hors périmètre du correctif Cloudflare, à traiter
 comme un chantier à part avec sa propre campagne de test.
 
-**Solution** : appeler `controller.setSettings(settings: …)` après le
-chargement des blockers, après avoir revu et resserré la liste de sélecteurs
-CSS. Attention : côté natif, tout `setSettings` portant un `contentBlockers`
-non nul **remplace** la liste de règles entière.
+**Solution** : ⚠️ **PAS via `controller.setSettings(...)`** — c'est
+précisément l'appel qui a désactivé la protection anti-redirection en
+v0.13.0 (il remplace l'objet de réglages entier, cf. décision du 2026-09-05
+dans `decisions.md`). La seule voie sûre : charger les blockers **avant** de
+construire la WebView (`FutureBuilder` sur `_getBlockers()` puis
+`initialSettings`), après avoir revu et resserré la liste de sélecteurs CSS.
 
 ---
 
@@ -204,6 +263,47 @@ explicitement — puis retester le blocage de pub sur les sites de référence.
 ---
 
 ## ✅ Problèmes Résolus
+
+### Lecteur : protection anti-redirection désactivée par le correctif Cloudflare (v0.13.0)
+- **Feature** : reader
+- **Plateforme** : Android (code mobile-only)
+- **Résolu le** : 2026-09-05
+- **Symptôme** : « Lorsque l'on lit un manga, j'avais fait exprès de couper
+  toute possibilité d'être redirigé sur un lien qui n'est pas le lien qu'on a
+  mis. Pour corriger le Cloudflare, tu m'as supprimé cette fonctionnalité :
+  toutes les pubs, impossible de revenir en arrière. »
+- **Cause racine** : le code du garde (`shouldOverrideUrlLoading`, qui annule
+  toute navigation de la frame principale hors du domaine du lien) était
+  **toujours présent**, mais n'était plus jamais appelé. Le correctif
+  Cloudflare chargeait l'URL initiale après un
+  `controller.setSettings(ReaderWebViewSettings.build(userAgent: …))`. Côté
+  Android (`InAppWebView.java`), `setSettings` termine par
+  `customSettings = newCustomSettings` : l'objet de réglages est **remplacé
+  entier** par un objet neuf où `useShouldOverrideUrlLoading` vaut `false`
+  (le plugin ne l'infère de la présence du callback que pour
+  `initialSettings`). `InAppWebViewClient.shouldOverrideUrlLoading` teste ce
+  drapeau et ne remonte plus rien à Dart → toutes les redirections passaient.
+  Aucun test ne couvrait ce branchement, et **aucun test Flutter ne tournait
+  en CI**.
+- **Solution** :
+  - Retour à `initialUrlRequest` + `initialSettings` posés une seule fois ;
+    `useShouldOverrideUrlLoading: true` **explicite** ; `supportMultipleWindows`
+    et `javaScriptCanOpenWindowsAutomatically` à `false` ; suppression du
+    `setSettings` et du module `WebViewUserAgent`.
+  - Décision extraite dans `ReaderNavigationPolicy` (pure) : même site →
+    autorisé ; URL publicitaire → annulée ; frame principale vers un autre
+    domaine → **annulée** ; vérification anti-robot → toujours autorisée.
+  - Interrupteur (`Switch`) du bloqueur rétabli dans la barre d'actions
+    (l'`IconButton` de v0.13.0 ne laissait pas lire l'état).
+- **Garde-fous ajoutés** :
+  - `reader_navigation_policy_test.dart` (règles, avec `AdBlockerService`
+    réel) ; `reader_web_view_settings_test.dart` (chaque réglage invariant) ;
+    `reader_invariants_test.dart` (fil de détente qui lit le source : callback
+    branché, `useShouldOverrideUrlLoading: true`, **aucun `setSettings(`**,
+    `initialUrlRequest`, bloqueur actif par défaut).
+  - `.github/workflows/flutter-ci.yml` : `flutter analyze` + `flutter test`
+    sur chaque PR (à déclarer check obligatoire sur master).
+  - Section « Lecteur en ligne — invariants » dans `CLAUDE.md`.
 
 ### Mode hors ligne : cache jamais servi quand le token est expiré
 - **Feature** : manga (détail) / library / home / search / stats
@@ -309,9 +409,11 @@ SearchBloc web). Un test rouge a d'abord reproduit le bug.
     leurs ancêtres toujours épargnés, « ad » reconnu comme **mot entier**.
   - Script rendu **arrêtable** (`window.__mtAdBlock.stop()`) et idempotent ;
     arrêt explicite dès détection d'un défi.
-  - `WebViewUserAgent` — retrait des jetons `; wv`, `Version/4.0` et
-    `Build/…`, en conservant les versions réelles de Chrome et d'Android.
-    L'URL initiale est chargée **après** application du UA.
+  - ~~`WebViewUserAgent` — retrait des jetons `; wv`, `Version/4.0`~~ —
+    **retiré le 2026-09-05** : sans effet constaté, et l'application du UA
+    passait par un `setSettings` qui a désactivé la protection
+    anti-redirection (voir l'entrée « protection anti-redirection
+    désactivée » ci-dessus et `decisions.md`).
   - `ChallengeLoopDetector` + `ChallengeEscapeDialog` — au bout de 3
     présentations du même défi en < 90 s, l'application cesse de boucler et
     propose l'ouverture dans le navigateur système (i18n 7 langues).
@@ -324,8 +426,7 @@ SearchBloc web). Un test rouge a d'abord reproduit le bug.
   liste blanche, la détection de boucle, la construction du user-agent et
   l'absence des sélecteurs fautifs — **pas** le succès effectif d'un défi.
 - Tests : `test/features/reader/challenge_allowlist_test.dart`,
-  `challenge_loop_detector_test.dart`, `web_view_user_agent_test.dart`,
-  `ad_blocker_challenge_test.dart`.
+  `challenge_loop_detector_test.dart`, `ad_blocker_challenge_test.dart`.
 
 ### Progression perdue en silence quand le chapitre lu dépasse le total connu
 - **Feature** : reader / library

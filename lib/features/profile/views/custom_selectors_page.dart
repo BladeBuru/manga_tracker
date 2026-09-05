@@ -287,7 +287,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                                               Expanded(
                                                 child: Text(
                                                   l10n?.selectorUrlPatternGlobal ??
-                                                      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.',
+                                                      'Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.',
                                                   style: const TextStyle(
                                                     fontSize: 11,
                                                     height: 1.4,
@@ -391,7 +391,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                                               Expanded(
                                                 child: Text(
                                                   l10n?.selectorUrlFormatDetected ??
-                                                      '✅ BONNE NOUVELLE : Le format "/manga/chapitre-22" dans l\'URL est déjà détecté automatiquement par le système !\n\n'
+                                                      'BONNE NOUVELLE : Le format "/manga/chapitre-22" dans l\'URL est déjà détecté automatiquement par le système !\n\n'
                                                           'Vous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.',
                                                   style: const TextStyle(
                                                     fontSize: 11,
@@ -562,7 +562,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                                               'Sélecteur CSS',
                                           '.manga-content, [data-chapter], .manga-chapter',
                                           l10n?.selectorCssWhenNeededDesc ??
-                                              '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\n'
+                                              'UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\n'
                                                   'Si le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\n'
                                                   'Ajoutez un sélecteur CSS SEULEMENT si :\n'
                                                   '• Le système ne détecte pas correctement le contenu du chapitre\n'
@@ -570,6 +570,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                                                   '• Le site utilise des classes/IDs particuliers pour le contenu\n\n'
                                                   'Pour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, '
                                                   'et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)',
+                                          explanationIcon: Icons.warning_amber_outlined,
                                         ),
                                       ],
                                     ),
@@ -1083,8 +1084,9 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
     BuildContext context,
     String fieldName,
     String exampleValue,
-    String explanation,
-  ) {
+    String explanation, {
+    IconData? explanationIcon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -1134,16 +1136,41 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            explanation,
-            style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.8),
-              height: 1.4,
+          if (explanationIcon != null)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  explanationIcon,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    explanation,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.8),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              explanation,
+              style: TextStyle(
+                fontSize: 10,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.8),
+                height: 1.4,
+              ),
             ),
-          ),
         ],
       ),
     );

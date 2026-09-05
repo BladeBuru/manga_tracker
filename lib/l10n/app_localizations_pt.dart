@@ -865,7 +865,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorUrlPatternGlobal =>
-      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+      'Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
 
   @override
   String get selectorTypeAdBlocker => 'Bloqueur de publicités';
@@ -973,7 +973,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorUrlFormatDetected =>
-      '✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+      'BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
 
   @override
   String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
@@ -1010,7 +1010,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorCssWhenNeededDesc =>
-      '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+      'UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
 
   @override
   String get selectorDomainExampleDesc =>
@@ -2177,7 +2177,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Toque longo para deixar de recomendar este título';
 
   @override
-  String get recommendationsSleepersTitle => '💎 Joias escondidas';
+  String get recommendationsSleepersTitle => 'Joias escondidas';
 
   @override
   String get sessionRejectedBanner =>
@@ -2233,4 +2233,130 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => 'Modo de deteção desativado.';
+
+  @override
+  String get homeSectionLatest => 'Últimos lançamentos';
+
+  @override
+  String get homeSectionPopular => 'O que está bombando';
+
+  @override
+  String get homeSectionTopRated => 'Mais bem avaliados';
+
+  @override
+  String get homeSectionTypeManga => 'Mangá';
+
+  @override
+  String get homeSectionTypeManhwa => 'Manhwa';
+
+  @override
+  String get homeSectionTypeManhua => 'Manhua';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return 'Gênero: $genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return 'Lançamentos de $year';
+  }
+
+  @override
+  String get homeSectionCommunity => 'A escolha da comunidade';
+
+  @override
+  String get homeSectionHiddenGems => 'Joias escondidas';
+
+  @override
+  String get homeSectionSeeAll => 'Ver tudo';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return 'Ver toda a seção $title';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => 'Nada para mostrar por enquanto';
+
+  @override
+  String get homeSectionsEmptySubtitle =>
+      'Puxe para baixo para atualizar o catálogo.';
+
+  @override
+  String get homeSectionsLoadError =>
+      'Não foi possível carregar a página inicial agora.';
+
+  @override
+  String get homeSectionNotFound => 'Esta seção não existe mais.';
+
+  @override
+  String get homeSectionLoadError => 'Não foi possível carregar esta seção.';
+
+  @override
+  String get homeSectionLoadMoreFailed =>
+      'Não foi possível carregar mais títulos.';
+
+  @override
+  String get homeSectionEmpty => 'Ainda não há títulos nesta seção.';
+
+  @override
+  String get homeSectionEndOfList => 'Você viu tudo';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count títulos',
+      one: '1 título',
+      zero: 'Nenhum título',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => 'Romance';
+
+  @override
+  String get genreDrama => 'Drama';
+
+  @override
+  String get genreFantasy => 'Fantasia';
+
+  @override
+  String get genreComedy => 'Comédia';
+
+  @override
+  String get genreSliceOfLife => 'Slice of Life';
+
+  @override
+  String get genreAction => 'Ação';
+
+  @override
+  String get genreSchoolLife => 'Vida escolar';
+
+  @override
+  String get genreSupernatural => 'Sobrenatural';
+
+  @override
+  String get genreAdventure => 'Aventura';
+
+  @override
+  String get genreHistorical => 'Histórico';
+
+  @override
+  String get genreMystery => 'Mistério';
+
+  @override
+  String get genrePsychological => 'Psicológico';
+
+  @override
+  String get genreSciFi => 'Ficção científica';
+
+  @override
+  String get genreHorror => 'Terror';
+
+  @override
+  String get genreMartialArts => 'Artes marciais';
 }

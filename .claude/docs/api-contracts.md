@@ -44,6 +44,36 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 | `GET` | `/mangas/new` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
 | `POST` | `/mangas/search` | JWT | body JSON `{search_pattern, page?, limit?}` | `SearchResultsPageDto` (enveloppe `{results, totalHits, page, perPage, hasMore}`) — tri par pertinence MangaUpdates ; tableau nu `List<MangaQuickViewDto>` si `page` absent (rétrocompat ≤ 0.11.0) |
 | `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` |
+| `GET` | `/mangas/home/sections` | JWT | `?limit=20` (5..40, items par section) | `HomeSectionsDto` — `{generatedAt, sections: [{id, kind, params, items}]}` |
+| `GET` | `/mangas/home/sections/:id` | JWT | `?page=1&limit=40` (5..40) | `HomeSectionsPageDto` — `{id, kind, params, page, limit, total, items}` ; **404** si `id` inconnu → `HomeSectionNotFoundException` |
+
+### Accueil catalogue (`/mangas/home/sections`) — 2026-09-05
+
+Consommé par `HomeSectionsService` (`features/home/services/`), `HomeSectionsBloc`
+(accueil) et `HomeSectionPageBloc` (page « Tout voir » `/home/section/:id`).
+
+- `items[]` = même JSON que `/mangas/popular` (`muId, title, year,
+  mediumCoverUrl, largeCoverUrl, rating`) **+ champs optionnels** `type`
+  (string : `Manga`, `Manhwa`, `Manhua`…) et `genres` (string[]). Parsés par
+  `MangaQuickViewDto.fromJson` (`type` / `genres` nullables, `toJson`
+  rétrocompatible avec l'ancien cache).
+- **Les sections ne portent pas de titre** : le client le déduit de `kind` +
+  `params` via `HomeSectionL10n.title()` (ARB `homeSection*`, placeholders
+  `genre` / `type` / `year`). L'**ordre des sections est celui du serveur**.
+- `kind` connus (`HomeSectionKind`) : `latest`, `popular`, `top_rated`,
+  `type` (`params.type`), `genre` (`params.genre`), `year` (`params.year`,
+  entier), `community`, `hidden_gems`. Un `kind` **inconnu est ignoré sans
+  planter** (`HomeSectionKind.tryParse` → `null` → section écartée) ; sur la
+  page `/:id`, un `kind` inconnu conserve la page, le titre retombe sur l'`id`.
+- Sections `type:*` possiblement absentes au début : rien n'est supposé, la
+  liste affichée est exactement celle du serveur, sections vides masquées.
+- `id` peut contenir `:` et des espaces (`genre:Slice of Life`) → encodé
+  avec `Uri.encodeComponent` dans le chemin.
+- Pagination « Tout voir » : `hasMore = page * limit < total` (repli : page
+  pleine ⇒ suite) ; les doublons entre pages (insertion serveur entre deux
+  appels) sont dédoublonnés côté client sur `muId`.
+- Fixtures du contrat : `test/fixtures/home_sections.json`,
+  `test/fixtures/home_section_page.json`.
 
 ---
 
@@ -199,6 +229,8 @@ HttpService gère :
 | Endpoint | Clé cache |
 |----------|-----------|
 | `GET /mangas/popular + trending + new` | `cached_homepage` |
+| `GET /mangas/home/sections` (réponse complète, enveloppe `{cachedAt, data}`) | `cached_home_sections` (préfixe `cached_` → purgé à la déconnexion) |
+| `GET /mangas/home/sections/:id` | — (pas de cache par page ; hors ligne, la page 1 retombe sur l'aperçu de `cached_home_sections`) |
 | `GET /library` | `cached_library` |
 | `GET /mangas/:muId` | `cached_manga_detail_<muId>` |
 | `POST /mangas/search` (page 1) | `cached_search_<query>` |
