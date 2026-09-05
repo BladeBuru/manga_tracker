@@ -5,6 +5,14 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — fix/l10n-cles-manquantes
+
+### Fixed
+- **L’application parle enfin votre langue partout.** En allemand, espagnol, japonais, coréen et portugais, l’écran des sélecteurs personnalisés et la section « Téléchargements » du profil s’affichaient en français. Ces textes sont maintenant traduits dans les 7 langues.
+- 66 clés n’existaient que dans `app_fr.arb` (3 manquaient aussi en anglais) : `flutter gen-l10n` comblait alors silencieusement les getters générés avec le texte du template, donc du français, sans erreur bloquante. Les placeholders ICU (`{count}`) sont conservés ; les marqueurs émojis du texte FR/EN ne sont pas repris dans les nouvelles traductions (cf. `chore/emojis-vers-icones`).
+
+### Tests
+- `test/l10n/arb_keys_sync_test.dart` : les 6 ARB traduits doivent exposer exactement le jeu de clés de `app_fr.arb` (hors métadonnées `@`). Le test échouait avant correction (EN : 3 clés, DE/ES/JA/KO/PT : 66 clés) et passe désormais.
 ## [Unreleased] — feat/pas-interesse
 
 ### Added

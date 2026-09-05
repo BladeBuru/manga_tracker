@@ -1230,5 +1230,8 @@
   "adBlockerEnabledNotice": "Ad blocker enabled on this page.",
   "adBlockerDisabledNotice": "Ad blocker disabled — page reloaded to restore the content.",
   "adBlockerInteractiveOnNotice": "Detection mode on — tap an ad to block it.",
-  "adBlockerInteractiveOffNotice": "Detection mode off."
+  "adBlockerInteractiveOffNotice": "Detection mode off.",
+  "downloads": "Downloads",
+  "manageDownloads": "Manage downloads",
+  "manageDownloadsSubtitle": "View and delete downloaded chapters"
 }
