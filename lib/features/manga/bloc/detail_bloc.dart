@@ -8,6 +8,7 @@ import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
+import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
@@ -30,7 +31,9 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   final NewChapterService _newChapterService = NewChapterService();
   final NotificationService _notificationService = NotificationService();
   final NotificationPreferencesService _notificationPreferences = NotificationPreferencesService();
-  
+  final ReadingStatusAutoUpdateService _statusAutoUpdate =
+      ReadingStatusAutoUpdateService();
+
   StreamSubscription<bool>? _connectivitySubscription;
   int? _currentMuId;
   Timer? _chapterCheckTimer; // Timer pour la vérification différée des chapitres
@@ -46,8 +49,20 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     on<DeleteCustomLink>(_onDeleteCustomLink);
     on<UpdateUserRating>(_onUpdateUserRating);
     on<ReportMoreChapters>(_onReportMoreChapters);
+    on<ReadingStatusAutoFlipped>(_onReadingStatusAutoFlipped);
 
     _initializeConnectivityListener();
+  }
+
+  /// Reflet local d'une bascule automatique de statut — aucun appel réseau
+  /// ici, il a déjà eu lieu (cf. `_checkForNewChapters`).
+  void _onReadingStatusAutoFlipped(
+      ReadingStatusAutoFlipped event, Emitter<DetailState> emit) {
+    final latest = state;
+    if (latest is! DetailLoaded) return;
+    emit(latest.copyWith(
+      mangaDetail: latest.mangaDetail.copyWith(readingStatus: event.status),
+    ));
   }
 
   @override
@@ -706,7 +721,20 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         final nextChapter = readChapters + 1;
         await _newChapterService.addNewChapter(muId, nextChapter);
         debugPrint('✅ DetailBloc: Nouveau chapitre détecté: $nextChapter');
-        
+
+        // Règle produit : « à jour » + nouveau chapitre → « en cours ». Le
+        // service prévient le serveur (une fois) et patche le cache ; on ne
+        // reflète dans l'état que si la fiche affichée est encore la même.
+        final flipped = await _statusAutoUpdate.onNewChapterDetected(
+          muId: muId,
+          status: mangaDetail.readingStatus,
+          readChapters: readChapters,
+          chapter: nextChapter,
+        );
+        if (flipped && !isClosed && _currentMuId == muId) {
+          add(const ReadingStatusAutoFlipped(ReadingStatus.reading));
+        }
+
         // Envoyer une notification seulement si les notifications sont activées
         final notificationsEnabled = await _notificationPreferences.areNewChapterNotificationsEnabled();
         if (notificationsEnabled) {

@@ -51,6 +51,31 @@ class MangaQuickViewDto {
   String coverProxyUrl({String size = 'medium'}) =>
       buildApiUri('/mangas/$muId/cover', {'size': size}).toString();
 
+  /// Copie avec surcharge des champs qui évoluent côté application (statut,
+  /// progression, drapeau nouveaux chapitres). Les autres champs — dont
+  /// `userReportedTotalChapters` et `associated` — sont conservés tels quels.
+  MangaQuickViewDto copyWith({
+    ReadingStatus? readingStatus,
+    num? readChapters,
+    num? totalChapters,
+    bool? hasNewChapters,
+  }) {
+    return MangaQuickViewDto(
+      muId: muId,
+      title: title,
+      year: year,
+      smallCoverUrl: smallCoverUrl,
+      mediumCoverUrl: mediumCoverUrl,
+      rating: rating,
+      readingStatus: readingStatus ?? this.readingStatus,
+      readChapters: readChapters ?? this.readChapters,
+      totalChapters: totalChapters ?? this.totalChapters,
+      userReportedTotalChapters: userReportedTotalChapters,
+      associated: associated,
+      hasNewChapters: hasNewChapters ?? this.hasNewChapters,
+    );
+  }
+
   factory MangaQuickViewDto.fromJson(Map<String, dynamic> json) {
     return MangaQuickViewDto(
         muId: num.parse(json['muId'].toString()),
