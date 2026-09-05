@@ -24,6 +24,7 @@ import 'package:mangatracker/features/reader/services/scroll_position_service.da
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
 import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
+import 'package:mangatracker/features/reader/services/reader_navigation_policy.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
@@ -81,7 +82,9 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   // Détection des vérifications anti-robot qui bouclent
   final _loopDetector = ChallengeLoopDetector();
-  late final Future<String?> _userAgentFuture;
+  // Politique anti-redirection : pure, verrouillée par tests. Voir la
+  // documentation de ReaderNavigationPolicy avant d'y toucher.
+  late final ReaderNavigationPolicy _navigationPolicy;
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
@@ -103,8 +106,10 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     ChapterLinkResolver.init(CustomSelectorsService());
     _lastCommitted = widget.initialLastRead;
     _originHost = Uri.parse(widget.initialUrl).host;
-    // Résolu ici pour être disponible AVANT la toute première requête.
-    _userAgentFuture = ReaderWebViewSettings.resolveUserAgent();
+    _navigationPolicy = ReaderNavigationPolicy(
+      blocksRequest: _adBlockerService.shouldBlockRequest,
+      allowsHost: _isAllowedDomain,
+    );
     _loadAdBlockerPreference();
     // Charger les blockers de manière asynchrone
     _loadBlockers();
@@ -1020,12 +1025,19 @@ class _ReaderWebViewState extends State<ReaderWebView> {
           ],
         ),
         body: InAppWebView(
-          // Pas d'`initialUrlRequest` : le chargement est déclenché dans
-          // `onWebViewCreated`, une fois le user-agent normalisé appliqué.
+          initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
+          // INVARIANT (régression v0.13.0) : `initialSettings` est le SEUL
+          // endroit où les réglages sont posés. Ne JAMAIS appeler
+          // `controller.setSettings(...)` sur cette WebView : côté Android,
+          // l'appel remplace l'objet de réglages ENTIER par un neuf, ce qui
+          // remettait `useShouldOverrideUrlLoading` à false et rendait le
+          // garde `shouldOverrideUrlLoading` ci-dessous inerte — toutes les
+          // redirections publicitaires passaient. Verrouillé par
+          // test/features/reader/reader_invariants_test.dart.
           initialSettings: ReaderWebViewSettings.build(
             contentBlockers: _cachedBlockers,
           ),
-          onWebViewCreated: (c) async {
+          onWebViewCreated: (c) {
             _controller = c;
             // Ajouter le handler JavaScript pour le mode interactif
             c.addJavaScriptHandler(handlerName: 'onAdBlockClick', callback: (args) async {
@@ -1034,37 +1046,24 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 await _handleAdBlockClick(selector);
               }
             });
-            await ReaderWebViewSettings.applyUserAgentAndLoad(
-              controller: c,
-              initialUrl: widget.initialUrl,
-              userAgent: _userAgentFuture,
-            );
           },
 
-          // 1) Nouvelle navigation principale - Blocage strict des redirections
+          // 1) Navigation principale — blocage strict des redirections.
+          // Toute navigation de la frame principale vers un autre domaine
+          // que celui du lien de l'utilisateur est ANNULÉE (protection
+          // anti-pub). La décision est dans ReaderNavigationPolicy (pure).
           shouldOverrideUrlLoading: (controller, action) async {
-            if (action.request.url == null) {
-              return NavigationActionPolicy.ALLOW;
-            }
-
-            final url = action.request.url!.toString();
-            final uri = action.request.url!;
-            final host = uri.host;
-
-            // Bloquer les domaines de publicités
-            if (_adBlockerService.shouldBlockRequest(url)) {
+            final uri = action.request.url;
+            final decision = _navigationPolicy.decide(
+              url: uri,
+              isForMainFrame: action.isForMainFrame,
+            );
+            if (decision == ReaderNavigationDecision.cancel) {
               return NavigationActionPolicy.CANCEL;
             }
-
-            // Pour les frames principales, vérifier le domaine
-            if (action.isForMainFrame) {
-              // Si ce n'est pas le même domaine, bloquer
-              if (!_isAllowedDomain(host)) {
-                return NavigationActionPolicy.CANCEL;
-              }
+            if (uri != null && action.isForMainFrame) {
               _handleDetected(uri);
             }
-
             return NavigationActionPolicy.ALLOW;
           },
 

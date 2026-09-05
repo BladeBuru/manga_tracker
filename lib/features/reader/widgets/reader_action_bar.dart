@@ -24,6 +24,11 @@ enum ReaderOverflowAction {
 /// a mal chargé, et couper le bloqueur quand il casse le site. Le reste — une
 /// fois par chapitre (télécharger, copier l'URL) ou une fois pour toutes
 /// (mode désignation, explication) — part dans l'overflow.
+///
+/// Le bloqueur est un **interrupteur** (`Switch`), pas un bouton : son état
+/// doit se lire d'un coup d'œil, sans avoir à deviner si l'icône est
+/// « allumée ». Il se coupe de lui-même pendant une vérification anti-robot
+/// et se rallume ensuite — l'interrupteur le montre en temps réel.
 class ReaderActionBar extends StatelessWidget {
   const ReaderActionBar({
     super.key,
@@ -51,15 +56,6 @@ class ReaderActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).colorScheme;
-
-    // Le libellé décrit l'action à venir, pas l'état : c'est ce qu'attend un
-    // lecteur d'écran sur un bouton, l'état étant porté par `isSelected`.
-    final adBlockerLabel = adBlockerEnabled
-        ? (l10n?.adBlockerDisableAction ??
-            'Désactiver le bloqueur de publicités')
-        : (l10n?.adBlockerEnableAction ?? 'Activer le bloqueur de publicités');
-
     final refreshLabel = l10n?.readerRefresh ?? 'Rafraîchir la page';
 
     // `tooltip` renseigne la propriété sémantique du même nom, mais laisse le
@@ -74,16 +70,7 @@ class ReaderActionBar extends StatelessWidget {
           tooltip: refreshLabel,
           icon: Icon(Icons.refresh_outlined, semanticLabel: refreshLabel),
         ),
-        IconButton(
-          isSelected: adBlockerEnabled,
-          onPressed: () => onToggleAdBlocker(!adBlockerEnabled),
-          tooltip: adBlockerLabel,
-          icon: Icon(
-            Icons.block_outlined,
-            semanticLabel: adBlockerLabel,
-            color: adBlockerEnabled ? colors.primary : colors.onSurfaceVariant,
-          ),
-        ),
+        _AdBlockerSwitch(enabled: adBlockerEnabled, onChanged: onToggleAdBlocker),
         _buildOverflowMenu(l10n),
         const SizedBox(width: AppSpacing.xs),
       ],
@@ -140,6 +127,49 @@ class ReaderActionBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.m),
           Expanded(child: Text(label)),
         ],
+      ),
+    );
+  }
+}
+
+/// Interrupteur du bloqueur de publicités.
+///
+/// L'icône dans le pommeau rappelle ce que l'interrupteur commande ; le
+/// tooltip décrit l'action à venir (ce qu'attend un lecteur d'écran), l'état
+/// étant porté par la sémantique `toggled` du `Switch` lui-même.
+class _AdBlockerSwitch extends StatelessWidget {
+  const _AdBlockerSwitch({required this.enabled, required this.onChanged});
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final actionLabel = enabled
+        ? (l10n?.adBlockerDisableAction ??
+            'Désactiver le bloqueur de publicités')
+        : (l10n?.adBlockerEnableAction ?? 'Activer le bloqueur de publicités');
+
+    // Un seul nœud sémantique : libellé (action à venir), tooltip et état
+    // « toggled » du Switch, sinon un lecteur d'écran annonce trois choses.
+    return MergeSemantics(
+      child: Tooltip(
+        message: actionLabel,
+        child: Semantics(
+          label: actionLabel,
+          child: Switch(
+            value: enabled,
+            onChanged: onChanged,
+            thumbIcon: WidgetStateProperty.resolveWith(
+              (states) => Icon(
+                states.contains(WidgetState.selected)
+                    ? Icons.block
+                    : Icons.block_outlined,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
