@@ -23,6 +23,21 @@
 
 ## ✅ Complété
 
+### 🔒 Lecteur : protection anti-redirection rétablie + garde-fous (2026-09-05)
+
+Régression v0.13.0 : le correctif Cloudflare appelait `controller.setSettings`
+pour poser un user-agent, ce qui remettait `useShouldOverrideUrlLoading` à
+`false` côté Android → garde anti-redirection jamais appelé, toutes les pubs
+passaient. Rétabli (`initialUrlRequest` + `initialSettings` une seule fois,
+`useShouldOverrideUrlLoading: true` explicite), décision extraite dans
+`ReaderNavigationPolicy` (pure, testée), interrupteur `Switch` du bloqueur
+rétabli, UA de la plateforme laissé intact, `X-Requested-With` retiré.
+Garde-fous : 3 fichiers de tests (politique, réglages, fil de détente sur le
+source) + **workflow CI `flutter-ci.yml`** (analyze + test sur chaque PR —
+aucun test ne tournait en CI jusque-là) + section « Lecteur en ligne —
+invariants » dans `CLAUDE.md`. État des recherches Cloudflare dans
+`known-issues.md` (problème actif, à tester sur appareil).
+
 ### 🎨 Design System V1 « Refined Classic » — Refonte massive (2026-05-18)
 
 Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignoré). Application du design system V1 à **9 pages + 5 dialogs + 1 feature** en une session :
