@@ -852,7 +852,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorUrlPatternGlobal =>
-      'ℹ️ The pattern will be applied to ALL sites. No need to specify a domain.';
+      'The pattern will be applied to ALL sites. No need to specify a domain.';
 
   @override
   String get selectorTypeAdBlocker => 'Ad Blocker';
@@ -958,7 +958,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorUrlFormatDetected =>
-      '✅ GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.';
+      'GOOD NEWS: The \"/manga/chapter-22\" format in the URL is already automatically detected by the system!\n\nYou do NOT need to add a CSS selector if your site only uses this format in the URL.';
 
   @override
   String get selectorWhenNeeded => 'When to add a CSS selector?';
@@ -992,7 +992,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectorCssWhenNeededDesc =>
-      '⚠️ ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)';
+      'ONLY if your site needs a specific selector to identify the HTML content of the page.\n\nIf the system already detects your chapter correctly via the URL, you do NOT need to add a CSS selector.\n\nAdd a CSS selector ONLY if:\n• The system does not correctly detect the chapter content\n• You want to block ads specific to this site\n• The site uses particular classes/IDs for content\n\nTo find the selector: Open the page (F12 → Inspect), find the container of chapter images, and use its class or ID (e.g., .manga-content, #chapter-images)';
 
   @override
   String get selectorDomainExampleDesc =>
@@ -2151,7 +2151,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Long press to stop recommending this title';
 
   @override
-  String get recommendationsSleepersTitle => '💎 Hidden gems';
+  String get recommendationsSleepersTitle => 'Hidden gems';
 
   @override
   String get sessionRejectedBanner =>
