@@ -15,6 +15,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 > Fonctionne pleinement avec la version du serveur publiée en même temps (à mettre en ligne en premier).
 
+## [Unreleased] — chore/emojis-vers-icones
+
+### Changed
+- L'interface utilise désormais de vraies icônes à la place des émojis (section « Pépites cachées » des recommandations, encarts d'aide du réglage des sélecteurs personnalisés, écran « Quoi de neuf »).
+
 ## [Unreleased] — lecteur : protection anti-redirection et bloqueur
 
 ### 🐛 Corrections

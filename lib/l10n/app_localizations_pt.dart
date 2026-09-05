@@ -865,7 +865,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorUrlPatternGlobal =>
-      'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
+      'Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.';
 
   @override
   String get selectorTypeAdBlocker => 'Bloqueur de publicités';
@@ -973,7 +973,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorUrlFormatDetected =>
-      '✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
+      'BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.';
 
   @override
   String get selectorWhenNeeded => 'Quand ajouter un sélecteur CSS ?';
@@ -1010,7 +1010,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get selectorCssWhenNeededDesc =>
-      '⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
+      'UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)';
 
   @override
   String get selectorDomainExampleDesc =>
@@ -2177,7 +2177,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Toque longo para deixar de recomendar este título';
 
   @override
-  String get recommendationsSleepersTitle => '💎 Joias escondidas';
+  String get recommendationsSleepersTitle => 'Joias escondidas';
 
   @override
   String get sessionRejectedBanner =>
