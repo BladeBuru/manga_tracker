@@ -1,8 +1,25 @@
 {
-  "latestVersion": "0.13.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.13.0/MangaTracker.apk",
+  "latestVersion": "0.14.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.14.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.14.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Un accueil entièrement repensé, façon catalogue : dernières sorties, ce qui marche le mieux, les mieux notés, manhwa / manhua / manga, par genre, par année, le choix de la communauté et des pépites cachées — chaque section a son bouton « Tout voir »",
+        "- Vos recommandations tiennent enfin compte de ce que vous lisez : une bibliothèque faite de manhwa vous vaut des recommandations de manhwa, plus seulement des mangas",
+        "- Quand un nouveau chapitre paraît sur un manga marqué « à jour », il repasse automatiquement « en cours »",
+        "⚡ Améliorations",
+        "- L'interface utilise des icônes à la place des émojis",
+        "- Les textes qui n'existaient qu'en français sont désormais traduits dans les 7 langues, y compris la fenêtre « Quoi de neuf ? »",
+        "🐛 Corrections",
+        "- Fini les redirections vers des pages de publicité pendant la lecture : la protection qui bloque toute sortie du site de lecture, disparue dans la version 0.13.0, est rétablie et désormais couverte par des tests",
+        "- L'interrupteur du bloqueur de publicités est de retour : actif par défaut, il se coupe le temps d'une vérification « êtes-vous un robot ? » et se rallume ensuite",
+        "- L'application se présente à nouveau comme un navigateur normal face aux vérifications anti-robot ; si l'une d'elles tourne en boucle malgré tout, vous pouvez toujours ouvrir la page dans votre navigateur",
+        "- La connexion avec un compte Google depuis le site web aboutit de nouveau"
+      ]
+    },
     {
       "version": "0.13.0",
       "notes": [
