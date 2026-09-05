@@ -1641,7 +1641,7 @@ abstract class AppLocalizations {
   /// Message expliquant que le pattern est global
   ///
   /// In fr, this message translates to:
-  /// **'ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.'**
+  /// **'Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.'**
   String get selectorUrlPatternGlobal;
 
   /// Type de sélecteur : bloqueur de pub
@@ -1839,7 +1839,7 @@ abstract class AppLocalizations {
   /// Message expliquant que le format URL est déjà détecté
   ///
   /// In fr, this message translates to:
-  /// **'✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.'**
+  /// **'BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l\'URL est déjà détecté automatiquement par le système !\n\nVous n\'avez PAS besoin d\'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l\'URL.'**
   String get selectorUrlFormatDetected;
 
   /// Titre pour expliquer quand ajouter un sélecteur
@@ -1899,7 +1899,7 @@ abstract class AppLocalizations {
   /// Description expliquant quand ajouter un sélecteur CSS
   ///
   /// In fr, this message translates to:
-  /// **'⚠️ UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)'**
+  /// **'UNIQUEMENT si votre site a besoin d\'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l\'URL, vous n\'avez PAS besoin d\'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)'**
   String get selectorCssWhenNeededDesc;
 
   /// No description provided for @selectorDomainExampleDesc.
@@ -3889,7 +3889,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationsSleepersTitle.
   ///
   /// In fr, this message translates to:
-  /// **'💎 Pépites cachées'**
+  /// **'Pépites cachées'**
   String get recommendationsSleepersTitle;
 
   /// Bandeau non bloquant : la session a ete rejetee par le serveur, le contenu en cache reste consultable

@@ -1145,7 +1145,7 @@
   "dismissRecommendationError": "지금은 이 작품을 제외할 수 없습니다. 나중에 다시 시도해 주세요.",
   "dismissRecommendationOffline": "오프라인에서는 사용할 수 없습니다.",
   "dismissRecommendationAccessibility": "길게 눌러 이 작품을 추천에서 제외",
-  "recommendationsSleepersTitle": "💎 숨은 명작",
+  "recommendationsSleepersTitle": "숨은 명작",
   "sessionRejectedBanner": "세션이 만료되었습니다 — 저장된 데이터를 표시합니다",
   "sessionRejectedAction": "다시 로그인",
   "challengeLoopTitle": "인증이 완료되지 않음",

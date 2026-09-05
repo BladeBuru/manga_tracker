@@ -130,6 +130,7 @@
 ## Suivi de lecture
 
 ### ✅ Mise à jour instantanée de l'état (reading/completed/caughtUp/readLater)
+### ✅ Bascule auto « À jour » → « En cours » quand un nouveau chapitre sort *(2026-09-05 — API sur hausse du total MU, app sur détection locale)*
 ### ⏳ Filtres avancés de notifications
 
 ### Lecture

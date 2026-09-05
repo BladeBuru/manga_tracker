@@ -1145,7 +1145,7 @@
   "dismissRecommendationError": "Der Titel konnte gerade nicht ausgeblendet werden. Bitte versuche es später erneut.",
   "dismissRecommendationOffline": "Offline nicht verfügbar.",
   "dismissRecommendationAccessibility": "Lange drücken, um diesen Titel nicht mehr zu empfehlen",
-  "recommendationsSleepersTitle": "💎 Geheimtipps",
+  "recommendationsSleepersTitle": "Geheimtipps",
   "sessionRejectedBanner": "Sitzung abgelaufen – gespeicherte Daten werden angezeigt",
   "sessionRejectedAction": "Erneut anmelden",
   "challengeLoopTitle": "Überprüfung blockiert",

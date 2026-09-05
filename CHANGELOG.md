@@ -20,6 +20,29 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 - Sans connexion, l'accueil et les sections déjà consultées restent disponibles, avec le bandeau habituel.
 - Tirez vers le bas pour actualiser l'ensemble de l'accueil, recommandations comprises.
 
+## [Unreleased] — statut « En cours » automatique
+
+### ⚡ Améliorations
+
+- **Un manga « À jour » repasse tout seul « En cours » dès qu'un nouveau chapitre sort.** Vous aviez lu jusqu'au chapitre 39 et le 40 vient de paraître ? Vous n'êtes plus à jour : le statut change automatiquement, sans rien avoir à faire. Cela vaut que le nouveau chapitre soit repéré par l'application (vérification de votre lien de lecture en arrière-plan ou à l'ouverture de la fiche) ou par le serveur, même application fermée. Le manga remonte en tête de votre bibliothèque pour que vous le voyiez tout de suite.
+- **Le changement est visible immédiatement** dans la bibliothèque et sur la fiche du manga, et il est conservé si vous consultez votre bibliothèque hors connexion.
+- **Rien d'autre ne bouge.** Les statuts « À lire plus tard » et « Terminé » ne sont jamais modifiés. Marquer un manga « À jour » vous-même reste possible : seule la sortie d'un nouveau chapitre le remet « En cours ». Et quand vous atteignez le dernier chapitre, le passage à « À jour » ou « Terminé » fonctionne comme avant.
+
+> Fonctionne pleinement avec la version du serveur publiée en même temps (à mettre en ligne en premier).
+
+## [Unreleased] — chore/emojis-vers-icones
+
+### Changed
+- L'interface utilise désormais de vraies icônes à la place des émojis (section « Pépites cachées » des recommandations, encarts d'aide du réglage des sélecteurs personnalisés, écran « Quoi de neuf »).
+
+## [Unreleased] — lecteur : protection anti-redirection et bloqueur
+
+### 🐛 Corrections
+
+- **Fini les redirections vers des pages de publicité pendant la lecture.** Depuis la version 0.13.0, un clic ou un script pouvait vous envoyer sur une page publicitaire d'où il était impossible de revenir au chapitre. La protection qui bloque toute sortie du site de lecture est rétablie, et elle est désormais couverte par des tests automatiques pour qu'elle ne puisse plus disparaître.
+- **L'interrupteur du bloqueur de publicités est de retour.** Vous voyez à nouveau d'un coup d'œil s'il est activé ou non ; il est actif par défaut, se coupe de lui-même le temps d'une vérification « êtes-vous un robot ? » et se rallume ensuite.
+- **Vérification anti-robot : l'application se présente à nouveau comme un navigateur normal.** La tentative de la version 0.13.0 de maquiller l'identité du navigateur intégré n'aidait pas — et pouvait même rendre la vérification plus méfiante. Elle est retirée, et une information technique inutile qui identifiait l'application auprès des sites n'est plus envoyée. Si une vérification tourne en boucle malgré tout, l'application vous propose toujours d'ouvrir la page dans votre navigateur.
+
 ## [Unreleased] — feat/pas-interesse
 
 ### Added

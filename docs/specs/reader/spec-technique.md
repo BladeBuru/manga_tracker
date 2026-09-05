@@ -3,8 +3,8 @@
 | Champ         | Valeur              |
 |---------------|---------------------|
 | Module        | reader              |
-| Version       | 0.3.0               |
-| Date          | 2026-09-04          |
+| Version       | 0.4.0               |
+| Date          | 2026-09-05          |
 | Source        | Rétro-ingénierie + Sprint responsive/social/stats-v2 + Chantier correctifs-août |
 
 ---
@@ -106,6 +106,27 @@ go_router /manga/:muId/read-offline?chapter=N
 | `lib/features/reader/services/ad_blocker_service.dart` | Script JS : nettoyage suspendu pendant un défi actif, éléments `[data-cfasync]`/`iframe[sandbox]` épargnés, `'ad'` reconnu en tant que **mot entier** (`\bad\b`) et non sous-chaîne. Script rendu arrêtable via `window.__mtAdBlock.stop()` et idempotent (ne s'empile plus à chaque rechargement). |
 | `lib/features/manga/views/web_view_io.dart` | Amorçage du user-agent via `WebViewUserAgent.apply(controller)` avant le premier chargement. URL initiale chargée **après** application du UA. Barre d'actions remplacée par `ReaderActionBar`. Branchement `ChallengeLoopDetector` + `ChallengeEscapeDialog`. |
 
+**Suppressions fix/reader-redirect-regression :**
+
+| Fichier | Raison |
+|---------|--------|
+| `lib/features/reader/services/web_view_user_agent.dart` | Supprimé — le UA modifié (sans `; wv`) supprimait les indices `Sec-CH-UA` cohérents avec la vraie version Chrome, détectés par les vérifications anti-robot comme une incohérence. Retour au UA de la plateforme (décision documentée dans `.claude/memory-bank/decisions.md`). |
+| `test/features/reader/web_view_user_agent_test.dart` | Supprimé avec la classe testée. |
+
+**Ajouts fix/reader-redirect-regression :**
+
+| Fichier | Rôle | Lignes (approx.) |
+|---------|------|-----------------|
+| `lib/features/reader/services/reader_navigation_policy.dart` | Politique de navigation pure (`ReaderNavigationPolicy`) : décide si une URL doit être ouverte dans la WebView ou annulée. Même domaine de base → OK, vérification anti-robot → OK, pub/autre domaine → CANCEL. Testée avec `AdBlockerService` réel. | ~63 |
+
+**Modifications fix/reader-redirect-regression sur fichiers existants :**
+
+| Fichier | Modification |
+|---------|-------------|
+| `lib/features/reader/services/reader_web_view_settings.dart` | Retour à `initialUrlRequest` + `initialSettings` posés une seule fois. `useShouldOverrideUrlLoading: true` explicite, `supportMultipleWindows: false`, `javaScriptCanOpenWindowsAutomatically: false`, `requestedWithHeaderOriginAllowList: {}`. Suppression de l'appel `WebViewUserAgent`. |
+| `lib/features/manga/views/web_view_io.dart` | Suppression du `controller.setSettings(...)` post-chargement (racine de la régression v0.13.0 : sur Android, cet appel remplace l'objet de réglages ENTIER par un neuf, réinitialisant `useShouldOverrideUrlLoading` à `false`). Retour à `initialSettings`. |
+| `lib/features/reader/widgets/reader_action_bar.dart` | Interrupteur `Switch` du bloqueur de pub rétabli (actif par défaut, désactivé pendant un défi, rétabli après) avec un seul nœud sémantique. |
+
 ---
 
 ## Schéma BDD (si applicable)
@@ -166,11 +187,16 @@ Le nettoyage DOM épargnait déjà les iframes, mais la correspondance `el.class
 ### Détecteur de boucle de défi (ChallengeLoopDetector)
 `ChallengeLoopDetector` compte les présentations du même défi Cloudflare (même URL de défi ou même empreinte DOM). Après 3 présentations en moins de 90 secondes, il notifie `web_view_io.dart` qui affiche `ChallengeEscapeDialog` — proposant d'ouvrir dans le navigateur système, de réessayer, ou de fermer. Un rechargement demandé explicitement par l'utilisateur (bouton Rafraîchir) ne compte pas comme une présentation de boucle. Le compteur se réinitialise sur changement de défi ou sur résolution (cookie `cf_clearance` présent).
 
-### User-agent honnête (WebViewUserAgent)
-`WebViewUserAgent.apply(controller)` retire les jetons `; wv` et `Version/4.0` (qui signalent un moteur ancien/bridé alors que le moteur réel est Chromium) et le jeton `Build/…` (identifiant de modèle spécifique). Les vraies versions de Chrome et d'Android sont conservées. L'URL initiale est chargée **après** application du UA, de sorte que la première requête HTTP le porte déjà.
+### UA de la plateforme (suppression de WebViewUserAgent — fix/reader-redirect-regression)
+`WebViewUserAgent` a été supprimé lors du fix de la régression v0.13.0. La modification du UA (retrait de `; wv`) créait une incohérence avec les indices `Sec-CH-UA` envoyés par le moteur Chromium, détectée par les vérifications anti-robot comme un client suspect. La WebView utilise désormais le UA natif de la plateforme, sans modification. Cette décision est documentée dans `.claude/memory-bank/decisions.md`.
+
+### Protection anti-redirection — ReaderNavigationPolicy (fix/reader-redirect-regression)
+`ReaderNavigationPolicy` est une classe pure extraite de la logique inline de `web_view_io.dart`. Elle centralise la règle de navigation : même domaine de base → `ALLOW`, domaine de vérification anti-robot (via `ChallengeAllowlist`) → `ALLOW`, toute autre URL → `CANCEL`. Elle remplace le mixin de garde ad-hoc précédent et est couverte par des tests unitaires avec un `AdBlockerService` réel.
+
+La racine de la régression v0.13.0 était un appel `controller.setSettings(...)` effectué après le chargement initial pour appliquer le user-agent. Sur Android, cet appel remplace l'objet de réglages entier par un nouveau : `useShouldOverrideUrlLoading` repassait à `false`, rendant le garde `shouldOverrideUrlLoading` (et donc `ReaderNavigationPolicy`) inopérant. Le correctif revient à `initialUrlRequest` + `initialSettings` posés une seule fois, avec `useShouldOverrideUrlLoading: true` explicite.
 
 ### Barre d'actions à deux niveaux (ReaderActionBar)
-`ReaderActionBar` remplace l'ancienne barre à 6 commandes à plat. Actions rapides (toujours visibles) : Rafraîchir + Bloqueur de pub. Actions secondaires (menu trois points) : Télécharger la page, Copier l'URL, Mode de désignation des publicités, Aide. Le bouton Bloqueur agit **immédiatement** sur la page active (activation) ou recharge avec préservation de position (désactivation — nécessaire pour faire réapparaître les éléments déjà retirés). Textes i18n ×7 langues.
+`ReaderActionBar` remplace l'ancienne barre à 6 commandes à plat. Actions rapides (toujours visibles) : Rafraîchir + Bloqueur de pub (interrupteur `Switch` rétabli dans fix/reader-redirect-regression — actif par défaut, désactivé pendant un défi, rétabli après, avec un seul nœud sémantique). Actions secondaires (menu trois points) : Télécharger la page, Copier l'URL, Mode de désignation des publicités, Aide. Le bouton Bloqueur agit **immédiatement** sur la page active (activation) ou recharge avec préservation de position (désactivation — nécessaire pour faire réapparaître les éléments déjà retirés). Textes i18n ×7 langues.
 
 ### Sélecteurs personnalisés extensibles
 `AdBlockerService` et `ChapterLinkResolver` consultent `CustomSelectorsService` pour charger des règles spécifiques au domaine. Type `adBlocker` = sélecteur CSS à masquer. Type `urlPattern` = regex pour extraire le numéro de chapitre depuis l'URL. Cela permet à l'utilisateur d'étendre les règles via l'UI "Custom Selectors" sans mise à jour de l'application.
@@ -214,5 +240,14 @@ Si un chapitre téléchargé ne possède pas de `htmlPath` mais a des `imagePath
 | `test/features/reader/challenge_loop_detector_test.dart` | Comptage des défis, déclenchement après 3 occurrences en < 90 s, réinitialisation sur changement de défi, exemption du bouton Rafraîchir | Ajouté chantier correctifs-août |
 | `test/features/reader/web_view_user_agent_test.dart` | Retrait des jetons `; wv` / `Version/4.0` / `Build/…`, conservation des vraies versions Chrome et Android | Ajouté chantier correctifs-août |
 | `test/features/reader/ad_blocker_challenge_test.dart` | Absence des sélecteurs fautifs (`iframe[sandbox]`, `[data-cfasync]`, correspondance sous-chaîne `'ad'`) dans le script produit par `buildAdBlockScript`, arrêtabilité du script | Ajouté chantier correctifs-août |
+| `test/features/reader/reader_navigation_policy_test.dart` | `ReaderNavigationPolicy` : même domaine autorisé, pub annulée, autre domaine annulé, vérification anti-robot autorisée | Ajouté fix/reader-redirect-regression |
+| `test/features/reader/reader_web_view_settings_test.dart` | `ReaderWebViewSettings` : `useShouldOverrideUrlLoading: true`, absence de `setSettings(` après init, `initialUrlRequest` présent | Ajouté fix/reader-redirect-regression |
+| `test/features/reader/reader_invariants_test.dart` | Fil de détente sur le source de `web_view_io.dart` : callback `shouldOverrideUrlLoading` branché, absence de `controller.setSettings(`, `initialUrlRequest` utilisé | Ajouté fix/reader-redirect-regression |
 
-**Note** : les services `AdBlockerService`, `CaptchaDetectionService`, `ScrollPositionService`, `WebViewNavigationService` et les utils `ChapterLinkResolver`, `ReadingProgressHelper` restent non couverts hors des cas ci-dessus. Le comportement effectif face à un vrai défi Cloudflare ne peut pas être prouvé en test unitaire (dépend de l'infrastructure distante).
+**Supprimés fix/reader-redirect-regression :**
+
+| Fichier | Raison |
+|---------|--------|
+| `test/features/reader/web_view_user_agent_test.dart` | Supprimé avec `WebViewUserAgent`. |
+
+**Note** : les services `AdBlockerService`, `CaptchaDetectionService`, `ScrollPositionService`, `WebViewNavigationService` et les utils `ChapterLinkResolver`, `ReadingProgressHelper` restent non couverts hors des cas ci-dessus. Le comportement effectif face à un vrai défi Cloudflare ne peut pas être prouvé en test unitaire (dépend de l'infrastructure distante). Total CI : 217 tests verts (flutter-ci.yml, analyse + tests sur chaque PR).

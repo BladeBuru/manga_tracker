@@ -69,7 +69,8 @@ void main() {
       await _pumpBar(tester);
 
       expect(find.byIcon(Icons.refresh_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.block_outlined), findsOneWidget);
+      // Le bloqueur est un interrupteur : son état se lit sans deviner.
+      expect(find.byType(Switch), findsOneWidget);
       expect(find.byIcon(Icons.more_vert_outlined), findsOneWidget);
     });
 
@@ -115,7 +116,7 @@ void main() {
     });
   });
 
-  group('bouton du bloqueur de publicités', () {
+  group('interrupteur du bloqueur de publicités', () {
     testWidgets('demande la désactivation quand il est actif', (tester) async {
       bool? requested;
       await _pumpBar(
@@ -124,7 +125,7 @@ void main() {
         onToggleAdBlocker: (value) => requested = value,
       );
 
-      await tester.tap(find.byTooltip(_disableAdBlocker));
+      await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
       expect(requested, isFalse);
@@ -141,24 +142,29 @@ void main() {
       // Le libellé décrit l'action à venir : il bascule avec l'état.
       expect(find.byTooltip(_enableAdBlocker), findsOneWidget);
 
-      await tester.tap(find.byTooltip(_enableAdBlocker));
+      await tester.tap(find.byType(Switch));
       await tester.pumpAndSettle();
 
       expect(requested, isTrue);
     });
 
-    testWidgets('expose son état via la sémantique du bouton', (tester) async {
+    testWidgets('son état est visible : interrupteur allumé ou éteint',
+        (tester) async {
       await _pumpBar(tester, adBlockerEnabled: true);
-      final selected = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.block_outlined),
-      );
-      expect(selected.isSelected, isTrue);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
 
       await _pumpBar(tester, adBlockerEnabled: false);
-      final unselected = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.block_outlined),
-      );
-      expect(unselected.isSelected, isFalse);
+      expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    });
+
+    testWidgets('reste un interrupteur, pas un bouton (régression v0.13.0)',
+        (tester) async {
+      // Un IconButton « sélectionné » ne laissait pas voir si le bloqueur
+      // était actif ; l'interrupteur est le contrat d'interface.
+      await _pumpBar(tester);
+      expect(find.widgetWithIcon(IconButton, Icons.block_outlined),
+          findsNothing);
+      expect(find.byType(Switch), findsOneWidget);
     });
   });
 

@@ -122,6 +122,50 @@
 **Impact** : un nouveau `kind` = une clé ARB × 7 + une entrée dans `HomeSectionKind` / `HomeSectionL10n` ; tant qu'elle n'existe pas, la section est simplement absente. Un BLoC dédié (`HomeSectionsBloc`) avec son cache (`cached_home_sections`) — `HomePageBloc` ne charge plus tendances / nouveautés / populaires.
 **Date** : 2026-09-05
 
+### 🆕 Lecteur en ligne : réglages WebView figés à la création, user-agent intact (2026-09-05)
+
+**Décision** :
+1. Les réglages de la WebView du lecteur sont construits par
+   `ReaderWebViewSettings.build()` et posés **uniquement** via
+   `initialSettings`. `controller.setSettings(...)` est **interdit** sur cette
+   WebView.
+2. Le **user-agent de la plateforme n'est pas modifié**. Le module
+   `WebViewUserAgent` (v0.13.0, retrait de `; wv` / `Version/4.0`) est retiré.
+3. L'en-tête `X-Requested-With` (nom du paquet de l'app, ajouté par la WebView
+   Android à chaque requête) n'est envoyé à aucune origine
+   (`requestedWithHeaderOriginAllowList: {}`).
+
+**Pourquoi** :
+- (1) Côté Android, `setSettings` remplace l'objet de réglages *entier* par un
+  objet neuf (`InAppWebView.java`, `customSettings = newCustomSettings`). Tout
+  réglage non renseigné reprend sa valeur par défaut — dont
+  `useShouldOverrideUrlLoading` (défaut `false`), que le plugin n'infère que
+  pour les réglages initiaux. C'est ce qui a rendu la protection
+  anti-redirection inerte en v0.13.0.
+- (2) Chromium (intent « UA Client Hints on Android WebView », 2023) : *« for
+  overridden user-agent strings, we only populate user-agent client hints if
+  the overridden user-agent contains the default user-agent »*. Un UA
+  « Chrome sans wv » ne contient plus le UA par défaut → plus aucun
+  `Sec-CH-UA`, alors que tout Chrome ≥ 116 les envoie. Les vérifications
+  anti-robot recoupent explicitement « la cohérence du User-Agent et de la
+  plateforme ». Le UA d'origine (WebView annoncée comme telle, indices client
+  « Android WebView ») est au moins **cohérent**, et c'est celui avec lequel
+  la vérification fonctionnait auparavant.
+- (3) API d'opt-in officielle d'Android (déprécation en cours de l'envoi par
+  défaut) ; l'en-tête ne sert à aucun site de lecture et identifie
+  l'application.
+
+**Ce qui n'a PAS été fait, et pourquoi** : flutter_inappwebview 6.1.5
+(dernière stable) n'offre aucun réglage pour limiter ses scripts injectés
+(`window.flutter_inappwebview`, etc.) à la frame principale ou par origine ;
+ces réglages (`pluginScriptsForMainFrameOnly`, `javaScriptBridgeEnabled`…)
+n'existent qu'en 6.2.0-beta. Passer sur une bêta sans test sur appareil est
+exclu. Piste documentée dans `known-issues.md`.
+
+**Alternative écartée** : normaliser le UA en *ajoutant* un suffixe au UA
+par défaut (les indices client resteraient envoyés) — sans bénéfice : la
+WebView resterait identifiée comme telle par `Sec-CH-UA`.
+
 ---
 
 ## Décisions Futures à Prendre

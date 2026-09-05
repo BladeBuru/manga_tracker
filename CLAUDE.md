@@ -233,6 +233,39 @@ Voir [.claude/docs/offline-architecture.md](.claude/docs/offline-architecture.md
 
 ---
 
+## 📖 Lecteur en ligne — invariants (NON-NÉGOCIABLE)
+
+Leçon de la v0.13.0 : un correctif (Cloudflare) a **désactivé en silence** la
+protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
+
+- ❌ **JAMAIS** retirer ou neutraliser une fonctionnalité existante pour en
+  corriger une autre. Si un correctif exige d'en toucher une, le dire
+  explicitement dans la PR et le changelog, et ajouter le test qui la protège.
+- 🔒 **Anti-redirection** : pendant la lecture, toute navigation de la frame
+  principale vers un domaine autre que celui du lien de l'utilisateur est
+  **annulée** (`ReaderNavigationPolicy`, pure). Verrouillé par
+  `test/features/reader/reader_navigation_policy_test.dart`.
+- 🔒 **Réglages WebView posés une seule fois** (`ReaderWebViewSettings.build`
+  → `initialSettings`). ❌ **JAMAIS** `controller.setSettings(...)` sur la
+  WebView du lecteur : côté Android l'appel remplace l'objet de réglages
+  entier, `useShouldOverrideUrlLoading` repasse à `false` et le garde
+  ci-dessus devient inerte. Verrouillé par
+  `test/features/reader/reader_invariants_test.dart` (fil de détente qui lit
+  le source — si ce test casse, c'est l'invariant qu'on casse, pas le test).
+- 🔒 **Bloqueur de publicités actif par défaut**, coupé automatiquement quand
+  une vérification anti-robot s'affiche, rallumé quand elle aboutit. Il se
+  commande par un **interrupteur** (`Switch`) dont l'état se lit d'un coup
+  d'œil — pas par un bouton.
+- 🔒 **User-agent de la plateforme inchangé** : un UA modifié qui ne contient
+  plus le UA par défaut supprime les indices client (`Sec-CH-UA`) — signal
+  d'incohérence pour les vérifications anti-robot. Décision dans
+  `.claude/memory-bank/decisions.md`.
+- ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
+- ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
+  `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.
+
+---
+
 ## 🌐 Cross-platform non-négociable (évolution iOS/Web)
 
 - ❌ Pas de `dart:io` direct dans `lib/` — utiliser `path_provider`, `cross_file`, abstractions
