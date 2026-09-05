@@ -30,6 +30,18 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # `pubspec.yaml` déclare `assets/env/.env.development` et
+      # `.env.production` comme assets ; ils sont gitignorés (URL d'API par
+      # environnement). Sans eux, l'analyseur émet un avertissement
+      # `asset_does_not_exist` — bloquant — et les tests ne peuvent pas
+      # construire le bundle d'assets. Des valeurs factices suffisent : aucun
+      # test ne contacte le réseau.
+      - name: Fichiers d'environnement factices (assets gitignorés)
+        run: |
+          mkdir -p assets/env
+          printf 'MT_API_URL=http://localhost:3001\n' > assets/env/.env.development
+          printf 'MT_API_URL=https://api.example.invalid\n' > assets/env/.env.production
+
       - name: Dépendances
         run: flutter pub get
 
