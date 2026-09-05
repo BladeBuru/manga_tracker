@@ -170,7 +170,8 @@ class _RecommendationsByGenreViewState
   }
 }
 
-/// Section « 💎 Pépites cachées » — sleeper hits en tête de l'explorer.
+/// Section « Pépites cachées » (icône diamant) — sleeper hits en tête de
+/// l'explorer.
 /// Rendue vide (SizedBox.shrink) tant que le fetch n'a pas abouti ou si
 /// l'API ne renvoie rien : la page reste utilisable sans cette section.
 class _SleepersSection extends StatelessWidget {
@@ -196,9 +197,10 @@ class _SleepersSection extends StatelessWidget {
         if (sleepers.isEmpty) return const SizedBox.shrink();
         return _GenreSection(
           entry: MapEntry(
-            l10n?.recommendationsSleepersTitle ?? '💎 Pépites cachées',
+            l10n?.recommendationsSleepersTitle ?? 'Pépites cachées',
             sleepers,
           ),
+          icon: Icons.diamond_outlined,
           dismissedMuIds: dismissedMuIds,
           onDismissed: onDismissed,
           onRestored: onRestored,
@@ -214,11 +216,16 @@ class _GenreSection extends StatelessWidget {
   final ValueChanged<num> onDismissed;
   final ValueChanged<num> onRestored;
 
+  /// Icône affichée devant le titre de section (ex: diamant pour les
+  /// « Pépites cachées »). `null` pour les sections par genre classiques.
+  final IconData? icon;
+
   const _GenreSection({
     required this.entry,
     required this.dismissedMuIds,
     required this.onDismissed,
     required this.onRestored,
+    this.icon,
   });
 
   @override
@@ -241,14 +248,27 @@ class _GenreSection extends StatelessWidget {
           // les autres labels de section de l'app.
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 10),
-            child: Text(
-              entry.key.toUpperCase(),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.88,
-                color: AppColors.dsText2(brightness),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: AppColors.dsText2(brightness),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  entry.key.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.88,
+                    color: AppColors.dsText2(brightness),
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(

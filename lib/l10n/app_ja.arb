@@ -1145,7 +1145,7 @@
   "dismissRecommendationError": "現在この作品を除外できません。しばらくしてからお試しください。",
   "dismissRecommendationOffline": "オフラインでは利用できません。",
   "dismissRecommendationAccessibility": "長押しでこの作品をおすすめから除外",
-  "recommendationsSleepersTitle": "💎 隠れた名作",
+  "recommendationsSleepersTitle": "隠れた名作",
   "sessionRejectedBanner": "セッションの有効期限が切れました — 保存済みのデータを表示しています",
   "sessionRejectedAction": "再ログイン",
   "challengeLoopTitle": "認証が完了しません",
