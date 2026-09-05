@@ -89,42 +89,30 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     ));
   }
 
-  /// Charge la page d'accueil complete (initial load + fallback offline).
+  /// Charge le « compagnon » de l'accueil : utilisateur + recommandations.
+  ///
+  /// Depuis l'accueil catalogue (2026-09-05), les listes tendances /
+  /// nouveautes / populaires ne sont plus chargees ici : les sections
+  /// editoriales viennent de `HomeSectionsBloc`, avec leur propre cache.
+  /// Les deux chargeurs restants se degradent silencieusement (utilisateur
+  /// `null`, recommandations vides ou en cache), d'ou l'absence de repli :
+  /// `isOffline` reflete l'etat connu de la connectivite.
   Future<void> _onLoadHomePage(
       LoadHomePage event, Emitter<HomePageState> emit) async {
     debugPrint('HomePageBloc: Chargement de la page d\'accueil...');
+    if (state is! HomePageLoaded) emit(const HomePageLoading());
 
-    final cache = await _loader.snapshotCache();
-    if (cache.hasData) {
-      // Bandeau immediat si l'appareil se sait deja hors ligne, au lieu
-      // d'attendre l'echec de la requete.
-      emit(cache.toLoaded(
-        pendingActions: await _loader.getPendingActionsCount(),
-        stale: true,
-        isOffline: !_connectivityService.isConnected,
-      ));
-    } else {
-      emit(const HomePageLoading());
-    }
-
-    try {
-      final results = await Future.wait([
-        _loader.loadPopularMangas(),
-        _loader.loadNewMangas(),
-        _loader.loadTrendingMangas(),
-        _loader.loadUserInfo(),
-      ]);
-      emit(HomePageLoaded(
-        popularMangas: results[0] as List<MangaQuickViewDto>,
-        newMangas: results[1] as List<MangaQuickViewDto>,
-        trendingMangas: results[2] as List<MangaQuickViewDto>,
-        recommendations: await _loader.loadRecommendations(),
-        user: results[3] as UserDto?,
-        pendingActions: await _loader.getPendingActionsCount(),
-      ));
-    } catch (e) {
-      await _emitOfflineFallback(emit, e, cache);
-    }
+    final user = await _loader.loadUserInfo();
+    final recommendations = await _loader.loadRecommendations();
+    emit(HomePageLoaded(
+      popularMangas: const <MangaQuickViewDto>[],
+      newMangas: const <MangaQuickViewDto>[],
+      trendingMangas: const <MangaQuickViewDto>[],
+      recommendations: recommendations,
+      user: user,
+      pendingActions: await _loader.getPendingActionsCount(),
+      isOffline: !_connectivityService.isConnected,
+    ));
   }
 
   /// Handler factorise pour les chargements de section (populaires / nouveaux /
@@ -165,30 +153,4 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
     }
   }
 
-  /// Tente d'emettre un fallback offline depuis le cache. Gere le cas
-  /// particulier `InvalidCredentialsException` (auth, pas reseau).
-  Future<void> _emitOfflineFallback(
-      Emitter<HomePageState> emit, Object error, HomeCacheSnapshot cache) async {
-    if (error.toString().contains('InvalidCredentialsException')) {
-      debugPrint('HomePageBloc: Erreur d\'authentification');
-      emit(const HomePageError(message: 'Authentification requise'));
-      return;
-    }
-    debugPrint(
-        'Erreur de chargement, tentative de recuperation depuis le cache...');
-    try {
-      final fallback = cache.hasData ? cache : await _loader.snapshotCache();
-      if (fallback.hasData) {
-        emit(fallback.toLoaded(
-          pendingActions: await _loader.getPendingActionsCount(),
-          stale: true,
-          isOffline: true,
-        ));
-      } else {
-        emit(HomePageError(message: error.toString(), isOffline: true));
-      }
-    } catch (_) {
-      emit(HomePageError(message: error.toString(), isOffline: true));
-    }
-  }
 }

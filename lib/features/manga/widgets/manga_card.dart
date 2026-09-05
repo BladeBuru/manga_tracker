@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/core/components/cover_badge.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
@@ -31,6 +32,15 @@ class MangaCard extends StatelessWidget {
   /// la home et le profil ami gardent le comportement d'origine.
   final VoidCallback? onLongPress;
 
+  /// Pastille optionnelle posee en haut a gauche de la cover (type d'oeuvre
+  /// sur l'accueil catalogue, 2026-09-05). `null` partout ailleurs.
+  final String? badgeLabel;
+
+  /// Hauteur de la cover. 160 par defaut (valeur historique, carte de 120 de
+  /// large) ; l'accueil catalogue la derive de la largeur de carte pour
+  /// garder un ratio 3:4 sur tablette et desktop.
+  final double coverHeight;
+
   const MangaCard({
     super.key,
     required this.mangaTitle,
@@ -43,6 +53,8 @@ class MangaCard extends StatelessWidget {
     this.showDownloadedOnly = false, // Par défaut false
     this.compactLibrary = false,
     this.onLongPress,
+    this.badgeLabel,
+    this.coverHeight = 160,
   });
 
   /// `true` si on a une vraie année (≠ "0" ni "0.0" ni vide) à afficher.
@@ -138,7 +150,7 @@ class MangaCard extends StatelessWidget {
           children: [
             // ── Cover (avec overlay progress si compactLibrary) ───
             Container(
-              height: 160,
+              height: coverHeight,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: AppRadius.circularXl,
@@ -162,7 +174,7 @@ class MangaCard extends StatelessWidget {
                       muId: muId,
                       originalUrl: mediumImgPath,
                       width: double.infinity,
-                      height: 160,
+                      height: coverHeight,
                       useProxy: true,
                     ),
                     if (compactLibrary && lastChapter != null)
@@ -170,6 +182,7 @@ class MangaCard extends StatelessWidget {
                         readChapter: readChapter,
                         lastChapter: lastChapter!,
                       ),
+                    if (badgeLabel != null) CoverBadge(label: badgeLabel!),
                   ],
                 ),
               ),
