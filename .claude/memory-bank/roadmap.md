@@ -97,7 +97,13 @@
 
 - ✅ Traduire les champs (description)
 
-### ✅ Affichage des tendances/nouveautés/populaires
+### ✅ Affichage des tendances/nouveautés/populaires *(remplacé sur l'accueil par les sections catalogue ci-dessous — endpoints conservés côté API)*
+### 🔵 Accueil « catalogue » en sections *(front livré sur `feat/home-catalog-sections` le 2026-09-05 contre le contrat `GET /mangas/home/sections` + `/:id` ; passe à ✅ une fois l'API déployée et la branche mergée)*
+
+- 🔵 Sections : dernières sorties, ce qui marche le mieux, les mieux notés, par type (Manga / Manhwa / Manhua), par genre, par année, choix de la communauté, pépites cachées — ordre et contenu pilotés par le serveur, `kind` inconnu ignoré
+- 🔵 Page « Tout voir » par section (`/home/section/:id`, grille paginée en scroll infini)
+- 🔵 Titres traduits (7 langues) + 15 genres traduits, pastille de type sur les cartes
+- 🔵 Hors ligne : accueil servi depuis le cache, aperçu de section sans pagination
 ### ✅ Filtrer les contenus mature
 ### ❌ Favoris *(remplacé par les statuts de lecture)*
 
@@ -154,7 +160,7 @@
 ### ✅ Recommandations par genre (`/recommendations/by-genre` + vue sections front)
 ### ✅ Sleeper hits (pépites cachées) — `/recommendations/sleepers` *(intégrés au cold start)*
 ### ✅ Cold start nouveaux utilisateurs *(biblio vide → top communauté + pépites + bandeau d'accueil — v0.10.x)*
-### ⏳ Page « Explorer » par catégories personnalisées *(bouton « Voir plus » sur la home — en cours)*
+### 🔵 Page « Explorer » par catégories *(couvert par l'accueil catalogue en sections + pages « Tout voir » — 2026-09-05 ; une déclinaison **personnalisée** par utilisateur reste ⏳)*
 ### ⏳ Modèle hybride LightFM (interactions explicites + features)
 
 - ⏳ Ignorer un manga des recommandations (déjà en cours / déjà lu)

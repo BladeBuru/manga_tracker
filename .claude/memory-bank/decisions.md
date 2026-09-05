@@ -116,6 +116,14 @@
 
 ---
 
+### 🆕 Accueil catalogue : titres déduits côté client, ordre serveur, kind inconnu ignoré
+**Décision** : `GET /mangas/home/sections` ne renvoie **aucun titre** ; l'app le déduit de `kind` + `params` (`HomeSectionL10n`, ARB × 7). L'ordre et la présence des sections sont pilotés par le serveur ; un `kind` inconnu est ignoré sans planter.
+**Raison** : le catalogue (25 000+ titres) évolue plus vite que l'app — le serveur peut ajouter / réordonner des sections sans release, et les anciens APK ne cassent pas sur un `kind` nouveau. Les titres restent traduits dans les 7 langues, ce qu'un titre serveur ne garantirait pas.
+**Impact** : un nouveau `kind` = une clé ARB × 7 + une entrée dans `HomeSectionKind` / `HomeSectionL10n` ; tant qu'elle n'existe pas, la section est simplement absente. Un BLoC dédié (`HomeSectionsBloc`) avec son cache (`cached_home_sections`) — `HomePageBloc` ne charge plus tendances / nouveautés / populaires.
+**Date** : 2026-09-05
+
+---
+
 ## Décisions Futures à Prendre
 
 | Sujet | Contexte | Deadline | Options |
