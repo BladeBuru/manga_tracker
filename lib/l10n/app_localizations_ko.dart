@@ -2098,7 +2098,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get dismissRecommendationAccessibility => '길게 눌러 이 작품을 추천에서 제외';
 
   @override
-  String get recommendationsSleepersTitle => '💎 숨은 명작';
+  String get recommendationsSleepersTitle => '숨은 명작';
 
   @override
   String get sessionRejectedBanner => '세션이 만료되었습니다 — 저장된 데이터를 표시합니다';
@@ -2149,4 +2149,126 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => '감지 모드 꺼짐.';
+
+  @override
+  String get homeSectionLatest => '최신 출시작';
+
+  @override
+  String get homeSectionPopular => '지금 가장 인기';
+
+  @override
+  String get homeSectionTopRated => '평점 높은 작품';
+
+  @override
+  String get homeSectionTypeManga => '일본 만화';
+
+  @override
+  String get homeSectionTypeManhwa => '한국 만화';
+
+  @override
+  String get homeSectionTypeManhua => '중국 만화';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return '장르: $genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return '$year년 출시작';
+  }
+
+  @override
+  String get homeSectionCommunity => '커뮤니티의 선택';
+
+  @override
+  String get homeSectionHiddenGems => '숨은 명작';
+
+  @override
+  String get homeSectionSeeAll => '모두 보기';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return '$title 섹션 모두 보기';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => '아직 표시할 내용이 없습니다';
+
+  @override
+  String get homeSectionsEmptySubtitle => '아래로 당겨 카탈로그를 새로고침하세요.';
+
+  @override
+  String get homeSectionsLoadError => '지금은 홈 화면을 불러올 수 없습니다.';
+
+  @override
+  String get homeSectionNotFound => '이 섹션은 더 이상 존재하지 않습니다.';
+
+  @override
+  String get homeSectionLoadError => '이 섹션을 불러올 수 없습니다.';
+
+  @override
+  String get homeSectionLoadMoreFailed => '더 불러오지 못했습니다.';
+
+  @override
+  String get homeSectionEmpty => '이 섹션에는 아직 작품이 없습니다.';
+
+  @override
+  String get homeSectionEndOfList => '모두 확인했습니다';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 작품',
+      zero: '작품 없음',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => '로맨스';
+
+  @override
+  String get genreDrama => '드라마';
+
+  @override
+  String get genreFantasy => '판타지';
+
+  @override
+  String get genreComedy => '코미디';
+
+  @override
+  String get genreSliceOfLife => '일상';
+
+  @override
+  String get genreAction => '액션';
+
+  @override
+  String get genreSchoolLife => '학원';
+
+  @override
+  String get genreSupernatural => '초자연';
+
+  @override
+  String get genreAdventure => '모험';
+
+  @override
+  String get genreHistorical => '역사';
+
+  @override
+  String get genreMystery => '미스터리';
+
+  @override
+  String get genrePsychological => '심리';
+
+  @override
+  String get genreSciFi => 'SF';
+
+  @override
+  String get genreHorror => '공포';
+
+  @override
+  String get genreMartialArts => '무술';
 }

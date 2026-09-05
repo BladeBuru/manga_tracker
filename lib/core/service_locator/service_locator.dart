@@ -33,6 +33,9 @@ import '../services/theme_service.dart';
 import '../bloc/connectivity_bloc.dart';
 import '../../features/library/bloc/library_bloc.dart';
 import '../../features/home/bloc/homepage_bloc.dart';
+import '../../features/home/bloc/home_section_page_bloc.dart';
+import '../../features/home/bloc/home_sections_bloc.dart';
+import '../../features/home/services/home_sections.service.dart';
 import '../../features/manga/bloc/detail_bloc.dart';
 import '../../features/search/bloc/search_bloc.dart';
 import '../../features/search/services/search_history.service.dart';
@@ -193,4 +196,16 @@ void setupServiceLocator() {
   // DetailBloc doit être une factory, pas un singleton, pour éviter les race conditions
   // Chaque page de détails doit avoir sa propre instance de bloc
   getIt.registerFactory<DetailBloc>(() => DetailBloc());
+
+  // Accueil « catalogue » (sections /mangas/home/sections) — 2026-09-05.
+  // Enregistrements AJOUTÉS EN FIN, en lazy et SANS dependsOn : le service
+  // et les BLoCs résolvent HttpService / StorageService / ConnectivityService
+  // à l'appel, jamais à la construction. L'ordre ci-dessus n'est pas touché
+  // (cf. régression d'écran blanc v0.12.1 sur un dependsOn prématuré).
+  getIt.registerLazySingleton<HomeSectionsService>(
+      () => const HomeSectionsService());
+  getIt.registerLazySingleton<HomeSectionsBloc>(() => HomeSectionsBloc());
+  // Une instance par page « Tout voir » (paramètre = id de section).
+  getIt.registerFactoryParam<HomeSectionPageBloc, String, void>(
+      (sectionId, _) => HomeSectionPageBloc(sectionId: sectionId));
 }

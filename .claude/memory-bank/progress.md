@@ -23,6 +23,21 @@
 
 ## ✅ Complété
 
+### 🔒 Lecteur : protection anti-redirection rétablie + garde-fous (2026-09-05)
+
+Régression v0.13.0 : le correctif Cloudflare appelait `controller.setSettings`
+pour poser un user-agent, ce qui remettait `useShouldOverrideUrlLoading` à
+`false` côté Android → garde anti-redirection jamais appelé, toutes les pubs
+passaient. Rétabli (`initialUrlRequest` + `initialSettings` une seule fois,
+`useShouldOverrideUrlLoading: true` explicite), décision extraite dans
+`ReaderNavigationPolicy` (pure, testée), interrupteur `Switch` du bloqueur
+rétabli, UA de la plateforme laissé intact, `X-Requested-With` retiré.
+Garde-fous : 3 fichiers de tests (politique, réglages, fil de détente sur le
+source) + **workflow CI `flutter-ci.yml`** (analyze + test sur chaque PR —
+aucun test ne tournait en CI jusque-là) + section « Lecteur en ligne —
+invariants » dans `CLAUDE.md`. État des recherches Cloudflare dans
+`known-issues.md` (problème actif, à tester sur appareil).
+
 ### 🎨 Design System V1 « Refined Classic » — Refonte massive (2026-05-18)
 
 Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignoré). Application du design system V1 à **9 pages + 5 dialogs + 1 feature** en une session :
@@ -100,6 +115,7 @@ Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignor
 - ✅ Progression par chapitres (`readChaptersCount`)
 - ✅ Mode offline complet (cache + queue + sync)
 - ✅ **[Phase 5 — Mai 2026]** `LibraryService.recordChapterLog`, `toggleChapterSkip`, `getChapterLog` — log additif des sessions (replays, hors-séries skippés, scroll position pour reprise de lecture). DTO `ChapterLogDto`. Pas encore intégré dans la UI (TODO : icône skip sur la liste détail).
+- ✅ **[2026-09-05]** Bascule auto « À jour » → « En cours » quand un nouveau chapitre est détecté — voir section « Bascule auto » ci-dessous.
 
 ### Amis (Phase 6)
 - ✅ **[Phase 6 — Mai 2026]** `FriendsService` côté Flutter avec cache 24h (`cached_friends`), méthodes `getAcceptedFriends`, `getPendingRequests`, `sendRequest`, `updateStatus`, `deleteFriendship`, `searchUsers`. DTOs `FriendshipDto` (avec helper `displayName`), `UserSearchResultDto`. Enregistré dans GetIt.
@@ -126,12 +142,33 @@ Bundle handoff Claude Design extrait dans `.claude-design/` (hors repo, gitignor
 - ✅ **[2026-08-31]** Mode offline réparé et frontière assouplie — cause racine : l'exception `InvalidCredentialsException` levée localement (sans appel réseau) et la détection `on SocketException` (code mort sur web) empêchaient le repli sur le cache. Solution : `failure_classifier.dart` (taxonomie 4 modes), `SessionExpiredException` (credentials absents = sessionExpired), cache servi en lecture sur `network`, `sessionExpired` **et** `sessionRejected` (401/403 — décision produit : l'authentification ne peut pas bloquer des données déjà en cache). Contrepartie : `AuthService.logout()` purge le cache via `offline_cache_purge.dart` ; `clearSessionTokens()` (invalidation automatique) le conserve. `SessionRejectedBanner` non bloquant. 26 tests (classifier, DetailBloc, LibraryBloc, LibraryService, SearchBloc web).
 - ✅ **[2026-08-31]** Progression de lecture conservée hors ligne — `LibraryService.getLibraryEntry` dispose d'un repli cache ; avant, la fiche s'affichait comme si le manga n'était pas dans la bibliothèque.
 
+### Bascule auto « À jour » → « En cours » (2026-09-05)
+
+Branche `feat/auto-status-en-cours` (base `59a86a1`), pendant API `feat/auto-status-en-cours` (base `d7fd6fd`). **Déployer l'API avant l'app.**
+
+- **Règle produit** : *« si on détecte un nouveau chapitre sur un manga que j'ai marqué "à jour", c'est qu'on n'est plus à jour : on est "en cours" »*. « À jour » = `ReadingStatus.caughtUp`, « En cours » = `ReadingStatus.reading` (valeurs de fil identiques à l'API). Pas de statut « abandonné » / « en pause » : `readLater` et `completed` sont ceux qui ne bougent jamais.
+- **Partage des rôles** : l'API bascule quand `manga.total_chapters` **augmente** (sync nocturne, signalement communautaire, refresh des détails) — donc aussi app fermée ; un rafraîchissement de la bibliothèque suffit alors. L'app bascule sur la détection **locale** (site de scan via le lien personnalisé), invisible pour l'API.
+- **Fichiers** : `lib/features/library/services/reading_status_auto_update_rule.dart` (décision pure `shouldFlipToReading`) ; `reading_status_auto_update.service.dart` (`reconcileLibrary` : `hasNewChapters` + bascule + **un seul** `PUT /library/status` par manga grâce à un mémo levé quand l'API confirme + `cacheLibrary` ; `onNewChapterDetected` : détection ponctuelle, serveur prévenu + entrée du cache patchée). **Non enregistré dans GetIt** (résolution paresseuse) → ordre du service locator inchangé.
+- **Branchements** : `LibraryBloc._enrichWithNewChapters` (1 lecture `getAllNewChapters()` au lieu de N `hasNewChapters`), `ChapterCheckBackgroundService` (io, après `addNewChapter`), `DetailBloc._checkForNewChapters` → event `ReadingStatusAutoFlipped` (reflet local, aucun appel réseau). `MangaQuickViewDto.copyWith` (nouveau) — l'ancien enrichissement reconstruisait le DTO à la main et **perdait `userReportedTotalChapters`**, corrigé au passage. `web_view_io.dart` **non touché** (autre session) : le lecteur passe par `saveChapterProgress` → l'API recalcule le statut.
+- **Décisions** : mémo anti-doublon par instance de service ; session rejetée / erreur HTTP → rien mémorisé, nouvelle tentative au chargement suivant ; hors ligne → `OfflineAction.updateMangaStatus` en file et entrée « En cours » tout de suite. L'entrée apparaît « En cours » dès que la règle s'applique, même si l'appel réseau échoue (la détection locale est la vérité côté app, l'API converge). `DetailBloc` reste au-dessus des seuils (949 l., 921 avant : +1 event + handler de 8 lignes), pas de refonte ici.
+- **Tests** : +25 (205 → 230) — règle (9), service mocktail (12 : un seul appel, dédup cache→réseau, ré-armement après confirmation API, cache patché, session rejetée), `LibraryBloc` (4).
+- **Reste à faire** : vérifier sur téléphone après une vraie détection (lien personnalisé) ; PR / merge non faits (push de branche uniquement).
+
 ### Lecteur intégré (correctifs-août)
 - ✅ **[2026-08-31]** Correctif boucle Cloudflare — cause racine : le script du bloqueur de publicités supprimait les éléments de la vérification Cloudflare du DOM (iframe Turnstile = `iframe[sandbox]`, attribut `[data-cfasync]`, correspondance sous-chaîne sur « ad »). Solution : `ChallengeAllowlist` (liste blanche domaines CF/hCaptcha/reCAPTCHA par suffixe), nettoyage DOM suspendu pendant un défi, « ad » reconnu en mot entier, script rendu arrêtable et idempotent, `WebViewUserAgent` (retrait `; wv`/`Version/4.0`/`Build/…`), `ChallengeLoopDetector` + `ChallengeEscapeDialog` (porte de sortie après 3 défis en 90 s). i18n ×7. 4 fichiers de tests unitaires.
 - ✅ **[2026-08-31]** Barre d'actions du lecteur à deux niveaux — `ReaderActionBar` : actions rapides (Rafraîchir, Bloqueur) + menu trois points (Télécharger, Copier URL, Mode interactif, Aide). Bouton Rafraîchir préserve la position de lecture.
 
+### Accueil « catalogue » (2026-09-05 — branche `feat/home-catalog-sections`)
+- ✅ **Accueil en sections façon catalogue** : `GET /mangas/home/sections` (contrat codé contre fixtures, API implémentée en parallèle — **déployer l'API avant l'app**). Liste verticale de sections dans l'ordre du serveur, chacune = en-tête (`PastelTile` + icône Material outlined par `kind` + titre traduit + « Tout voir ») + carrousel horizontal de `MangaCard` (proxy cover, titre, note, **pastille de type** `CoverBadge` quand l'item porte `type`). Squelettes (`AppSkeletonBox`), états vide/erreur via `AppEmptyState` / `AppErrorState`, pull-to-refresh, bandeau hors ligne / session rejetée. Responsive via `HomeLayoutMetrics` (largeur de carte 120 → 160 et cover 3:4 selon `AppBreakpoints`, contenu centré `AppContentWidth`).
+- ✅ **Page « Tout voir »** `/home/section/:id` (`HomeSectionPage` + `HomeSectionPageBloc` factory GetIt paramétrée) : grille paginée scroll infini (`page`/`limit`, dédoublonnage `muId`), même en-tête + compteur pluriel de titres, 404 → état « section introuvable », hors ligne → aperçu du cache de l'accueil sans pagination. Titre immédiat via `HomeSectionExtras` (kind + params) ou déduit de la réponse sur accès direct (F5 web).
+- ✅ **Couche données** : `HomeSectionKind` (+ `tryParse`, kind inconnu → ignoré), `HomeSectionParams` / `HomeSectionDto` / `HomeSectionsDto` / `HomeSectionsPageDto`, `MangaQuickViewDto.type` / `.genres` optionnels ; `HomeSectionsService` (limit borné 5..40, cache `cached_home_sections`, dépendances résolues à l'appel) ; `HomeSectionsBloc` (cache d'abord, `classifyFailure`, un seul chargement en vol). Enregistrements GetIt **ajoutés en fin, lazy, sans `dependsOn`**.
+- ✅ **i18n** : 36 clés × 7 langues (`homeSection*`, `genre*` pour 15 genres fréquents — table `HomeSectionL10n`, repli sur le nom brut).
+- ✅ **`HomePageBloc` allégé** : ne charge plus tendances / nouveautés / populaires (remplacés par les sections) — utilisateur + recommandations uniquement ; l'ancienne redirection forcée vers `/login` depuis la vue est retirée (cohérent avec la frontière offline 2026-08-31). `MangaService` intact (autres écrans).
+- ✅ **Tests** : +70 (205 → 275) — DTO/fixtures (15), service (16), `HomeSectionsBloc` (11), `HomeSectionPageBloc` (8), helper l10n (10), widget tests accueil (5) + « Tout voir » (5) en fr. Piège à retenir : dans un `testWidgets`, **créer les BLoCs dans le corps du test** (pas dans `setUp`), sinon leurs streams naissent hors de la zone FakeAsync et le `BlocBuilder` ne reçoit jamais les émissions entre deux `pump`.
+- 🔴 **Reste à faire** : valider sur téléphone + Chrome avec l'API réelle ; `home_page.dart` (ancienne vue non-BLoC) et `homepage_manga_list.dart` sont désormais du code mort à supprimer dans une session dédiée ; les `_section` handlers `LoadPopularMangas` / `LoadNewMangas` / `LoadTrendingMangas` de `HomePageBloc` ne sont plus dispatchés (à retirer avec `HomePageDataLoader.snapshotCache`).
+
 ### Mangas
-- ✅ Page d'accueil — `HomePageBloc`
+- ✅ Page d'accueil — `HomePageBloc` (utilisateur + recommandations) + `HomeSectionsBloc` (sections catalogue, cf. ci-dessus)
 - ✅ Page de détails — `DetailBloc` (factory)
 - ✅ Affichage genres avec Chip Material 3 (Wrap)
 - ✅ Recherche

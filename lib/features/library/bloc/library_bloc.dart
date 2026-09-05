@@ -6,6 +6,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
+import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'library_event.dart';
@@ -17,7 +18,9 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   final CacheHelperService _cacheHelper = getIt<CacheHelperService>();
   final ConnectivityService _connectivityService = getIt<ConnectivityService>();
   final NewChapterService _newChapterService = NewChapterService();
-  
+  final ReadingStatusAutoUpdateService _statusAutoUpdate =
+      ReadingStatusAutoUpdateService();
+
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
 
@@ -387,26 +390,15 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     }
   }
 
-  /// Enrichit les mangas avec les informations sur les nouveaux chapitres
+  /// Enrichit les mangas avec les informations sur les nouveaux chapitres.
+  ///
+  /// Une seule lecture des préférences pour toute la liste, puis
+  /// réconciliation : `hasNewChapters` renseigné et, règle produit, toute
+  /// entrée « à jour » avec un chapitre détecté au-delà du lu apparaît
+  /// « en cours » (le serveur est prévenu une seule fois par manga).
   Future<List<MangaQuickViewDto>> _enrichWithNewChapters(List<MangaQuickViewDto> mangas) async {
-    return await Future.wait(
-      mangas.map((manga) async {
-        final hasNew = await _newChapterService.hasNewChapters(manga.muId.toInt());
-        return MangaQuickViewDto(
-          muId: manga.muId,
-          title: manga.title,
-          year: manga.year,
-          smallCoverUrl: manga.smallCoverUrl,
-          mediumCoverUrl: manga.mediumCoverUrl,
-          rating: manga.rating,
-          readingStatus: manga.readingStatus,
-          readChapters: manga.readChapters,
-          totalChapters: manga.totalChapters,
-          associated: manga.associated,
-          hasNewChapters: hasNew,
-        );
-      }),
-    );
+    final localNewChapters = await _newChapterService.getAllNewChapters();
+    return _statusAutoUpdate.reconcileLibrary(mangas, localNewChapters);
   }
 
   /// Vérifie l'état initial de la connectivité

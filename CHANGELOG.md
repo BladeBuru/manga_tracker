@@ -13,6 +13,44 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ### Tests
 - `test/l10n/arb_keys_sync_test.dart` : les 6 ARB traduits doivent exposer exactement le jeu de clés de `app_fr.arb` (hors métadonnées `@`). Le test échouait avant correction (EN : 3 clés, DE/ES/JA/KO/PT : 66 clés) et passe désormais.
+
+## [Unreleased] — feat/home-catalog-sections
+
+### ✨ Nouveautés
+
+- **Découvrez de nouvelles sections sur l'accueil.** L'accueil ne se limite plus à trois listes : il vous propose désormais de nombreuses rangées à faire défiler, comme un catalogue — les dernières sorties, ce qui marche le mieux, les mieux notés, le choix de la communauté, des pépites cachées, mais aussi des sélections par type (manga, manhwa, manhua), par genre (action, fantasy, romance…) et par année (« Les sorties de 2014 »…). De nouvelles sections pourront apparaître au fil du temps sans mise à jour de l'application.
+- **Un bouton « Tout voir » sur chaque section** ouvre la sélection complète dans une grille qui se remplit au fur et à mesure que vous faites défiler, avec le nombre total de titres.
+- **Le type de chaque œuvre est indiqué sur sa couverture** (manga, manhwa, manhua), pour repérer d'un coup d'œil ce qui vous plaît.
+- Les titres des sections et des genres les plus courants s'affichent dans votre langue.
+
+### ⚡ Améliorations
+
+- L'accueil s'affiche avec des aperçus de chargement plutôt qu'une roue qui tourne, et s'adapte aux tablettes et aux grands écrans (cartes plus grandes, davantage visibles).
+- Sans connexion, l'accueil et les sections déjà consultées restent disponibles, avec le bandeau habituel.
+- Tirez vers le bas pour actualiser l'ensemble de l'accueil, recommandations comprises.
+
+## [Unreleased] — statut « En cours » automatique
+
+### ⚡ Améliorations
+
+- **Un manga « À jour » repasse tout seul « En cours » dès qu'un nouveau chapitre sort.** Vous aviez lu jusqu'au chapitre 39 et le 40 vient de paraître ? Vous n'êtes plus à jour : le statut change automatiquement, sans rien avoir à faire. Cela vaut que le nouveau chapitre soit repéré par l'application (vérification de votre lien de lecture en arrière-plan ou à l'ouverture de la fiche) ou par le serveur, même application fermée. Le manga remonte en tête de votre bibliothèque pour que vous le voyiez tout de suite.
+- **Le changement est visible immédiatement** dans la bibliothèque et sur la fiche du manga, et il est conservé si vous consultez votre bibliothèque hors connexion.
+- **Rien d'autre ne bouge.** Les statuts « À lire plus tard » et « Terminé » ne sont jamais modifiés. Marquer un manga « À jour » vous-même reste possible : seule la sortie d'un nouveau chapitre le remet « En cours ». Et quand vous atteignez le dernier chapitre, le passage à « À jour » ou « Terminé » fonctionne comme avant.
+
+> Fonctionne pleinement avec la version du serveur publiée en même temps (à mettre en ligne en premier).
+
+## [Unreleased] — chore/emojis-vers-icones
+
+### Changed
+- L'interface utilise désormais de vraies icônes à la place des émojis (section « Pépites cachées » des recommandations, encarts d'aide du réglage des sélecteurs personnalisés, écran « Quoi de neuf »).
+
+## [Unreleased] — lecteur : protection anti-redirection et bloqueur
+
+### 🐛 Corrections
+
+- **Fini les redirections vers des pages de publicité pendant la lecture.** Depuis la version 0.13.0, un clic ou un script pouvait vous envoyer sur une page publicitaire d'où il était impossible de revenir au chapitre. La protection qui bloque toute sortie du site de lecture est rétablie, et elle est désormais couverte par des tests automatiques pour qu'elle ne puisse plus disparaître.
+- **L'interrupteur du bloqueur de publicités est de retour.** Vous voyez à nouveau d'un coup d'œil s'il est activé ou non ; il est actif par défaut, se coupe de lui-même le temps d'une vérification « êtes-vous un robot ? » et se rallume ensuite.
+- **Vérification anti-robot : l'application se présente à nouveau comme un navigateur normal.** La tentative de la version 0.13.0 de maquiller l'identité du navigateur intégré n'aidait pas — et pouvait même rendre la vérification plus méfiante. Elle est retirée, et une information technique inutile qui identifiait l'application auprès des sites n'est plus envoyée. Si une vérification tourne en boucle malgré tout, l'application vous propose toujours d'ouvrir la page dans votre navigateur.
 ## [Unreleased] — feat/pas-interesse
 
 ### Added

@@ -1027,7 +1027,7 @@
   "@selectorUrlPatternExampleDesc": {
     "description": "Description détaillée de l'exemple pattern d'URL"
   },
-  "selectorUrlPatternGlobal": "ℹ️ Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.",
+  "selectorUrlPatternGlobal": "Le pattern sera appliqué à TOUS les sites. Pas besoin de spécifier un domaine.",
   "@selectorUrlPatternGlobal": {
     "description": "Message expliquant que le pattern est global"
   },
@@ -1164,7 +1164,7 @@
   "@selectorExampleChapter5Explanation": {
     "description": "Explication de l'exemple manga/chapitre-22"
   },
-  "selectorUrlFormatDetected": "✅ BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l'URL est déjà détecté automatiquement par le système !\n\nVous n'avez PAS besoin d'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l'URL.",
+  "selectorUrlFormatDetected": "BONNE NOUVELLE : Le format \"/manga/chapitre-22\" dans l'URL est déjà détecté automatiquement par le système !\n\nVous n'avez PAS besoin d'ajouter un sélecteur CSS si votre site utilise uniquement ce format dans l'URL.",
   "@selectorUrlFormatDetected": {
     "description": "Message expliquant que le format URL est déjà détecté"
   },
@@ -1204,7 +1204,7 @@
   "@selectorFillForm": {
     "description": "Titre pour remplir le formulaire"
   },
-  "selectorCssWhenNeededDesc": "⚠️ UNIQUEMENT si votre site a besoin d'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l'URL, vous n'avez PAS besoin d'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)",
+  "selectorCssWhenNeededDesc": "UNIQUEMENT si votre site a besoin d'un sélecteur spécifique pour identifier le contenu HTML de la page.\n\nSi le système détecte déjà bien votre chapitre via l'URL, vous n'avez PAS besoin d'ajouter un sélecteur CSS.\n\nAjoutez un sélecteur CSS SEULEMENT si :\n• Le système ne détecte pas correctement le contenu du chapitre\n• Vous voulez bloquer des publicités spécifiques à ce site\n• Le site utilise des classes/IDs particuliers pour le contenu\n\nPour trouver le sélecteur : Ouvrez la page (F12 → Inspecter), trouvez le conteneur des images du chapitre, et utilisez sa classe ou ID (ex: .manga-content, #chapter-images)",
   "@selectorCssWhenNeededDesc": {
     "description": "Description expliquant quand ajouter un sélecteur CSS"
   },
@@ -2256,7 +2256,7 @@
   "@dismissRecommendationAccessibility": {
     "description": "Indice d'accessibilité (Semantics) sur les cartes de recommandation"
   },
-  "recommendationsSleepersTitle": "💎 Pépites cachées",
+  "recommendationsSleepersTitle": "Pépites cachées",
   "sessionRejectedBanner": "Session expirée — voici vos données enregistrées",
   "@sessionRejectedBanner": {
     "description": "Bandeau non bloquant : la session a ete rejetee par le serveur, le contenu en cache reste consultable"
@@ -2320,5 +2320,172 @@
   "adBlockerInteractiveOffNotice": "Mode détection désactivé.",
   "@adBlockerInteractiveOffNotice": {
     "description": "Message de sortie du mode de designation"
+  },
+  "homeSectionLatest": "Dernières sorties",
+  "@homeSectionLatest": {
+    "description": "Titre de la section d'accueil listant les dernieres sorties du catalogue"
+  },
+  "homeSectionPopular": "Ce qui marche le mieux",
+  "@homeSectionPopular": {
+    "description": "Titre de la section d'accueil des titres les plus populaires"
+  },
+  "homeSectionTopRated": "Les mieux notés",
+  "@homeSectionTopRated": {
+    "description": "Titre de la section d'accueil des titres les mieux notes"
+  },
+  "homeSectionTypeManga": "Manga",
+  "@homeSectionTypeManga": {
+    "description": "Titre de la section d'accueil filtree sur le type Manga (Japon)"
+  },
+  "homeSectionTypeManhwa": "Manhwa",
+  "@homeSectionTypeManhwa": {
+    "description": "Titre de la section d'accueil filtree sur le type Manhwa (Coree)"
+  },
+  "homeSectionTypeManhua": "Manhua",
+  "@homeSectionTypeManhua": {
+    "description": "Titre de la section d'accueil filtree sur le type Manhua (Chine)"
+  },
+  "homeSectionGenre": "Genre : {genre}",
+  "@homeSectionGenre": {
+    "description": "Titre d'une section d'accueil filtree sur un genre",
+    "placeholders": {
+      "genre": {
+        "type": "String",
+        "example": "Action"
+      }
+    }
+  },
+  "homeSectionYear": "Les sorties de {year}",
+  "@homeSectionYear": {
+    "description": "Titre d'une section d'accueil filtree sur une annee de sortie",
+    "placeholders": {
+      "year": {
+        "type": "String",
+        "example": "2014"
+      }
+    }
+  },
+  "homeSectionCommunity": "Le choix de la communauté",
+  "@homeSectionCommunity": {
+    "description": "Titre de la section d'accueil des titres plebiscites par la communaute"
+  },
+  "homeSectionHiddenGems": "Pépites cachées",
+  "@homeSectionHiddenGems": {
+    "description": "Titre de la section d'accueil des titres bien notes mais peu connus"
+  },
+  "homeSectionSeeAll": "Tout voir",
+  "@homeSectionSeeAll": {
+    "description": "Bouton ouvrant la page complete d'une section d'accueil"
+  },
+  "homeSectionSeeAllAccessibility": "Voir toute la section {title}",
+  "@homeSectionSeeAllAccessibility": {
+    "description": "Libelle d'accessibilite du bouton Tout voir d'une section",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "Dernières sorties"
+      }
+    }
+  },
+  "homeSectionsEmptyTitle": "Rien à afficher pour le moment",
+  "@homeSectionsEmptyTitle": {
+    "description": "Titre de l'etat vide de l'accueil quand aucune section n'est disponible"
+  },
+  "homeSectionsEmptySubtitle": "Tirez vers le bas pour actualiser le catalogue.",
+  "@homeSectionsEmptySubtitle": {
+    "description": "Sous-titre de l'etat vide de l'accueil"
+  },
+  "homeSectionsLoadError": "Impossible de charger l'accueil pour le moment.",
+  "@homeSectionsLoadError": {
+    "description": "Message d'erreur quand les sections de l'accueil ne peuvent pas etre chargees"
+  },
+  "homeSectionNotFound": "Cette section n'existe plus.",
+  "@homeSectionNotFound": {
+    "description": "Message affiche sur la page Tout voir quand la section est inconnue du serveur (404)"
+  },
+  "homeSectionLoadError": "Impossible de charger cette section.",
+  "@homeSectionLoadError": {
+    "description": "Message d'erreur de la page Tout voir d'une section"
+  },
+  "homeSectionLoadMoreFailed": "Impossible de charger la suite.",
+  "@homeSectionLoadMoreFailed": {
+    "description": "Message affiche quand la page suivante d'une section ne peut pas etre chargee"
+  },
+  "homeSectionEmpty": "Aucun titre dans cette section pour le moment.",
+  "@homeSectionEmpty": {
+    "description": "Etat vide de la page Tout voir d'une section"
+  },
+  "homeSectionEndOfList": "Vous avez tout vu",
+  "@homeSectionEndOfList": {
+    "description": "Pied de liste quand toutes les pages d'une section ont ete chargees"
+  },
+  "homeSectionTitlesCount": "{count, plural, =0{Aucun titre} =1{1 titre} other{{count} titres}}",
+  "@homeSectionTitlesCount": {
+    "description": "Nombre total de titres d'une section (page Tout voir)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "genreRomance": "Romance",
+  "@genreRomance": {
+    "description": "Nom traduit du genre Romance"
+  },
+  "genreDrama": "Drame",
+  "@genreDrama": {
+    "description": "Nom traduit du genre Drama"
+  },
+  "genreFantasy": "Fantasy",
+  "@genreFantasy": {
+    "description": "Nom traduit du genre Fantasy"
+  },
+  "genreComedy": "Comédie",
+  "@genreComedy": {
+    "description": "Nom traduit du genre Comedy"
+  },
+  "genreSliceOfLife": "Tranche de vie",
+  "@genreSliceOfLife": {
+    "description": "Nom traduit du genre Slice of Life"
+  },
+  "genreAction": "Action",
+  "@genreAction": {
+    "description": "Nom traduit du genre Action"
+  },
+  "genreSchoolLife": "Vie scolaire",
+  "@genreSchoolLife": {
+    "description": "Nom traduit du genre School Life"
+  },
+  "genreSupernatural": "Surnaturel",
+  "@genreSupernatural": {
+    "description": "Nom traduit du genre Supernatural"
+  },
+  "genreAdventure": "Aventure",
+  "@genreAdventure": {
+    "description": "Nom traduit du genre Adventure"
+  },
+  "genreHistorical": "Historique",
+  "@genreHistorical": {
+    "description": "Nom traduit du genre Historical"
+  },
+  "genreMystery": "Mystère",
+  "@genreMystery": {
+    "description": "Nom traduit du genre Mystery"
+  },
+  "genrePsychological": "Psychologique",
+  "@genrePsychological": {
+    "description": "Nom traduit du genre Psychological"
+  },
+  "genreSciFi": "Science-fiction",
+  "@genreSciFi": {
+    "description": "Nom traduit du genre Sci-fi"
+  },
+  "genreHorror": "Horreur",
+  "@genreHorror": {
+    "description": "Nom traduit du genre Horror"
+  },
+  "genreMartialArts": "Arts martiaux",
+  "@genreMartialArts": {
+    "description": "Nom traduit du genre Martial Arts"
   }
 }

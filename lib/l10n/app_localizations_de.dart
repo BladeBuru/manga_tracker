@@ -2180,7 +2180,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Lange drücken, um diesen Titel nicht mehr zu empfehlen';
 
   @override
-  String get recommendationsSleepersTitle => '💎 Geheimtipps';
+  String get recommendationsSleepersTitle => 'Geheimtipps';
 
   @override
   String get sessionRejectedBanner =>
@@ -2234,4 +2234,131 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => 'Erkennungsmodus aus.';
+
+  @override
+  String get homeSectionLatest => 'Neueste Veröffentlichungen';
+
+  @override
+  String get homeSectionPopular => 'Was gerade angesagt ist';
+
+  @override
+  String get homeSectionTopRated => 'Am besten bewertet';
+
+  @override
+  String get homeSectionTypeManga => 'Manga';
+
+  @override
+  String get homeSectionTypeManhwa => 'Manhwa';
+
+  @override
+  String get homeSectionTypeManhua => 'Manhua';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return 'Genre: $genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return 'Neuerscheinungen von $year';
+  }
+
+  @override
+  String get homeSectionCommunity => 'Die Wahl der Community';
+
+  @override
+  String get homeSectionHiddenGems => 'Versteckte Perlen';
+
+  @override
+  String get homeSectionSeeAll => 'Alle ansehen';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return 'Gesamten Abschnitt $title ansehen';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => 'Noch nichts anzuzeigen';
+
+  @override
+  String get homeSectionsEmptySubtitle =>
+      'Nach unten ziehen, um den Katalog zu aktualisieren.';
+
+  @override
+  String get homeSectionsLoadError =>
+      'Die Startseite kann gerade nicht geladen werden.';
+
+  @override
+  String get homeSectionNotFound => 'Dieser Abschnitt existiert nicht mehr.';
+
+  @override
+  String get homeSectionLoadError =>
+      'Dieser Abschnitt kann nicht geladen werden.';
+
+  @override
+  String get homeSectionLoadMoreFailed =>
+      'Weitere Titel konnten nicht geladen werden.';
+
+  @override
+  String get homeSectionEmpty => 'Noch keine Titel in diesem Abschnitt.';
+
+  @override
+  String get homeSectionEndOfList => 'Du hast alles gesehen';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Titel',
+      one: '1 Titel',
+      zero: 'Keine Titel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => 'Romantik';
+
+  @override
+  String get genreDrama => 'Drama';
+
+  @override
+  String get genreFantasy => 'Fantasy';
+
+  @override
+  String get genreComedy => 'Komödie';
+
+  @override
+  String get genreSliceOfLife => 'Alltagsgeschichten';
+
+  @override
+  String get genreAction => 'Action';
+
+  @override
+  String get genreSchoolLife => 'Schulleben';
+
+  @override
+  String get genreSupernatural => 'Übernatürlich';
+
+  @override
+  String get genreAdventure => 'Abenteuer';
+
+  @override
+  String get genreHistorical => 'Historisch';
+
+  @override
+  String get genreMystery => 'Mystery';
+
+  @override
+  String get genrePsychological => 'Psychologisch';
+
+  @override
+  String get genreSciFi => 'Science-Fiction';
+
+  @override
+  String get genreHorror => 'Horror';
+
+  @override
+  String get genreMartialArts => 'Kampfkunst';
 }

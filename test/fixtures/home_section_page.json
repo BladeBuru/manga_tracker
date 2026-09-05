@@ -1,0 +1,30 @@
+{
+  "id": "year:2014",
+  "kind": "year",
+  "params": { "year": 2014 },
+  "page": 1,
+  "limit": 2,
+  "total": 5,
+  "items": [
+    {
+      "muId": 601,
+      "title": "My Hero Academia",
+      "year": "2014",
+      "mediumCoverUrl": "https://cdn.test/covers/601.jpg",
+      "largeCoverUrl": null,
+      "rating": 8.2,
+      "type": "Manga",
+      "genres": ["Action", "School Life"]
+    },
+    {
+      "muId": 602,
+      "title": "Tokyo Ghoul:re",
+      "year": "2014",
+      "mediumCoverUrl": "https://cdn.test/covers/602.jpg",
+      "largeCoverUrl": null,
+      "rating": 8.0,
+      "type": "Manga",
+      "genres": ["Action", "Horror", "Psychological"]
+    }
+  ]
+}
