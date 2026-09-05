@@ -2159,4 +2159,126 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => '検出モードがオフです。';
+
+  @override
+  String get homeSectionLatest => '最新リリース';
+
+  @override
+  String get homeSectionPopular => '今いちばん人気';
+
+  @override
+  String get homeSectionTopRated => '高評価作品';
+
+  @override
+  String get homeSectionTypeManga => 'マンガ';
+
+  @override
+  String get homeSectionTypeManhwa => 'マンファ';
+
+  @override
+  String get homeSectionTypeManhua => 'マンホア';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return 'ジャンル：$genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return '$year年の作品';
+  }
+
+  @override
+  String get homeSectionCommunity => 'コミュニティのおすすめ';
+
+  @override
+  String get homeSectionHiddenGems => '隠れた名作';
+
+  @override
+  String get homeSectionSeeAll => 'すべて見る';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return '$titleのセクションをすべて見る';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => 'まだ表示するものがありません';
+
+  @override
+  String get homeSectionsEmptySubtitle => '下に引っ張ってカタログを更新してください。';
+
+  @override
+  String get homeSectionsLoadError => '現在ホーム画面を読み込めません。';
+
+  @override
+  String get homeSectionNotFound => 'このセクションはもう存在しません。';
+
+  @override
+  String get homeSectionLoadError => 'このセクションを読み込めません。';
+
+  @override
+  String get homeSectionLoadMoreFailed => '続きを読み込めませんでした。';
+
+  @override
+  String get homeSectionEmpty => 'このセクションにはまだ作品がありません。';
+
+  @override
+  String get homeSectionEndOfList => 'すべて表示しました';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count作品',
+      zero: '作品なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => '恋愛';
+
+  @override
+  String get genreDrama => 'ドラマ';
+
+  @override
+  String get genreFantasy => 'ファンタジー';
+
+  @override
+  String get genreComedy => 'コメディ';
+
+  @override
+  String get genreSliceOfLife => '日常';
+
+  @override
+  String get genreAction => 'アクション';
+
+  @override
+  String get genreSchoolLife => '学園';
+
+  @override
+  String get genreSupernatural => '超自然';
+
+  @override
+  String get genreAdventure => '冒険';
+
+  @override
+  String get genreHistorical => '歴史';
+
+  @override
+  String get genreMystery => 'ミステリー';
+
+  @override
+  String get genrePsychological => '心理';
+
+  @override
+  String get genreSciFi => 'SF';
+
+  @override
+  String get genreHorror => 'ホラー';
+
+  @override
+  String get genreMartialArts => '武術';
 }

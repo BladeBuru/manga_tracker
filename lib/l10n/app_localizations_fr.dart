@@ -2239,4 +2239,130 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get adBlockerInteractiveOffNotice => 'Mode détection désactivé.';
+
+  @override
+  String get homeSectionLatest => 'Dernières sorties';
+
+  @override
+  String get homeSectionPopular => 'Ce qui marche le mieux';
+
+  @override
+  String get homeSectionTopRated => 'Les mieux notés';
+
+  @override
+  String get homeSectionTypeManga => 'Manga';
+
+  @override
+  String get homeSectionTypeManhwa => 'Manhwa';
+
+  @override
+  String get homeSectionTypeManhua => 'Manhua';
+
+  @override
+  String homeSectionGenre(String genre) {
+    return 'Genre : $genre';
+  }
+
+  @override
+  String homeSectionYear(String year) {
+    return 'Les sorties de $year';
+  }
+
+  @override
+  String get homeSectionCommunity => 'Le choix de la communauté';
+
+  @override
+  String get homeSectionHiddenGems => 'Pépites cachées';
+
+  @override
+  String get homeSectionSeeAll => 'Tout voir';
+
+  @override
+  String homeSectionSeeAllAccessibility(String title) {
+    return 'Voir toute la section $title';
+  }
+
+  @override
+  String get homeSectionsEmptyTitle => 'Rien à afficher pour le moment';
+
+  @override
+  String get homeSectionsEmptySubtitle =>
+      'Tirez vers le bas pour actualiser le catalogue.';
+
+  @override
+  String get homeSectionsLoadError =>
+      'Impossible de charger l\'accueil pour le moment.';
+
+  @override
+  String get homeSectionNotFound => 'Cette section n\'existe plus.';
+
+  @override
+  String get homeSectionLoadError => 'Impossible de charger cette section.';
+
+  @override
+  String get homeSectionLoadMoreFailed => 'Impossible de charger la suite.';
+
+  @override
+  String get homeSectionEmpty =>
+      'Aucun titre dans cette section pour le moment.';
+
+  @override
+  String get homeSectionEndOfList => 'Vous avez tout vu';
+
+  @override
+  String homeSectionTitlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count titres',
+      one: '1 titre',
+      zero: 'Aucun titre',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get genreRomance => 'Romance';
+
+  @override
+  String get genreDrama => 'Drame';
+
+  @override
+  String get genreFantasy => 'Fantasy';
+
+  @override
+  String get genreComedy => 'Comédie';
+
+  @override
+  String get genreSliceOfLife => 'Tranche de vie';
+
+  @override
+  String get genreAction => 'Action';
+
+  @override
+  String get genreSchoolLife => 'Vie scolaire';
+
+  @override
+  String get genreSupernatural => 'Surnaturel';
+
+  @override
+  String get genreAdventure => 'Aventure';
+
+  @override
+  String get genreHistorical => 'Historique';
+
+  @override
+  String get genreMystery => 'Mystère';
+
+  @override
+  String get genrePsychological => 'Psychologique';
+
+  @override
+  String get genreSciFi => 'Science-fiction';
+
+  @override
+  String get genreHorror => 'Horreur';
+
+  @override
+  String get genreMartialArts => 'Arts martiaux';
 }
