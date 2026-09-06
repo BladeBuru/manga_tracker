@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangatracker/features/reader/utils/reading_constants.dart';
+import 'package:mangatracker/features/reader/utils/webview_result_parser.dart';
 
 /// Helper partagé pour gérer la progression de lecture (en ligne et hors ligne)
 class ReadingProgressHelper {
@@ -62,21 +62,10 @@ class ReadingProgressHelper {
 
       final result = await controller.evaluateJavascript(source: scrollInfoScript);
       if (result != null) {
-        Map<String, dynamic> scrollInfo;
-
-        // Le résultat peut être une chaîne JSON ou déjà un objet selon la plateforme
-        if (result is String) {
-          try {
-            scrollInfo = jsonDecode(result) as Map<String, dynamic>;
-          } catch (e) {
-            debugPrint('⚠️ Erreur lors du parsing JSON: $e');
-            return false;
-          }
-        } else if (result is Map) {
-          scrollInfo = Map<String, dynamic>.from(result);
-        } else {
-          return false;
-        }
+        // Le résultat est une Map (Android) ou une chaîne JSON (iOS / web) :
+        // une seule façon de le lire, partagée avec ScrollPositionService.
+        final scrollInfo = WebViewResultParser.asMap(result);
+        if (scrollInfo == null) return false;
 
         if (scrollInfo['measurable'] != true) return false;
         final isNearEnd = scrollInfo['isNearEnd'] == true;

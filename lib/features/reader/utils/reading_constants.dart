@@ -26,3 +26,19 @@ const int kReadingEndThresholdPercent = 85;
 /// répondre. Sans borne, le retour paraîtrait bloqué. En cas d'expiration on
 /// préfère un faux négatif (pas de question) à une sortie qui ne réagit pas.
 const Duration kNearEndMeasureTimeout = Duration(seconds: 3);
+
+/// Préfixe des positions de défilement **en pixels**, par manga et chapitre
+/// (`scroll_position_<muId>_<chapitre>`), dans `SharedPreferences`.
+///
+/// Mesurées sur CET appareil, donc plus fidèles qu'un pourcentage pour y
+/// revenir : c'est la valeur utilisée quand on rouvre le même chapitre sur le
+/// même téléphone.
+const String kScrollPositionKeyPrefix = 'scroll_position_';
+
+/// Préfixe du « marque-page » local, un par manga
+/// (`reading_position_<muId>`), dans `SharedPreferences`.
+///
+/// Même forme que la réponse du serveur (chapitre + pourcentage +
+/// horodatage) : c'est ce qui permet d'arbitrer entre la lecture locale et
+/// celle d'un autre appareil sans avoir à convertir des pixels.
+const String kReadingBookmarkKeyPrefix = 'reading_position_';
