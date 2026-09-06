@@ -2491,5 +2491,36 @@
   "genreMartialArts": "Arts martiaux",
   "@genreMartialArts": {
     "description": "Nom traduit du genre Martial Arts"
+  },
+  "resumeReadingTitle": "Reprendre votre lecture ?",
+  "@resumeReadingTitle": {
+    "description": "Titre de la modale de reprise de lecture inter-appareils"
+  },
+  "resumeReadingMessage": "Une lecture est en cours au chapitre {chapter}. Voulez-vous la reprendre là où vous vous êtiez arrêté ?",
+  "@resumeReadingMessage": {
+    "description": "Question posee quand une lecture est en cours sur un autre chapitre que celui qui allait etre ouvert",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "resumeReadingConfirm": "Reprendre le chapitre {chapter}",
+  "@resumeReadingConfirm": {
+    "description": "Bouton qui reprend la lecture au chapitre en cours",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "resumeReadingDecline": "Ouvrir le chapitre {chapter}",
+  "@resumeReadingDecline": {
+    "description": "Bouton qui ouvre le chapitre suivant le dernier chapitre lu",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
   }
 }

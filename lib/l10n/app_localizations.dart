@@ -4209,6 +4209,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Arts martiaux'**
   String get genreMartialArts;
+
+  /// Titre de la modale de reprise de lecture inter-appareils
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre votre lecture ?'**
+  String get resumeReadingTitle;
+
+  /// Question posee quand une lecture est en cours sur un autre chapitre que celui qui allait etre ouvert
+  ///
+  /// In fr, this message translates to:
+  /// **'Une lecture est en cours au chapitre {chapter}. Voulez-vous la reprendre là où vous vous êtiez arrêté ?'**
+  String resumeReadingMessage(String chapter);
+
+  /// Bouton qui reprend la lecture au chapitre en cours
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre le chapitre {chapter}'**
+  String resumeReadingConfirm(String chapter);
+
+  /// Bouton qui ouvre le chapitre suivant le dernier chapitre lu
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir le chapitre {chapter}'**
+  String resumeReadingDecline(String chapter);
 }
 
 class _AppLocalizationsDelegate

@@ -1264,5 +1264,9 @@
   "genrePsychological": "Psychologisch",
   "genreSciFi": "Science-Fiction",
   "genreHorror": "Horror",
-  "genreMartialArts": "Kampfkunst"
+  "genreMartialArts": "Kampfkunst",
+  "resumeReadingTitle": "Lesen fortsetzen?",
+  "resumeReadingMessage": "Kapitel {chapter} ist noch angefangen. Möchten Sie dort weiterlesen, wo Sie aufgehört haben?",
+  "resumeReadingConfirm": "Kapitel {chapter} fortsetzen",
+  "resumeReadingDecline": "Kapitel {chapter} öffnen"
 }

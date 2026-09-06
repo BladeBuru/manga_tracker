@@ -2364,4 +2364,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get genreMartialArts => 'Kampfkunst';
+
+  @override
+  String get resumeReadingTitle => 'Lesen fortsetzen?';
+
+  @override
+  String resumeReadingMessage(String chapter) {
+    return 'Kapitel $chapter ist noch angefangen. Möchten Sie dort weiterlesen, wo Sie aufgehört haben?';
+  }
+
+  @override
+  String resumeReadingConfirm(String chapter) {
+    return 'Kapitel $chapter fortsetzen';
+  }
+
+  @override
+  String resumeReadingDecline(String chapter) {
+    return 'Kapitel $chapter öffnen';
+  }
 }

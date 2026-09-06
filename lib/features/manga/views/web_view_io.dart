@@ -21,6 +21,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/custom_selectors.service.dart';
 import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart';
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
+import 'package:mangatracker/features/reader/services/reading_position.service.dart';
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
 import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
@@ -46,6 +47,11 @@ class ReaderWebView extends StatefulWidget {
   final bool autoDownload;       // Télécharger automatiquement après chargement
   final Function(bool)? onDownloadComplete; // Callback quand le téléchargement est terminé
 
+  /// Position (0..100) décidée par `ReadingResumePolicy` à l'ouverture — la
+  /// lecture reprise depuis un autre appareil. Consommée une seule fois, pour
+  /// le premier chapitre affiché.
+  final double? initialPositionPercent;
+
   const ReaderWebView({
     super.key,
     required this.muId,
@@ -55,6 +61,7 @@ class ReaderWebView extends StatefulWidget {
     required this.baseUserLink,
     this.autoDownload = false,    // Par défaut false
     this.onDownloadComplete,     // Callback optionnel
+    this.initialPositionPercent,
   });
 
   @override
@@ -68,6 +75,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
   final _chapterLog = getIt<ChapterLogService>();
   final _downloadManager = DownloadManagerService();
   final _scrollPositionService = getIt<ScrollPositionService>();
+  final _readingPositionService = getIt<ReadingPositionService>();
   final _adBlockerService = getIt<AdBlockerService>();
   final _captchaDetectionService = getIt<CaptchaDetectionService>();
   final _navigationService = getIt<WebViewNavigationService>();
@@ -76,6 +84,11 @@ class _ReaderWebViewState extends State<ReaderWebView>
   final TextEditingController _urlTextController = TextEditingController();
   List<ContentBlocker> _cachedBlockers = []; // Cache pour les blockers
   bool _hasRestoredScroll = false; // Indique si la position de scroll a été restaurée
+
+  /// Position venue du serveur, à n'appliquer qu'au premier chapitre affiché.
+  /// Consommée puis mise à `null` : rouvrir le chapitre suivant ne doit pas
+  /// rejouer la position d'un autre chapitre.
+  double? _pendingResumePercent;
 
   // État lecteur
   late int _lastCommitted;      // dernier chapitre confirmé en base
@@ -135,6 +148,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // Initialiser le service de patterns d'URL personnalisés
     ChapterLinkResolver.init(CustomSelectorsService());
     _lastCommitted = widget.initialLastRead;
+    _pendingResumePercent = widget.initialPositionPercent;
     _originHost = Uri.parse(widget.initialUrl).host;
     _navigationPolicy = ReaderNavigationPolicy(
       blocksRequest: _adBlockerService.shouldBlockRequest,
@@ -164,7 +178,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     if (controller == null || chapter == null) return;
     unawaited(
       _scrollPositionService
-          .saveScrollPosition(controller, widget.muId, chapter)
+          .saveScrollPosition(controller, widget.muId, chapter, immediate: true)
           .then((_) {}, onError: (Object e) {
         debugPrint('⚠️ Sauvegarde de position en arrière-plan impossible: $e');
       }),
@@ -740,6 +754,19 @@ class _ReaderWebViewState extends State<ReaderWebView>
     );
     if (ok) {
       _lastCommitted = chapter;
+      // Le chapitre est TERMINÉ : plus rien à reprendre dedans. On efface la
+      // position locale et on cesse de l'envoyer — c'est cette suppression,
+      // et non un refus d'écriture, qui garantit qu'un chapitre validé ne se
+      // rouvre jamais en son milieu. Le serveur, lui, remet ses propres
+      // champs à null tout seul.
+      unawaited(
+        _scrollPositionService
+            .deleteScrollPosition(widget.muId, chapter)
+            .then((_) {}, onError: (Object e) {
+          debugPrint('⚠️ Position du chapitre $chapter non effacée: $e');
+        }),
+      );
+      _readingPositionService.forget(widget.muId);
       // Journal additif (Stats v2) : trace la session de lecture pour
       // l'historique + l'activité hebdo. Fire-and-forget : n'altère PAS
       // le pointeur de progression (RETRO-015), un échec perd juste une
@@ -922,6 +949,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
         _controller!,
         widget.muId,
         _currentChapter!,
+        immediate: true,
       );
       debugPrint('🔍 _onWillPop - Position sauvegardée avec succès');
     } else {
@@ -1222,11 +1250,14 @@ class _ReaderWebViewState extends State<ReaderWebView>
                 _currentChapter!,
               );
               // Restaurer en arrière-plan pour ne pas bloquer le chargement
+              final resumePercent = _pendingResumePercent;
+              _pendingResumePercent = null;
               _scrollPositionService.restoreScrollPosition(
                 _controller!,
                 widget.muId,
                 _currentChapter!,
                 hasRestoredScroll: _hasRestoredScroll,
+                fallbackPercent: resumePercent,
               ).then((restored) {
                 if (mounted) {
                   setState(() {
@@ -1322,6 +1353,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
         _controller!,
         widget.muId,
         _currentChapter!,
+        immediate: true,
       ).then((_) {
         debugPrint('🔍 dispose() - Position sauvegardée avec succès');
       }).catchError((e) {
