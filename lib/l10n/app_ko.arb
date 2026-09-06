@@ -181,6 +181,7 @@
   "newReleases": "신작",
   "chapter": "챕터",
   "chapterNotFound": "챕터를 찾을 수 없습니다",
+  "readerNoContentAvailable": "사용할 수 있는 콘텐츠가 없습니다",
   "previousChapterTooltip": "이전 챕터",
   "nextChapterTooltip": "다음 챕터",
   "chaptersCount": "{count, plural, =0{챕터 없음} =1{{count}챕터} other{{count}챕터}}",

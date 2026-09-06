@@ -181,6 +181,7 @@
   "newReleases": "Nuevos lanzamientos",
   "chapter": "Capítulo",
   "chapterNotFound": "Capítulo no encontrado",
+  "readerNoContentAvailable": "No hay contenido disponible",
   "previousChapterTooltip": "Capítulo anterior",
   "nextChapterTooltip": "Capítulo siguiente",
   "chaptersCount": "{count, plural, =0{Sin capítulos} =1{{count} capítulo} other{{count} capítulos}}",

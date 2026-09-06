@@ -526,6 +526,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chapterNotFound => '챕터를 찾을 수 없습니다';
 
   @override
+  String get readerNoContentAvailable => '사용할 수 있는 콘텐츠가 없습니다';
+
+  @override
   String get previousChapterTooltip => '이전 챕터';
 
   @override

@@ -635,6 +635,10 @@
   },
   "chapter": "Chapitre",
   "chapterNotFound": "Chapitre non trouvé",
+  "readerNoContentAvailable": "Aucun contenu disponible",
+  "@readerNoContentAvailable": {
+    "description": "Reader offline : le chapitre téléchargé ne contient ni page HTML ni images"
+  },
   "@chapterNotFound": {
     "description": "Reader offline : le fichier du chapitre est introuvable"
   },

@@ -5,6 +5,39 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — fix/reader-progress-semantics
+
+### 🐛 Corrections
+
+- **Vos chapitres lus ne sont plus décalés d'un cran.** Quand vous arriviez à la fin du chapitre 133 et que le site enchaînait sur le 134, l'application enregistrait aussitôt le 134 comme lu — alors que vous veniez tout juste de l'ouvrir. Votre progression avait donc systématiquement un chapitre d'avance sur votre lecture réelle. Désormais, un chapitre n'est compté comme lu que lorsque vous l'avez terminé.
+- **La question « Avez-vous fini le chapitre ? » revient — et elle marche.** Elle ne s'affichait plus du tout après un passage au chapitre suivant, et le geste de retour sur les téléphones récents la contournait complètement. Quand vous quittez le lecteur près de la fin d'un chapitre, l'application vous demande de nouveau si vous l'avez terminé, quel que soit la façon dont vous sortez : geste de retour, flèche en haut à gauche ou bouton du téléphone.
+- **Sauter des chapitres n'enregistre plus n'importe quoi.** Si vous passiez du chapitre 134 au 140 et que vous répondiez « oui » à la question, l'application enregistrait 139 chapitres lus. Elle enregistre maintenant le 134, celui que vous venez réellement de finir — exactement ce que la question propose.
+- **Les chapitres téléchargés vous demandent aussi votre avis.** En lecture hors connexion, l'application marquait le chapitre comme lu toute seule dès que vous approchiez de la fin, sans rien demander. Elle pose désormais la même question que la lecture en ligne, et passer au chapitre suivant depuis la flèche enregistre celui que vous quittez.
+- **Plus de notifications « Chapitre enregistré » en double.** Un même changement de chapitre pouvait déclencher plusieurs enregistrements et plusieurs messages d'affilée.
+- **Votre page de lecture est retenue quand vous quittez l'application.** Si vous basculiez vers une autre application ou que le téléphone fermait Manga Tracker, vous pouviez perdre jusqu'à quelques secondes de lecture au retour.
+
+### Notes d'implémentation
+
+- Cause racine dans `web_view_io.dart` : la branche `nextChapter` de `_handleDetected` appelait `_commitIfNeeded(prev)` **puis** `_commitIfNeeded(newCh)` (« car on est dessus »). Introduit par `cc586a0` (v0.8.0), amplifié par `59ab81e` (v0.12.1). Effet en cascade : `_lastCommitted == _currentChapter` rendait la garde de la modale de fin (`_lastCommitted < c`) structurellement toujours fausse.
+- Sémantique extraite dans `ChapterCommitPolicy` (pure, sans Flutter ni GetIt) : `nextChapter` → N seul ; `jumpForward` → N sur « oui » ; `jumpBackward` / `firstDetected` / `noChange` → rien ; sortie près de la fin avec C non enregistré → question, « oui » → C (`confirmedByUser: true`).
+- `WillPopScope` → `PopScope(canPop: false, onPopInvokedWithResult:)` sur les deux lecteurs : `android:enableOnBackInvokedCallback="true"` fait ignorer `WillPopScope` par le retour prédictif d'Android 13+. Garde de réentrance (`_exitFlowRunning`) et borne de temps (`kNearEndMeasureTimeout`, 3 s) sur la mesure « proche de la fin ».
+- `_handleDetected` sérialisé et idempotent (garde + mémorisation de la dernière URL + file d'attente de profondeur 1) : les trois callbacks de la WebView signalaient la même navigation.
+- `WidgetsBindingObserver` sur les deux lecteurs : sauvegarde de la position sur `paused` / `inactive`, **aucun** enregistrement silencieux de chapitre.
+- Modales extraites en widgets testables (`ChapterCompletionDialog`, `ChapterSkipDialog`), passées aux tokens (`AppColors`, `AppRadius`, `AppSpacing`, `textTheme`) — les `Colors.blue` / `Colors.green` / `Colors.orange` / `Colors.red` en dur ont disparu du lecteur.
+- Nettoyage HTML du lecteur hors ligne extrait dans `OfflineHtmlSanitizer` (pur) : le fichier repassait sous la limite de 400 lignes.
+- Chemins de sortie qui contournent volontairement la modale, documentés dans le code : redirection vers le lecteur hors ligne à l'ouverture (aucune lecture encore), fermeture automatique après téléchargement, navigation entre chapitres téléchargés.
+
+### Tests
+
+- `test/features/reader/chapter_commit_policy_test.dart` (+17) — dont le test de non-régression nommé « arriver sur un chapitre ne le marque JAMAIS comme lu », qui balaie les 5 transitions.
+- `test/features/reader/chapter_completion_dialog_test.dart` (+6) — les deux modales, leurs réponses, et le fait que la question de fin ne se ferme pas d'un appui hors modale.
+- `test/features/reader/reader_invariants_test.dart` (+10) — fil de détente sur le source : `_commitIfNeeded(newCh)`, retour de `WillPopScope`, disparition de la garde, de la garde de réentrance, de la borne de temps, de l'observateur de cycle de vie, ou de la sérialisation des détections.
+- Suite complète : 362 tests verts (329 avant). `flutter analyze` : 40 informations, 0 erreur, 0 avertissement (45 avant).
+
+### Nouvelle clé i18n (7 langues)
+
+- `readerNoContentAvailable` — le chapitre téléchargé ne contient ni page ni images (texte auparavant en dur, en français).
+
 ## [Unreleased] — fix/l10n-cles-manquantes
 
 ### Fixed

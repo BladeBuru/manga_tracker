@@ -27,8 +27,14 @@ import 'package:mangatracker/features/reader/services/challenge_loop_detector.da
 import 'package:mangatracker/features/reader/services/reader_navigation_policy.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
+import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
+import 'package:mangatracker/features/reader/widgets/chapter_skip_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
+import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
+import 'package:mangatracker/features/reader/utils/reading_constants.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'dart:async';
 
 class ReaderWebView extends StatefulWidget {
@@ -55,7 +61,8 @@ class ReaderWebView extends StatefulWidget {
   State<ReaderWebView> createState() => _ReaderWebViewState();
 }
 
-class _ReaderWebViewState extends State<ReaderWebView> {
+class _ReaderWebViewState extends State<ReaderWebView>
+    with WidgetsBindingObserver {
   final _notifier = getIt<Notifier>();
   final _library = getIt<LibraryService>();
   final _chapterLog = getIt<ChapterLogService>();
@@ -80,6 +87,25 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   bool _captchaDetected = false; // Indique si un captcha est détecté
   bool _adBlockerWasEnabled = true; // Mémorise l'état du bloqueur avant désactivation pour captcha
 
+  // Politique d'enregistrement des chapitres lus : PURE et verrouillée par
+  // test/features/reader/chapter_commit_policy_test.dart. La vue exécute sa
+  // décision, elle ne décide pas.
+  static const _commitPolicy = ChapterCommitPolicy();
+
+  // Sérialisation des détections d'URL : `_handleDetected` est appelé jusqu'à
+  // trois fois par navigation (shouldOverrideUrlLoading, onLoadStart,
+  // onUpdateVisitedHistory). Sans garde, une seule navigation produisait
+  // plusieurs PUT, plusieurs notifications et plusieurs entrées de journal, et
+  // les transitions étaient reclassées à tort parce que `_currentChapter`
+  // n'était mis à jour qu'après plusieurs `await`.
+  bool _processingDetection = false;
+  Uri? _pendingDetection; // file d'attente de profondeur 1 (la plus récente)
+  String? _lastHandledUrl; // idempotence : une URL n'est traitée qu'une fois
+
+  // Garde de réentrance de la sortie : un double appui sur « retour » ne doit
+  // pas empiler deux modales de fin de chapitre.
+  bool _exitFlowRunning = false;
+
   // Détection des vérifications anti-robot qui bouclent
   final _loopDetector = ChallengeLoopDetector();
   // Politique anti-redirection : pure, verrouillée par tests. Voir la
@@ -102,6 +128,10 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   @override
   void initState() {
     super.initState();
+    // Cycle de vie : sans cet observateur, une mise en arrière-plan (ou une
+    // app tuée par le système) laissait la position de lecture figée au
+    // dernier tick du timer de 5 s.
+    WidgetsBinding.instance.addObserver(this);
     // Initialiser le service de patterns d'URL personnalisés
     ChapterLinkResolver.init(CustomSelectorsService());
     _lastCommitted = widget.initialLastRead;
@@ -117,7 +147,35 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     _checkAndRedirectToOffline();
   }
 
+  /// Sauvegarde la position de lecture quand l'app passe en arrière-plan.
+  ///
+  /// On n'enregistre **jamais** un chapitre en silence ici : passer en
+  /// arrière-plan ne prouve pas qu'un chapitre est terminé. Seule la position
+  /// de défilement est écrite, pour reprendre au bon endroit.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state != AppLifecycleState.paused &&
+        state != AppLifecycleState.inactive) {
+      return;
+    }
+    final controller = _controller;
+    final chapter = _currentChapter;
+    if (controller == null || chapter == null) return;
+    unawaited(
+      _scrollPositionService
+          .saveScrollPosition(controller, widget.muId, chapter)
+          .then((_) {}, onError: (Object e) {
+        debugPrint('⚠️ Sauvegarde de position en arrière-plan impossible: $e');
+      }),
+    );
+  }
+
   /// Vérifie si le chapitre suivant est téléchargé et redirige vers OfflineReaderView si c'est le cas
+  ///
+  /// Sortie légitime qui contourne la modale de fin de chapitre : elle a lieu
+  /// avant toute lecture (aucun chapitre n'est encore détecté), et le lecteur
+  /// hors ligne pose lui-même la question à sa propre sortie.
   Future<void> _checkAndRedirectToOffline() async {
     try {
       final nextChapterNumber = widget.initialLastRead + 1;
@@ -632,7 +690,11 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.block, color: Colors.red, size: 48),
+        icon: const Icon(
+          Icons.block,
+          color: AppColors.error,
+          size: AppSpacing.jumbo,
+        ),
         title: Text(l10n?.adBlockerTitle ?? 'Bloqueur de publicités'),
         content: Text(
           l10n?.adBlockerDescription ?? 
@@ -653,7 +715,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             },
-            icon: const Icon(Icons.chat, size: 18),
+            icon: const Icon(Icons.chat, size: AppSpacing.m),
             label: Text(l10n?.joinDiscord ?? 'Rejoindre Discord'),
           ),
         ],
@@ -702,80 +764,107 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     }
   }
 
-  void _handleDetected(Uri uri) async {
+  /// Point d'entrée unique des détections d'URL — **sérialisé et idempotent**.
+  ///
+  /// Les trois callbacks de la WebView signalent la même navigation ; une URL
+  /// n'est traitée qu'une fois, et un seul traitement court à la fois. Une
+  /// navigation qui survient pendant un traitement est mise en attente (la
+  /// plus récente gagne) au lieu d'être perdue.
+  void _handleDetected(Uri uri) {
+    if (uri.toString() == _lastHandledUrl) return;
+    if (_processingDetection) {
+      _pendingDetection = uri;
+      return;
+    }
+    unawaited(_drainDetections(uri));
+  }
+
+  Future<void> _drainDetections(Uri first) async {
+    _processingDetection = true;
+    try {
+      Uri? next = first;
+      while (next != null) {
+        final url = next.toString();
+        if (url != _lastHandledUrl) {
+          _lastHandledUrl = url;
+          await _applyChapterChange(next);
+        }
+        next = _pendingDetection;
+        _pendingDetection = null;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Détection de chapitre impossible: $e');
+    } finally {
+      _processingDetection = false;
+    }
+  }
+
+  /// Applique la décision de [ChapterCommitPolicy] pour une URL détectée.
+  ///
+  /// INVARIANT : **arriver sur un chapitre ne le marque jamais comme lu.**
+  /// Le chapitre d'arrivée (`result.newChapter`) n'est jamais passé à
+  /// `_commitIfNeeded` — seul le chapitre quitté peut l'être. Verrouillé par
+  /// `test/features/reader/reader_invariants_test.dart`.
+  Future<void> _applyChapterChange(Uri uri) async {
     final result = await _navigationService.detectChapterChange(
       uri,
       _originHost,
       _currentChapter,
     );
-    
     if (result == null) return;
-    
-    final newCh = result.newChapter!;
-    
-    // Fonction helper pour initialiser un nouveau chapitre
-    void initializeChapter(int chapter) {
-      _currentChapter = chapter;
-      _updateNextLinkFrom(uri.toString(), currentChapter: chapter);
-      _hasRestoredScroll = false;
+
+    final decision = _commitPolicy.onTransition(
+      transition: result.changeType.asTransition,
+      newChapter: result.newChapter!,
+      previousChapter: result.previousChapter,
+    );
+
+    // 1. Le chapitre quitté : on fige sa position puis on l'oublie (on ne le
+    //    relira pas là où on l'avait laissé).
+    final released = decision.releaseScrollOfChapter;
+    if (released != null) {
       if (_controller != null) {
-        _scrollPositionService.startSaveTimer(_controller!, widget.muId, chapter);
+        await _scrollPositionService.saveScrollPosition(
+            _controller!, widget.muId, released);
+      }
+      await _scrollPositionService.deleteScrollPosition(widget.muId, released);
+    }
+
+    // 2. Enregistrement automatique : uniquement un chapitre TERMINÉ.
+    final commit = decision.commitChapter;
+    if (commit != null) {
+      await _commitIfNeeded(commit);
+    }
+
+    // 3. Enregistrement sur confirmation explicite (saut de chapitres).
+    final ask = decision.askUserToCommitChapter;
+    if (ask != null && mounted) {
+      final answer = await ChapterSkipDialog.show(
+        context,
+        previousChapter: ask,
+        nextChapter: result.newChapter!,
+      );
+      final confirmed = _commitPolicy.resolveAnswer(
+        answer: answer,
+        chapter: ask,
+      );
+      if (confirmed != null) {
+        // Confirmation explicite → auto-signalement autorisé.
+        await _commitIfNeeded(confirmed, confirmedByUser: true);
       }
     }
-    
-    switch (result.changeType) {
-      case ChapterChangeType.firstDetected:
-        initializeChapter(newCh);
-        break;
-        
-      case ChapterChangeType.nextChapter:
-        // Passage naturel au suivant => on valide le précédent ET le nouveau
-        final prev = result.previousChapter!;
-        // Sauvegarder la position du chapitre actuel avant de changer
-        if (_controller != null) {
-          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
-        }
-        // Supprimer la position sauvegardée du chapitre précédent (on avance)
-        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
-        // Sauvegarder le chapitre précédent comme lu
-        await _commitIfNeeded(prev);
-        // Sauvegarder aussi le nouveau chapitre comme lu (car on est dessus)
-        await _commitIfNeeded(newCh);
-        initializeChapter(newCh);
-        break;
-        
-      case ChapterChangeType.jumpForward:
-        // Saut de chapitres => on propose de valider le précédent
-        final prev = result.previousChapter!;
-        // Sauvegarder la position du chapitre actuel avant de changer
-        if (_controller != null) {
-          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
-        }
-        // Supprimer la position sauvegardée du chapitre actuel (on avance)
-        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
-        _promptJumpConfirm(prev: prev, next: newCh).then((yes) {
-          // Confirmation explicite → auto-signalement autorisé.
-          if (yes == true) {
-            _commitIfNeeded(newCh - 1, confirmedByUser: true); // on valide au moins le précédent
-          }
-          initializeChapter(newCh);
-        });
-        break;
-        
-      case ChapterChangeType.jumpBackward:
-        // Retour en arrière => sauvegarder la position du chapitre actuel avant de changer
-        final prev = result.previousChapter!;
-        if (_controller != null) {
-          await _scrollPositionService.saveScrollPosition(_controller!, widget.muId, prev);
-        }
-        // Supprimer la position sauvegardée du chapitre actuel car on recule
-        await _scrollPositionService.deleteScrollPosition(widget.muId, prev);
-        initializeChapter(newCh);
-        break;
-        
-      case ChapterChangeType.noChange:
-        // Même chapitre, rien à faire
-        break;
+
+    // 4. Suivi du nouveau chapitre courant.
+    final initialize = decision.initializeChapter;
+    if (initialize != null) {
+      _currentChapter = initialize;
+      unawaited(
+          _updateNextLinkFrom(uri.toString(), currentChapter: initialize));
+      _hasRestoredScroll = false;
+      if (_controller != null) {
+        _scrollPositionService.startSaveTimer(
+            _controller!, widget.muId, initialize);
+      }
     }
   }
 
@@ -783,29 +872,44 @@ class _ReaderWebViewState extends State<ReaderWebView> {
     return _adBlockerService.isAllowedDomain(host, _originHost);
   }
 
-  Future<bool?> _promptJumpConfirm({required int prev, required int next}) {
-    final l10n = AppLocalizations.of(context);
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.skip_next, color: Colors.orange, size: 48),
-        title: Text(l10n?.chapterSkip ?? "Saut de chapitres"),
-        content: Text(
-          l10n?.chapterSkipMessage(prev.toString(), next.toString()) ?? 
-          "Vous passez du chapitre $prev au $next.\nMarquer $prev comme lu ?"
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n?.no ?? "Non"),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n?.yes ?? "Oui"),
-          ),
-        ],
-      ),
-    );
+  /// Traite une demande de sortie, quel qu'en soit le chemin : geste retour
+  /// (y compris le retour prédictif Android 13+, qui ignore `WillPopScope`),
+  /// bouton retour de l'AppBar (`maybePop`) ou bouton système.
+  ///
+  /// Protégée contre la réentrance : un second appui pendant que la modale
+  /// est ouverte est ignoré au lieu d'empiler une deuxième modale.
+  /// Rappel de `PopScope` : la fermeture est refusée (`canPop: false`), on la
+  /// rejoue nous-mêmes une fois la question de fin de chapitre traitée.
+  void _onPopInvoked(bool didPop, Object? result) {
+    if (didPop) return;
+    unawaited(_handleExitRequest());
+  }
+
+  Future<void> _handleExitRequest() async {
+    if (_exitFlowRunning) return;
+    _exitFlowRunning = true;
+    try {
+      await _onWillPop();
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      _exitFlowRunning = false;
+    }
+  }
+
+  /// Mesure « suis-je proche de la fin ? » bornée dans le temps.
+  ///
+  /// La mesure tourne dans la page : une page figée ou une WebView en cours
+  /// de destruction pourrait ne jamais répondre et donner l'impression d'un
+  /// retour bloqué. À l'expiration on répond « non » — préférer un faux
+  /// négatif à une sortie qui ne réagit pas.
+  Future<bool> _isNearEndOfChapter() async {
+    try {
+      return await ReadingProgressHelper.isNearEndOfChapter(_controller)
+          .timeout(kNearEndMeasureTimeout, onTimeout: () => false);
+    } catch (e) {
+      debugPrint('⚠️ Mesure de fin de chapitre impossible: $e');
+      return false;
+    }
   }
 
   Future<bool> _onWillPop() async {
@@ -842,81 +946,32 @@ class _ReaderWebViewState extends State<ReaderWebView> {
       }
     }
     
-    // Si on est sur le chap C et que le dernier validé est < C,
-    // on demande si l'utilisateur a fini le chapitre C UNIQUEMENT s'il est proche de la fin.
-    final c = _currentChapter;
-    if (c != null && _lastCommitted < c) {
-      // Vérifier si l'utilisateur est proche de la fin du chapitre
-      final isNearEnd = await ReadingProgressHelper.isNearEndOfChapter(_controller);
-      
-      // Ne demander la validation que si l'utilisateur est proche de la fin
-      if (!isNearEnd) {
-        // NE PAS marquer le chapitre comme lu si l'utilisateur n'est pas proche de la fin
-        // La position de scroll est déjà sauvegardée par ScrollPositionService
-        return true; // Fermer sans demander
-      }
-      
-      final l10n = AppLocalizations.of(context);
-      final yes = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          icon: const Icon(Icons.check_circle_outline, color: Colors.green, size: 48),
-          title: Text(l10n?.validateReading ?? "Valider la lecture"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n?.validateReadingMessage(c.toString()) ?? 
-                "Avez-vous fini le chapitre $c ?",
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n?.validateReadingHint ?? 
-                        "Votre progression sera sauvegardée automatiquement.",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(l10n?.no ?? "Non"),
-            ),
-            FilledButton.icon(
-              onPressed: () => Navigator.pop(ctx, true),
-              icon: const Icon(Icons.check, size: 18),
-              label: Text(l10n?.yesValidate ?? "Oui, valider"),
-            ),
-          ],
-        ),
+    // Si on est sur le chapitre C, qu'il n'est pas déjà enregistré et que la
+    // lecture est proche de la fin, on demande « Avez-vous fini le chapitre
+    // C ? ». La décision appartient à ChapterCommitPolicy.
+    final exit = _commitPolicy.onExit(
+      currentChapter: _currentChapter,
+      lastCommitted: _lastCommitted,
+      isNearEnd: await _isNearEndOfChapter(),
+    );
+
+    final chapter = exit.askUserToCommitChapter;
+    if (chapter == null || !mounted) {
+      // Rien à demander : la position de défilement est déjà sauvegardée,
+      // aucun chapitre n'est marqué comme lu en silence.
+      return true;
+    }
+
+    final answer = await ChapterCompletionDialog.show(context, chapter: chapter);
+    if (_commitPolicy.resolveAnswer(answer: answer, chapter: chapter) != null) {
+      // « Avez-vous fini le chapitre N ? » → oui : assertion explicite,
+      // on autorise le signalement automatique si N dépasse le total.
+      await _commitIfNeeded(chapter, confirmedByUser: true);
+      final currentUrl = await _controller?.getUrl();
+      await _updateNextLinkFrom(
+        (currentUrl?.toString() ?? widget.baseUserLink),
+        currentChapter: chapter,
       );
-      if (yes == true) {
-        // « Vous avez bien lu jusqu'au N ? » → oui : assertion explicite,
-        // on autorise le signalement automatique si N dépasse le total.
-        await _commitIfNeeded(c, confirmedByUser: true);
-        final currentUrl = await _controller?.getUrl();
-        await _updateNextLinkFrom(
-          (currentUrl?.toString() ?? widget.baseUserLink),
-          currentChapter: c,
-        );
-      }
     }
     return true; // quitter la page
   }
@@ -946,19 +1001,19 @@ class _ReaderWebViewState extends State<ReaderWebView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: AppSpacing.paddingAllM,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: AppSpacing.paddingAllM,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n?.webModeProgressTracking ?? 'Mode Web - Suivi de progression',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -1003,14 +1058,23 @@ class _ReaderWebViewState extends State<ReaderWebView> {
   Widget build(BuildContext context) {
     // Si CORS bloque en mode web, afficher l'interface de fallback
     if (kIsWeb && _corsBlocked) {
-      return WillPopScope(
-        onWillPop: _onWillPop,
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: _onPopInvoked,
         child: _buildWebFallback(),
       );
     }
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    // INVARIANT : PopScope, PAS WillPopScope. `AndroidManifest.xml` déclare
+    // `android:enableOnBackInvokedCallback="true"` : sur Android 13+ le geste
+    // retour prédictif IGNORE purement et simplement `WillPopScope`, si bien
+    // que la modale de fin de chapitre était injoignable au geste retour —
+    // le chemin de sortie le plus utilisé. `canPop: false` capte aussi le
+    // bouton retour de l'AppBar, qui passe par `Navigator.maybePop`.
+    // Verrouillé par test/features/reader/reader_invariants_test.dart.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
@@ -1245,6 +1309,7 @@ class _ReaderWebViewState extends State<ReaderWebView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     debugPrint('🔍 dispose() - Arrêt du timer et sauvegarde finale');
     debugPrint('🔍 dispose() - Controller: ${_controller != null}, Chapitre: $_currentChapter');
     _scrollPositionService.stopSaveTimer();

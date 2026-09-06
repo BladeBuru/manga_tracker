@@ -542,6 +542,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get chapterNotFound => 'Capítulo no encontrado';
 
   @override
+  String get readerNoContentAvailable => 'No hay contenido disponible';
+
+  @override
   String get previousChapterTooltip => 'Capítulo anterior';
 
   @override

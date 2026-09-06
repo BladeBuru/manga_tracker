@@ -1,5 +1,6 @@
 import 'package:mangatracker/features/reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
+import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
 
 /// Type de changement de chapitre détecté
 enum ChapterChangeType {
@@ -8,6 +9,25 @@ enum ChapterChangeType {
   jumpForward, // Saut vers l'avant (>+1)
   jumpBackward, // Retour en arrière (<)
   noChange, // Même chapitre
+}
+
+/// Traduction vers le vocabulaire de [ChapterCommitPolicy], qui est pur et ne
+/// peut donc pas dépendre de ce fichier (lié à la WebView).
+extension ChapterChangeTypeTransition on ChapterChangeType {
+  ChapterTransition get asTransition {
+    switch (this) {
+      case ChapterChangeType.firstDetected:
+        return ChapterTransition.firstDetected;
+      case ChapterChangeType.nextChapter:
+        return ChapterTransition.nextChapter;
+      case ChapterChangeType.jumpForward:
+        return ChapterTransition.jumpForward;
+      case ChapterChangeType.jumpBackward:
+        return ChapterTransition.jumpBackward;
+      case ChapterChangeType.noChange:
+        return ChapterTransition.noChange;
+    }
+  }
 }
 
 /// Résultat d'une détection de changement de chapitre
