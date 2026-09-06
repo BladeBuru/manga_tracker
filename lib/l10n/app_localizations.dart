@@ -1074,6 +1074,12 @@ abstract class AppLocalizations {
   /// **'Chapitre non trouvé'**
   String get chapterNotFound;
 
+  /// Reader offline : le chapitre téléchargé ne contient ni page HTML ni images
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun contenu disponible'**
+  String get readerNoContentAvailable;
+
   /// Tooltip navigation reader offline
   ///
   /// In fr, this message translates to:

@@ -526,6 +526,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chapterNotFound => '章が見つかりません';
 
   @override
+  String get readerNoContentAvailable => '利用できるコンテンツがありません';
+
+  @override
   String get previousChapterTooltip => '前の章';
 
   @override
