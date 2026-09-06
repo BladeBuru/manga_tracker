@@ -43,6 +43,8 @@ import '../../features/reader/services/scroll_position_service.dart';
 import '../../features/reader/services/captcha_detection_service.dart';
 import '../../features/reader/services/ad_blocker_service.dart';
 import '../../features/reader/services/webview_navigation_service.dart';
+import '../../features/reader/services/reading_position.service.dart';
+import '../../features/reader/services/reading_resume_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 GetIt getIt = GetIt.instance;
@@ -208,4 +210,13 @@ void setupServiceLocator() {
   // Une instance par page « Tout voir » (paramètre = id de section).
   getIt.registerFactoryParam<HomeSectionPageBloc, String, void>(
       (sectionId, _) => HomeSectionPageBloc(sectionId: sectionId));
+
+  // Reprise de lecture inter-appareils (2026-09-06). Mêmes précautions que
+  // ci-dessus : AJOUTÉS EN FIN, en lazy et SANS `dependsOn`. Les deux
+  // services résolvent HttpService / ScrollPositionService à l'appel, jamais
+  // à la construction — l'ordre d'enregistrement au-dessus reste intact.
+  getIt.registerLazySingleton<ReadingPositionService>(
+      () => ReadingPositionService());
+  getIt.registerLazySingleton<ReadingResumeService>(
+      () => ReadingResumeService());
 }
