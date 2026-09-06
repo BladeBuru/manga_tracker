@@ -34,6 +34,14 @@ class MangaQuickViewDto {
   /// Genres (`Action`, `Romance`…). Optionnel, meme provenance que [type].
   final List<String>? genres;
 
+  /// Position de lecture en cours — champs **optionnels** de `/library/all`,
+  /// presents en bloc ou absents. Le serveur les remet a `null` de lui-meme
+  /// quand le chapitre en cours devient termine : le client ne reimplemente
+  /// pas cette regle.
+  final num? currentChapter;
+  final num? currentPositionPercent;
+  final DateTime? currentPositionUpdatedAt;
+
   const MangaQuickViewDto({
     required this.muId,
     required this.title,
@@ -49,6 +57,9 @@ class MangaQuickViewDto {
     this.hasNewChapters = false,
     this.type,
     this.genres,
+    this.currentChapter,
+    this.currentPositionPercent,
+    this.currentPositionUpdatedAt,
   });
 
   /// URL proxy stable côté API (Phase 4) — auto-refresh côté serveur si
@@ -82,6 +93,9 @@ class MangaQuickViewDto {
       userReportedTotalChapters: userReportedTotalChapters,
       associated: associated,
       hasNewChapters: hasNewChapters ?? this.hasNewChapters,
+      currentChapter: currentChapter,
+      currentPositionPercent: currentPositionPercent,
+      currentPositionUpdatedAt: currentPositionUpdatedAt,
     );
   }
 
@@ -108,7 +122,16 @@ class MangaQuickViewDto {
         // ET a un type inattendu (une chaine vide vaut « inconnu »).
         type: _optionalString(json['type']),
         genres: (json['genres'] as List?)?.map((e) => e.toString()).toList(),
+        currentChapter: json['currentChapter'] as num?,
+        currentPositionPercent: json['currentPositionPercent'] as num?,
+        currentPositionUpdatedAt:
+            _optionalDate(json['currentPositionUpdatedAt']),
     );
+  }
+
+  static DateTime? _optionalDate(dynamic raw) {
+    if (raw == null) return null;
+    return DateTime.tryParse(raw.toString());
   }
 
   static String? _optionalString(dynamic raw) {
@@ -133,6 +156,9 @@ class MangaQuickViewDto {
       'hasNewChapters': hasNewChapters,
       'type': type,
       'genres': genres,
+      'currentChapter': currentChapter,
+      'currentPositionPercent': currentPositionPercent,
+      'currentPositionUpdatedAt': currentPositionUpdatedAt?.toIso8601String(),
     };
   }
 }

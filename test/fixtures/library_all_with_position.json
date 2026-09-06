@@ -1,0 +1,15 @@
+{
+  "muId": 12345,
+  "title": "Solo Leveling",
+  "year": "2018",
+  "smallCoverUrl": "https://cdn.example/small.jpg",
+  "mediumCoverUrl": "https://cdn.example/medium.jpg",
+  "rating": 9.1,
+  "readingStatus": "reading",
+  "readChapters": 41,
+  "totalChapters": 179,
+  "hasNewChapters": false,
+  "currentChapter": 42,
+  "currentPositionPercent": 37.5,
+  "currentPositionUpdatedAt": "2026-09-06T10:00:00.000Z"
+}
