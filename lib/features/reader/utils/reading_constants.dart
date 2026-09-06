@@ -17,3 +17,12 @@
 /// la page) — 85 % couvre la fin réelle de lecture sans faux positifs en
 /// milieu de chapitre. Ajustable ici en une seule ligne.
 const int kReadingEndThresholdPercent = 85;
+
+/// Délai maximal accordé à la mesure « suis-je proche de la fin ? » avant de
+/// conclure « non » et de laisser l'utilisateur sortir.
+///
+/// La mesure s'exécute dans la page (JavaScript) : une page figée, un défi
+/// anti-robot ou une WebView en cours de destruction peuvent ne jamais
+/// répondre. Sans borne, le retour paraîtrait bloqué. En cas d'expiration on
+/// préfère un faux négatif (pas de question) à une sortie qui ne réagit pas.
+const Duration kNearEndMeasureTimeout = Duration(seconds: 3);
