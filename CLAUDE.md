@@ -241,6 +241,37 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
 - ❌ **JAMAIS** retirer ou neutraliser une fonctionnalité existante pour en
   corriger une autre. Si un correctif exige d'en toucher une, le dire
   explicitement dans la PR et le changelog, et ajouter le test qui la protège.
+- 🔒 **Arriver sur un chapitre ne le marque JAMAIS comme lu.** « Chapitres
+  lus » = **dernier chapitre TERMINÉ**. Un chapitre n'est enregistré que si
+  (a) l'utilisateur l'a quitté vers son **successeur immédiat** — c'est la
+  seule preuve automatique — ou (b) l'utilisateur l'**affirme explicitement**
+  (modale de saut, modale de fin de chapitre). Concrètement : 133 → 134
+  enregistre **133 seulement** ; 134 → 140 propose **134** (le chapitre
+  quitté, comme le dit le texte de la modale), jamais 139 ni 140 ; un retour
+  en arrière ou un premier chapitre détecté n'enregistrent **rien**. Toute la
+  décision vit dans `ChapterCommitPolicy` (**pure** : ni Flutter, ni GetIt) ;
+  les vues exécutent, elles ne décident pas. Régression fondatrice : `cc586a0`
+  (v0.8.0) enregistrait aussi le chapitre d'arrivée « car on est dessus »,
+  décalant la progression d'un chapitre pendant un an. Verrouillé par
+  `test/features/reader/chapter_commit_policy_test.dart` et le fil de détente
+  `reader_invariants_test.dart`.
+- 🔒 **La question de fin de chapitre doit rester joignable sur TOUS les
+  chemins de sortie.** ❌ **JAMAIS** `WillPopScope` dans un lecteur :
+  `AndroidManifest.xml` déclare `android:enableOnBackInvokedCallback="true"`,
+  donc sur Android 13+ le retour prédictif l'**ignore** purement et
+  simplement. Utiliser `PopScope(canPop: false, onPopInvokedWithResult:)`,
+  qui couvre aussi le bouton retour de l'AppBar (`maybePop`). Garde de
+  réentrance obligatoire (un double appui ne doit pas empiler deux modales) et
+  borne de temps sur la mesure « proche de la fin » (une page figée ne doit
+  pas donner l'impression d'un retour bloqué). ❌ **JAMAIS** enregistrer un
+  chapitre en silence : ni dans `dispose()`, ni sur un passage en
+  arrière-plan, ni au seuil de 85 % — on **demande**.
+- 🔒 **Une navigation = un seul enregistrement.** `_handleDetected` est appelé
+  jusqu'à trois fois pour la même navigation (`shouldOverrideUrlLoading`,
+  `onLoadStart`, `onUpdateVisitedHistory`) : le traitement doit rester
+  **sérialisé et idempotent** (garde + mémorisation de la dernière URL
+  traitée), sinon on produit PUT, notifications et entrées de journal en
+  double.
 - 🔒 **Anti-redirection** : pendant la lecture, toute navigation de la frame
   principale vers un domaine autre que celui du lien de l'utilisateur est
   **annulée** (`ReaderNavigationPolicy`, pure). Verrouillé par

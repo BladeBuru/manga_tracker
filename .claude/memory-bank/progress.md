@@ -23,6 +23,58 @@
 
 ## ✅ Complété
 
+### 📖 Lecteur : progression décalée d'un chapitre — corrigée (2026-09-06)
+
+Branche `fix/reader-progress-semantics` (base v0.14.0).
+
+Le passage 133 → 134 enregistrait **133 et 134** : arriver sur un chapitre le
+marquait comme lu. La progression avait donc un chapitre d'avance en
+permanence (`cc586a0`, v0.8.0, amplifié par `59ab81e` en v0.12.1). Effet en
+cascade : `_lastCommitted == _currentChapter` rendait la garde de la modale
+« Avez-vous fini le chapitre N ? » toujours fausse — la modale était
+**structurellement morte depuis un an**, et de toute façon injoignable au
+geste retour d'Android 13+ (`WillPopScope` ignoré quand
+`enableOnBackInvokedCallback` est déclaré).
+
+Livré :
+- `ChapterCommitPolicy` (pure, sans Flutter ni GetIt) porte la sémantique
+  « chapitres lus = dernier chapitre TERMINÉ » ; les deux lecteurs
+  l'appellent et exécutent sa décision.
+- Saut de chapitres : enregistre le chapitre **quitté** (le code enregistrait
+  `newCh - 1` — 134 → 140 enregistrait 139).
+- `PopScope` sur les deux lecteurs + garde de réentrance + borne de temps de
+  3 s sur la mesure « proche de la fin ».
+- Lecteur **hors ligne** aligné : il enregistrait en silence dès 85 %, il
+  pose désormais la même question ; passer au chapitre suivant enregistre
+  celui qu'on quitte.
+- Détections d'URL sérialisées et idempotentes (fin des doublons de PUT, de
+  notifications et d'entrées de journal).
+- `WidgetsBindingObserver` sur les deux lecteurs (position sauvegardée en
+  arrière-plan, **aucun** enregistrement silencieux).
+- Modales extraites en widgets testables + tokens de thème (plus aucun
+  `Colors.*` en dur dans le lecteur) ; nettoyage HTML hors ligne extrait en
+  fonction pure (fichier repassé sous 400 lignes).
+- 362 tests verts (329 avant, +33) ; `flutter analyze` 40 infos, 0 erreur,
+  0 avertissement (45 avant).
+- Sémantique inscrite dans « Lecteur en ligne — invariants » (`CLAUDE.md`) et
+  post-mortem dans `known-issues.md`.
+
+**À valider sur appareil** (non reproductible en test unitaire) :
+1. Lire jusqu'à la fin du 133, laisser le site enchaîner sur le 134 :
+   la bibliothèque doit afficher **133**, pas 134.
+2. Quitter le lecteur près de la fin du 134 par le **geste retour
+   prédictif** (Android 13+), puis par la flèche de l'AppBar, puis par le
+   bouton système : la question doit s'afficher dans les trois cas.
+3. Double appui rapide sur retour : une seule modale.
+4. Sauter du 134 au 140 depuis le site, répondre « oui » : la bibliothèque
+   doit afficher **134**.
+5. Vérifier en base (côté API) que le pointeur correspond bien au dernier
+   chapitre terminé.
+6. Lecteur hors ligne : arriver en fin de chapitre téléchargé et quitter →
+   la question doit s'afficher (elle n'existait pas).
+7. Basculer l'app en arrière-plan en pleine lecture, revenir : la position
+   doit être conservée, et **aucun** chapitre ne doit avoir été enregistré.
+
 ### 🔒 Lecteur : protection anti-redirection rétablie + garde-fous (2026-09-05)
 
 Régression v0.13.0 : le correctif Cloudflare appelait `controller.setSettings`

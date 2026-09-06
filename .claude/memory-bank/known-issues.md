@@ -264,6 +264,88 @@ explicitement — puis retester le blocage de pub sur les sites de référence.
 
 ## ✅ Problèmes Résolus
 
+### Lecteur : la progression est décalée d'un chapitre dans le futur (v0.8.0 → v0.14.0)
+- **Feature** : reader (en ligne **et** hors ligne)
+- **Plateforme** : Android (code mobile-only)
+- **Résolu le** : 2026-09-06 · **Branche** : `fix/reader-progress-semantics`
+- **Symptôme** (mots de l'utilisateur) : « Quand on va à la fin d'un chapitre
+  lu, qui est censé suivre automatiquement le chapitre, si on est au chapitre
+  133 et qu'on va au chapitre 134, ça nous met "progression du chapitre 134".
+  Ça nous décale d'un chapitre dans le futur. »
+- **Commit fautif** : `cc586a0` (v0.8.0), amplifié par `59ab81e` (v0.12.1)
+  qui a fait marcher la détection d'URL sur davantage de sites — le bug
+  existait depuis un an mais ne se déclenchait que sur les sites où la
+  détection fonctionnait.
+- **Cause racine** : dans `_handleDetected` (`web_view_io.dart`), branche
+  `ChapterChangeType.nextChapter`, le code faisait `await
+  _commitIfNeeded(prev)` (correct : le chapitre quitté est terminé) **puis**
+  `await _commitIfNeeded(newCh)` avec le commentaire « Sauvegarder aussi le
+  nouveau chapitre comme lu (car on est dessus) ». **Arriver sur un chapitre
+  n'est pas l'avoir lu.**
+- **Effet en cascade — la modale de fin était structurellement morte** :
+  après ce commit, `_lastCommitted == _currentChapter`, donc la garde
+  `if (c != null && _lastCommitted < c)` de `_onWillPop` était **toujours
+  fausse**. « Avez-vous fini le chapitre N ? » ne pouvait plus jamais
+  s'afficher après un passage au suivant. Un bug de progression avait donc
+  désactivé, en silence, une fonctionnalité entière — sans qu'aucun test ne
+  le voie.
+- **Trois défauts adjacents corrigés dans la foulée** :
+  1. La modale était de toute façon **injoignable au geste retour** :
+     `AndroidManifest.xml` porte `android:enableOnBackInvokedCallback="true"`,
+     donc sur Android 13+ le retour prédictif **ignore** `WillPopScope`.
+  2. Le dialogue de saut était **incohérent avec son propre texte** :
+     `chapterSkipMessage` dit « Marquer {prev} comme lu ? » mais le code
+     enregistrait `newCh - 1` — passer de 134 à 140 et répondre « oui »
+     enregistrait **139** chapitres lus.
+  3. `_handleDetected` était appelé **jusqu'à 3 fois par navigation**
+     (`shouldOverrideUrlLoading`, `onLoadStart`, `onUpdateVisitedHistory`),
+     n'était pas `await`é, et mettait `_currentChapter` à jour seulement
+     après plusieurs `await` → enregistrements, notifications et entrées de
+     journal en double, et transitions reclassées à tort.
+  4. Le lecteur **hors ligne** enregistrait le chapitre **en silence** dès
+     85 % de défilement, y compris depuis `dispose()` — là où aucune question
+     ne peut être posée.
+- **Solution** :
+  - `ChapterCommitPolicy` (`features/reader/services/`, **pure** : ni
+    Flutter, ni GetIt, ni réseau) porte toute la sémantique. Les deux
+    lecteurs l'appellent et exécutent sa décision.
+    « Chapitres lus » = **dernier chapitre TERMINÉ** : `nextChapter` → N
+    seul ; `jumpForward` → N sur « oui » (le chapitre QUITTÉ) ;
+    `jumpBackward` / `firstDetected` / `noChange` → rien ; sortie près de la
+    fin de C avec C non enregistré → question, « oui » → C
+    (`confirmedByUser: true`).
+  - `WillPopScope` → `PopScope(canPop: false, onPopInvokedWithResult:)` sur
+    les deux lecteurs, + garde de réentrance `_exitFlowRunning` + borne de
+    temps `kNearEndMeasureTimeout` (3 s) sur la mesure « proche de la fin ».
+  - Détections d'URL sérialisées et idempotentes (garde `_processingDetection`
+    + `_lastHandledUrl` + file d'attente de profondeur 1).
+  - `WidgetsBindingObserver` sur les deux lecteurs : position sauvegardée sur
+    `paused` / `inactive`, **aucun** enregistrement silencieux.
+  - Modales extraites (`ChapterCompletionDialog`, `ChapterSkipDialog`),
+    tokens de thème, plus aucune couleur en dur dans le lecteur.
+- **Garde-fous ajoutés** :
+  - `chapter_commit_policy_test.dart` — 17 tests purs, dont le test de
+    non-régression nommé d'après le bug : « arriver sur un chapitre ne le
+    marque JAMAIS comme lu » (balaie les 5 transitions).
+  - `chapter_completion_dialog_test.dart` — 6 widget tests sur les deux
+    modales.
+  - `reader_invariants_test.dart` — 10 fils de détente supplémentaires sur le
+    source : réapparition de `_commitIfNeeded(newCh)`, retour de
+    `WillPopScope`, disparition de la garde `chapter > lastCommitted`, de la
+    garde de réentrance, de la borne de temps, de l'observateur de cycle de
+    vie, de la sérialisation, ou réenregistrement depuis `dispose()`.
+  - Sémantique inscrite dans la section « Lecteur en ligne — invariants » de
+    `CLAUDE.md`.
+- **Leçon** : *un commentaire qui justifie une écriture (« car on est
+  dessus ») est le bon endroit où chercher un bug de sémantique.* Le code
+  faisait exactement ce que son commentaire disait ; c'est la règle métier
+  qui était fausse. Corollaire déjà connu et confirmé une deuxième fois : un
+  défaut peut **désactiver une autre fonctionnalité en cascade** sans que
+  personne ne s'en aperçoive — la modale de fin était morte depuis un an. Une
+  règle métier tient dans une classe pure et testable, pas dans un `switch`
+  au milieu d'une vue de 1277 lignes.
+- **Reste à valider sur appareil** : voir `progress.md`.
+
 ### Lecteur : protection anti-redirection désactivée par le correctif Cloudflare (v0.13.0)
 - **Feature** : reader
 - **Plateforme** : Android (code mobile-only)
