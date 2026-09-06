@@ -89,6 +89,17 @@ UI (View) → Event → BLoC → State → UI (View)
 | `NotificationService` | Singleton | Notifs locales (Android-only actuellement) |
 | `OfflineCachePurgeService` | — (fonction utilitaire) | `purgeUserScopedCache()` — efface le cache de l'utilisateur courant (appelé par `logout()` et changement de compte uniquement) |
 | `RecommendationDismissalService` | Lazy singleton (sans `dependsOn`) | Rejet et annulation de rejet de recommandations |
+| `ReadingPositionService` | Lazy singleton (sans `dependsOn`) | Synchronisation serveur de la position de lecture — throttle 10 s/manga, `flush()` à la sortie, jamais bloquant |
+| `ReadingResumeService` | Lazy singleton (sans `dependsOn`) | Collecte position locale + serveur, applique `ReadingResumePolicy` |
+| `ScrollPositionService` | Singleton | Sauvegarde / restauration de la position dans les WebViews |
+| `ReadingPositionStore` | — (classe instanciée) | Persistance locale des positions (`SharedPreferences`), purgée par `purgeUserScopedCache()` |
+| `ReaderViewportProbe` | — (classe instanciée) | Seul point de contact JavaScript pour mesurer une page de lecture |
+
+**Classes pures du lecteur** (ni Flutter, ni GetIt, ni réseau — la vue exécute,
+elle ne décide pas) : `ChapterCommitPolicy` (quel chapitre est lu),
+`ReaderNavigationPolicy` (anti-redirection), `ReadingResumePolicy` (quel
+chapitre ouvrir et à quelle position), `ReadingPositionCalculator`
+(pixels ⇄ pourcentage), `WebViewResultParser` (retours `Map` **et** `String`).
 
 ---
 

@@ -1270,5 +1270,9 @@
   "genrePsychological": "Psychological",
   "genreSciFi": "Sci-fi",
   "genreHorror": "Horror",
-  "genreMartialArts": "Martial Arts"
+  "genreMartialArts": "Martial Arts",
+  "resumeReadingTitle": "Resume your reading?",
+  "resumeReadingMessage": "Chapter {chapter} is still in progress. Would you like to pick up where you left off?",
+  "resumeReadingConfirm": "Resume chapter {chapter}",
+  "resumeReadingDecline": "Open chapter {chapter}"
 }

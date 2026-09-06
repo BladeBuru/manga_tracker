@@ -5,6 +5,45 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/reading-position-client
+
+### ✨ Nouveautés
+
+- **Reprenez votre lecture là où vous vous êtes arrêté.** Quand vous quittez un chapitre en plein milieu, l'application retient l'endroit exact et vous y ramène à la réouverture, au lieu de vous reposer en haut de la page.
+- **Votre lecture vous suit d'un appareil à l'autre.** Vous vous arrêtez au milieu d'un chapitre sur votre tablette, vous reprenez sur votre téléphone au même endroit — et inversement. Si la lecture en cours porte sur un autre chapitre que celui qui allait s'ouvrir, l'application vous demande simplement lequel vous voulez : vous ne sautez jamais un chapitre sans le vouloir, et vous ne relisez jamais ce que vous avez déjà lu.
+
+### ⚡ Améliorations
+
+- **La fin d'un chapitre est enfin retenue.** Si vous lisiez jusqu'aux dernières images et que vous répondiez « Non » à la question « Avez-vous fini ce chapitre ? », l'application vous ramenait bien plus haut à la réouverture, sur un endroit que vous aviez dépassé depuis longtemps.
+- **La page ne saute plus sous vos doigts.** Si vous commenciez à faire défiler pendant le chargement, l'application vous replaçait quand même à votre ancienne position et vous perdiez le fil. Elle respecte maintenant l'endroit où vous êtes.
+- **Le bon endroit, même quand les images arrivent en retard.** Sur les chapitres lourds, la page s'allongeait après coup et vous étiez replacé trop haut : l'application vérifie désormais et corrige.
+
+### 🐛 Corrections
+
+- **Vos lectures ne se mélangent plus entre comptes.** Sur un appareil partagé, la personne qui se connectait après vous rouvrait un manga au milieu d'un chapitre qu'elle n'avait jamais ouvert. Vos positions de lecture sont maintenant effacées quand vous vous déconnectez.
+
+### Notes d'implémentation
+
+- Contrat consommé (API PR #83) : `PUT /library/reading-position` (`{ muId, chapter, positionPercent }`), `GET /library/:muId/reading-position` (200 / 204), plus les champs optionnels `currentChapter` / `currentPositionPercent` / `currentPositionUpdatedAt` de `GET /library/all`. **Déployer l'API avant l'application.** Le serveur remet ces champs à `null` quand le chapitre en cours devient terminé — règle non réimplémentée côté client.
+- `ReadingPositionService` (< 300 lignes, `registerLazySingleton` en fin de `service_locator.dart`, sans `dependsOn`) : throttle d'un envoi / 10 s / manga, `flush()` immédiat à la sortie du lecteur, au passage en arrière-plan et dans `dispose()`. Jamais bloquant : 400 et 404 abandonnent, 429 / 5xx / réseau coupé conservent la position. Hors ligne, **une seule** position en attente par manga (pas de file façon `SyncService` : seule la dernière compte).
+- Position exprimée en **pourcentage** (`ReadingPositionCalculator`, pure) et non en pixels : la même page fait 12 000 px sur une tablette et 5 000 sur un téléphone. `null` quand la mesure n'est pas exploitable, pour ne jamais lire une page en cours de chargement comme « 100 %, chapitre fini ».
+- Décision de reprise dans `ReadingResumePolicy` (pure, modèle `ChapterCommitPolicy`) : silencieuse si la position porte sur `dernier lu + 1`, confirmée (modale traduite, sans émoji) si elle porte sur un autre chapitre. Position retenue entre 3 % et `kReadingEndThresholdPercent`. Garde-fou : un chapitre `<= dernier lu` n'est **jamais** rouvert au milieu.
+- Défaut 1 corrigé : `saveScrollPosition` ne fait plus `return` au-delà de 85 %. La garantie « on ne rouvre pas un chapitre terminé au milieu » repose désormais sur la **suppression** de la position à la validation du chapitre, plus un verrou pur dans la politique de reprise.
+- Défaut 2 corrigé : les garde-fous de restauration parsaient le retour de `evaluateJavascript` comme une chaîne alors qu'Android rend une `Map` — ils ne s'exécutaient jamais. Tout passe par `ReaderViewportProbe` / `WebViewResultParser` (Map **et** String), comme `reading_progress_helper.dart` le faisait déjà.
+- Défaut 3 corrigé : les écritures sont suspendues pendant une restauration, qui vérifie et **retente** jusqu'à 3 passes (le document s'allonge après `onLoadStop`).
+- Défaut 4 corrigé : `scroll_position_*` / `reading_position_*` sont purgées par `purgeUserScopedCache()` (déconnexion + changement de compte uniquement) ; `AuthService._purgeCache()` vide aussi l'état mémoire du service.
+- `scroll_position_service.dart` : 425 → 296 lignes (persistance dans `ReadingPositionStore`, mesure dans `ReaderViewportProbe`) malgré les fonctionnalités ajoutées.
+
+### Tests
+
+- `flutter test` : **460 tests verts** (362 avant). `flutter analyze` : **40 informations, 0 erreur, 0 avertissement** (identique à la branche parente).
+- `reading_position_calculator_test.dart` (+13), `webview_result_parser_test.dart` (+9), `reading_position_service_test.dart` (+19), `reading_resume_policy_test.dart` (+16), `scroll_position_service_test.dart` (+19), `resume_reading_dialog_test.dart` (+5), `manga_quick_view_reading_position_test.dart` (+8), `offline_cache_purge_test.dart` (+4), `reader_invariants_test.dart` (+7).
+- Fixtures du contrat dans `test/fixtures/` : `reading_position.json`, `reading_position_saved.json`, `library_all_with_position.json`, `library_all_without_position.json`.
+
+### Nouvelles clés i18n (7 langues)
+
+- `resumeReadingTitle`, `resumeReadingMessage`, `resumeReadingConfirm`, `resumeReadingDecline` — modale de reprise inter-appareils.
+
 ## [Unreleased] — fix/reader-progress-semantics
 
 ### 🐛 Corrections

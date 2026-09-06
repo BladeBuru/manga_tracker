@@ -3,7 +3,9 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_purge.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
+import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockStorageService extends Mock implements StorageService {}
 
@@ -58,6 +60,7 @@ void main() {
   late OfflineCacheService cache;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     storage = MockStorageService();
     store = wireStorage(storage);
     getIt.registerSingleton<StorageService>(storage);
@@ -155,6 +158,61 @@ void main() {
 
       expect(store.containsKey('cached_library'), isFalse);
       expect(store.containsKey(OfflineCacheService.ownerIdKey), isFalse);
+    });
+  });
+
+  group('positions de lecture — hors trousseau securise', () {
+    /// Elles vivent dans `SharedPreferences` et n'etaient scopees ni par
+    /// utilisateur ni par deconnexion : sur un appareil partage, le compte
+    /// suivant rouvrait un manga au milieu d'un chapitre jamais ouvert, et son
+    /// premier enregistrement renvoyait au serveur la position d'un autre.
+    Future<SharedPreferences> seedPositions() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('${kScrollPositionKeyPrefix}42_133', 2400);
+      await prefs.setDouble('${kScrollPositionKeyPrefix}7_12', 800);
+      await prefs.setString(
+          '${kReadingBookmarkKeyPrefix}42', '{"chapter":133}');
+      await prefs.setBool('ad_blocker_enabled', true);
+      await prefs.setString('app_language', 'fr');
+      return prefs;
+    }
+
+    test('la deconnexion efface toutes les positions de lecture', () async {
+      final prefs = await seedPositions();
+
+      await cache.purgeUserScopedCache();
+
+      expect(prefs.getDouble('${kScrollPositionKeyPrefix}42_133'), isNull);
+      expect(prefs.getDouble('${kScrollPositionKeyPrefix}7_12'), isNull);
+      expect(prefs.getString('${kReadingBookmarkKeyPrefix}42'), isNull);
+    });
+
+    test('le changement de compte les efface aussi', () async {
+      final prefs = await seedPositions();
+      store[OfflineCacheService.ownerIdKey] = 'user-1';
+
+      await cache.adoptCacheOwner('user-2');
+
+      expect(prefs.getDouble('${kScrollPositionKeyPrefix}42_133'), isNull);
+      expect(prefs.getString('${kReadingBookmarkKeyPrefix}42'), isNull);
+    });
+
+    test('le meme compte qui se reconnecte garde sa position', () async {
+      final prefs = await seedPositions();
+      store[OfflineCacheService.ownerIdKey] = 'user-1';
+
+      await cache.adoptCacheOwner('user-1');
+
+      expect(prefs.getDouble('${kScrollPositionKeyPrefix}42_133'), 2400);
+    });
+
+    test('les preferences non personnelles survivent', () async {
+      final prefs = await seedPositions();
+
+      await cache.purgeUserScopedCache();
+
+      expect(prefs.getBool('ad_blocker_enabled'), isTrue);
+      expect(prefs.getString('app_language'), 'fr');
     });
   });
 }

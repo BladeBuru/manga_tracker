@@ -2368,4 +2368,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get genreMartialArts => 'Arts martiaux';
+
+  @override
+  String get resumeReadingTitle => 'Reprendre votre lecture ?';
+
+  @override
+  String resumeReadingMessage(String chapter) {
+    return 'Une lecture est en cours au chapitre $chapter. Voulez-vous la reprendre là où vous vous êtiez arrêté ?';
+  }
+
+  @override
+  String resumeReadingConfirm(String chapter) {
+    return 'Reprendre le chapitre $chapter';
+  }
+
+  @override
+  String resumeReadingDecline(String chapter) {
+    return 'Ouvrir le chapitre $chapter';
+  }
 }

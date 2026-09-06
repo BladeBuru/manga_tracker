@@ -4,6 +4,80 @@
 
 ---
 
+## ✅ Corrigés le 2026-09-06 — position de lecture (`feat/reading-position-client`)
+
+Diagnostic complet conservé ici : ces quatre défauts se combinaient pour
+ramener l'utilisateur au mauvais endroit, et trois d'entre eux étaient
+**silencieux** (aucune erreur, aucun log anormal).
+
+### 1. La position ≥ 85 % n'était jamais sauvegardée
+
+`scroll_position_service.dart` faisait `return` **sans écrire** dès que la
+position dépassait `kReadingEndThresholdPercent`, au motif que « la popup prend
+le relais ». Le raisonnement d'origine ne tient plus depuis que « Non » est une
+réponse possible et respectée (PR #63) : on lisait jusqu'à 95 %, on répondait
+« Non » à la question de fin de chapitre — ou on sortait sans modale — et la
+réouverture repartait bien plus haut, sur une position périmée.
+
+**Correction** : la position est écrite **quelle que soit la profondeur**. La
+garantie « on ne rouvre pas un chapitre terminé en son milieu » repose désormais
+sur la **suppression** de la position à la validation du chapitre
+(`deleteScrollPosition` + `ReadingPositionService.forget`), doublée d'un verrou
+pur (`ReadingResumePolicy` refuse tout chapitre `<= dernier lu`).
+
+### 2. Les garde-fous de restauration étaient inertes sur Android
+
+Les trois gardes de `restoreScrollPosition` parsaient le retour de
+`evaluateJavascript` en supposant une **chaîne JSON**
+(`split('"scrollY":')`, `contains('"scrollY":')`) alors que le plugin Android
+rend déjà une **`Map`**. La condition était donc toujours fausse, la garde
+« ne pas restaurer si l'utilisateur a déjà défilé » ne s'exécutait **jamais**,
+et la page sautait sous les doigts de l'utilisateur pendant le chargement.
+`reading_progress_helper.dart` traitait pourtant les deux formes depuis
+toujours — le bug venait de la divergence entre deux copies.
+
+**Correction** : `WebViewResultParser` (accepte `Map` **et** `String`), utilisé
+par `ReaderViewportProbe`, seul point de contact JavaScript du lecteur.
+Verrouillé par `webview_result_parser_test.dart` et le fil de détente.
+
+### 3. Course entre restauration et timer de sauvegarde
+
+Le tick périodique (5 s) mesurait la page encore en haut pendant la
+restauration et écrasait la position qu'on était en train de restaurer, sans
+qu'aucune nouvelle tentative ne soit faite.
+
+**Correction** : les écritures sont suspendues pendant une restauration
+(`_restoreInProgress`), et la restauration **vérifie puis retente** jusqu'à
+3 passes — les images d'un scan continuent de charger après `onLoadStop`, le
+document s'allonge et le premier `scrollTo` atterrit trop haut.
+
+### 4. Positions locales ni scopées ni purgées
+
+`scroll_position_<muId>_<chapitre>` vivait dans `SharedPreferences`, hors du
+trousseau sécurisé, sans aucun lien avec le compte connecté. Sur un appareil
+partagé, l'utilisateur suivant rouvrait un manga au milieu d'un chapitre jamais
+ouvert — et, avec la synchronisation serveur, son premier enregistrement aurait
+renvoyé la position de quelqu'un d'autre.
+
+**Correction** : `purgeUserScopedCache()` balaie aussi `scroll_position_*` et
+`reading_position_*` dans `SharedPreferences`, aux **mêmes deux déclencheurs**
+que le reste du cache (déconnexion explicite, changement de compte) — jamais
+l'invalidation automatique de session. `AuthService._purgeCache()` vide en plus
+l'état en mémoire de `ReadingPositionService`.
+
+---
+
+## ⚠️ Dette connue, non traitée ici
+
+- `lib/features/reader/views/offline_reader_view_io.dart` : **464 lignes**
+  (limite 400). Déjà à 449 sur la branche parente ; +15 lignes pour la remontée
+  de position hors ligne. Découpage à prévoir dans une session dédiée.
+- `lib/features/manga/views/web_view_io.dart` : **1 374 lignes**. Aucune
+  logique métier n'y a été ajoutée (tout est passé par des services et des
+  classes pures), mais le fichier reste très au-dessus de la limite.
+
+---
+
 ## 🐛 Problèmes Actifs
 
 ### Lecteur : la vérification anti-robot Cloudflare n'aboutit pas sur certains sites

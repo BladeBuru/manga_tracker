@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
+import 'package:mangatracker/features/reader/utils/reading_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Purge du cache local — **contrepartie indispensable** de l'assouplissement
 /// de lecture décidé le 2026-08-31 (cf. `failure_classifier.dart`).
@@ -47,11 +49,39 @@ extension OfflineCachePurge on OfflineCacheService {
         if (scoped) await storage.deleteSecureData(key);
       }
 
+      // 3. Positions de lecture — hors trousseau sécurisé (voir plus bas).
+      await purgeReadingPositions();
+
       debugPrint('🧹 OfflineCache: cache utilisateur purgé');
     } catch (e) {
       // Une purge qui échoue ne doit pas bloquer la déconnexion : l'user doit
       // toujours pouvoir sortir. On trace, sans relancer.
       debugPrint('❌ OfflineCache: échec de la purge: $e');
+    }
+  }
+
+  /// Efface les positions de lecture, qui vivent dans `SharedPreferences` et
+  /// non dans le trousseau sécurisé.
+  ///
+  /// Elles n'ont rien de secret, mais elles sont **personnelles** : sans cette
+  /// purge, sur un appareil partagé, le compte suivant rouvrait un manga au
+  /// milieu d'un chapitre qu'il n'avait jamais ouvert, et son premier
+  /// enregistrement renvoyait au serveur la position de quelqu'un d'autre.
+  /// Elles n'étaient scopées ni par utilisateur ni par déconnexion.
+  ///
+  /// Même déclencheurs que [purgeUserScopedCache] : déconnexion explicite et
+  /// changement de compte — jamais l'invalidation automatique de session.
+  Future<void> purgeReadingPositions() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((key) =>
+          key.startsWith(kScrollPositionKeyPrefix) ||
+          key.startsWith(kReadingBookmarkKeyPrefix));
+      for (final key in keys.toList()) {
+        await prefs.remove(key);
+      }
+    } catch (e) {
+      debugPrint('❌ OfflineCache: échec de la purge des positions: $e');
     }
   }
 

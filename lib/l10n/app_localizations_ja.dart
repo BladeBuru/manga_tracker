@@ -2272,4 +2272,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get genreMartialArts => '武術';
+
+  @override
+  String get resumeReadingTitle => '読書を再開しますか？';
+
+  @override
+  String resumeReadingMessage(String chapter) {
+    return '第$chapter話を読みかけです。続きから再開しますか？';
+  }
+
+  @override
+  String resumeReadingConfirm(String chapter) {
+    return '第$chapter話を再開';
+  }
+
+  @override
+  String resumeReadingDecline(String chapter) {
+    return '第$chapter話を開く';
+  }
 }

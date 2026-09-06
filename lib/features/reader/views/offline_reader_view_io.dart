@@ -15,6 +15,7 @@ import 'package:mangatracker/features/reader/utils/reading_progress_helper.dart'
 import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/features/reader/utils/offline_html_sanitizer.dart';
 import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
+import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
 
 /// Vue pour lire un chapitre téléchargé hors ligne
@@ -39,6 +40,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
   final DownloadManagerService _downloadManager = DownloadManagerService();
   final LibraryService _libraryService = getIt<LibraryService>();
   final ChapterLogService _chapterLogService = getIt<ChapterLogService>();
+  final ScrollPositionService _scrollPosition = getIt<ScrollPositionService>();
   DownloadedChapter? _chapter;
   List<DownloadedChapter> _allChapters = [];
   bool _isLoading = true;
@@ -68,7 +70,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _scrollSaveTimer?.cancel();
-    _saveScrollPosition();
+    _saveScrollPosition(immediate: true);
     // NE PLUS enregistrer le chapitre ici : `dispose()` ne peut rien
     // demander à l'utilisateur, et un chapitre atteint à 85 % n'est pas un
     // chapitre fini. La question est posée par la modale de sortie
@@ -84,7 +86,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      unawaited(_saveScrollPosition());
+      unawaited(_saveScrollPosition(immediate: true));
     }
   }
 
@@ -135,7 +137,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
     if (_exitFlowRunning) return;
     _exitFlowRunning = true;
     try {
-      await _saveScrollPosition();
+      await _saveScrollPosition(immediate: true);
 
       final exit = _commitPolicy.onExit(
         currentChapter: widget.chapterNumber,
@@ -161,7 +163,12 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
   }
 
   /// Sauvegarde la position de scroll actuelle
-  Future<void> _saveScrollPosition() async {
+  ///
+  /// Les pixels restent dans le chapitre téléchargé (fidèles sur CET
+  /// appareil) ; le pourcentage part au serveur, pour qu'un chapitre lu hors
+  /// connexion se retrouve lui aussi sur une tablette. [immediate] force
+  /// l'envoi sans attendre la fenêtre de throttle (sortie, arrière-plan).
+  Future<void> _saveScrollPosition({bool immediate = false}) async {
     if (_webViewController == null || _chapter == null) return;
     
     try {
@@ -175,6 +182,14 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
           _chapter = updatedChapter;
         });
       }
+      // Part aussi au serveur, en pourcentage : un chapitre lu hors connexion
+      // doit se retrouver sur une tablette comme les autres. Jamais bloquant.
+      unawaited(_scrollPosition.reportPositionOnly(
+        _webViewController!,
+        widget.muId,
+        _chapter!.chapterNumber.round(),
+        immediate: immediate,
+      ));
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la position de scroll: $e');
     }
@@ -244,7 +259,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
       newChapter: chapterNumber,
       previousChapter: widget.chapterNumber,
     );
-    await _saveScrollPosition();
+    await _saveScrollPosition(immediate: true);
     final commit = decision.commitChapter;
     if (commit != null) {
       await _commitChapter(commit);

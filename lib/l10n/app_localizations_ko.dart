@@ -2274,4 +2274,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get genreMartialArts => '무술';
+
+  @override
+  String get resumeReadingTitle => '읽던 곳부터 이어서 볼까요?';
+
+  @override
+  String resumeReadingMessage(String chapter) {
+    return '$chapter화를 읽는 중입니다. 멈춘 곳부터 이어서 보시겠습니까?';
+  }
+
+  @override
+  String resumeReadingConfirm(String chapter) {
+    return '$chapter화 이어보기';
+  }
+
+  @override
+  String resumeReadingDecline(String chapter) {
+    return '$chapter화 열기';
+  }
 }

@@ -20,6 +20,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
+import '../../reader/helpers/reading_resume_prompt.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
@@ -629,7 +630,17 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
 
   Future<void> _handleReadOnline(int muId) async {
     final lastRead = lastReadChapters;
-    final nextChapterNumber = lastRead + 1;
+    // Reprise inter-appareils : au lieu d'ouvrir systématiquement
+    // `dernier lu + 1` en haut de page, on repart de la lecture en cours si
+    // elle existe. Toute la décision (et la question éventuelle) vit dans
+    // `resolveReadingResume` / `ReadingResumePolicy`.
+    final resume = await resolveReadingResume(
+      context,
+      muId: muId,
+      lastRead: lastRead,
+    );
+    if (!mounted) return;
+    final nextChapterNumber = resume.chapter;
     final baseLink = customLink ?? '';
     final targetUrl = await ChapterLinkResolver.buildUrlForChapter(
             baseLink, nextChapterNumber) ?? baseLink;
@@ -665,6 +676,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           initialLastRead: lastRead,
           initialUrl: targetUrl,
           baseUserLink: baseLink,
+          initialPositionPercent: resume.positionPercent,
         ),
       );
     }

@@ -107,6 +107,13 @@ class ReaderWebExtras {
   final String baseUserLink;
   final bool autoDownload;
   final void Function(bool)? onDownloadComplete;
+
+  /// Position (0..100) a laquelle reprendre le chapitre ouvert, quand elle
+  /// vient du serveur ou d'un autre appareil. `null` = ouvrir en haut de page.
+  /// Ignoree si cet appareil a deja une position en pixels pour ce chapitre,
+  /// forcement plus fidele.
+  final double? initialPositionPercent;
+
   const ReaderWebExtras({
     this.mangaTitle,
     required this.initialLastRead,
@@ -114,6 +121,7 @@ class ReaderWebExtras {
     required this.baseUserLink,
     this.autoDownload = false,
     this.onDownloadComplete,
+    this.initialPositionPercent,
   });
 }
 
@@ -241,6 +249,7 @@ GoRouter buildAppRouter() {
                 initialLastRead: extras.initialLastRead,
                 initialUrl: extras.initialUrl,
                 baseUserLink: extras.baseUserLink,
+                initialPositionPercent: extras.initialPositionPercent,
                 autoDownload: extras.autoDownload,
                 onDownloadComplete: extras.onDownloadComplete,
               );

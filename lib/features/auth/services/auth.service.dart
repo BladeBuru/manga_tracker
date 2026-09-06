@@ -16,6 +16,7 @@ import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/auth/exceptions/auth_server.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/email_already_used.exception.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
+import 'package:mangatracker/features/reader/services/reading_position.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
@@ -329,6 +330,11 @@ class AuthService {
   /// connue). L'ordre d'enregistrement n'est pas modifiable.
   Future<void> _purgeCache() async {
     try {
+      // Positions de lecture encore en mémoire : sans ce vidage, la dernière
+      // position du compte sortant partirait au serveur sur le compte suivant.
+      if (getIt.isRegistered<ReadingPositionService>()) {
+        getIt<ReadingPositionService>().clear();
+      }
       if (!getIt.isRegistered<OfflineCacheService>()) return;
       await getIt<OfflineCacheService>().purgeUserScopedCache();
     } catch (e) {

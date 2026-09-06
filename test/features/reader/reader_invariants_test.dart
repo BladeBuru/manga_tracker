@@ -19,10 +19,15 @@ void main() {
       'lib/features/reader/services/chapter_commit_policy.dart';
   const offlineReaderPath =
       'lib/features/reader/views/offline_reader_view_io.dart';
+  const scrollServicePath =
+      'lib/features/reader/services/scroll_position_service.dart';
+  const detailViewPath = 'lib/features/manga/views/detail_bloc_view.dart';
 
   late String reader;
   late String settings;
   late String offlineReader;
+  late String scrollService;
+  late String detailView;
 
   /// Les commentaires ont le droit de nommer un anti-pattern (c'est même
   /// souhaitable) ; seul le code est jugé.
@@ -35,6 +40,8 @@ void main() {
     reader = File(readerPath).readAsStringSync();
     settings = File(settingsPath).readAsStringSync();
     offlineReader = File(offlineReaderPath).readAsStringSync();
+    scrollService = File(scrollServicePath).readAsStringSync();
+    detailView = File(detailViewPath).readAsStringSync();
   });
 
   group('protection anti-redirection du lecteur', () {
@@ -240,6 +247,116 @@ void main() {
         expect(entry.value, contains('WidgetsBinding.instance.removeObserver'),
             reason: '${entry.key} : un observateur non retiré fuit.');
       }
+    });
+  });
+
+  group('position de lecture — sauvegarde et restauration', () {
+    test('la sauvegarde ne dépend PLUS de la profondeur de lecture', () {
+      // Le service faisait `return` sans écrire dès que la position dépassait
+      // kReadingEndThresholdPercent, « puisque la popup prend le relais ».
+      // Depuis que « Non » est une réponse possible et respectée, ce retour
+      // anticipé renvoyait l'utilisateur sur une position périmée.
+      final code = withoutComments(scrollService);
+      expect(
+        code,
+        isNot(contains('kReadingEndThresholdPercent')),
+        reason: "ScrollPositionService ne doit plus se comparer au seuil "
+            "de fin : c'est la SUPPRESSION de la position à la validation du "
+            "chapitre qui garantit qu'on ne rouvre pas un chapitre terminé "
+            "au milieu, pas un refus d'écriture.",
+      );
+    });
+
+    test('les retours de la WebView passent par un parseur unique', () {
+      // Les garde-fous découpaient le retour de evaluateJavascript comme du
+      // texte, alors que le plugin Android rend une Map : la garde « ne pas
+      // restaurer si l'utilisateur a déjà défilé » ne s'exécutait jamais.
+      final probe = File(
+        'lib/features/reader/services/reader_viewport_probe.dart',
+      ).readAsStringSync();
+      expect(withoutComments(probe), contains('WebViewResultParser'));
+
+      final code = withoutComments(scrollService);
+      expect(
+        code,
+        contains('_probe.measure('),
+        reason: 'le service ne doit plus parler JavaScript lui-même : une '
+            'seule sonde, un seul parseur.',
+      );
+      for (final source in [code, withoutComments(probe)]) {
+        for (final forbidden in [
+          "split('\"scrollY\":')",
+          "contains('\"scrollY\":')",
+          "split('\"maxScroll\":')",
+        ]) {
+          expect(
+            source,
+            isNot(contains(forbidden)),
+            reason: 'lire un retour de WebView comme du texte le rend inerte '
+                'sur la moitié des plateformes.',
+          );
+        }
+      }
+    });
+
+    test("la sortie et l'arrière-plan forcent l'envoi au serveur", () {
+      // Sans `immediate`, la dernière position resterait bloquée derrière le
+      // throttle — exactement l'instant où l'utilisateur bascule d'appareil.
+      expect(
+        'immediate: true'.allMatches(reader).length,
+        greaterThanOrEqualTo(3),
+        reason: 'sortie (_onWillPop), arrière-plan '
+            '(didChangeAppLifecycleState) et dispose().',
+      );
+      expect(offlineReader, contains('immediate: true'));
+    });
+
+    test('valider un chapitre efface sa position et coupe la synchro', () {
+      final code = withoutComments(reader);
+      expect(code, contains('deleteScrollPosition(widget.muId, chapter)'));
+      expect(
+        code,
+        contains('_readingPositionService.forget(widget.muId)'),
+        reason: "sans cet oubli, le tick suivant réenverrait une position "
+            "au milieu d'un chapitre que le serveur vient de clore.",
+      );
+    });
+  });
+
+  group('reprise de lecture — ouverture du lecteur', () {
+    test("« Lire en ligne » n'ouvre plus systématiquement dernier lu + 1",
+        () {
+      final code = withoutComments(detailView);
+      expect(
+        code,
+        contains('resolveReadingResume('),
+        reason: 'la reprise inter-appareils doit passer par la politique '
+            'pure, pas par un calcul en dur dans la vue.',
+      );
+      expect(
+        code,
+        isNot(contains('final nextChapterNumber = lastRead + 1;')),
+        reason: 'ce calcul en dur ignorait toute lecture en cours.',
+      );
+    });
+
+    test('la décision vit dans une politique pure', () {
+      final policy = File(
+        'lib/features/reader/services/reading_resume_policy.dart',
+      ).readAsStringSync();
+      expect(policy, isNot(contains("import 'package:flutter")));
+      expect(policy, isNot(contains('service_locator')));
+      expect(
+        withoutComments(policy),
+        contains('candidate.chapter <= lastReadChapter'),
+        reason: 'garde-fou : un chapitre terminé ne se rouvre jamais au '
+            'milieu, même si le serveur renvoie une position pour lui.',
+      );
+    });
+
+    test('la position de reprise est transmise au lecteur', () {
+      expect(reader, contains('initialPositionPercent'));
+      expect(detailView, contains('initialPositionPercent: resume.positionPercent'));
     });
   });
 
