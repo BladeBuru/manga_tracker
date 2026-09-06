@@ -1,8 +1,23 @@
 {
-  "latestVersion": "0.14.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.14.0/MangaTracker.apk",
+  "latestVersion": "0.15.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.15.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.15.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Reprenez votre lecture exactement là où vous vous étiez arrêté, y compris depuis un autre appareil : si vous laissez un chapitre au milieu sur votre téléphone, votre tablette vous le rouvre au bon endroit",
+        "⚡ Améliorations",
+        "- Quand vous quittez le lecteur près de la fin d'un chapitre, l'application vous demande de nouveau si vous l'avez terminé — quelle que soit la façon dont vous sortez : geste de retour, flèche en haut à gauche ou bouton du téléphone",
+        "- Les chapitres téléchargés vous demandent aussi votre avis au lieu de se marquer lus tout seuls",
+        "🐛 Corrections",
+        "- Vos chapitres lus ne sont plus décalés d'un cran : arriver sur un chapitre ne le compte plus comme lu, seul un chapitre terminé l'est",
+        "- Sauter des chapitres enregistre désormais celui que vous venez réellement de finir, et non un numéro plus loin",
+        "- Votre page de lecture est retenue même en toute fin de chapitre, et quand vous basculez vers une autre application",
+        "- Plus de messages « Chapitre enregistré » en double"
+      ]
+    },
     {
       "version": "0.14.0",
       "notes": [
