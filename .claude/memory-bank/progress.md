@@ -23,6 +23,47 @@
 
 ## ✅ Complété
 
+### 📖 Lecteur : reprise de lecture inter-appareils + fiabilité de la position (2026-09-06)
+
+Branche `feat/reading-position-client` (base `fix/reader-progress-semantics`,
+PR #63). **Dépend de l'API PR #83 — déployer l'API en premier.**
+
+Demande utilisateur : *« il faut vérifier que le suivi est bien enregistré,
+c'est-à-dire même en base. Quand on s'arrête en plein milieu d'un chapitre, il
+faut regarder les données. Si on le rouvre sur tablette et tout, vérifier que
+ça fonctionne bien. »*
+
+**Livré**
+
+- `ReadingPositionService` — `PUT /library/reading-position` +
+  `GET /library/:muId/reading-position`. Throttle 1 envoi / 10 s / manga,
+  `flush()` immédiat à la sortie, en arrière-plan et dans `dispose()`. Jamais
+  bloquant, jamais visible : 400/404 abandonnent, 429/5xx/réseau conservent.
+  Hors ligne, **une seule** position en attente par manga.
+- `ReadingPositionCalculator` (pure) — pixels ⇄ pourcentage. Une position en
+  pixels n'a de sens que sur l'écran qui l'a mesurée.
+- `ReadingResumePolicy` (pure) — quel chapitre ouvrir, à quelle position,
+  faut-il demander. **Reprise silencieuse** sur `dernier lu + 1`, **question**
+  sur un autre chapitre (les deux issues ont un coût, aucune n'est devinable).
+- `ReaderViewportProbe` + `WebViewResultParser` — une seule façon de lire un
+  retour de WebView (Map Android **et** chaîne iOS/web).
+- `ReadingPositionStore` — persistance locale (pixels + marque-page au format
+  serveur), purgée par `purgeUserScopedCache()`.
+
+**Quatre défauts locaux corrigés** (détail dans `known-issues.md`) : position
+≥ 85 % jamais sauvegardée, garde-fous de restauration inertes sur Android,
+course restauration/timer, positions non purgées à la déconnexion.
+
+**Chiffres** : 460 tests verts (362 avant), `flutter analyze` 40 informations,
+0 erreur, 0 avertissement (identique à la base). `scroll_position_service.dart`
+passe de 425 à 296 lignes.
+
+**Reste à valider sur appareil** : reprise réelle téléphone ↔ tablette sur le
+même compte, comportement de la modale de reprise, absence de saut de scroll
+sur les lecteurs lents, et le fait que la position atterrit bien en base.
+
+---
+
 ### 📖 Lecteur : progression décalée d'un chapitre — corrigée (2026-09-06)
 
 Branche `fix/reader-progress-semantics` (base v0.14.0).

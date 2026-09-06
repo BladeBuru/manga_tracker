@@ -118,6 +118,44 @@ la première page est mise en cache 2 h, sinon le titre écarté réapparaît.
 | `PATCH` | `/library/:muId/status` | JWT | `{ readingStatus }` | — |
 | `PATCH` | `/library/:muId/chapter` | JWT | `{ readChaptersCount }` | — |
 | `PATCH` | `/library/:muId/custom-link` | JWT | `{ customLink }` | — |
+| `PUT` | `/library/reading-position` | JWT | `{ muId, chapter, positionPercent }` | — |
+| `GET` | `/library/:muId/reading-position` | JWT | — | `ReadingPositionDto?` |
+
+### Position de lecture (reprise inter-appareils, API PR #83)
+
+**Déployer l'API AVANT l'application.**
+
+`PUT /library/reading-position` — `chapter` entier ≥ 0, `positionPercent`
+entre 0 et 100 (0 % = haut de page, 100 % = bas de page, cf.
+`ReadingPositionCalculator`).
+
+| Code | Signification | Réaction du client |
+|------|---------------|--------------------|
+| `200` | `{ "ok": true }` | position confirmée, file vidée |
+| `400` | hors bornes | **abandon** (réessayer donnerait la même réponse) |
+| `404` | manga hors bibliothèque | **abandon** |
+| `429` | > 60 requêtes/min/utilisateur | position **conservée**, nouvel essai après une fenêtre de throttle |
+| `5xx` / réseau | — | position **conservée** |
+
+`GET /library/:muId/reading-position` — `200` →
+`{ "chapter": number, "positionPercent": number, "updatedAt": "ISO-8601" }`,
+`204` **sans corps** si aucune position en cours. Le client rend `null` sur
+`204`, sur toute autre réponse et sur échec réseau : la reprise retombe alors
+sur la mémoire locale, puis sur `dernier lu + 1`.
+
+`GET /library/all` renvoie en plus, en champs **optionnels** (présents en bloc
+ou absents) : `currentChapter`, `currentPositionPercent`,
+`currentPositionUpdatedAt` — lus par `MangaQuickViewDto`.
+
+🔒 **Le serveur remet ces champs à `null` de lui-même** quand le chapitre en
+cours devient terminé. Cette règle **n'est pas** réimplémentée côté client : il
+se contente de cesser d'envoyer (`ReadingPositionService.forget`) et de refuser
+de rouvrir un chapitre `<= dernier lu` (`ReadingResumePolicy`).
+
+⚠️ **Débit** : le lecteur mesure sa position toutes les 5 s. Le client limite à
+**un envoi / 10 s / manga**, plus un envoi immédiat à la sortie du lecteur et au
+passage en arrière-plan. Hors ligne, **une seule** position est retenue par
+manga (la dernière), jamais une file d'actions à rejouer.
 
 ---
 
