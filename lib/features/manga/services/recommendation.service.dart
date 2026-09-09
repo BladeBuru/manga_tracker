@@ -6,6 +6,7 @@ import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
+import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 
 /// Service pour récupérer les recommandations personnalisées de l'utilisateur.
 ///
@@ -91,15 +92,22 @@ class RecommendationService {
   ///
   /// En cas d'auth invalide → liste vide sans toucher au cache (évite la fuite
   /// de données entre utilisateurs).
+  ///
+  /// [forceRefresh] ignore le cache **en lecture** (pas en écriture) : c'est
+  /// le geste « tirer pour rafraîchir ». Sans cette porte de sortie, la page
+  /// « Tout voir » ne pourrait plus jamais se rafraîchir depuis qu'elle
+  /// partage la page canonique de l'accueil — le cache serait toujours frais
+  /// et le geste n'aurait aucun effet visible.
   Future<List<MangaQuickViewDto>> getPersonalizedRecommendations({
-    int limit = 50,
+    int limit = kRecommendationsPageSize,
     int offset = 0,
+    bool forceRefresh = false,
   }) async {
     // Cache hit TTL 2h sur la première page (hotfix-v0-10-1 US-5) : revenir
     // sur la page ne refetch plus systématiquement. 2h front vs 1h back :
     // le back garantit la fraîcheur réelle, le front peut servir un cache
     // légèrement plus vieux (stale-while-revalidate, RETRO-005).
-    if (offset == 0) {
+    if (offset == 0 && !forceRefresh) {
       final expired = await _cacheService.isCacheExpiredFor(
         'recommendations',
         maxHours: 2,

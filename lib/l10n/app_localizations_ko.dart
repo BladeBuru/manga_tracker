@@ -2101,6 +2101,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get dismissRecommendationAccessibility => '길게 눌러 이 작품을 추천에서 제외';
 
   @override
+  String get recommendationsTipTitle => '관심 없는 작품이 있나요?';
+
+  @override
+  String get recommendationsTipBody =>
+      '카드를 길게 누르거나 오른쪽 위 버튼을 누르면 추천에 더 이상 표시되지 않습니다.';
+
+  @override
+  String get recommendationsTipAction => '확인';
+
+  @override
+  String get dismissRecommendationAction => '이 작품 추천 안 함';
+
+  @override
   String get recommendationsSleepersTitle => '숨은 명작';
 
   @override

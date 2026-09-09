@@ -2260,6 +2260,22 @@
   "@dismissRecommendationAccessibility": {
     "description": "Indice d'accessibilité (Semantics) sur les cartes de recommandation"
   },
+  "recommendationsTipTitle": "Un titre qui ne t’intéresse pas ?",
+  "@recommendationsTipTitle": {
+    "description": "Titre de l'astuce d'usage montree une seule fois sur l'ecran des recommandations"
+  },
+  "recommendationsTipBody": "Appuie longuement sur une carte, ou touche le bouton en haut à droite, pour ne plus le voir dans tes recommandations.",
+  "@recommendationsTipBody": {
+    "description": "Corps de l'astuce : explique comment ecarter un titre des recommandations"
+  },
+  "recommendationsTipAction": "Compris",
+  "@recommendationsTipAction": {
+    "description": "Bouton qui range l'astuce d'usage definitivement"
+  },
+  "dismissRecommendationAction": "Ne plus me recommander ce titre",
+  "@dismissRecommendationAction": {
+    "description": "Libelle du bouton explicite « ne plus me recommander » sur les cartes de la page Tout voir"
+  },
   "recommendationsSleepersTitle": "Pépites cachées",
   "sessionRejectedBanner": "Session expirée — voici vos données enregistrées",
   "@sessionRejectedBanner": {

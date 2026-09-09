@@ -5,6 +5,43 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/reco-order-dismiss
+
+### ⚡ Améliorations
+
+- **Vos recommandations ne changent plus d'ordre.** Les titres proposés sur l'accueil se retrouvaient rangés autrement dès que vous ouvriez la liste complète : impossible de remettre la main sur celui que vous veniez de repérer. L'accueil montre désormais exactement le début de la liste dépliée.
+- **La liste complète des recommandations s'ouvre du tac au tac.** Elle repartait de zéro à chaque ouverture ; elle réutilise maintenant ce que l'accueil a déjà chargé. Un geste de bas en haut la rafraîchit toujours quand vous le demandez.
+
+### ✨ Nouveautés
+
+- **Dire « celui-là ne m'intéresse pas » se voit enfin.** Vous pouviez déjà écarter un titre de vos recommandations, mais rien ne le laissait deviner : il fallait connaître l'appui long. À votre première visite de la page des recommandations, un rappel vous l'explique — une seule fois, puis il disparaît pour de bon. Et chaque titre de cette page porte maintenant un bouton dédié, qui vous demande toujours pourquoi avant d'écarter quoi que ce soit. L'appui long, lui, continue de fonctionner partout où il fonctionnait déjà.
+
+### Notes d'implémentation
+
+- Cause de l'incohérence d'ordre : **côté serveur**, `limit` et `offset` font partie de la clé de cache de `GET /recommendations` (`recommendation.service.ts:178-180`). L'accueil (`limit=10`) et la page « Tout voir » (`limit=50`) déclenchaient donc deux calculs complets et **indépendants** du classement — et ce calcul n'est pas déterministe : tris par score sans départage secondaire (`recommendation-dto-builder.service.ts:69`), ordre d'insertion produit par un `Promise.all` (`recommendation.service.ts:205-221`), troncature `slice(0, 12)` sur un `getRawMany()` sans `ORDER BY` (`reco-graph-candidate.service.ts:129-138`), et surtout des écritures en base lancées en tâche de fond par la requête précédente, dont la colonne `type` qui pilote l'entrelacement par type d'œuvre (`recommendation-dto-builder.service.ts:155-159`). Ce n'était **pas** le cache client.
+- L'entrelacement lui-même est innocent : il s'applique à la liste entière **avant** `slice(offset, offset + limit)` (`recommendation-dto-builder.service.ts:94-102`), il est donc stable par préfixe à `limit` variable. Le vivier de candidats du chemin principal ne dépend pas non plus de `limit` (`recommendation.service.ts:389-396`). Exception : le chemin **cold start** (bibliothèque vide) dimensionne son vivier en `offset + limit + 50` puis re-trie sur une autre clé (`sleeper-hits.service.ts:187-190, 242-243, 271`) — violation directe et déterministe, à corriger côté serveur.
+- Correction côté application : une seule **page canonique** (`kRecommendationsPageSize`, `lib/features/recommendations/recommendations_paging.dart`) demandée par les deux écrans, l'accueil n'affichant que ses premiers éléments (`homeRecommendationsPreview`). Le parcours passe de deux classements serveur à un seul ; le surcoût de l'accueil se limite à 40 objets sérialisés en plus, le calcul serveur ne dépendant pas de la taille de page demandée. Une grande première page est un choix délibéré : chaque page supplémentaire est un calcul indépendant, donc une occasion de doublon ou de trou.
+- `getPersonalizedRecommendations` gagne `forceRefresh` : le cache de la première page étant désormais presque toujours frais, « tirer pour rafraîchir » n'aurait plus rien fait. Le drapeau d'exhaustivité et la pagination `offset > 0` sont inchangés.
+- Découvrabilité : `RecommendationTipStore` (préférence d'appareil, **hors GetIt** — l'ordre du service locator n'est pas touché) + `DismissRecommendationTip`, qui gère lui-même son « une seule fois ». Le drapeau est posé **dès l'affichage** et non sur « Compris » : une astuce lue puis quittée par le bouton retour a rempli son rôle.
+- `DismissibleRecommendationCard` reçoit `showDismissAction`, **faux par défaut** : seule la page « Tout voir » l'active. L'accueil et la page par genre gardent des cartes strictement inchangées, conformément au raisonnement de `feat/pas-interesse` (une croix sur les trois écrans encombrerait et provoquerait des rejets accidentels). Le bouton n'écarte rien par lui-même — il ouvre la feuille qui demande la raison, avec sa sortie « Annuler ».
+- La page « Tout voir » n'a plus qu'un seul chemin de rendu : bandeau d'accueil et astuce en en-têtes optionnels au-dessus de la grille, au lieu de deux branches dupliquées.
+
+### Reste à faire côté serveur
+
+- Sortir `limit` / `offset` de la clé de cache et paginer **après** le cache (`recommendation.service.ts:178-180` et `244-251`) : une seule liste canonique par `(utilisateur, genre)`, tranchée à la lecture. Sans changer l'algorithme, cela garantit l'invariant à l'intérieur de la fenêtre de cache et divise par N le nombre de classements calculés.
+- Départages secondaires sur tous les tris par score, `ORDER BY` total avant les troncatures, et vivier cold start indépendant de `limit` — détail dans `.claude/memory-bank/known-issues.md`.
+
+### Tests
+
+- `flutter test` : **482 tests verts** (460 avant). `flutter analyze` : **40 informations, 0 erreur, 0 avertissement** (identique à la branche parente).
+- `recommendations_order_test.dart` (+9) : l'aperçu de l'accueil est le préfixe strict de la page canonique pour toutes les tailles rencontrées, l'accueil demande bien la page canonique, et un fil de détente relit les sources pour interdire le retour d'une taille de page en dur.
+- `recommendation_service_cache_test.dart` (+4) : accueil puis « Tout voir » ne déclenchent **qu'une** requête et renvoient la même liste ; `forceRefresh` ignore le cache en lecture mais l'alimente, retombe dessus hors ligne, et ne touche ni à la pagination `offset > 0` ni au drapeau d'exhaustivité.
+- `dismiss_discoverability_test.dart` (+9) : l'astuce s'affiche une fois, est mémorisée dès l'affichage, ne revient pas après remontage (persistance réelle), et ne clignote pas avant lecture de la préférence ; le bouton explicite n'existe que là où il est demandé, ouvre bien la feuille de rejet, et le geste d'appui long reste branché.
+
+### Nouvelles clés i18n (7 langues)
+
+- `recommendationsTipTitle`, `recommendationsTipBody`, `recommendationsTipAction` — astuce d'usage montrée une seule fois.
+- `dismissRecommendationAction` — libellé du bouton explicite (aussi utilisé comme étiquette pour les lecteurs d'écran).
 ## [Unreleased] — feat/home-carousel-ux
 
 ### ✨ Nouveautés

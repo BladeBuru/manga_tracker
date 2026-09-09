@@ -2183,6 +2183,20 @@ class AppLocalizationsDe extends AppLocalizations {
       'Lange drücken, um diesen Titel nicht mehr zu empfehlen';
 
   @override
+  String get recommendationsTipTitle =>
+      'Ein Titel, der dich nicht interessiert?';
+
+  @override
+  String get recommendationsTipBody =>
+      'Halte eine Karte gedrückt oder tippe auf die Schaltfläche oben rechts, damit der Titel nicht mehr in deinen Empfehlungen erscheint.';
+
+  @override
+  String get recommendationsTipAction => 'Verstanden';
+
+  @override
+  String get dismissRecommendationAction => 'Diesen Titel nicht mehr empfehlen';
+
+  @override
   String get recommendationsSleepersTitle => 'Geheimtipps';
 
   @override

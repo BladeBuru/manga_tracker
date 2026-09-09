@@ -2153,6 +2153,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Long press to stop recommending this title';
 
   @override
+  String get recommendationsTipTitle => 'Not interested in a title?';
+
+  @override
+  String get recommendationsTipBody =>
+      'Long press a card, or tap the button in its top-right corner, to stop seeing it in your recommendations.';
+
+  @override
+  String get recommendationsTipAction => 'Got it';
+
+  @override
+  String get dismissRecommendationAction => 'Stop recommending this title';
+
+  @override
   String get recommendationsSleepersTitle => 'Hidden gems';
 
   @override

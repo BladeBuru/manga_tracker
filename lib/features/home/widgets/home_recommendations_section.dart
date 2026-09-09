@@ -6,6 +6,7 @@ import 'package:mangatracker/features/home/bloc/homepage_state.dart';
 import 'package:mangatracker/features/home/helpers/home_layout_metrics.dart';
 import 'package:mangatracker/features/home/widgets/home_section_header.dart';
 import 'package:mangatracker/features/home/widgets/home_sections_skeleton.dart';
+import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -37,7 +38,9 @@ class HomeRecommendationsSection extends StatelessWidget {
     }
     if (current is! HomePageLoaded) return const SizedBox.shrink();
 
-    final recos = current.recommendations.take(10).toList();
+    // Prefixe strict de la page canonique : l'accueil montre le DEBUT de
+    // ce que « Voir tout » affichera, jamais une selection differente.
+    final recos = homeRecommendationsPreview(current.recommendations);
     if (recos.isEmpty && current.isOffline) return const SizedBox.shrink();
 
     final hPad = metrics.horizontalPadding;

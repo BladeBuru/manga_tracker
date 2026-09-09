@@ -23,6 +23,56 @@
 
 ## ✅ Complété
 
+### ⭐ Recommandations : ordre cohérent + geste « pas intéressé » découvrable (2026-09-09)
+
+Branche `feat/reco-order-dismiss` (base `a4e055d`, v0.15.0).
+
+**Deux constats utilisateur**
+
+1. *« Les recommandations de la page d'accueil, une fois que je déplie, ne
+   sont pas forcément les mêmes dans l'ordre. Ou alors c'est à cause du
+   cache. »* — ce n'était pas le cache.
+2. Le rejet « pas intéressé / déjà vu » est livré et fonctionne, mais **zéro
+   rejet enregistré** depuis la création de la table le 6 septembre : le geste
+   est un appui long sans aucun indice visuel.
+
+**Cause de l'incohérence d'ordre — côté serveur**
+
+`limit` et `offset` font partie de la clé de cache de `GET /recommendations`
+(`recommendation.service.ts:178-180`) : `limit=10` (accueil) et `limit=50`
+(« Tout voir ») sont deux calculs **complets et indépendants**. Et ce calcul
+n'est pas déterministe — tris sans départage secondaire, ordre d'insertion
+produit par `Promise.all`, troncature sur un `getRawMany()` sans `ORDER BY`,
+et écritures en base lancées en tâche de fond par la requête précédente (dont
+la colonne `type`, qui pilote l'entrelacement par type d'œuvre). L'entrelacement
+lui-même est stable par préfixe : il s'applique avant la pagination.
+
+**Correction côté application**
+
+Une seule **page canonique** demandée par les deux écrans
+(`lib/features/recommendations/recommendations_paging.dart`), l'accueil
+n'affichant que ses premiers éléments. Le parcours passe de deux classements
+serveur à un seul, et ouvrir « Tout voir » après l'accueil ne coûte plus de
+requête. `getPersonalizedRecommendations` gagne `forceRefresh` pour que
+« tirer pour rafraîchir » garde un effet.
+
+**Découvrabilité (sans toucher au geste)**
+
+- `DismissRecommendationTip` — astuce montrée **une seule fois** en tête de la
+  page « Toutes les recommandations », mémorisée dès l'affichage via
+  `RecommendationTipStore` (préférence d'appareil, hors GetIt, hors purge).
+- `DismissibleRecommendationCard.showDismissAction` — bouton explicite sur les
+  cartes de cette page **uniquement**. Il ouvre la feuille qui demande la
+  raison : aucun rejet accidentel possible. Accueil et page par genre
+  inchangés.
+
+**Chiffres** : 482 tests verts (460 avant), `flutter analyze` 40 informations,
+0 erreur, 0 avertissement (identique à la base).
+
+**Reste à faire côté serveur** — voir `known-issues.md` : sortir `limit` /
+`offset` de la clé de cache et paginer après le cache, départages secondaires
+sur les tris, et vivier cold start indépendant de `limit`.
+
 ### 🏠 Accueil : carrousels paginés, indicateur bibliothèque, crédit MangaUpdates (2026-09-09)
 
 Branche `feat/home-carousel-ux` (base `a4e055d`, v0.15.0). Aucun changement
