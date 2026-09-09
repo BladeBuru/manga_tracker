@@ -4,65 +4,56 @@
 
 ---
 
-## 🟠 ACTIF — Le classement des recommandations n'est pas déterministe (serveur)
+## ✅ Corrigé le 2026-09-09 — classement des recommandations déterministe
 
-**Découvert le 2026-09-09** (`feat/reco-order-dismiss`). **Atténué côté
-application, pas corrigé à la source.**
+**Découvert le 2026-09-09** (`feat/reco-order-dismiss`), **corrigé à la source**
+côté API (`fix/reco-order-stable`, PR #86).
 
-Symptôme d'origine : les recommandations de l'accueil n'étaient pas dans le
-même ordre une fois la liste dépliée. Ce n'était pas le cache client.
+Symptôme d'origine : les recommandations de l'accueil n'étaient pas dans le même
+ordre une fois la liste dépliée. Ce n'était pas le cache client. `limit` et
+`offset` faisaient partie de la clé de cache serveur : deux tailles de page =
+deux calculs complets et indépendants, et le calcul n'était pas reproductible.
 
-`GET /recommendations` met `limit` et `offset` dans sa clé de cache
-(`recommendation.service.ts:178-180`) : deux tailles de page = deux calculs
-complets et indépendants. Et le calcul n'est pas reproductible :
+Mesuré sur la base de production : **21 à 51 positions sur 202-232** ne se
+distinguaient que par un score strictement égal — 10 à 22 % du classement final
+laissé à l'ordre de lecture de Postgres.
 
-| Cause | Fichier:ligne (API) |
+**Ce qui a été corrigé côté serveur** — les quatre points de la liste
+« correction à faire » qui figurait ici, plus le défaut latent :
+
+| Correction | État |
 |---|---|
-| Tris par score sans départage secondaire | `recommendation-dto-builder.service.ts:69`, `catalog-candidate.service.ts:143`, `sleeper-hits.service.ts:158`, `sleeper-hits.service.ts:271`, `reco-graph-scoring.ts:192` |
-| Ordre d'insertion de `scoreMap` produit par une course `Promise.all` (+ somme flottante non associative) | `recommendation.service.ts:205-221`, `recommendation.service.ts:514` |
-| `slice(0, 12)` sur un `getRawMany()` **sans `ORDER BY`**, puis normalisation par `maxWeight` du sous-ensemble retenu | `reco-graph-candidate.service.ts:129-138`, `reco-graph-scoring.ts:190-203` |
-| `ORDER BY m.rating DESC` + `LIMIT` sans clé secondaire | `type-profile.ts:298-301` |
-| Écritures en base lancées **en tâche de fond** par la requête précédente, dont la colonne `type` qui pilote l'entrelacement | `recommendation.service.ts:230-232`, `recommendation-dto-builder.service.ts:155-159` |
-| Seuil discret `CATALOG_MIN_POOL` (149 → 151 bascule tout le vivier) | `recommendation.service.ts:389` |
-| **Cold start** : vivier SQL en `offset + limit + 50` puis re-tri sur une **autre** clé (top-K par clé A reclassé par clé B) | `sleeper-hits.service.ts:187-190, 242-243, 271` |
+| `limit` / `offset` hors de la clé de cache (`flat:<genre>`) | ✅ |
+| Liste canonique cachée, `slice` appliqué **après** le cache (hit comme miss) | ✅ |
+| Vivier cold start indépendant de `limit` / `offset` | ✅ |
+| Départages secondaires par `mu_id` sur tous les tris précédant une troncature, `ORDER BY` totaux | ✅ (9 emplacements, dont 4 non repérés ici) |
+| Plancher sur `limit` (`limit=-1` donnait `slice(0, -1)`) | ✅ |
 
-Amplificateur : `interleaveByTypeMix` normalise ses parts sur **tout** le
-vivier (`type-profile.ts:161-166, 202-204`). Un seul candidat de plus ou de
-moins décale toutes les parts bien au-delà de l'epsilon de comparaison
-(`type-profile.ts:220-221`) et rebat le classement dès les premières
-positions. La fonction elle-même est saine : elle s'applique **avant**
-`slice(offset, offset + limit)` (`recommendation-dto-builder.service.ts:94-102`),
-donc stable par préfixe à `limit` variable.
+**Vérifié** : sources ramenées à `452ea39`, 6 des 12 cas de stabilité échouent ;
+642 tests verts sur la branche. Script de contrôle sur la base de production en
+lecture seule : `npm run verify:reco-order -- --user=<id>` (dépôt API).
 
-**Atténuation livrée (application)** : les deux écrans ne demandent plus
-qu'une seule page canonique et la partagent
-(`lib/features/recommendations/recommendations_paging.dart`). L'incohérence
-d'ordre visible entre l'accueil et « Tout voir » disparaît, mais elle reste
-possible **entre deux pages successives** du défilement infini, et après
-expiration du cache.
+### Résiduels connus, assumés
 
-**Correction serveur à faire, par ordre de rendement**
+- **`RecoCacheService` est en mémoire et mono-instance.** Une seconde instance
+  d'API rendrait deux ordres différents. À traiter le jour où l'API est
+  répliquée.
+- **Seuil discret `CATALOG_MIN_POOL` (150).** Un vivier qui passe de 149 à 151
+  bascule toute la composition. Figé pendant la durée du cache, donc invisible
+  entre deux écrans ; peut changer d'une fenêtre de cache à l'autre.
+- **`interleaveByTypeMix` normalise ses parts sur tout le vivier.** Déterministe
+  à vivier fixé — laissé tel quel volontairement : y toucher changerait le
+  classement, ce qui n'était pas l'objet du correctif.
+- Aux **frontières de cache** (expiration du TTL, mutation de bibliothèque), une
+  colonne `type` nouvellement remplie par l'hydratation nocturne peut reclasser.
+  C'est une amélioration de donnée, pas une instabilité.
 
-1. `recommendation.service.ts:178-180` — retirer `limit` / `offset` de la
-   clé de cache (`flat:${genre ?? 'all'}`).
-2. `recommendation.service.ts:244-251` — construire la liste canonique
-   entière, la cacher, puis `slice(offset, offset + limit)` **après** le
-   cache (au hit comme au miss). Aucun changement d'algorithme ; une seule
-   exécution au lieu d'une par couple `limit/offset`.
-3. `sleeper-hits.service.ts:187-190` — vivier cold start constant
-   (`MAX_LIMIT`), indépendant de `limit` / `offset`.
-4. Départages secondaires (`|| a.mu_id.localeCompare(b.mu_id)`) sur tous les
-   tris listés ci-dessus, `ORDER BY` total avant `getRawMany()`
-   (`reco-graph-candidate.service.ts:136-138`) et `addOrderBy('m.mu_id')`
-   sur `type-profile.ts:299-300` — nécessaires pour un ordre stable **au-delà**
-   de la fenêtre de cache.
-
-Défaut latent repéré au passage, hors sujet : `limit` n'a pas de plancher
-(`recommendation.service.ts:173`) — `limit=-1` passe `ParseIntPipe` et donne
-`slice(0, -1)`.
+**L'atténuation côté application est conservée** : les deux écrans partagent une
+seule page canonique (`lib/features/recommendations/recommendations_paging.dart`).
+Elle n'est plus le seul rempart, mais elle garde son intérêt propre — ouvrir
+« Tout voir » ne coûte plus aucune requête.
 
 ---
-
 
 ## ✅ Corrigés le 2026-09-06 — position de lecture (`feat/reading-position-client`)
 

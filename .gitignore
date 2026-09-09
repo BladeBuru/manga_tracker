@@ -67,3 +67,11 @@ linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 windows/flutter/generated_plugin_registrant.h
 linux/flutter/generated_plugins.cmake
+
+# État de session du framework Zelian — local à la machine, jamais versionné
+.claude/.session-edited-files.json
+.claude/.update-writer-ran
+.claude/.session-start-sha
+.claude/.session-start-time
+.claude/.update-check.json
+.claude/.zelian-session.json
