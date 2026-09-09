@@ -45,12 +45,14 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 | `POST` | `/mangas/search` | JWT | body JSON `{search_pattern, page?, limit?}` | `SearchResultsPageDto` (enveloppe `{results, totalHits, page, perPage, hasMore}`) — tri par pertinence MangaUpdates ; tableau nu `List<MangaQuickViewDto>` si `page` absent (rétrocompat ≤ 0.11.0) |
 | `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` |
 | `GET` | `/mangas/home/sections` | JWT | `?limit=20` (5..40, items par section) | `HomeSectionsDto` — `{generatedAt, sections: [{id, kind, params, items}]}` |
-| `GET` | `/mangas/home/sections/:id` | JWT | `?page=1&limit=40` (5..40) | `HomeSectionsPageDto` — `{id, kind, params, page, limit, total, items}` ; **404** si `id` inconnu → `HomeSectionNotFoundException` |
+| `GET` | `/mangas/home/sections/:id` | JWT | `?page=1&limit=40` grille « Tout voir », `?page=N&limit=20` carrousels de l'accueil (5..40) | `HomeSectionsPageDto` — `{id, kind, params, page, limit, total, items}` ; **404** si `id` inconnu → `HomeSectionNotFoundException` |
 
 ### Accueil catalogue (`/mangas/home/sections`) — 2026-09-05
 
 Consommé par `HomeSectionsService` (`features/home/services/`), `HomeSectionsBloc`
-(accueil) et `HomeSectionPageBloc` (page « Tout voir » `/home/section/:id`).
+(accueil) et `HomeSectionPageBloc` — **un seul BLoC de pagination pour deux
+surfaces** (2026-09-09) : la page « Tout voir » `/home/section/:id` (grille,
+`limit = 40`) et le carrousel horizontal de l'accueil (`limit = 20`).
 
 - `items[]` = même JSON que `/mangas/popular` (`muId, title, year,
   mediumCoverUrl, largeCoverUrl, rating`) **+ champs optionnels** `type`
@@ -69,9 +71,17 @@ Consommé par `HomeSectionsService` (`features/home/services/`), `HomeSectionsBl
   liste affichée est exactement celle du serveur, sections vides masquées.
 - `id` peut contenir `:` et des espaces (`genre:Slice of Life`) → encodé
   avec `Uri.encodeComponent` dans le chemin.
-- Pagination « Tout voir » : `hasMore = page * limit < total` (repli : page
-  pleine ⇒ suite) ; les doublons entre pages (insertion serveur entre deux
-  appels) sont dédoublonnés côté client sur `muId`.
+- Pagination : `hasMore = page * limit < total` (repli : page pleine ⇒
+  suite) ; les doublons entre pages (insertion serveur entre deux appels)
+  sont dédoublonnés côté client sur `muId`. Une page **vide** ferme la
+  pagination **quoi qu'annonce `total`** — sinon un carrousel arrivé au bout
+  redemanderait la même page à chaque geste de défilement.
+- Carrousels de l'accueil (2026-09-09) : l'aperçu de `GET
+  /mangas/home/sections?limit=20` est déclaré comme **page 1** sans requête
+  supplémentaire (`SeedSectionPage`), et le défilement horizontal enchaîne
+  sur `?page=2&limit=20`. Le `limit` du carrousel **doit** rester égal à
+  celui de l'aperçu, sinon la page 2 chevaucherait ou sauterait des titres.
+  Hors ligne, aucune requête n'est tentée : la section reste telle quelle.
 - Fixtures du contrat : `test/fixtures/home_sections.json`,
   `test/fixtures/home_section_page.json`.
 
