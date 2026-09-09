@@ -10,15 +10,20 @@ import 'package:mangatracker/features/home/widgets/home_section_header.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Une section complete de l'accueil : en-tete (icone + titre traduit +
-/// « Tout voir ») puis carrousel. Se masque si la section n'a aucun item.
+/// « Tout voir ») puis carrousel pagine. Se masque si la section n'a aucun
+/// item.
 class HomeSectionTile extends StatelessWidget {
   final HomeSectionDto section;
   final HomeLayoutMetrics metrics;
+
+  /// L'accueil est servi depuis le cache : le carrousel ne tente rien.
+  final bool isOffline;
 
   const HomeSectionTile({
     super.key,
     required this.section,
     required this.metrics,
+    this.isOffline = false,
   });
 
   void _openSection(BuildContext context) {
@@ -47,7 +52,11 @@ class HomeSectionTile extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.s + AppSpacing.xs),
-          HomeSectionCarousel(items: section.items, metrics: metrics),
+          HomeSectionCarousel(
+            section: section,
+            metrics: metrics,
+            isOffline: isOffline,
+          ),
         ],
       ),
     );

@@ -2292,5 +2292,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get homeSectionLoadingMore => '続きのタイトルを読み込み中';
+
+  @override
   String get libraryOwnedBadge => 'すでにライブラリにあります';
 }

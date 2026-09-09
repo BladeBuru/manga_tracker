@@ -8,27 +8,62 @@ import 'package:mangatracker/features/home/services/home_sections.service.dart';
 import 'home_section_page_event.dart';
 import 'home_section_page_state.dart';
 
-/// BLoC de la page « Tout voir » d'une section (`/home/section/:id`).
+/// BLoC de pagination d'une section de l'accueil.
 ///
-/// Une instance par page (factory GetIt parametree par [sectionId]). Grille
-/// paginee via `GET /mangas/home/sections/:id?page&limit` ; hors ligne, la
-/// premiere page retombe sur l'apercu de la section present dans le cache de
-/// l'accueil (20 items, sans pagination) — pas de cache dedie par page.
+/// **Un seul BLoC pour deux surfaces** (2026-09-09) :
+/// - la page « Tout voir » (`/home/section/:id`) le cree via GetIt et part de
+///   [LoadSectionPage] (grille, 40 items par page) ;
+/// - le carrousel horizontal de l'accueil le cree lui-meme avec
+///   [limit] = `HomeSectionsService.defaultLimit` et part de
+///   [SeedSectionPage] : sa page 1 est deja affichee, il n'a qu'a enchainer.
+///
+/// Consequence : append, deduplication par `muId`, garde hors ligne et
+/// gestion d'echec sont ecrits **une seule fois**.
+///
+/// Hors ligne, la premiere page retombe sur l'apercu de la section present
+/// dans le cache de l'accueil (sans pagination) — pas de cache dedie par page.
 class HomeSectionPageBloc
     extends Bloc<HomeSectionPageEvent, HomeSectionPageState> {
   final String sectionId;
+
+  /// Taille de page demandee au serveur. Doit correspondre a la taille de
+  /// l'apercu quand le BLoC est amorce par [SeedSectionPage], sinon la page 2
+  /// chevaucherait ou sauterait des titres.
+  final int limit;
+
   final HomeSectionsService? _serviceOverride;
 
-  HomeSectionPageBloc({required this.sectionId, HomeSectionsService? service})
-      : _serviceOverride = service,
+  HomeSectionPageBloc({
+    required this.sectionId,
+    this.limit = HomeSectionsService.pageLimit,
+    HomeSectionsService? service,
+  })  : _serviceOverride = service,
         super(const HomeSectionPageInitial()) {
     on<LoadSectionPage>((_, emit) => _loadFirstPage(emit));
     on<RefreshSectionPage>((_, emit) => _loadFirstPage(emit, silent: true));
+    on<SeedSectionPage>(_seed);
     on<LoadMoreSectionPage>((_, emit) => _loadMore(emit));
   }
 
   HomeSectionsService get _service =>
       _serviceOverride ?? getIt<HomeSectionsService>();
+
+  /// Amorce sans requete : les items sont deja a l'ecran.
+  ///
+  /// `hasMore` suit la meme regle que [HomeSectionsPageDto.hasMore] faute de
+  /// `total` : un apercu plein laisse supposer une suite, un apercu incomplet
+  /// signe la fin. Hors ligne, la pagination reste fermee.
+  void _seed(SeedSectionPage event, Emitter<HomeSectionPageState> emit) {
+    emit(HomeSectionPageLoaded(
+      sectionId: sectionId,
+      kind: event.kind,
+      params: event.params,
+      items: event.items,
+      page: 1,
+      hasMore: !event.isOffline && event.items.length >= limit,
+      isOffline: event.isOffline,
+    ));
+  }
 
   Future<void> _loadFirstPage(
     Emitter<HomeSectionPageState> emit, {
@@ -41,7 +76,7 @@ class HomeSectionPageBloc
       final page = await _service.fetchSectionPage(
         sectionId,
         page: 1,
-        limit: HomeSectionsService.pageLimit,
+        limit: limit,
       );
       emit(HomeSectionPageLoaded(
         sectionId: sectionId,
@@ -111,7 +146,7 @@ class HomeSectionPageBloc
       final next = await _service.fetchSectionPage(
         sectionId,
         page: current.page + 1,
-        limit: HomeSectionsService.pageLimit,
+        limit: limit,
       );
       // Deduplication defensive : une insertion cote serveur entre deux pages
       // peut faire glisser un titre d'une page a l'autre.
@@ -121,7 +156,10 @@ class HomeSectionPageBloc
         items: [...current.items, ...appended],
         page: next.page,
         total: next.total,
-        hasMore: next.hasMore,
+        // Une page VIDE ferme la pagination quoi qu'en dise le `total` : sans
+        // ca, un carrousel arrive au bout redemanderait la meme page a chaque
+        // geste de scroll (le `total` peut mentir, la page vide non).
+        hasMore: next.items.isEmpty ? false : next.hasMore,
         isLoadingMore: false,
       ));
     } catch (e) {

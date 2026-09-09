@@ -2388,5 +2388,8 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get homeSectionLoadingMore => 'Chargement des titres suivants';
+
+  @override
   String get libraryOwnedBadge => 'Déjà dans ma bibliothèque';
 }

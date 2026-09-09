@@ -2379,5 +2379,8 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get homeSectionLoadingMore => 'Carregando mais títulos';
+
+  @override
   String get libraryOwnedBadge => 'Já está na minha biblioteca';
 }

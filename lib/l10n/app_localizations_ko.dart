@@ -2294,5 +2294,8 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get homeSectionLoadingMore => '다음 작품을 불러오는 중';
+
+  @override
   String get libraryOwnedBadge => '이미 내 서재에 있음';
 }

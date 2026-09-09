@@ -2523,6 +2523,10 @@
       }
     }
   },
+  "homeSectionLoadingMore": "Chargement des titres suivants",
+  "@homeSectionLoadingMore": {
+    "description": "Annonce d'accessibilite de l'indicateur de chargement en fin de carrousel"
+  },
   "libraryOwnedBadge": "Déjà dans ma bibliothèque",
   "@libraryOwnedBadge": {
     "description": "Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque"

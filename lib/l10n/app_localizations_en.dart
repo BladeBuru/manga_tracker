@@ -2350,5 +2350,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homeSectionLoadingMore => 'Loading more titles';
+
+  @override
   String get libraryOwnedBadge => 'Already in my library';
 }

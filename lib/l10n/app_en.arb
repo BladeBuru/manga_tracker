@@ -1275,5 +1275,6 @@
   "resumeReadingMessage": "Chapter {chapter} is still in progress. Would you like to pick up where you left off?",
   "resumeReadingConfirm": "Resume chapter {chapter}",
   "resumeReadingDecline": "Open chapter {chapter}",
+  "homeSectionLoadingMore": "Loading more titles",
   "libraryOwnedBadge": "Already in my library"
 }

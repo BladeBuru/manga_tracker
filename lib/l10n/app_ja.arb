@@ -1269,5 +1269,6 @@
   "resumeReadingMessage": "第{chapter}話を読みかけです。続きから再開しますか？",
   "resumeReadingConfirm": "第{chapter}話を再開",
   "resumeReadingDecline": "第{chapter}話を開く",
+  "homeSectionLoadingMore": "続きのタイトルを読み込み中",
   "libraryOwnedBadge": "すでにライブラリにあります"
 }

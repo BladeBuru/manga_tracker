@@ -4234,6 +4234,12 @@ abstract class AppLocalizations {
   /// **'Ouvrir le chapitre {chapter}'**
   String resumeReadingDecline(String chapter);
 
+  /// Annonce d'accessibilite de l'indicateur de chargement en fin de carrousel
+  ///
+  /// In fr, this message translates to:
+  /// **'Chargement des titres suivants'**
+  String get homeSectionLoadingMore;
+
   /// Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque
   ///
   /// In fr, this message translates to:
