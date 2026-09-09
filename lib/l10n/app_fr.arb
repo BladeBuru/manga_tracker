@@ -2522,5 +2522,9 @@
         "type": "String"
       }
     }
+  },
+  "libraryOwnedBadge": "Déjà dans ma bibliothèque",
+  "@libraryOwnedBadge": {
+    "description": "Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque"
   }
 }

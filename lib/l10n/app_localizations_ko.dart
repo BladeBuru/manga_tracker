@@ -2292,4 +2292,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return '$chapter화 열기';
   }
+
+  @override
+  String get libraryOwnedBadge => '이미 내 서재에 있음';
 }

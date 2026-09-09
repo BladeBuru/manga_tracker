@@ -1268,5 +1268,6 @@
   "resumeReadingTitle": "Lesen fortsetzen?",
   "resumeReadingMessage": "Kapitel {chapter} ist noch angefangen. Möchten Sie dort weiterlesen, wo Sie aufgehört haben?",
   "resumeReadingConfirm": "Kapitel {chapter} fortsetzen",
-  "resumeReadingDecline": "Kapitel {chapter} öffnen"
+  "resumeReadingDecline": "Kapitel {chapter} öffnen",
+  "libraryOwnedBadge": "Bereits in meiner Bibliothek"
 }

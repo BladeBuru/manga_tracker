@@ -4233,6 +4233,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ouvrir le chapitre {chapter}'**
   String resumeReadingDecline(String chapter);
+
+  /// Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà dans ma bibliothèque'**
+  String get libraryOwnedBadge;
 }
 
 class _AppLocalizationsDelegate

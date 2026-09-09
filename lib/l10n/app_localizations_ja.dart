@@ -2290,4 +2290,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return '第$chapter話を開く';
   }
+
+  @override
+  String get libraryOwnedBadge => 'すでにライブラリにあります';
 }

@@ -1268,5 +1268,6 @@
   "resumeReadingTitle": "Retomar a leitura?",
   "resumeReadingMessage": "Você tem o capítulo {chapter} em andamento. Deseja continuar de onde parou?",
   "resumeReadingConfirm": "Retomar o capítulo {chapter}",
-  "resumeReadingDecline": "Abrir o capítulo {chapter}"
+  "resumeReadingDecline": "Abrir o capítulo {chapter}",
+  "libraryOwnedBadge": "Já está na minha biblioteca"
 }

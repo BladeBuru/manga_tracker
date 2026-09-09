@@ -2377,4 +2377,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return 'Abrir el capítulo $chapter';
   }
+
+  @override
+  String get libraryOwnedBadge => 'Ya está en mi biblioteca';
 }
