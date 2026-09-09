@@ -2099,6 +2099,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dismissRecommendationAccessibility => '長押しでこの作品をおすすめから除外';
 
   @override
+  String get recommendationsTipTitle => '興味のない作品がありますか？';
+
+  @override
+  String get recommendationsTipBody =>
+      'カードを長押しするか、右上のボタンをタップすると、その作品はおすすめに表示されなくなります。';
+
+  @override
+  String get recommendationsTipAction => '了解';
+
+  @override
+  String get dismissRecommendationAction => 'この作品をおすすめしない';
+
+  @override
   String get recommendationsSleepersTitle => '隠れた名作';
 
   @override

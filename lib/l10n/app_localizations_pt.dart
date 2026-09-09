@@ -2177,6 +2177,19 @@ class AppLocalizationsPt extends AppLocalizations {
       'Toque longo para deixar de recomendar este título';
 
   @override
+  String get recommendationsTipTitle => 'Um título que não te interessa?';
+
+  @override
+  String get recommendationsTipBody =>
+      'Mantém um cartão premido, ou toca no botão do canto superior direito, para deixares de o ver nas tuas recomendações.';
+
+  @override
+  String get recommendationsTipAction => 'Entendido';
+
+  @override
+  String get dismissRecommendationAction => 'Deixar de recomendar este título';
+
+  @override
   String get recommendationsSleepersTitle => 'Joias escondidas';
 
   @override

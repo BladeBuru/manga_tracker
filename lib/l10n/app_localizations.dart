@@ -3892,6 +3892,30 @@ abstract class AppLocalizations {
   /// **'Appui long pour ne plus recommander ce titre'**
   String get dismissRecommendationAccessibility;
 
+  /// Titre de l'astuce d'usage montree une seule fois sur l'ecran des recommandations
+  ///
+  /// In fr, this message translates to:
+  /// **'Un titre qui ne t’intéresse pas ?'**
+  String get recommendationsTipTitle;
+
+  /// Corps de l'astuce : explique comment ecarter un titre des recommandations
+  ///
+  /// In fr, this message translates to:
+  /// **'Appuie longuement sur une carte, ou touche le bouton en haut à droite, pour ne plus le voir dans tes recommandations.'**
+  String get recommendationsTipBody;
+
+  /// Bouton qui range l'astuce d'usage definitivement
+  ///
+  /// In fr, this message translates to:
+  /// **'Compris'**
+  String get recommendationsTipAction;
+
+  /// Libelle du bouton explicite « ne plus me recommander » sur les cartes de la page Tout voir
+  ///
+  /// In fr, this message translates to:
+  /// **'Ne plus me recommander ce titre'**
+  String get dismissRecommendationAction;
+
   /// No description provided for @recommendationsSleepersTitle.
   ///
   /// In fr, this message translates to:
