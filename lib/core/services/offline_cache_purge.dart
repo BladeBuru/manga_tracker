@@ -52,6 +52,12 @@ extension OfflineCachePurge on OfflineCacheService {
       // 3. Positions de lecture — hors trousseau sécurisé (voir plus bas).
       await purgeReadingPositions();
 
+      // 4. Index « déjà dans ma bibliothèque » : il vit en mémoire, donc la
+      //    purge du trousseau ne l'atteint pas. Sans ça, sur un appareil
+      //    partagé, l'utilisateur suivant verrait la bibliothèque du
+      //    précédent signalée sur les cartes de l'accueil.
+      libraryCacheObserver?.call(null);
+
       debugPrint('🧹 OfflineCache: cache utilisateur purgé');
     } catch (e) {
       // Une purge qui échoue ne doit pas bloquer la déconnexion : l'user doit

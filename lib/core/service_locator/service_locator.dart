@@ -27,6 +27,7 @@ import '../services/connectivity_service.dart';
 import '../services/offline_cache_service.dart';
 import '../services/sync_service.dart';
 import '../services/cache_helper_service.dart';
+import '../services/library_index_service.dart';
 import '../services/language_service.dart';
 import '../services/translation_service.dart';
 import '../services/theme_service.dart';
@@ -219,4 +220,25 @@ void setupServiceLocator() {
       () => ReadingPositionService());
   getIt.registerLazySingleton<ReadingResumeService>(
       () => ReadingResumeService());
+
+  // Index « déjà dans ma bibliothèque » (2026-09-09) — dérivé du cache local
+  // `cached_library`, zéro appel réseau. Mêmes précautions que ci-dessus :
+  // AJOUTÉ EN FIN, en lazy et SANS `dependsOn`. Il résout OfflineCacheService
+  // à la construction de la lazy — c'est-à-dire au premier affichage d'une
+  // carte d'accueil, bien après `allReady()`, jamais au démarrage.
+  //
+  // L'observateur est branché ICI et pas dans OfflineCacheService : le cache
+  // (core) n'a pas à connaître ses consommateurs. Il reçoit la liste écrite à
+  // chaque `cacheLibrary()`, et `null` à la purge (déconnexion / changement
+  // de compte) — sans quoi l'index, qui vit en mémoire, survivrait à la
+  // purge du trousseau et signalerait la bibliothèque du compte précédent.
+  getIt.registerLazySingleton<LibraryIndexService>(() {
+    final index = LibraryIndexService();
+    try {
+      getIt<OfflineCacheService>().libraryCacheObserver = index.setFromLibrary;
+    } catch (_) {
+      // Cache indisponible : l'index reste utilisable, simplement plus muet.
+    }
+    return index;
+  });
 }

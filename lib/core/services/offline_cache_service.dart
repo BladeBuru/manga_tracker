@@ -116,6 +116,15 @@ class OfflineCacheService {
   static const String _lastSyncKey = 'last_sync_timestamp';
   static const String _cacheMetadataKey = 'cache_metadata';
 
+  /// Observateur du cache bibliotheque, branche par `setupServiceLocator`
+  /// sur `LibraryIndexService` (index « deja dans ma bibliotheque »).
+  ///
+  /// Appele a chaque **ecriture** du cache avec la liste ecrite, et a la
+  /// **purge** avec `null` (« plus rien de connu, relis plus tard »).
+  /// Volontairement un simple callback : le cache est du `core`, il ne doit
+  /// pas dependre de ses consommateurs.
+  void Function(List<MangaQuickViewDto>? library)? libraryCacheObserver;
+
   /// Identite du proprietaire du cache (`sub` du JWT), pour detecter un
   /// changement de compte : se connecter avec un autre utilisateur sans
   /// deconnexion prealable doit purger le cache du precedent.
@@ -202,6 +211,8 @@ class OfflineCacheService {
       final json = mangas.map((m) => m.toJson()).toList();
       await _storage.writeSecureData(_libraryCacheKey, jsonEncode(json));
       await _updateLastSyncTimestamp();
+      // Le cache fait foi : l'index d'appartenance suit la meme ecriture.
+      libraryCacheObserver?.call(mangas);
     } catch (e) {
       debugPrint('Erreur lors du cache de la bibliothèque: $e');
     }
