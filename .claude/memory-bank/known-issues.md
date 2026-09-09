@@ -1,8 +1,68 @@
 # Problèmes Connus — Manga Tracker Flutter
 
-**Dernière mise à jour :** Août 2026
+**Dernière mise à jour :** Septembre 2026
 
 ---
+
+## 🟠 ACTIF — Le classement des recommandations n'est pas déterministe (serveur)
+
+**Découvert le 2026-09-09** (`feat/reco-order-dismiss`). **Atténué côté
+application, pas corrigé à la source.**
+
+Symptôme d'origine : les recommandations de l'accueil n'étaient pas dans le
+même ordre une fois la liste dépliée. Ce n'était pas le cache client.
+
+`GET /recommendations` met `limit` et `offset` dans sa clé de cache
+(`recommendation.service.ts:178-180`) : deux tailles de page = deux calculs
+complets et indépendants. Et le calcul n'est pas reproductible :
+
+| Cause | Fichier:ligne (API) |
+|---|---|
+| Tris par score sans départage secondaire | `recommendation-dto-builder.service.ts:69`, `catalog-candidate.service.ts:143`, `sleeper-hits.service.ts:158`, `sleeper-hits.service.ts:271`, `reco-graph-scoring.ts:192` |
+| Ordre d'insertion de `scoreMap` produit par une course `Promise.all` (+ somme flottante non associative) | `recommendation.service.ts:205-221`, `recommendation.service.ts:514` |
+| `slice(0, 12)` sur un `getRawMany()` **sans `ORDER BY`**, puis normalisation par `maxWeight` du sous-ensemble retenu | `reco-graph-candidate.service.ts:129-138`, `reco-graph-scoring.ts:190-203` |
+| `ORDER BY m.rating DESC` + `LIMIT` sans clé secondaire | `type-profile.ts:298-301` |
+| Écritures en base lancées **en tâche de fond** par la requête précédente, dont la colonne `type` qui pilote l'entrelacement | `recommendation.service.ts:230-232`, `recommendation-dto-builder.service.ts:155-159` |
+| Seuil discret `CATALOG_MIN_POOL` (149 → 151 bascule tout le vivier) | `recommendation.service.ts:389` |
+| **Cold start** : vivier SQL en `offset + limit + 50` puis re-tri sur une **autre** clé (top-K par clé A reclassé par clé B) | `sleeper-hits.service.ts:187-190, 242-243, 271` |
+
+Amplificateur : `interleaveByTypeMix` normalise ses parts sur **tout** le
+vivier (`type-profile.ts:161-166, 202-204`). Un seul candidat de plus ou de
+moins décale toutes les parts bien au-delà de l'epsilon de comparaison
+(`type-profile.ts:220-221`) et rebat le classement dès les premières
+positions. La fonction elle-même est saine : elle s'applique **avant**
+`slice(offset, offset + limit)` (`recommendation-dto-builder.service.ts:94-102`),
+donc stable par préfixe à `limit` variable.
+
+**Atténuation livrée (application)** : les deux écrans ne demandent plus
+qu'une seule page canonique et la partagent
+(`lib/features/recommendations/recommendations_paging.dart`). L'incohérence
+d'ordre visible entre l'accueil et « Tout voir » disparaît, mais elle reste
+possible **entre deux pages successives** du défilement infini, et après
+expiration du cache.
+
+**Correction serveur à faire, par ordre de rendement**
+
+1. `recommendation.service.ts:178-180` — retirer `limit` / `offset` de la
+   clé de cache (`flat:${genre ?? 'all'}`).
+2. `recommendation.service.ts:244-251` — construire la liste canonique
+   entière, la cacher, puis `slice(offset, offset + limit)` **après** le
+   cache (au hit comme au miss). Aucun changement d'algorithme ; une seule
+   exécution au lieu d'une par couple `limit/offset`.
+3. `sleeper-hits.service.ts:187-190` — vivier cold start constant
+   (`MAX_LIMIT`), indépendant de `limit` / `offset`.
+4. Départages secondaires (`|| a.mu_id.localeCompare(b.mu_id)`) sur tous les
+   tris listés ci-dessus, `ORDER BY` total avant `getRawMany()`
+   (`reco-graph-candidate.service.ts:136-138`) et `addOrderBy('m.mu_id')`
+   sur `type-profile.ts:299-300` — nécessaires pour un ordre stable **au-delà**
+   de la fenêtre de cache.
+
+Défaut latent repéré au passage, hors sujet : `limit` n'a pas de plancher
+(`recommendation.service.ts:173`) — `limit=-1` passe `ParseIntPipe` et donne
+`slice(0, -1)`.
+
+---
+
 
 ## ✅ Corrigés le 2026-09-06 — position de lecture (`feat/reading-position-client`)
 
