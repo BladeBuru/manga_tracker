@@ -6,6 +6,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
+import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -29,7 +30,10 @@ class PaginatedRecommendationsView extends StatefulWidget {
 
 class _PaginatedRecommendationsViewState
     extends State<PaginatedRecommendationsView> {
-  static const int _pageSize = 50;
+  /// Taille de page **partagee avec l'accueil** : les deux ecrans doivent
+  /// demander la meme page canonique, sinon le serveur renvoie deux
+  /// classements differents (cf. `recommendations_paging.dart`).
+  static const int _pageSize = kRecommendationsPageSize;
   static const double _loadThresholdPx = 500.0;
 
   final List<MangaQuickViewDto> _items = [];
@@ -55,11 +59,15 @@ class _PaginatedRecommendationsViewState
     setState(() => _libraryEmpty = library == null || library.isEmpty);
   }
 
-  Future<void> _loadMore() async {
+  Future<void> _loadMore({bool forceRefresh = false}) async {
     if (_loading || !_hasMore) return;
     setState(() => _loading = true);
     final page = await getIt<RecommendationService>()
-        .getPersonalizedRecommendations(limit: _pageSize, offset: _offset);
+        .getPersonalizedRecommendations(
+      limit: _pageSize,
+      offset: _offset,
+      forceRefresh: forceRefresh,
+    );
     if (!mounted) return;
     setState(() {
       _items.addAll(page);
@@ -69,13 +77,17 @@ class _PaginatedRecommendationsViewState
     });
   }
 
+  /// « Tirer pour rafraichir » : contourne le cache local de la premiere
+  /// page. Depuis que cette page partage la page canonique de l'accueil, le
+  /// cache est presque toujours frais (TTL 2 h) — sans ce contournement le
+  /// geste n'aurait plus aucun effet visible.
   Future<void> _refresh() async {
     setState(() {
       _items.clear();
       _offset = 0;
       _hasMore = true;
     });
-    await _loadMore();
+    await _loadMore(forceRefresh: true);
   }
 
   bool _onScrollNotification(ScrollNotification n) {

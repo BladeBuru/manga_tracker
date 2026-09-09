@@ -6,6 +6,7 @@ import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/profile/dto/user.dto.dart';
 import 'package:mangatracker/features/home/bloc/homepage_state.dart';
+import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 
 /// Helper qui encapsule les fetchers de donnees de la HomePage
 /// (reseau + cache + mapping). Extrait de `HomePageBloc` pour
@@ -39,12 +40,20 @@ class HomePageDataLoader {
           query: 'trending',
           networkCall: () => _mangaService.getTrendingMangas());
 
-  /// Charge les recommandations personnalisees (limite 10 pour le carrousel
-  /// de la home). Silencieux en cas d'erreur (graceful degradation).
+  /// Charge la **page canonique** des recommandations personnalisees.
+  ///
+  /// La home n'en affiche que les [kHomeRecommendationsPreview] premieres
+  /// (cf. `HomeRecommendationsSection`), mais elle demande la page entiere :
+  /// le serveur recalcule un classement different pour chaque taille de page
+  /// demandee, donc demander 10 ici et 50 dans « Tout voir » produisait deux
+  /// listes ordonnees differemment. Une seule requete, deux ecrans — voir
+  /// `recommendations_paging.dart` pour le detail et le cout.
+  ///
+  /// Silencieux en cas d'erreur (graceful degradation).
   Future<List<MangaQuickViewDto>> loadRecommendations() async {
     try {
       return await _recommendationService.getPersonalizedRecommendations(
-          limit: 10);
+          limit: kRecommendationsPageSize);
     } catch (e) {
       debugPrint('HomePageDataLoader: Erreur recommandations (ignoree): $e');
       return [];
