@@ -2392,4 +2392,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get libraryOwnedBadge => 'Déjà dans ma bibliothèque';
+
+  @override
+  String get dataSourceCredit =>
+      'Fiches, catalogue et suggestions fournis par MangaUpdates';
 }

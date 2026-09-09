@@ -2296,4 +2296,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get libraryOwnedBadge => 'すでにライブラリにあります';
+
+  @override
+  String get dataSourceCredit => '作品情報・カタログ・おすすめの提供元は MangaUpdates です';
 }

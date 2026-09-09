@@ -1270,5 +1270,6 @@
   "resumeReadingConfirm": "Retomar o capítulo {chapter}",
   "resumeReadingDecline": "Abrir o capítulo {chapter}",
   "homeSectionLoadingMore": "Carregando mais títulos",
-  "libraryOwnedBadge": "Já está na minha biblioteca"
+  "libraryOwnedBadge": "Já está na minha biblioteca",
+  "dataSourceCredit": "Fichas, catálogo e sugestões fornecidos pelo MangaUpdates"
 }

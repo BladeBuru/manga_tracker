@@ -1276,5 +1276,6 @@
   "resumeReadingConfirm": "Resume chapter {chapter}",
   "resumeReadingDecline": "Open chapter {chapter}",
   "homeSectionLoadingMore": "Loading more titles",
-  "libraryOwnedBadge": "Already in my library"
+  "libraryOwnedBadge": "Already in my library",
+  "dataSourceCredit": "Series data, catalogue and suggestions provided by MangaUpdates"
 }

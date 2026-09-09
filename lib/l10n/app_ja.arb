@@ -1270,5 +1270,6 @@
   "resumeReadingConfirm": "第{chapter}話を再開",
   "resumeReadingDecline": "第{chapter}話を開く",
   "homeSectionLoadingMore": "続きのタイトルを読み込み中",
-  "libraryOwnedBadge": "すでにライブラリにあります"
+  "libraryOwnedBadge": "すでにライブラリにあります",
+  "dataSourceCredit": "作品情報・カタログ・おすすめの提供元は MangaUpdates です"
 }

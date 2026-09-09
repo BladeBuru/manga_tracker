@@ -2298,4 +2298,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get libraryOwnedBadge => '이미 내 서재에 있음';
+
+  @override
+  String get dataSourceCredit => '작품 정보, 카탈로그, 추천 제공: MangaUpdates';
 }

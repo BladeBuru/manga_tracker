@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
@@ -139,6 +140,9 @@ class ProfileBody extends StatelessWidget {
               SelectorsSection(onCustomSelectors: onCustomSelectors),
               const SizedBox(height: 16),
               const ProfileFooter(),
+              // Mention permanente de la source des donnees : l'application
+              // n'a pas d'ecran « A propos », le pied du profil en tient lieu.
+              const DataSourceCredit(),
               const SizedBox(height: 24),
             ]),
           ),

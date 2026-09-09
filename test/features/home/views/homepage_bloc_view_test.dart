@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/components/cover_badge.dart';
+import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -193,5 +194,21 @@ void main() {
     await pumpFrames(tester);
 
     expect(find.text('section=type:Manhwa'), findsOneWidget);
+  });
+
+  testWidgets('credite MangaUpdates en pied d accueil, traduit en francais',
+      (tester) async {
+    useTallViewport(tester);
+    when(() => service.fetchSections(limit: any(named: 'limit')))
+        .thenAnswer((_) async => fixture);
+
+    await tester.pumpWidget(frRouterHarness(home: view()));
+    await pumpFrames(tester);
+
+    expect(find.byType(DataSourceCredit), findsOneWidget);
+    expect(
+      find.text('Fiches, catalogue et suggestions fournis par MangaUpdates'),
+      findsOneWidget,
+    );
   });
 }

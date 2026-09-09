@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -139,6 +140,10 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
               metrics: metrics,
               onRetry: () => _sectionsBloc.add(const LoadHomeSections()),
             ),
+            // Credit MangaUpdates : une seule fois, en bas de defilement,
+            // pour couvrir les recommandations ET les sections editoriales
+            // sans s'inserer entre les carrousels.
+            const SliverToBoxAdapter(child: DataSourceCredit()),
             const SliverPadding(padding: EdgeInsets.only(bottom: AppSpacing.l)),
           ],
         ),

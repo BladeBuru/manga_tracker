@@ -4245,6 +4245,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Déjà dans ma bibliothèque'**
   String get libraryOwnedBadge;
+
+  /// Credit de la source de donnees, affiche en pied de l'accueil, de la page d'une section et du profil
+  ///
+  /// In fr, this message translates to:
+  /// **'Fiches, catalogue et suggestions fournis par MangaUpdates'**
+  String get dataSourceCredit;
 }
 
 class _AppLocalizationsDelegate

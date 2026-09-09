@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
@@ -131,6 +132,9 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
                               _bloc.add(const LoadMoreSectionPage()),
                           onBack: () => context.pop(),
                         ),
+                        // La page est accessible en lien direct : elle
+                        // porte son propre credit de source.
+                        const SliverToBoxAdapter(child: DataSourceCredit()),
                         const SliverPadding(
                           padding: EdgeInsets.only(bottom: AppSpacing.l),
                         ),
