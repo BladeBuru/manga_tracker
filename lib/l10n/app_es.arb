@@ -1268,5 +1268,8 @@
   "resumeReadingTitle": "¿Reanudar la lectura?",
   "resumeReadingMessage": "Tienes el capítulo {chapter} a medias. ¿Quieres continuar donde lo dejaste?",
   "resumeReadingConfirm": "Reanudar el capítulo {chapter}",
-  "resumeReadingDecline": "Abrir el capítulo {chapter}"
+  "resumeReadingDecline": "Abrir el capítulo {chapter}",
+  "homeSectionLoadingMore": "Cargando más títulos",
+  "libraryOwnedBadge": "Ya está en mi biblioteca",
+  "dataSourceCredit": "Fichas, catálogo y sugerencias proporcionados por MangaUpdates"
 }

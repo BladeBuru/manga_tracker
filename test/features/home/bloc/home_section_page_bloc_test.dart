@@ -232,4 +232,118 @@ void main() {
     bloc.add(const RefreshSectionPage());
     await expectation;
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Amorce par un apercu deja affiche (carrousel de l'accueil) : c'est ce qui
+  // permet de ne PAS ecrire une seconde pagination pour le carrousel.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  test('SeedSectionPage : apercu plein → page 1 posee, aucune requete',
+      () async {
+    final bloc = HomeSectionPageBloc(
+        sectionId: 'year:2014', limit: 2, service: service);
+    addTearDown(bloc.close);
+
+    bloc.add(SeedSectionPage(
+      kind: HomeSectionKind.year,
+      params: const HomeSectionParams(year: 2014),
+      items: [manga(1), manga(2)],
+    ));
+    final state = await bloc.stream.firstWhere((s) => s is HomeSectionPageLoaded)
+        as HomeSectionPageLoaded;
+
+    expect(state.items.map((m) => m.muId), [1, 2]);
+    expect(state.page, 1);
+    expect(state.hasMore, isTrue, reason: 'apercu plein → il y a une suite');
+    verifyNever(() => service.fetchSectionPage(any(),
+        page: any(named: 'page'), limit: any(named: 'limit')));
+  });
+
+  test('SeedSectionPage : apercu incomplet → pagination fermee', () async {
+    final bloc = HomeSectionPageBloc(
+        sectionId: 'year:2014', limit: 20, service: service);
+    addTearDown(bloc.close);
+
+    bloc.add(SeedSectionPage(kind: HomeSectionKind.year, items: [manga(1)]));
+    final state = await bloc.stream.firstWhere((s) => s is HomeSectionPageLoaded)
+        as HomeSectionPageLoaded;
+    expect(state.hasMore, isFalse);
+
+    bloc.add(const LoadMoreSectionPage());
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    verifyNever(() => service.fetchSectionPage(any(),
+        page: any(named: 'page'), limit: any(named: 'limit')));
+  });
+
+  test('SeedSectionPage hors ligne : le defilement ne tente rien', () async {
+    final bloc = HomeSectionPageBloc(
+        sectionId: 'year:2014', limit: 2, service: service);
+    addTearDown(bloc.close);
+
+    bloc.add(SeedSectionPage(
+      kind: HomeSectionKind.year,
+      items: [manga(1), manga(2)],
+      isOffline: true,
+    ));
+    final state = await bloc.stream.firstWhere((s) => s is HomeSectionPageLoaded)
+        as HomeSectionPageLoaded;
+    expect(state.isOffline, isTrue);
+    expect(state.hasMore, isFalse, reason: 'aucune suite a esperer hors ligne');
+
+    bloc.add(const LoadMoreSectionPage());
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    verifyNever(() => service.fetchSectionPage(any(),
+        page: any(named: 'page'), limit: any(named: 'limit')));
+  });
+
+  test('apercu puis page suivante : append, dedoublonnage par muId', () async {
+    stubPage(2, pageDto(page: 2, items: [manga(2), manga(3)], total: 0));
+    final bloc = HomeSectionPageBloc(
+        sectionId: 'year:2014', limit: 2, service: service);
+    addTearDown(bloc.close);
+
+    bloc.add(SeedSectionPage(
+      kind: HomeSectionKind.year,
+      items: [manga(1), manga(2)],
+    ));
+    await bloc.stream.firstWhere((s) => s is HomeSectionPageLoaded);
+
+    bloc.add(const LoadMoreSectionPage());
+    final state = await bloc.stream.firstWhere(
+      (s) => s is HomeSectionPageLoaded && !s.isLoadingMore && s.page == 2,
+    ) as HomeSectionPageLoaded;
+
+    expect(state.items.map((m) => m.muId), [1, 2, 3],
+        reason: 'le titre 2 renvoye deux fois ne figure qu une seule fois');
+    verify(() => service.fetchSectionPage('year:2014', page: 2, limit: 2))
+        .called(1);
+  });
+
+  test('page vide : la pagination se ferme et ne reboucle jamais', () async {
+    // `total` mensonger : le serveur annonce une suite mais ne renvoie rien.
+    stubPage(2, pageDto(page: 2, items: [], total: 99));
+    final bloc = HomeSectionPageBloc(
+        sectionId: 'year:2014', limit: 2, service: service);
+    addTearDown(bloc.close);
+
+    bloc.add(SeedSectionPage(
+      kind: HomeSectionKind.year,
+      items: [manga(1), manga(2)],
+    ));
+    await bloc.stream.firstWhere((s) => s is HomeSectionPageLoaded);
+
+    bloc.add(const LoadMoreSectionPage());
+    final state = await bloc.stream.firstWhere(
+      (s) => s is HomeSectionPageLoaded && !s.isLoadingMore && s.page == 2,
+    ) as HomeSectionPageLoaded;
+    expect(state.hasMore, isFalse);
+    expect(state.items, hasLength(2));
+
+    // Meme en insistant : plus aucun appel.
+    bloc.add(const LoadMoreSectionPage());
+    bloc.add(const LoadMoreSectionPage());
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    verify(() => service.fetchSectionPage(any(),
+        page: 2, limit: any(named: 'limit'))).called(1);
+  });
 }

@@ -14,6 +14,10 @@ class AppRadius {
   static const double huge = 18.0;
   static const double jumbo = 20.0;
 
+  /// Forme totalement arrondie (pastille ronde, pill, barre de
+  /// progression). Remplace les `BorderRadius.circular(999)` en dur.
+  static const double full = 999.0;
+
   static final BorderRadius circularXs = BorderRadius.circular(xs);
   static final BorderRadius circularSm = BorderRadius.circular(sm);
   static final BorderRadius circularMd = BorderRadius.circular(md);
@@ -23,6 +27,7 @@ class AppRadius {
   static final BorderRadius circularXxxl = BorderRadius.circular(xxxl);
   static final BorderRadius circularHuge = BorderRadius.circular(huge);
   static final BorderRadius circularJumbo = BorderRadius.circular(jumbo);
+  static final BorderRadius circularFull = BorderRadius.circular(full);
 
   static BorderRadius circular(double radius) => BorderRadius.circular(radius);
 }

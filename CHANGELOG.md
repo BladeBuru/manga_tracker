@@ -5,6 +5,45 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — feat/home-carousel-ux
+
+### ✨ Nouveautés
+
+- **Les carrousels de l'accueil se prolongent quand vous faites défiler.** Chaque rangée de titres s'arrêtait après un nombre fixe d'éléments et il fallait passer par « Tout voir » pour continuer. Maintenant, en approchant de la fin d'une rangée, la suite se charge toute seule. « Tout voir » reste là quand vous préférez la vue en grille.
+- **Vous voyez d'un coup d'œil les titres que vous avez déjà.** Sur l'accueil et sur les pages « Tout voir », une petite pastille sur la couverture signale les titres déjà présents dans votre bibliothèque. Elle apparaît dès que vous ajoutez un titre depuis sa fiche, et reste juste même sans connexion.
+
+### ⚡ Améliorations
+
+- **La source des données est désormais créditée.** Les fiches, le catalogue et les suggestions viennent de MangaUpdates : la mention figure en bas de l'accueil, en bas des pages « Tout voir » et sur votre profil.
+
+### Notes d'implémentation
+
+- **Une seule pagination pour deux surfaces.** Le carrousel réutilise `HomeSectionPageBloc`, celui de la page « Tout voir », plutôt que d'en écrire une seconde. Le BLoC gagne une taille de page configurable (`limit`) et un évènement `SeedSectionPage` qui déclare l'aperçu déjà affiché comme page 1, sans requête : `GET /mangas/home/sections?limit=20` fournit la page 1, le défilement enchaîne sur `GET /mangas/home/sections/:id?page=N&limit=20`. Append, déduplication par `muId`, garde hors ligne et gestion d'échec restent écrits une seule fois.
+- Une page **vide** ferme la pagination quel que soit le `total` annoncé par le serveur — sans ça, un carrousel arrivé au bout redemandait la même page à chaque geste. Correction qui profite aussi à la grille « Tout voir ».
+- Hors ligne (`HomeSectionsState.isOffline` propagé jusqu'au carrousel), aucune requête n'est tentée. Les éléments arrivent en fin de liste : la position de défilement n'est jamais déplacée (test dédié).
+- `LibraryIndexService` (core/services, 113 lignes) : index mémoire des `muId` possédés, dérivé du cache local `cached_library` — **zéro appel réseau**, donc juste hors ligne. `ValueListenable` consommé par `LibraryOwnedIdsBuilder`, pas de BLoC supplémentaire. Trois sources de vérité, par ordre de fiabilité : réécriture du cache (`OfflineCacheService.libraryCacheObserver`, branché dans `setupServiceLocator`), marquage optimiste sur ajout / retrait dans `LibraryService`, lecture paresseuse au premier affichage.
+- Purge : l'index vit en mémoire, `purgeUserScopedCache()` ne l'atteindrait pas — il reçoit `null` à la purge, sinon un appareil partagé signalerait la bibliothèque du compte précédent. Le mécanisme existant d'invalidation du cache des recommandations est inchangé.
+- GetIt : `LibraryIndexService` ajouté **en fin** de `setupServiceLocator`, `registerLazySingleton` sans `dependsOn`. La factory `HomeSectionPageBloc` (page « Tout voir ») n'est pas touchée : le carrousel construit son BLoC lui-même, avec sa propre taille de page.
+- Choix visuel de l'indicateur : la pastille de type (Manga / Manhwa / Manhua) occupe déjà le haut **gauche** de la couverture. Un second badge texte serait illisible sur une vignette de 120 px, donc l'appartenance prend le haut **droit**, en icône seule (`bookmark_added_outlined`) — aucun recouvrement possible, aucun texte ajouté à la carte. L'information n'est pas portée par la seule couleur : icône signifiante + annonce d'accessibilité traduite. `CoverBadge` gagne une variante `.icon` au lieu d'un troisième motif de pastille dans le projet.
+- `HomeSectionCard` : la configuration de carte partagée par le carrousel et la grille vit à un seul endroit.
+- `manga_card.dart` repasse sous la limite de 400 lignes (407 → 328) par extraction des deux widgets de progression dans `manga_card_progress.dart`, sans changement visuel. `AppRadius.full` remplace le `BorderRadius.circular(999)` en dur.
+- Crédit MangaUpdates posé en bas de défilement (accueil, page « Tout voir ») plutôt que sous chaque carrousel, plus une mention permanente au pied du profil : l'application n'a pas d'écran « À propos », et « Mes données » ne traite que les données personnelles.
+- Dette connue, **non aggravée volontairement** : `library.service.dart` dépassait déjà la limite de 400 lignes (422) et passe à 439 (+ 1 helper d'index de 11 lignes). Découpage à traiter dans une session dédiée.
+
+### Tests
+
+- `flutter test` : **481 tests verts** (460 sur la base `a4e055d`). `flutter analyze` : **40 informations, 0 erreur, 0 avertissement** — identique à la base.
+- `library_index_service_test.dart` (+7) : appartenance depuis le cache, `muId` décimal ⇄ entier, cache vide / illisible, lecture unique et `refresh()`, ajout / retrait + notification, remplacement à la réécriture du cache, purge puis relecture pour le compte suivant.
+- `home_section_page_bloc_test.dart` (+5) : amorce d'un aperçu plein / incomplet / hors ligne, append avec déduplication, page vide qui ne reboucle jamais.
+- `home_section_carousel_test.dart` (+7) : chargement déclenché près de la fin, doublon serveur ignoré, page vide (un seul appel malgré trois gestes), inertie hors ligne, indicateur discret + position de défilement conservée, pastille bibliothèque présente / absente, absence d'index tolérée.
+- `home_section_page_test.dart` (+1) et `homepage_bloc_view_test.dart` (+1) : pastille dans la grille et crédit MangaUpdates, libellés vérifiés en français.
+
+### Nouvelles clés i18n (7 langues)
+
+- `homeSectionLoadingMore` — annonce d'accessibilité de l'indicateur de chargement en fin de carrousel.
+- `libraryOwnedBadge` — annonce de la pastille « Déjà dans ma bibliothèque ».
+- `dataSourceCredit` — crédit MangaUpdates.
+
 ## [Unreleased] — feat/reading-position-client
 
 ### ✨ Nouveautés

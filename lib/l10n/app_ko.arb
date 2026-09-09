@@ -1268,5 +1268,8 @@
   "resumeReadingTitle": "읽던 곳부터 이어서 볼까요?",
   "resumeReadingMessage": "{chapter}화를 읽는 중입니다. 멈춘 곳부터 이어서 보시겠습니까?",
   "resumeReadingConfirm": "{chapter}화 이어보기",
-  "resumeReadingDecline": "{chapter}화 열기"
+  "resumeReadingDecline": "{chapter}화 열기",
+  "homeSectionLoadingMore": "다음 작품을 불러오는 중",
+  "libraryOwnedBadge": "이미 내 서재에 있음",
+  "dataSourceCredit": "작품 정보, 카탈로그, 추천 제공: MangaUpdates"
 }

@@ -54,6 +54,7 @@ class HomeSectionsSliver extends StatelessWidget {
           key: ValueKey('home-section-${sections[index].id}'),
           section: sections[index],
           metrics: metrics,
+          isOffline: current.isOffline,
         ),
       );
     }

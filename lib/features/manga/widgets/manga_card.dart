@@ -4,9 +4,10 @@ import 'package:html/parser.dart';
 import 'package:mangatracker/core/components/cover_badge.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/router/app_router.dart';
-import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/manga/widgets/manga_card_progress.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 class MangaCard extends StatelessWidget {
   final String mangaTitle;
@@ -36,6 +37,14 @@ class MangaCard extends StatelessWidget {
   /// sur l'accueil catalogue, 2026-09-05). `null` partout ailleurs.
   final String? badgeLabel;
 
+  /// Le titre est deja dans la bibliotheque de l'utilisateur (2026-09-09).
+  ///
+  /// Pose une pastille-icone en haut a **droite** de la cover, pour ne pas
+  /// entrer en collision avec [badgeLabel] qui occupe le haut gauche.
+  /// L'information n'est pas portee par la seule couleur : icone signifiante
+  /// + annonce d'accessibilite traduite (`libraryOwnedBadge`).
+  final bool inLibrary;
+
   /// Hauteur de la cover. 160 par defaut (valeur historique, carte de 120 de
   /// large) ; l'accueil catalogue la derive de la largeur de carte pour
   /// garder un ratio 3:4 sur tablette et desktop.
@@ -54,6 +63,7 @@ class MangaCard extends StatelessWidget {
     this.compactLibrary = false,
     this.onLongPress,
     this.badgeLabel,
+    this.inLibrary = false,
     this.coverHeight = 160,
   });
 
@@ -178,11 +188,18 @@ class MangaCard extends StatelessWidget {
                       useProxy: true,
                     ),
                     if (compactLibrary && lastChapter != null)
-                      _ProgressOverlay(
+                      MangaCardProgressOverlay(
                         readChapter: readChapter,
                         lastChapter: lastChapter!,
                       ),
                     if (badgeLabel != null) CoverBadge(label: badgeLabel!),
+                    // Haut DROIT : jamais superpose a la pastille de type.
+                    if (inLibrary)
+                      CoverBadge.icon(
+                        icon: Icons.bookmark_added_outlined,
+                        semanticsLabel:
+                            AppLocalizations.of(context)!.libraryOwnedBadge,
+                      ),
                   ],
                 ),
               ),
@@ -194,7 +211,7 @@ class MangaCard extends StatelessWidget {
                 lastChapter != null &&
                 lastChapter! > 0) ...[
               const SizedBox(height: 4),
-              _LibraryProgressBar(
+              MangaCardProgressBar(
                 read: readChapter ?? 0,
                 total: lastChapter!,
               ),
@@ -309,99 +326,3 @@ class MangaCard extends StatelessWidget {
     );
   }
 }
-
-/// Overlay au bas de la cover en mode `compactLibrary` :
-/// gradient noir + texte blanc `read / total` (ou "Terminé" si lu == total).
-/// Source visuelle : `screen-library.jsx` VariantAGrid lignes 270-280.
-class _ProgressOverlay extends StatelessWidget {
-  final num? readChapter;
-  final num lastChapter;
-
-  const _ProgressOverlay({
-    required this.readChapter,
-    required this.lastChapter,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final read = readChapter ?? 0;
-    final isFinished = read >= lastChapter && lastChapter > 0;
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0x00000000),
-              Color(0xCC000000), // ~80 % opaque en bas pour la lisibilité
-            ],
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isFinished) ...[
-              const Icon(Icons.check_circle, color: Colors.white, size: 11),
-              const SizedBox(width: 4),
-              const Text(
-                'Terminé',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-            ] else
-              Text(
-                '$read / $lastChapter',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Barre de progression linéaire affichée sous la cover en mode
-/// `compactLibrary`. Track `dsBgInset`, fill `primary`. Hauteur 4px,
-/// fully rounded. Pas de texte (le compteur est déjà dans l'overlay
-/// blanc sur la cover).
-class _LibraryProgressBar extends StatelessWidget {
-  final num read;
-  final num total;
-
-  const _LibraryProgressBar({required this.read, required this.total});
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final scheme = Theme.of(context).colorScheme;
-    final ratio = total > 0 ? (read / total).clamp(0.0, 1.0).toDouble() : 0.0;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: LinearProgressIndicator(
-          value: ratio,
-          minHeight: 4,
-          backgroundColor: AppColors.dsBgInset(brightness),
-          valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-        ),
-      ),
-    );
-  }
-}
-

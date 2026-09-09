@@ -9,6 +9,7 @@ import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
+import 'package:mangatracker/core/services/library_index_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -27,6 +28,18 @@ class LibraryService {
   late final ConnectivityService _connectivityService;
   late final OfflineCacheService _cacheService;
   
+  /// Met à jour l'index « déjà dans ma bibliothèque » sans attendre la
+  /// réécriture de `cached_library` (au prochain `/library/all` seulement).
+  /// Résolu **à l'appel**, et silencieux s'il est absent : une mutation ne
+  /// doit jamais échouer à cause de l'index.
+  void _markInIndex(int muId, {required bool owned}) {
+    try {
+      getIt<LibraryIndexService>().setOwned(muId, owned: owned);
+    } catch (e) {
+      debugPrint('LibraryService: index appartenance indisponible ($e)');
+    }
+  }
+
   Future<LibraryService> init() async {
     _connectivityService = getIt<ConnectivityService>();
     _cacheService = getIt<OfflineCacheService>();
@@ -64,6 +77,7 @@ class LibraryService {
         // La biblio a changé → les recos doivent refléter le changement
         // (le back invalide son cache, le front doit faire pareil).
         if (success) await _cacheService.invalidateRecommendationsCache();
+        if (success) _markInIndex(muId, owned: true);
         return success;
       } catch (e) {
         // Rejet de session => refus, pas de mise en file.
@@ -72,6 +86,7 @@ class LibraryService {
     } else {
       // Mode hors ligne : ajouter à la queue
       await _cacheService.queueOfflineAction(OfflineAction.addManga(muId));
+      _markInIndex(muId, owned: true);
       return true; // Retourner true car l'action est en queue
     }
   }
@@ -177,6 +192,7 @@ class LibraryService {
           muId: muId,
         );
         if (success) await _cacheService.invalidateRecommendationsCache();
+        if (success) _markInIndex(muId, owned: false);
         return success;
       } catch (e) {
         // Rejet de session => refus, pas de mise en file.
@@ -185,6 +201,7 @@ class LibraryService {
     } else {
       // Mode hors ligne : ajouter à la queue
       await _cacheService.queueOfflineAction(OfflineAction.removeManga(muId));
+      _markInIndex(muId, owned: false);
       return true; // Retourner true car l'action est en queue
     }
   }

@@ -23,6 +23,73 @@
 
 ## ✅ Complété
 
+### 🏠 Accueil : carrousels paginés, indicateur bibliothèque, crédit MangaUpdates (2026-09-09)
+
+Branche `feat/home-carousel-ux` (base `a4e055d`, v0.15.0). Aucun changement
+d'API : le contrat `GET /mangas/home/sections/:id?page&limit` existait déjà.
+
+Demande produit : *« J'ai vu "Voir tous", mais il faudrait quand même mettre un
+petit scroll sur le côté qui permet de loader les suivantes sans faire "Voir
+tous". Ce serait pas mal aussi, par exemple, pour les autres catégories, de
+voir si on l'a déjà dans notre bibliothèque ou pas. Mais ça demande peut-être
+plus d'appels. »* — la réponse au « peut-être plus d'appels » est **non** :
+l'indicateur ne coûte aucune requête.
+
+**Livré**
+
+- **Pagination des carrousels** — le carrousel réutilise `HomeSectionPageBloc`,
+  celui de la page « Tout voir », au lieu d'une seconde pagination. Le BLoC
+  gagne une taille de page configurable (`limit`) et un évènement
+  `SeedSectionPage` qui déclare l'aperçu déjà affiché comme page 1, **sans
+  requête**. Append, déduplication par `muId`, garde hors ligne et gestion
+  d'échec restent écrits une seule fois : les deux surfaces ne peuvent plus
+  diverger. « Tout voir » est conservé (vue en grille).
+- **Une page vide ferme la pagination** quel que soit le `total` annoncé.
+  Sans ça, un carrousel arrivé au bout redemandait la même page à chaque
+  geste. Profite aussi à la grille « Tout voir ».
+- **`LibraryIndexService`** (core/services, 113 lignes) — index mémoire des
+  `muId` possédés, dérivé du cache local `cached_library`. **Zéro appel
+  réseau**, donc juste hors ligne. Exposé en `ValueListenable`, consommé par
+  `LibraryOwnedIdsBuilder` : pas de BLoC supplémentaire. Tenu à jour par
+  (1) `OfflineCacheService.libraryCacheObserver` — callback branché dans
+  `setupServiceLocator`, le cache (core) ne dépend pas de ses consommateurs ;
+  (2) marquage optimiste sur ajout / retrait dans `LibraryService` ;
+  (3) lecture paresseuse au premier affichage. Reçoit `null` à la purge :
+  l'index vit en mémoire, `purgeUserScopedCache()` ne l'atteindrait pas, et
+  un appareil partagé signalerait la bibliothèque du compte précédent.
+- **Pastille « déjà dans ma bibliothèque »** — haut **droit** de la
+  couverture, en icône seule, parce que le haut gauche est déjà pris par la
+  pastille de type (Manga / Manhwa / Manhua) et qu'un second badge texte
+  serait illisible sur une vignette de 120 px. Variante `.icon` ajoutée à
+  `CoverBadge` plutôt qu'un troisième motif de pastille. Annonce
+  d'accessibilité traduite : l'information n'est pas portée par la couleur.
+- **Crédit MangaUpdates** — bas de défilement de l'accueil et de la page
+  « Tout voir », plus mention permanente au pied du profil (il n'existe pas
+  d'écran « À propos », et « Mes données » ne traite que les données
+  personnelles).
+- `HomeSectionCard` : la configuration de carte partagée par le carrousel et
+  la grille vit désormais à un seul endroit.
+
+**Garde-fous respectés** : ordre d'enregistrement GetIt inchangé
+(`LibraryIndexService` ajouté en fin, `registerLazySingleton` sans
+`dependsOn` ; la factory `HomeSectionPageBloc` n'est pas touchée, le
+carrousel construit son BLoC lui-même). Aucun texte en dur, 7 langues,
+aucune émoji, tokens de thème uniquement.
+
+**Chiffres** : 481 tests verts (460 sur la base), `flutter analyze`
+40 informations, 0 erreur, 0 avertissement (identique à la base).
+`manga_card.dart` repasse de 407 à 328 lignes (extraction de
+`manga_card_progress.dart`, aucun changement visuel).
+
+**Dette assumée** : `library.service.dart` dépassait déjà la limite de
+400 lignes (422) et passe à 439 (+ 1 helper d'index de 11 lignes). Découpage
+à traiter dans une session dédiée, hors du périmètre de cette branche.
+
+**Reste à valider sur appareil** : fluidité du chargement en cours de
+défilement sur une vraie liste de 20 titres, lisibilité de la pastille sur
+des couvertures claires (thème clair **et** sombre), et allers-retours
+accueil → fiche → ajout → retour.
+
 ### 📖 Lecteur : reprise de lecture inter-appareils + fiabilité de la position (2026-09-06)
 
 Branche `feat/reading-position-client` (base `fix/reader-progress-semantics`,

@@ -2348,4 +2348,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return 'Open chapter $chapter';
   }
+
+  @override
+  String get homeSectionLoadingMore => 'Loading more titles';
+
+  @override
+  String get libraryOwnedBadge => 'Already in my library';
+
+  @override
+  String get dataSourceCredit =>
+      'Series data, catalogue and suggestions provided by MangaUpdates';
 }

@@ -7,6 +7,8 @@ import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/library_index_service.dart';
+import 'package:mangatracker/core/services/offline_cache_service.dart';
 import 'package:mangatracker/features/home/bloc/home_section_page_bloc.dart';
 import 'package:mangatracker/features/home/dto/home_section.dto.dart';
 import 'package:mangatracker/features/home/dto/home_section_kind.dart';
@@ -18,6 +20,8 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../fixtures/fixtures.dart';
 import 'home_test_harness.dart';
+
+class MockOfflineCacheService extends Mock implements OfflineCacheService {}
 
 MangaQuickViewDto manga(num muId, {String? type}) => MangaQuickViewDto(
       muId: muId,
@@ -170,5 +174,29 @@ void main() {
     await pumpFrames(tester);
     verify(() => service.fetchSectionPage(any(),
         page: any(named: 'page'), limit: any(named: 'limit'))).called(1);
+  });
+
+  testWidgets('grille : pastille bibliotheque sur les seuls titres possedes',
+      (tester) async {
+    useTallViewport(tester, size: const Size(800, 1600));
+    final cache = MockOfflineCacheService();
+    when(() => cache.getCachedLibrary()).thenAnswer((_) async => [manga(2)]);
+    getIt.registerLazySingleton<LibraryIndexService>(
+        () => LibraryIndexService(cache: cache));
+    when(() => service.fetchSectionPage(any(),
+            page: 1, limit: any(named: 'limit')))
+        .thenAnswer((_) async =>
+            pageDto(1, [manga(1), manga(2)], limit: 2, total: 2));
+
+    await tester.pumpWidget(frRouterHarness(home: page(extras: extras)));
+    await pumpFrames(tester);
+
+    expect(find.byType(MangaCard), findsNWidgets(2));
+    expect(find.byIcon(Icons.bookmark_added_outlined), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) =>
+          w is Semantics && w.properties.label == 'Déjà dans ma bibliothèque'),
+      findsOneWidget,
+    );
   });
 }

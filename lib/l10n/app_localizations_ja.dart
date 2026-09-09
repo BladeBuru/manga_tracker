@@ -2290,4 +2290,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return '第$chapter話を開く';
   }
+
+  @override
+  String get homeSectionLoadingMore => '続きのタイトルを読み込み中';
+
+  @override
+  String get libraryOwnedBadge => 'すでにライブラリにあります';
+
+  @override
+  String get dataSourceCredit => '作品情報・カタログ・おすすめの提供元は MangaUpdates です';
 }

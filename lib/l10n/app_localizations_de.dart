@@ -2382,4 +2382,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String resumeReadingDecline(String chapter) {
     return 'Kapitel $chapter öffnen';
   }
+
+  @override
+  String get homeSectionLoadingMore => 'Weitere Titel werden geladen';
+
+  @override
+  String get libraryOwnedBadge => 'Bereits in meiner Bibliothek';
+
+  @override
+  String get dataSourceCredit =>
+      'Titeldaten, Katalog und Vorschläge bereitgestellt von MangaUpdates';
 }

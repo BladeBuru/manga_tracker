@@ -4233,6 +4233,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ouvrir le chapitre {chapter}'**
   String resumeReadingDecline(String chapter);
+
+  /// Annonce d'accessibilite de l'indicateur de chargement en fin de carrousel
+  ///
+  /// In fr, this message translates to:
+  /// **'Chargement des titres suivants'**
+  String get homeSectionLoadingMore;
+
+  /// Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà dans ma bibliothèque'**
+  String get libraryOwnedBadge;
+
+  /// Credit de la source de donnees, affiche en pied de l'accueil, de la page d'une section et du profil
+  ///
+  /// In fr, this message translates to:
+  /// **'Fiches, catalogue et suggestions fournis par MangaUpdates'**
+  String get dataSourceCredit;
 }
 
 class _AppLocalizationsDelegate

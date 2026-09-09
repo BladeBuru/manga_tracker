@@ -2522,5 +2522,17 @@
         "type": "String"
       }
     }
+  },
+  "homeSectionLoadingMore": "Chargement des titres suivants",
+  "@homeSectionLoadingMore": {
+    "description": "Annonce d'accessibilite de l'indicateur de chargement en fin de carrousel"
+  },
+  "libraryOwnedBadge": "Déjà dans ma bibliothèque",
+  "@libraryOwnedBadge": {
+    "description": "Annonce d'accessibilite de la pastille posee sur la cover d'un titre deja present dans la bibliotheque"
+  },
+  "dataSourceCredit": "Fiches, catalogue et suggestions fournis par MangaUpdates",
+  "@dataSourceCredit": {
+    "description": "Credit de la source de donnees, affiche en pied de l'accueil, de la page d'une section et du profil"
   }
 }
