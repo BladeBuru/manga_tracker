@@ -7,6 +7,7 @@ import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
 import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
+import 'package:mangatracker/features/recommendations/widgets/dismiss_recommendation_tip.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -169,11 +170,11 @@ class _PaginatedRecommendationsViewState
         ],
       );
     }
-    if (_libraryEmpty) {
-      // Biblio vide mais recos cold start présentes : bandeau d'accueil
-      // au-dessus de la grille.
-      return CustomScrollView(
-        slivers: [
+    // Un seul chemin de rendu depuis l'ajout de l'astuce : deux en-tetes
+    // optionnels (bandeau cold start, astuce d'usage) puis la grille.
+    return CustomScrollView(
+      slivers: [
+        if (_libraryEmpty)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -185,18 +186,12 @@ class _PaginatedRecommendationsViewState
               child: _ColdStartBanner(l10n: l10n),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.all(12),
-            sliver: _buildGrid(cols, asSliver: true),
-          ),
-        ],
-      );
-    }
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: _gridDelegate(cols),
-      itemCount: _items.length + (_hasMore ? 1 : 0),
-      itemBuilder: _buildGridItem,
+        const SliverToBoxAdapter(child: DismissRecommendationTip()),
+        SliverPadding(
+          padding: const EdgeInsets.all(12),
+          sliver: _buildGridSliver(cols),
+        ),
+      ],
     );
   }
 
@@ -211,8 +206,7 @@ class _PaginatedRecommendationsViewState
         childAspectRatio: 0.62,
       );
 
-  Widget _buildGrid(int cols, {required bool asSliver}) {
-    assert(asSliver);
+  Widget _buildGridSliver(int cols) {
     return SliverGrid(
       gridDelegate: _gridDelegate(cols),
       delegate: SliverChildBuilderDelegate(
@@ -232,6 +226,9 @@ class _PaginatedRecommendationsViewState
     final manga = _items[index];
     return DismissibleRecommendationCard(
       manga: manga,
+      // Point d'entree explicite : seule cette page l'affiche (l'accueil et
+      // la page par genre gardent leurs cartes nues).
+      showDismissAction: true,
       onDismissed: _removeDismissed,
       // Annulation depuis le SnackBar : on recharge depuis le serveur plutot
       // que de reinserer a l'aveugle — le titre doit retrouver sa position

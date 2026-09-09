@@ -12,6 +12,15 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// n'entre pas en conflit avec l'appui simple (ouverture de la fiche) et
 /// reste annonçable aux lecteurs d'écran via le hint `Semantics`.
 ///
+/// Ce raisonnement tient toujours — mais un geste invisible ne s'utilise
+/// pas : zéro rejet enregistré en production depuis la mise en service.
+/// D'où [showDismissAction], qui ajoute un **bouton explicite** sur la seule
+/// page « Toutes les recommandations » : contexte délibéré, cartes plus
+/// grandes, et surtout aucun risque de rejet accidentel puisque le bouton
+/// n'écarte rien par lui-même — il ouvre la feuille qui demande la raison,
+/// avec sa sortie « Annuler ». L'accueil et la page par genre gardent leurs
+/// cartes nues.
+///
 /// Ce widget centralise aussi le mapping DTO → [MangaCard], jusque-là
 /// dupliqué à l'identique dans les trois écrans (dont la règle « rating
 /// N/A → null »).
@@ -26,11 +35,16 @@ class DismissibleRecommendationCard extends StatelessWidget {
   /// remet le titre dans sa liste (ou recharge, selon ce qu'il sait faire).
   final ValueChanged<num>? onRestored;
 
+  /// Affiche le bouton explicite « ne plus me recommander » sur la carte.
+  /// Faux par défaut : seule la page « Tout voir » l'active.
+  final bool showDismissAction;
+
   const DismissibleRecommendationCard({
     super.key,
     required this.manga,
     required this.onDismissed,
     this.onRestored,
+    this.showDismissAction = false,
   });
 
   @override
@@ -38,18 +52,35 @@ class DismissibleRecommendationCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final rating = manga.rating;
 
+    final card = MangaCard(
+      muId: manga.muId.toString(),
+      mangaTitle: manga.title,
+      mangaAuthor: manga.year.toString(),
+      mediumImgPath: manga.mediumCoverUrl,
+      rating: rating != 'N/A' && rating.isNotEmpty ? rating : null,
+      onLongPress: () => _dismiss(context),
+    );
+
     return Semantics(
       hint:
           l10n?.dismissRecommendationAccessibility ??
           'Appui long pour ne plus recommander ce titre',
-      child: MangaCard(
-        muId: manga.muId.toString(),
-        mangaTitle: manga.title,
-        mangaAuthor: manga.year.toString(),
-        mediumImgPath: manga.mediumCoverUrl,
-        rating: rating != 'N/A' && rating.isNotEmpty ? rating : null,
-        onLongPress: () => _dismiss(context),
-      ),
+      child: showDismissAction
+          ? Stack(
+              children: [
+                card,
+                PositionedDirectional(
+                  top: 6,
+                  end: 6,
+                  child: _DismissActionButton(
+                    label: l10n?.dismissRecommendationAction ??
+                        'Ne plus me recommander ce titre',
+                    onPressed: () => _dismiss(context),
+                  ),
+                ),
+              ],
+            )
+          : card,
     );
   }
 
@@ -61,5 +92,52 @@ class DismissibleRecommendationCard extends StatelessWidget {
       onRestored: () => onRestored?.call(manga.muId),
     );
     if (dismissed) onDismissed(manga.muId);
+  }
+}
+
+/// Pastille d'options posée sur la couverture.
+///
+/// Zone tactile de 36 dp pour une pastille visible de 28 : assez grande pour
+/// être atteinte, assez petite pour ne pas voler les appuis destinés à
+/// l'ouverture de la fiche sur une carte de grille à trois colonnes.
+class _DismissActionButton extends StatelessWidget {
+  static const double _tapTarget = 36;
+  static const double _visualSize = 28;
+
+  final String label;
+  final VoidCallback onPressed;
+
+  const _DismissActionButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: label,
+      child: SizedBox(
+        width: _tapTarget,
+        height: _tapTarget,
+        child: Center(
+          child: Material(
+            color: scheme.surface.withValues(alpha: 0.88),
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              child: SizedBox(
+                width: _visualSize,
+                height: _visualSize,
+                child: Icon(
+                  Icons.more_vert,
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
