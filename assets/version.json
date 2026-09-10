@@ -1,8 +1,22 @@
 {
-  "latestVersion": "0.15.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.15.0/MangaTracker.apk",
+  "latestVersion": "0.16.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.16.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.16.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Les rangées de titres de l'accueil se prolongent toutes seules quand vous faites défiler : plus besoin de passer par « Tout voir » pour découvrir la suite.",
+        "- Une pastille sur les couvertures signale d'un coup d'œil les titres que vous avez déjà dans votre bibliothèque.",
+        "- Sur la page des recommandations, un bouton vous permet enfin d'écarter un titre qui ne vous intéresse pas. Il vous demande toujours pourquoi avant de le retirer.",
+        "⚡ Améliorations",
+        "- La liste complète des recommandations s'ouvre instantanément : elle réutilise ce que l'accueil a déjà chargé.",
+        "- MangaUpdates, d'où viennent les informations sur les mangas et les suggestions, est désormais crédité en bas de l'accueil et sur votre profil.",
+        "🐛 Corrections",
+        "- Vos recommandations ne changent plus d'ordre entre l'accueil et la liste dépliée : impossible de perdre de vue un titre que vous veniez de repérer."
+      ]
+    },
     {
       "version": "0.15.0",
       "notes": [
