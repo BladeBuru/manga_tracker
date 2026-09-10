@@ -88,6 +88,15 @@
 - ✅ Note personnelle (rating 0-10)
 - ✅ Lien personnalisé (custom link)
 
+### ⏳ Import de la bibliothèque depuis un site externe
+
+> Surtout pour un **nouvel utilisateur** : ne pas le laisser arriver sur une application vide.
+
+- ⏳ Depuis **MangaUpdates** — leurs identifiants de série **sont** nos `mu_id` : aucune correspondance de titres à faire, c'est de loin le cas le plus simple
+- ⏳ Depuis **MyAnimeList / AniList / Kitsu** — il faut faire correspondre des titres vers nos `mu_id` ; dépend directement de l'hydratation des titres alternatifs, encore très partielle
+- ⏳ Reprendre le **statut de lecture, les chapitres lus et la note personnelle**, pas seulement la liste des titres
+- ⏳ Décider où ça s'insère dans le parcours d'inscription
+
 ### ✅ Recherche sur tous les noms des mangas
 
 - ✅ Pertinence alignée sur le classement MangaUpdates *(livré v0.12.0 — cause racine `orderby: rating` corrigée ; « Shadow System » et « Naruto » vérifiés en #1 en local ET la correction profite aussi aux vieux APK)*
@@ -98,12 +107,12 @@
 - ✅ Traduire les champs (description)
 
 ### ✅ Affichage des tendances/nouveautés/populaires *(remplacé sur l'accueil par les sections catalogue ci-dessous — endpoints conservés côté API)*
-### 🔵 Accueil « catalogue » en sections *(front livré sur `feat/home-catalog-sections` le 2026-09-05 contre le contrat `GET /mangas/home/sections` + `/:id` ; passe à ✅ une fois l'API déployée et la branche mergée)*
+### ✅ Accueil « catalogue » en sections *(front livré et fusionné en v0.15.0 ; `GET /mangas/home/sections` + `/:id` vérifiés sur l'API déployée le 2026-09-09)*
 
-- 🔵 Sections : dernières sorties, ce qui marche le mieux, les mieux notés, par type (Manga / Manhwa / Manhua), par genre, par année, choix de la communauté, pépites cachées — ordre et contenu pilotés par le serveur, `kind` inconnu ignoré
-- 🔵 Page « Tout voir » par section (`/home/section/:id`, grille paginée en scroll infini)
-- 🔵 Titres traduits (7 langues) + 15 genres traduits, pastille de type sur les cartes
-- 🔵 Hors ligne : accueil servi depuis le cache, aperçu de section sans pagination
+- ✅ Sections : dernières sorties, ce qui marche le mieux, les mieux notés, par type (Manga / Manhwa / Manhua), par genre, par année, choix de la communauté, pépites cachées — ordre et contenu pilotés par le serveur, `kind` inconnu ignoré
+- ✅ Page « Tout voir » par section (`/home/section/:id`, grille paginée en scroll infini)
+- ✅ Titres traduits (7 langues) + 15 genres traduits, pastille de type sur les cartes
+- ✅ Hors ligne : accueil servi depuis le cache, aperçu de section sans pagination
 ### ✅ Filtrer les contenus mature
 ### ❌ Favoris *(remplacé par les statuts de lecture)*
 
@@ -164,7 +173,7 @@
 ### 🔵 Page « Explorer » par catégories *(couvert par l'accueil catalogue en sections + pages « Tout voir » — 2026-09-05 ; une déclinaison **personnalisée** par utilisateur reste ⏳)*
 ### ⏳ Modèle hybride LightFM (interactions explicites + features)
 
-- ⏳ Ignorer un manga des recommandations (déjà en cours / déjà lu)
+- ✅ Ignorer un manga des recommandations *(appui long partout, plus un bouton explicite et une astuce sur la page « Toutes les recommandations » — v0.16.0)*
 
 ---
 
