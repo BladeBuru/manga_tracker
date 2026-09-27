@@ -385,6 +385,50 @@ void main() {
     });
   });
 
+  // Le lecteur ouvert pour TÉLÉCHARGER reçoit un `initialLastRead` factice
+  // (chapitre demandé − 1) : s'il suivait la lecture, il réécrivait le lien
+  // de lecture et la position, et pouvait poser la question de fin de
+  // chapitre (constaté le 2026-09-27).
+  group('mode téléchargement — le lecteur n\'enregistre rien', () {
+    /// Corps d'une méthode du lecteur, jusqu'à la déclaration suivante.
+    String methodBody(String signature) {
+      final code = withoutComments(reader);
+      final start = code.indexOf(signature);
+      expect(start, isNot(-1), reason: '$signature introuvable');
+      final next = code.indexOf(RegExp(r'\n  (Future|void|bool|int|String|static|@override)'),
+          start + signature.length);
+      return code.substring(start, next == -1 ? code.length : next);
+    }
+
+    test('aucun suivi de chapitre (ni lien de lecture, ni position)', () {
+      expect(methodBody('void _handleDetected('),
+          contains('if (_downloadMode) return;'));
+    });
+
+    test('la sortie n\'enregistre rien et ne pose aucune question', () {
+      expect(methodBody('Future<bool> _onWillPop('),
+          contains('if (_downloadMode) return true;'));
+    });
+
+    test('le téléchargement d\'une page ne ferme jamais le lecteur lui-même',
+        () {
+      expect(
+        methodBody('Future<bool> _downloadCurrentPage('),
+        isNot(contains('Navigator')),
+        reason: 'Fermer ici ET dans l\'appelant dépilait aussi la fenêtre de '
+            'téléchargement multiple : la série mourait en silence.',
+      );
+      expect(methodBody('Future<void> _finishAutoDownload('),
+          contains('if (_downloadReported) return;'),
+          reason: 'Une seule fermeture, quel que soit le chemin.');
+    });
+
+    test('un chapitre sans image n\'est jamais enregistré', () {
+      expect(methodBody('Future<bool> _downloadCurrentPage('),
+          contains('if (!processed.hasContent)'));
+    });
+  });
+
   // Mesuré sur appareil le 2026-09-27 : exécuté dans la WebView du lecteur,
   // le défi Cloudflare est « validé » avec un cf_clearance que Cloudflare
   // refuse ensuite — boucle infinie. Dans une WebView brute, il passe.
@@ -420,6 +464,16 @@ void main() {
         reason: 'Sinon le téléchargement automatique part sur la page '
             '« Un instant… » et la position du chapitre est écrasée.',
       );
+    });
+
+    test('le mode téléchargement ne démarre pas sur un cookie', () {
+      expect(
+        withoutComments(reader),
+        isNot(contains("c.name.contains('cf_clearance')")),
+        reason: 'cf_clearance est déjà présent sur la page « Un instant… » : '
+            'le téléchargement partait avant le chargement du chapitre.',
+      );
+      expect(withoutComments(reader), contains('DownloadReadinessPolicy'));
     });
 
     test('la WebView de vérification n\'injecte RIEN dans la page', () {

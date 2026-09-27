@@ -2137,6 +2137,22 @@ class AppLocalizationsKo extends AppLocalizations {
       '사이트 보안 확인입니다. 안내에 따라 주세요. 완료되면 자동으로 읽기가 재개됩니다.';
 
   @override
+  String get downloadNoImages => '챕터 이미지를 저장하지 못했습니다. 다운로드를 취소했습니다.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return '이 페이지는 $chapter화가 아닙니다. 다운로드를 취소했습니다.';
+  }
+
+  @override
+  String get downloadNotReady => '챕터 로딩이 끝나지 않았습니다. 다운로드를 중단했습니다.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done개 챕터 다운로드, $failed개 실패';
+  }
+
+  @override
   String get readerRefresh => '페이지 새로고침';
 
   @override

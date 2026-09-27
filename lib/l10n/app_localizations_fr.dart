@@ -2224,6 +2224,24 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.';
 
   @override
+  String get downloadNoImages =>
+      'Aucune image du chapitre n\'a pu être enregistrée : téléchargement annulé.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'Cette page n\'est pas le chapitre $chapter : téléchargement annulé.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'Le chapitre n\'a pas fini de se charger : téléchargement abandonné.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done chapitre(s) téléchargé(s), $failed échec(s)';
+  }
+
+  @override
   String get readerRefresh => 'Rafraîchir la page';
 
   @override

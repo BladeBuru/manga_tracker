@@ -2215,6 +2215,24 @@ class AppLocalizationsEs extends AppLocalizations {
       'Verificación de seguridad del sitio: sigue sus instrucciones y la lectura se reanudará automáticamente.';
 
   @override
+  String get downloadNoImages =>
+      'No se pudo guardar ninguna imagen del capítulo: descarga cancelada.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'Esta página no es el capítulo $chapter: descarga cancelada.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'El capítulo no terminó de cargarse: descarga abandonada.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done capítulo(s) descargado(s), $failed fallido(s)';
+  }
+
+  @override
   String get readerRefresh => 'Actualizar la página';
 
   @override

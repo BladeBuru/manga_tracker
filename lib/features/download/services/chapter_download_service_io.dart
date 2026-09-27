@@ -8,6 +8,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
+import 'package:mangatracker/features/download/services/chapter_image_source.dart';
+import 'package:mangatracker/features/download/services/offline_html_result.dart';
+
+export 'package:mangatracker/features/download/services/offline_html_result.dart';
+
+/// En-têtes HTTP à joindre au téléchargement d'une image (Referer, cookies,
+/// user-agent du navigateur qui a chargé la page).
+typedef ImageRequestHeaders = Future<Map<String, String>> Function(Uri image);
 
 /// Service pour télécharger les chapitres depuis les pages web
 class ChapterDownloadService {
@@ -43,9 +51,9 @@ class ChapterDownloadService {
       }
 
       // Télécharger la page HTML entière
-      final htmlPath = await _downloadHtmlPage(chapterUrl, chapterPath, onProgress: onProgress);
-      
-      if (htmlPath == null) {
+      final page = await _downloadHtmlPage(chapterUrl, chapterPath, onProgress: onProgress);
+
+      if (page == null) {
         throw Exception('Échec du téléchargement de la page HTML');
       }
 
@@ -54,9 +62,9 @@ class ChapterDownloadService {
         muId: muId,
         chapterNumber: chapterNumber,
         downloadDate: DateTime.now(),
-        imageCount: 0, // Sera mis à jour après le téléchargement des images
+        imageCount: page.images,
         imagePaths: [],
-        htmlPath: htmlPath,
+        htmlPath: page.path,
         status: DownloadStatus.completed,
       );
 
@@ -74,8 +82,9 @@ class ChapterDownloadService {
     }
   }
 
-  /// Télécharge la page HTML entière
-  Future<String?> _downloadHtmlPage(
+  /// Télécharge la page HTML entière. `null` si la page est refusée ou ne
+  /// contient aucune image enregistrable.
+  Future<({String path, int images})?> _downloadHtmlPage(
     String url,
     String chapterPath, {
     Function(double progress)? onProgress,
@@ -144,11 +153,25 @@ class ChapterDownloadService {
       final htmlFile = File(htmlFilePath);
       
       // Traiter le HTML pour télécharger les images et remplacer les URLs par des chemins locaux
-      final processedHtml = await processHtmlForOffline(response.body, url, chapterPath, onProgress: onProgress);
-      await htmlFile.writeAsString(processedHtml, encoding: utf8);
+      final processed = await processHtmlForOfflineReport(
+        response.body,
+        url,
+        chapterPath,
+        onProgress: onProgress,
+        headersFor: (_) async => {'Referer': url},
+      );
+      // Une réponse 200 sans image (page d'erreur, page de vérification
+      // servie en 200, lecteur rendu en JavaScript) n'est pas un chapitre :
+      // l'appelant repasse par le lecteur.
+      if (!processed.hasContent) {
+        debugPrint('❌ ChapterDownloadService: aucune image enregistrée '
+            '(${processed.imagesFound} trouvée(s)) pour $url');
+        return null;
+      }
+      await htmlFile.writeAsString(processed.html, encoding: utf8);
 
       debugPrint('✅ ChapterDownloadService: Page HTML téléchargée et traitée: $htmlFilePath');
-      return htmlFilePath;
+      return (path: htmlFilePath, images: processed.imagesSaved);
     } catch (e) {
       debugPrint('❌ ChapterDownloadService: Erreur _downloadHtmlPage: $e');
       return null;
@@ -162,7 +185,24 @@ class ChapterDownloadService {
     String baseUrl,
     String chapterPath, {
     Function(double progress)? onProgress,
+  }) async =>
+      (await processHtmlForOfflineReport(html, baseUrl, chapterPath,
+              onProgress: onProgress))
+          .html;
+
+  /// Comme [processHtmlForOffline], avec le compte des images trouvées et
+  /// réellement enregistrées. [headersFor] fournit les en-têtes de chaque
+  /// image (Referer, cookies…) : sans eux, les serveurs d'images protégés
+  /// contre le « hotlinking » répondent 403.
+  Future<OfflineHtmlResult> processHtmlForOfflineReport(
+    String html,
+    String baseUrl,
+    String chapterPath, {
+    Function(double progress)? onProgress,
+    ImageRequestHeaders? headersFor,
   }) async {
+    var imagesFound = 0;
+    var downloadedImages = 0;
     try {
       final uri = Uri.parse(baseUrl);
       final origin = '${uri.scheme}://${uri.host}';
@@ -194,50 +234,57 @@ class ChapterDownloadService {
       
       // Télécharger toutes les images et remplacer les URLs par des chemins locaux
       final images = document.querySelectorAll('img');
-      int downloadedImages = 0;
       final totalImages = images.length;
-      
+
       for (final img in images) {
-        final src = img.attributes['src'] ?? 
-                   img.attributes['data-src'] ?? 
-                   img.attributes['data-lazy-src'] ?? 
-                   img.attributes['data-original'] ??
-                   img.attributes['data-url'] ??
-                   img.attributes['data-image'];
-        
-        if (src != null && src.isNotEmpty && !src.startsWith('data:')) {
+        // Adresse RÉELLE : l'attribut différé (data-src…) avant `src`, qui
+        // ne contient souvent qu'une image d'attente (voir ChapterImageSource).
+        final src = ChapterImageSource.pick({
+          for (final entry in img.attributes.entries)
+            entry.key.toString(): entry.value,
+        });
+
+        if (src != null) {
+          imagesFound++;
           try {
             final absoluteSrc = toAbsoluteUrl(src);
-            
-            // Télécharger l'image
-            final imageFileName = _getImageFileName(absoluteSrc, downloadedImages);
+            final imageUri = Uri.parse(absoluteSrc);
+
+            // Nom préfixé par l'ordre : unique (deux « 01.jpg » de dossiers
+            // différents ne s'écrasent plus) et trié comme les pages.
+            final imageFileName =
+                '${imagesFound.toString().padLeft(3, '0')}_${_getImageFileName(absoluteSrc, imagesFound)}';
             final localImagePath = path.join(imagesDir.path, imageFileName);
             final imageFile = File(localImagePath);
-            
+
             // Télécharger l'image seulement si elle n'existe pas déjà
             if (!await imageFile.exists()) {
-              final imageResponse = await http.get(Uri.parse(absoluteSrc));
-              if (imageResponse.statusCode == 200) {
+              final headers = headersFor == null
+                  ? const <String, String>{}
+                  : await headersFor(imageUri);
+              final imageResponse = await http.get(imageUri, headers: headers);
+              if (imageResponse.statusCode == 200 &&
+                  imageResponse.bodyBytes.isNotEmpty) {
                 await imageFile.writeAsBytes(imageResponse.bodyBytes);
-                debugPrint('✅ Image téléchargée: $imageFileName');
               } else {
-                // Log seulement si ce n'est pas une erreur 403 (normale pour certaines images)
-                if (imageResponse.statusCode != 403) {
-                  debugPrint('⚠️ Échec du téléchargement de l\'image: ${imageResponse.statusCode}');
-                }
+                debugPrint('⚠️ Image refusée (${imageResponse.statusCode}): $absoluteSrc');
                 continue;
               }
             }
-            
+
             // Remplacer l'URL par un chemin relatif local
             final relativePath = path.join('images', imageFileName).replaceAll('\\', '/');
             img.attributes['src'] = relativePath;
-            
-            // Supprimer les attributs de lazy loading
+
+            // Supprimer les attributs de chargement différé : hors ligne,
+            // seule l'image locale doit s'afficher.
             img.attributes.remove('loading');
-            img.attributes.remove('data-src');
-            img.attributes.remove('data-lazy-src');
-            
+            img.attributes.remove('srcset');
+            img.attributes.remove('data-srcset');
+            for (final name in ChapterImageSource.lazyAttributes) {
+              img.attributes.remove(name);
+            }
+
             downloadedImages++;
             
             // Mettre à jour la progression (50% pour HTML, 50% pour images)
@@ -271,7 +318,13 @@ class ChapterDownloadService {
               final imageFile = File(localImagePath);
               
               if (!await imageFile.exists()) {
-                final imageResponse = await http.get(Uri.parse(absoluteUrl));
+                final sourceUri = Uri.parse(absoluteUrl);
+                final imageResponse = await http.get(
+                  sourceUri,
+                  headers: headersFor == null
+                      ? const <String, String>{}
+                      : await headersFor(sourceUri),
+                );
                 if (imageResponse.statusCode == 200) {
                   await imageFile.writeAsBytes(imageResponse.bodyBytes);
                 }
@@ -296,10 +349,20 @@ class ChapterDownloadService {
       
       // Préserver le DOCTYPE et reconstruire le HTML complet
       final doctype = html.contains('<!DOCTYPE') ? '<!DOCTYPE html>' : '';
-      return '$doctype<html><head>$baseTag$htmlHead</head><body>$htmlBody</body></html>';
+      return OfflineHtmlResult(
+        html: '$doctype<html><head>$baseTag$htmlHead</head><body>$htmlBody</body></html>',
+        imagesFound: imagesFound,
+        imagesSaved: downloadedImages,
+      );
     } catch (e) {
       debugPrint('⚠️ ChapterDownloadService: Erreur lors du traitement du HTML: $e');
-      return html; // Retourner le HTML original en cas d'erreur
+      // HTML d'origine, mais aucune image comptée comme enregistrée : le
+      // chapitre ne sera pas marqué « terminé » à tort.
+      return OfflineHtmlResult(
+        html: html,
+        imagesFound: imagesFound,
+        imagesSaved: 0,
+      );
     }
   }
 

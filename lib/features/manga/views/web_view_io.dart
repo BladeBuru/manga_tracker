@@ -13,6 +13,9 @@ import 'package:mangatracker/features/library/services/chapter_log.service.dart'
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/download/services/chapter_download_service.dart';
+import 'package:mangatracker/features/download/services/chapter_image_source.dart';
+import 'package:mangatracker/features/download/services/download_readiness_policy.dart';
+import 'package:mangatracker/features/reader/utils/webview_result_parser.dart';
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -136,6 +139,16 @@ class _ReaderWebViewState extends State<ReaderWebView>
   bool _challengePending = false;
   bool _showHandoff = false;
   String? _clearanceBefore;
+
+  // Mode téléchargement (ouvert par ChapterDownloadDialog) : le lecteur ne
+  // sert qu'à charger la page. Il n'enregistre RIEN — ni chapitre lu, ni
+  // lien de lecture, ni position : `initialLastRead` y vaut une valeur
+  // factice (chapitre demandé − 1), et télécharger les chapitres 10 à 12
+  // réécrivait le lien de lecture d'un lecteur rendu au chapitre 95.
+  bool get _downloadMode => widget.autoDownload;
+  int get _expectedDownloadChapter => widget.initialLastRead + 1;
+  bool _autoDownloadRunning = false;
+  bool _downloadReported = false;
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
@@ -349,12 +362,13 @@ class _ReaderWebViewState extends State<ReaderWebView>
   Future<void> _handleOverflowAction(ReaderOverflowAction action) async {
     switch (action) {
       case ReaderOverflowAction.downloadPage:
-        final success = await _downloadCurrentPage();
-        // Si autoDownload est activé et que le téléchargement a réussi,
-        // fermer la webview
-        if (widget.autoDownload && success && mounted) {
-          Navigator.of(context).pop();
-        }
+        final success = await _downloadCurrentPage(
+          expectedChapter: _downloadMode ? _expectedDownloadChapter : null,
+        );
+        // Mode téléchargement : un succès ferme le lecteur — une seule fois,
+        // par _finishAutoDownload (un double pop fermait aussi la fenêtre de
+        // téléchargement multiple et tuait la série).
+        if (_downloadMode && success) await _finishAutoDownload(true);
         break;
       case ReaderOverflowAction.copyUrl:
         await _copyCurrentUrl();
@@ -629,8 +643,178 @@ class _ReaderWebViewState extends State<ReaderWebView>
     }
   }
 
-  /// Télécharge la page actuelle depuis le WebView (après résolution du captcha)
-  Future<bool> _downloadCurrentPage() async {
+  /// En-têtes des requêtes d'images, comme les enverrait la WebView :
+  /// `Referer` de la page, user-agent de la WebView et cookies de l'hôte de
+  /// l'image. Sans eux, les serveurs d'images protégés contre le
+  /// « hotlinking » (ou par Cloudflare) répondent 403 — et l'image était
+  /// ignorée en silence.
+  Future<ImageRequestHeaders> _imageRequestHeaders(String pageUrl) async {
+    String? userAgent;
+    try {
+      userAgent = await InAppWebViewController.getDefaultUserAgent();
+    } catch (_) {}
+    final cookiesByOrigin = <String, String>{};
+    return (Uri image) async {
+      final origin = '${image.scheme}://${image.host}';
+      var cookie = cookiesByOrigin[origin];
+      if (cookie == null) {
+        try {
+          final cookies =
+              await CookieManager.instance().getCookies(url: WebUri(origin));
+          cookie = cookies.map((c) => '${c.name}=${c.value}').join('; ');
+        } catch (_) {
+          cookie = '';
+        }
+        cookiesByOrigin[origin] = cookie;
+      }
+      return {
+        'Referer': pageUrl,
+        if (userAgent != null && userAgent.isNotEmpty) 'User-Agent': userAgent,
+        if (cookie.isNotEmpty) 'Cookie': cookie,
+      };
+    };
+  }
+
+  /// Relevé de la page pour [DownloadReadinessPolicy] — lecture seule.
+  Future<DownloadPageProbe?> _probeDownloadPage() async {
+    final controller = _controller;
+    if (controller == null) return null;
+    try {
+      final raw = await controller.evaluateJavascript(source: _downloadProbeScript);
+      final map = WebViewResultParser.asMap(raw);
+      if (map == null) return null;
+      final images = <ProbedImage>[];
+      for (final entry in (map['imgs'] as List? ?? const [])) {
+        if (entry is! Map) continue;
+        final attrs = <String, String>{};
+        (entry['a'] as Map? ?? const {}).forEach((key, value) {
+          if (value != null) attrs['$key'] = '$value';
+        });
+        images.add(ProbedImage(
+          attributes: attrs,
+          width: (entry['w'] as num?)?.round() ?? 0,
+        ));
+      }
+      final url = await controller.getUrl();
+      return DownloadPageProbe(
+        readyState: '${map['ready'] ?? ''}',
+        urlChapter: url == null
+            ? null
+            : await ChapterLinkResolver.extractChapter(url.toString()),
+        images: images,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Relevé de la page impossible: $e');
+      return null;
+    }
+  }
+
+  static final String _downloadProbeScript = '''
+(function() {
+  var names = ${jsonEncode(ChapterImageSource.relevantAttributes)};
+  var imgs = [];
+  var list = document.images || [];
+  for (var i = 0; i < list.length && i < 500; i++) {
+    var img = list[i], a = {};
+    for (var j = 0; j < names.length; j++) {
+      var v = img.getAttribute(names[j]);
+      if (v) a[names[j]] = v;
+    }
+    imgs.push({ a: a, w: Math.round(img.getBoundingClientRect().width) });
+  }
+  return JSON.stringify({ ready: document.readyState, imgs: imgs });
+})();
+''';
+
+  /// Mode téléchargement : télécharge le chapitre dès que la page est PRÊTE
+  /// (voir [DownloadReadinessPolicy]), puis ferme le lecteur.
+  ///
+  /// Remplace un délai fixe de 2 s déclenché par la présence d'un cookie
+  /// `cf_clearance` — déjà là sur la page « Un instant… » : le téléchargement
+  /// partait avant le chargement et enregistrait un chapitre vide.
+  Future<void> _runAutoDownload() async {
+    if (_autoDownloadRunning || _downloadReported) return;
+    _autoDownloadRunning = true;
+    const policy = DownloadReadinessPolicy();
+    final expected = _expectedDownloadChapter;
+    final started = DateTime.now();
+    DownloadPageProbe? previous;
+    try {
+      // Une vérification Cloudflare interrompt l'attente : la page sera
+      // rechargée après la vérification, et l'attente reprendra.
+      while (mounted && !_challengePending && !_downloadReported) {
+        final probe = await _probeDownloadPage();
+        if (probe == null) {
+          await Future.delayed(const Duration(seconds: 1));
+          continue;
+        }
+        final decision = policy.decide(
+          expectedChapter: expected,
+          current: probe,
+          previous: previous,
+          elapsed: DateTime.now().difference(started),
+        );
+        ReaderDiagnostics.log('download.readiness', {
+          'chapter': expected,
+          'decision': decision.name,
+          'ready': probe.readyState,
+          'urlChapter': probe.urlChapter,
+          'images': probe.chapterImageCount,
+        });
+        switch (decision) {
+          case DownloadReadiness.wait:
+            previous = probe;
+            await Future.delayed(const Duration(seconds: 1));
+          case DownloadReadiness.ready:
+            final ok = await _downloadCurrentPage(expectedChapter: expected);
+            await _finishAutoDownload(ok);
+            return;
+          case DownloadReadiness.wrongChapter:
+            if (mounted) {
+              final l10n = AppLocalizations.of(context);
+              _notifier.error(l10n?.downloadWrongChapter('$expected') ??
+                  "Cette page n'est pas le chapitre $expected : téléchargement annulé.");
+            }
+            await _finishAutoDownload(false);
+            return;
+          case DownloadReadiness.timedOut:
+            if (mounted) {
+              final l10n = AppLocalizations.of(context);
+              _notifier.error(l10n?.downloadNotReady ??
+                  "Le chapitre n'a pas fini de se charger : téléchargement abandonné.");
+            }
+            await _finishAutoDownload(false);
+            return;
+        }
+      }
+    } finally {
+      _autoDownloadRunning = false;
+    }
+  }
+
+  /// Fin du mode téléchargement : rend le résultat et ferme le lecteur —
+  /// UNE seule fois, quel que soit le chemin (automatique ou bouton).
+  ///
+  /// Le résultat part par le rappel ET par `pop(success)` : la fenêtre de
+  /// téléchargement multiple lit ce dernier, et un retour arrière de
+  /// l'utilisateur (résultat `null`) y annule la série.
+  Future<void> _finishAutoDownload(bool success) async {
+    if (_downloadReported) return;
+    _downloadReported = true;
+    ReaderDiagnostics.log('download.done', {
+      'chapter': _expectedDownloadChapter,
+      'success': success,
+    });
+    widget.onDownloadComplete?.call(success);
+    if (mounted) Navigator.of(context).pop(success);
+  }
+
+  /// Télécharge la page actuelle depuis le WebView.
+  ///
+  /// [expectedChapter] (mode téléchargement) : le chapitre DEMANDÉ. Une page
+  /// qui en affiche un autre (redirection) n'est jamais enregistrée sous ce
+  /// numéro.
+  Future<bool> _downloadCurrentPage({int? expectedChapter}) async {
     try {
       final url = await _controller?.getUrl();
       if (url == null) {
@@ -639,9 +823,20 @@ class _ReaderWebViewState extends State<ReaderWebView>
       }
 
       final urlString = url.toString();
-      
+
       // Extraire le numéro de chapitre depuis l'URL
-      final chapterNumber = await ChapterLinkResolver.extractChapter(urlString);
+      final urlChapter = await ChapterLinkResolver.extractChapter(urlString);
+      if (expectedChapter != null &&
+          urlChapter != null &&
+          urlChapter != expectedChapter) {
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          _notifier.error(l10n?.downloadWrongChapter('$expectedChapter') ??
+              "Cette page n'est pas le chapitre $expectedChapter : téléchargement annulé.");
+        }
+        return false;
+      }
+      final chapterNumber = urlChapter ?? expectedChapter;
       if (chapterNumber == null) {
         _notifier.error("Impossible de détecter le numéro de chapitre dans l'URL");
         return false;
@@ -650,69 +845,15 @@ class _ReaderWebViewState extends State<ReaderWebView>
       // Afficher un message de chargement
       _notifier.info("Chargement des images...");
 
-      // Script JavaScript pour forcer le chargement de toutes les images et attendre qu'elles soient chargées
-      // Utiliser une approche plus simple qui retourne directement le HTML
-      final loadImagesScript = """
-        (function() {
-          // Fonction pour convertir les URLs relatives en absolues
-          function toAbsoluteUrl(url) {
-            if (!url) return url;
-            if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-              return url;
-            }
-            if (url.startsWith('//')) {
-              return window.location.protocol + url;
-            }
-            if (url.startsWith('/')) {
-              return window.location.origin + url;
-            }
-            const basePath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            return basePath + url;
-          }
-          
-          // Récupérer toutes les images
-          const images = document.querySelectorAll('img');
-          const totalImages = images.length;
-          
-          console.log('📸 Nombre d\\'images trouvées: ' + totalImages);
-          
-          // Convertir toutes les URLs d'images en URLs absolues et forcer le chargement
-          images.forEach(function(img, index) {
-            // Récupérer toutes les sources possibles
-            let src = img.src || img.getAttribute('src') || 
-                     img.getAttribute('data-src') || 
-                     img.getAttribute('data-lazy-src') || 
-                     img.getAttribute('data-original') ||
-                     img.getAttribute('data-url') ||
-                     img.getAttribute('data-image');
-            
-            if (src && !src.startsWith('data:')) {
-              const absoluteSrc = toAbsoluteUrl(src.trim());
-              
-              // Supprimer les attributs de lazy loading
-              img.removeAttribute('loading');
-              img.removeAttribute('data-src');
-              img.removeAttribute('data-lazy-src');
-              img.removeAttribute('data-original');
-              
-              // Mettre l'URL absolue dans src
-              img.src = absoluteSrc;
-              
-              console.log('Image ' + index + ': ' + absoluteSrc);
-            }
-          });
-          
-          // Retourner le HTML directement (les images seront chargées par le navigateur)
-          return document.documentElement.outerHTML;
-        })();
-      """;
+      // Le HTML tel quel, SANS le modifier : les vraies adresses des images
+      // (data-src…) sont choisies côté Dart par ChapterImageSource. L'ancien
+      // script partait de `src` — souvent une image d'attente — puis
+      // SUPPRIMAIT data-src : la vraie adresse était perdue, et le chapitre
+      // enregistré ne contenait que des images d'attente.
+      const loadImagesScript = 'document.documentElement.outerHTML;';
 
-      // Exécuter le script pour récupérer le HTML avec les images
       _notifier.info("Récupération du contenu de la page...");
-      
-      // Attendre un peu pour que les images commencent à charger
-      await Future.delayed(const Duration(milliseconds: 500));
-      
+
       var htmlResult = await _controller?.evaluateJavascript(source: loadImagesScript);
       if (htmlResult == null) {
         _notifier.error("Impossible de récupérer le contenu de la page");
@@ -760,7 +901,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
       // Utiliser ChapterDownloadService pour télécharger les images localement
       _notifier.info("Téléchargement des images...");
       final downloadService = ChapterDownloadService();
-      final processedHtml = await downloadService.processHtmlForOffline(
+      final processed = await downloadService.processHtmlForOfflineReport(
         cleanHtml,
         urlString,
         chapterPath,
@@ -768,19 +909,36 @@ class _ReaderWebViewState extends State<ReaderWebView>
           // La progression va de 0.0 à 1.0
           debugPrint('📥 Progression téléchargement images: ${(progress * 100).toStringAsFixed(1)}%');
         },
+        headersFor: await _imageRequestHeaders(urlString),
       );
+      ReaderDiagnostics.log('download.images', {
+        'chapter': chapterNumber,
+        'found': processed.imagesFound,
+        'saved': processed.imagesSaved,
+      });
+
+      // Aucune image enregistrée : ce n'est PAS un chapitre téléchargé. Il
+      // ne doit jamais apparaître « terminé » (il s'ouvrait vide hors ligne).
+      if (!processed.hasContent) {
+        if (mounted) {
+          final l10n = AppLocalizations.of(context);
+          _notifier.error(l10n?.downloadNoImages ??
+              "Aucune image du chapitre n'a pu être enregistrée : téléchargement annulé.");
+        }
+        return false;
+      }
 
       // Sauvegarder le HTML traité avec les images localisées
       final htmlFilePath = path.join(chapterPath, 'chapter.html');
       final htmlFile = File(htmlFilePath);
-      await htmlFile.writeAsString(processedHtml, encoding: utf8);
+      await htmlFile.writeAsString(processed.html, encoding: utf8);
 
       // Créer le modèle DownloadedChapter
       final downloadedChapter = DownloadedChapter(
         muId: widget.muId,
         chapterNumber: chapterNumber,
         downloadDate: DateTime.now(),
-        imageCount: 0,
+        imageCount: processed.imagesSaved,
         imagePaths: [],
         htmlPath: htmlFilePath,
         status: DownloadStatus.completed,
@@ -797,36 +955,14 @@ class _ReaderWebViewState extends State<ReaderWebView>
       _notifier.success("Chapitre $chapterNumber téléchargé avec succès");
       
       debugPrint('✅ ReaderWebView: Chapitre $chapterNumber téléchargé depuis le WebView');
-      
-      // Si autoDownload est activé, fermer automatiquement la webview après un court délai
-      // MAIS appeler le callback AVANT de fermer pour que le dialog puisse continuer
-      if (widget.autoDownload && mounted) {
-        // Appeler le callback AVANT de fermer
-        if (widget.onDownloadComplete != null) {
-          widget.onDownloadComplete!(true);
-        }
-        // Attendre un peu pour que le callback soit traité
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      } else {
-        // Si pas en mode autoDownload, appeler le callback normalement
-        if (widget.onDownloadComplete != null) {
-          widget.onDownloadComplete!(true);
-        }
-      }
-      
+      // Ni rappel ni fermeture ici : c'est l'appelant qui décide, une seule
+      // fois (_finishAutoDownload). Fermer ici ET dans l'appelant dépilait
+      // deux écrans — le second était la fenêtre de téléchargement multiple,
+      // dont la série mourait en silence.
       return true;
     } catch (e) {
       debugPrint('❌ ReaderWebView: Erreur lors du téléchargement depuis le WebView: $e');
       _notifier.error("Erreur lors du téléchargement: $e");
-      
-      // Appeler le callback si fourni
-      if (widget.onDownloadComplete != null) {
-        widget.onDownloadComplete!(false);
-      }
-      
       return false;
     }
   }
@@ -942,6 +1078,8 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// navigation qui survient pendant un traitement est mise en attente (la
   /// plus récente gagne) au lieu d'être perdue.
   void _handleDetected(Uri uri) {
+    // Mode téléchargement : aucun suivi de lecture (voir _downloadMode).
+    if (_downloadMode) return;
     if (uri.toString() == _lastHandledUrl) return;
     if (_processingDetection) {
       _pendingDetection = uri;
@@ -1091,6 +1229,12 @@ class _ReaderWebViewState extends State<ReaderWebView>
   }
 
   Future<bool> _onWillPop() async {
+    // Mode téléchargement : rien n'a été lu — ni position à sauvegarder, ni
+    // chapitre à proposer. Quitter ANNULE : la fenêtre de téléchargement
+    // multiple reçoit un résultat `null` et arrête la série (au lieu
+    // d'ouvrir aussitôt le chapitre suivant).
+    if (_downloadMode) return true;
+
     // Sauvegarder la position de scroll avant de fermer
     debugPrint('🔍 _onWillPop - Sauvegarde de la position avant fermeture');
     debugPrint('🔍 _onWillPop - Controller: ${_controller != null}, Chapitre: $_currentChapter');
@@ -1108,25 +1252,6 @@ class _ReaderWebViewState extends State<ReaderWebView>
       debugPrint('🔍 _onWillPop - Position sauvegardée avec succès');
     } else {
       debugPrint('⚠️ _onWillPop - Impossible de sauvegarder: controller=${_controller != null}, chapter=$_currentChapter');
-    }
-    
-    // Si autoDownload est activé et que le callback existe, l'appeler avec false si on ferme sans télécharger
-    if (widget.autoDownload && widget.onDownloadComplete != null) {
-      // Vérifier si le chapitre a été téléchargé avant de fermer
-      final url =
-          challengePending ? _challengeUrl : await _controller?.getUrl();
-      if (url != null) {
-        final urlString = url.toString();
-        final chapterNumber = await ChapterLinkResolver.extractChapter(urlString);
-        if (chapterNumber != null) {
-          final downloaded = await _downloadManager.getDownloadedChapters(widget.muId);
-          final isDownloaded = downloaded.any((c) => c.chapterNumber == chapterNumber);
-          if (!isDownloaded) {
-            // Le chapitre n'a pas été téléchargé, appeler le callback avec false
-            widget.onDownloadComplete!(false);
-          }
-        }
-      }
     }
     
     // Si on est sur le chapitre C, qu'il n'est pas déjà enregistré et que la
@@ -1416,7 +1541,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
             
             // Détecter le chapitre depuis l'URL si pas encore détecté
-            if (_currentChapter == null && url != null) {
+            // (jamais en mode téléchargement : cela réécrivait le lien de
+            // lecture de l'utilisateur).
+            if (!_downloadMode && _currentChapter == null && url != null) {
               final uri = url;
               final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
               if (newCh != null) {
@@ -1428,7 +1555,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
             
             // Restaurer la position de scroll si disponible (en arrière-plan pour ne pas bloquer)
-            if (_currentChapter != null && mounted && _controller != null) {
+            if (!_downloadMode &&
+                _currentChapter != null &&
+                mounted &&
+                _controller != null) {
               debugPrint('🔍 onLoadStop - Chapitre $_currentChapter détecté, démarrage du timer');
               // Réinitialiser le flag de restauration pour le nouveau chapitre
               _hasRestoredScroll = false;
@@ -1461,29 +1591,11 @@ class _ReaderWebViewState extends State<ReaderWebView>
               debugPrint('⚠️ onLoadStop - Chapitre non détecté: _currentChapter=$_currentChapter, controller=${_controller != null}, mounted=$mounted');
             }
             
-            // Si autoDownload est activé, lancer automatiquement le téléchargement après un délai
-            // Exécuter en arrière-plan pour ne pas bloquer le chargement de la page
-            if (widget.autoDownload && url != null && mounted) {
-              // Exécuter en arrière-plan pour ne pas bloquer le chargement
-              Future.delayed(const Duration(seconds: 2), () async {
-                if (mounted && _controller != null) {
-                  try {
-                    // Vérifier si les cookies sont déjà présents (captcha déjà résolu)
-                    final cookieManager = CookieManager.instance();
-                    final cookies = await cookieManager.getCookies(url: url);
-                    if (cookies.isNotEmpty && cookies.any((c) => c.name.contains('cf_clearance') || c.name.contains('clearance'))) {
-                      // Les cookies sont présents, lancer automatiquement le téléchargement
-                      debugPrint('✅ Cookies détectés, lancement automatique du téléchargement...');
-                      _downloadCurrentPage();
-                    } else {
-                      // Pas de cookies, afficher un message pour guider l'utilisateur
-                      _notifier.info("Résolvez le captcha si nécessaire, puis cliquez sur le bouton de téléchargement.");
-                    }
-                  } catch (e) {
-                    debugPrint('⚠️ Erreur lors de la vérification des cookies en arrière-plan: $e');
-                  }
-                }
-              });
+            // Mode téléchargement : télécharger dès que la page du chapitre
+            // est PRÊTE (DownloadReadinessPolicy), une seule fois, puis
+            // fermer. Plus de délai fixe déclenché par un cookie.
+            if (_downloadMode && url != null && mounted) {
+              unawaited(_runAutoDownload());
             }
           },
 

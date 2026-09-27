@@ -2221,6 +2221,24 @@ class AppLocalizationsDe extends AppLocalizations {
       'Sicherheitsprüfung der Website: Folgen Sie den Anweisungen, danach geht das Lesen automatisch weiter.';
 
   @override
+  String get downloadNoImages =>
+      'Kein Bild des Kapitels konnte gespeichert werden: Download abgebrochen.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'Diese Seite ist nicht Kapitel $chapter: Download abgebrochen.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'Das Kapitel wurde nicht fertig geladen: Download abgebrochen.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done Kapitel heruntergeladen, $failed fehlgeschlagen';
+  }
+
+  @override
   String get readerRefresh => 'Seite aktualisieren';
 
   @override

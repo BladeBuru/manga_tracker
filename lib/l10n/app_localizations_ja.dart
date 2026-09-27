@@ -2135,6 +2135,22 @@ class AppLocalizationsJa extends AppLocalizations {
       'サイトのセキュリティ確認です。表示される指示に従ってください。完了すると自動的に読書を再開します。';
 
   @override
+  String get downloadNoImages => '章の画像を保存できませんでした。ダウンロードを中止しました。';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'このページは第$chapter章ではありません。ダウンロードを中止しました。';
+  }
+
+  @override
+  String get downloadNotReady => '章の読み込みが完了しませんでした。ダウンロードを中止しました。';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done章をダウンロード、$failed件失敗';
+  }
+
+  @override
   String get readerRefresh => 'ページを再読み込み';
 
   @override
