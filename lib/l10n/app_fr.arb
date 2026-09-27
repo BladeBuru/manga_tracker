@@ -2297,6 +2297,63 @@
   "@challengeLoopOpenBrowser": {
     "description": "Bouton ouvrant la page dans le navigateur externe"
   },
+  "readerChallengeHandoffInfo": "Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.",
+  "@readerChallengeHandoffInfo": {
+    "description": "Bandeau au-dessus de la verification anti-robot confiee a une WebView sans ajout ; la lecture reprend seule une fois la verification validee"
+  },
+  "downloadNoImages": "Aucune image du chapitre n'a pu être enregistrée : téléchargement annulé.",
+  "@downloadNoImages": {
+    "description": "Telechargement d'un chapitre : aucune image enregistree, le chapitre n'est pas marque comme telecharge"
+  },
+  "downloadWrongChapter": "Cette page n'est pas le chapitre {chapter} : téléchargement annulé.",
+  "@downloadWrongChapter": {
+    "description": "Telechargement : la page ouverte n'est pas le chapitre demande (redirection)",
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadNotReady": "Le chapitre n'a pas fini de se charger : téléchargement abandonné.",
+  "@downloadNotReady": {
+    "description": "Telechargement : la page n'a pas fini de charger dans le delai"
+  },
+  "downloadBatchSummary": "{done} chapitre(s) téléchargé(s), {failed} échec(s)",
+  "@downloadBatchSummary": {
+    "description": "Bilan d'un telechargement de plusieurs chapitres",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectRange": "Sélectionner tout l'intervalle ({from} → {to})",
+  "@downloadSelectRange": {
+    "description": "Bouton : coche tous les chapitres entre les deux derniers coches",
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectionHint": "Appui long : coche tout l'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.",
+  "@downloadSelectionHint": {
+    "description": "Astuce sous la liste de telechargement : gestes de selection par intervalle"
+  },
+  "chapterReadBadge": "Lu",
+  "@chapterReadBadge": {
+    "description": "Pastille d'un chapitre deja lu dans la liste de telechargement"
+  },
+  "chapterAlreadyDownloaded": "Déjà téléchargé",
+  "@chapterAlreadyDownloaded": {
+    "description": "Libelle accessible d'un chapitre deja telecharge"
+  },
   "readerRefresh": "Rafraîchir la page",
   "@readerRefresh": {
     "description": "Tooltip du bouton de rechargement de la page du lecteur"

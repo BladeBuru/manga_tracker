@@ -5,6 +5,11 @@
 library;
 
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
+import 'package:mangatracker/features/download/services/offline_html_result.dart';
+
+export 'package:mangatracker/features/download/services/offline_html_result.dart';
+
+typedef ImageRequestHeaders = Future<Map<String, String>> Function(Uri image);
 
 class ChapterDownloadService {
   ChapterDownloadService();
@@ -31,4 +36,13 @@ class ChapterDownloadService {
     // Sur web, on retourne le HTML brut sans rien faire
     return html;
   }
+
+  Future<OfflineHtmlResult> processHtmlForOfflineReport(
+    String html,
+    String baseUrl,
+    String chapterPath, {
+    Function(double progress)? onProgress,
+    ImageRequestHeaders? headersFor,
+  }) async =>
+      OfflineHtmlResult(html: html, imagesFound: 0, imagesSaved: 0);
 }

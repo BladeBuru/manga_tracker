@@ -3,7 +3,9 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/services/custom_selectors.service.dart';
+import 'package:mangatracker/features/reader/services/ad_overlay_rules.dart';
 import 'package:mangatracker/features/reader/services/challenge_allowlist.dart';
+import 'package:mangatracker/features/reader/services/reader_diagnostics.dart';
 
 /// Service pour gérer le blocage de publicités dans les WebViews
 class AdBlockerService {
@@ -326,7 +328,24 @@ class AdBlockerService {
       const adSelectors = [
         $escapedSelectors
       ];
-      
+
+      // --- Diagnostic (build MT_READER_DIAG uniquement) -------------------
+      // Trace chaque élément retiré : relu par onConsoleMessage côté app.
+      // N'altère pas le nettoyage lui-même.
+      const MT_DIAG = ${ReaderDiagnostics.enabled};
+      let mtReported = 0;
+      function report(rule, el) {
+        if (!MT_DIAG || mtReported >= 80) return;
+        mtReported++;
+        try {
+          const cls = (typeof el.className === 'string') ? el.className.trim().slice(0, 80) : '';
+          const imgs = el.querySelectorAll ? el.querySelectorAll('img').length : 0;
+          console.log('[MT-ADBLOCK] rule=' + rule + ' el=' + el.tagName.toLowerCase() +
+            (el.id ? '#' + el.id : '') + (cls ? ' class="' + cls + '"' : '') +
+            ' imgs=' + imgs + ' textLen=' + ((el.innerText || '').length));
+        } catch(e) {}
+      }
+
       // --- Protection des vérifications anti-robot -----------------------
       // Sélecteurs identifiant un défi (Cloudflare Turnstile, hCaptcha,
       // reCAPTCHA). Aucun élément de défi ne doit JAMAIS être supprimé :
@@ -455,12 +474,117 @@ class AdBlockerService {
         return false;
       }
       
+      // --- Publicités en surimpression -----------------------------------
+      // Posées PAR-DESSUS la page, souvent sans id, classe ni adresse : les
+      // sélecteurs et isAdElement ne peuvent pas les voir. Reconnues à leur
+      // géométrie — seuils et cas fondateur dans AdOverlayRules (Dart).
+      const OVERLAY_IFRAME_MIN_Z = ${AdOverlayRules.iframeMinZIndex};
+      const OVERLAY_IFRAME_MIN_COVER = ${AdOverlayRules.iframeMinCoverage};
+      const OVERLAY_MIN_Z = ${AdOverlayRules.elementMinZIndex};
+      const OVERLAY_MIN_COVER = ${AdOverlayRules.elementMinCoverage};
+      const CHAPTER_IMAGE_MIN_SIDE = ${AdOverlayRules.chapterImageMinSide};
+
+      // Part de l'écran (0 à 1) couverte par l'élément.
+      function viewportCoverage(el) {
+        const r = el.getBoundingClientRect();
+        const vw = window.innerWidth || document.documentElement.clientWidth || 1;
+        const vh = window.innerHeight || document.documentElement.clientHeight || 1;
+        const w = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+        const h = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+        return (w * h) / (vw * vh);
+      }
+
+      // Iframe sans adresse, vide, javascript: ou d'un autre site — jamais
+      // un iframe du site lu.
+      function isBlankOrForeignFrame(el) {
+        const src = (el.getAttribute('src') || '').trim();
+        if (!src || src === 'about:blank' ||
+            src.toLowerCase().indexOf('javascript:') === 0) return true;
+        try {
+          return new URL(src, location.href).host !== location.host;
+        } catch(e) { return true; }
+      }
+
+      function containsChapterImage(el) {
+        try {
+          const imgs = el.getElementsByTagName('img');
+          for (let i = 0; i < imgs.length; i++) {
+            const r = imgs[i].getBoundingClientRect();
+            if (r.width >= CHAPTER_IMAGE_MIN_SIDE &&
+                r.height >= CHAPTER_IMAGE_MIN_SIDE) return true;
+          }
+        } catch(e) {}
+        return false;
+      }
+
+      function isAdOverlay(el) {
+        if (!el || el.nodeType !== 1) return false;
+        if (el === document.documentElement || el === document.body ||
+            el === document.head) return false;
+        // Garde-fou prioritaire : ne jamais toucher à un défi.
+        if (isChallengeElement(el)) return false;
+        let cs;
+        try { cs = window.getComputedStyle(el); } catch(e) { return false; }
+        if (!cs || cs.position !== 'fixed') return false;
+        if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+        // Transparent ET traversé par les appuis : ne gêne rien. Un calque
+        // transparent qui capte les appuis, lui, est un piège à publicité.
+        if (cs.pointerEvents === 'none' && parseFloat(cs.opacity) === 0) return false;
+        const z = parseInt(cs.zIndex, 10);
+        if (isNaN(z)) return false;
+        const cover = viewportCoverage(el);
+        if (el.tagName === 'IFRAME') {
+          return z >= OVERLAY_IFRAME_MIN_Z && cover >= OVERLAY_IFRAME_MIN_COVER &&
+              isBlankOrForeignFrame(el);
+        }
+        return z >= OVERLAY_MIN_Z && cover >= OVERLAY_MIN_COVER &&
+            !containsChapterImage(el);
+      }
+
+      // Candidats : enfants directs de <html> et de <body> (là où les
+      // scripts publicitaires accrochent leurs calques), tous les iframes, et
+      // les éléments fixés à l'écran par leur style en ligne.
+      function overlayCandidates() {
+        const found = new Set();
+        const add = function(list) {
+          for (let i = 0; i < list.length; i++) found.add(list[i]);
+        };
+        add(document.documentElement.children);
+        if (document.body) add(document.body.children);
+        add(document.getElementsByTagName('iframe'));
+        try { add(document.querySelectorAll('[style*="fixed"]')); } catch(e) {}
+        return found;
+      }
+
+      function removeOverlays() {
+        let removed = 0;
+        overlayCandidates().forEach(function(el) {
+          if (isAdOverlay(el)) {
+            report('overlay', el);
+            el.remove();
+            removed++;
+          }
+        });
+        // Le calque retiré laisse souvent la page figée : le script
+        // publicitaire avait bloqué le défilement par un style en ligne.
+        if (removed > 0) {
+          [document.documentElement, document.body].forEach(function(node) {
+            if (node && node.style && node.style.overflow === 'hidden') {
+              node.style.overflow = '';
+            }
+          });
+        }
+      }
+
       // Fonction pour supprimer les éléments publicitaires
       function removeAds() {
         // Tant qu'une vérification anti-robot est affichée, on ne touche à
         // RIEN. Une page de défi ne contient de toute façon aucune publicité,
         // et le moindre retrait d'élément empêche la vérification d'aboutir.
         if (pageHasChallenge()) return;
+
+        // Surimpressions en premier : ce sont elles qui masquent la page.
+        try { removeOverlays(); } catch(e) {}
 
         // Supprimer avec les sélecteurs CSS
         adSelectors.forEach(selector => {
@@ -470,6 +594,7 @@ class AdBlockerService {
               // Vérifier que ce n'est pas une image du chapitre
               const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
               if (!isChapterImage) {
+                report('selector:' + selector, el);
                 el.remove();
               }
             });
@@ -482,6 +607,7 @@ class AdBlockerService {
             if (isAdElement(el)) {
               const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
               if (!isChapterImage) {
+                report('heuristic', el);
                 el.remove();
               }
             }
@@ -500,6 +626,7 @@ class AdBlockerService {
                 content.includes('pubfuturetag') || content.includes('popMagic') ||
                 content.includes('window.pubfuturetag') || content.includes('popmagic') ||
                 content.includes('aclib.runInPagePush') || content.includes('AdProvider')) {
+              report('script', script);
               script.remove();
             }
           });
@@ -513,8 +640,49 @@ class AdBlockerService {
         try { window.__mtAdBlock.stop(); } catch(e) {}
       }
 
-      const observer = new MutationObserver(function() {
-        removeAds();
+      // Regroupe les mutations : au plus un nettoyage par image affichée
+      // (une page de chapitre en produit des centaines en se chargeant).
+      let cleanupScheduled = false;
+      function scheduleRemoveAds() {
+        if (cleanupScheduled) return;
+        cleanupScheduled = true;
+        const run = function() { cleanupScheduled = false; removeAds(); };
+        if (window.requestAnimationFrame) { window.requestAnimationFrame(run); }
+        else { setTimeout(run, 16); }
+      }
+
+      const observer = new MutationObserver(scheduleRemoveAds);
+
+      // Une surimpression peut être insérée discrètement puis rendue visible
+      // par un simple changement de style (mesuré sur appareil : retirée
+      // seulement au tick de 2 s suivant). On surveille donc aussi les
+      // changements de style — mais uniquement ceux des candidats (iframes,
+      // enfants directs de <html> et <body>) : une page de chapitre modifie
+      // sans cesse les attributs de ses images.
+      function isOverlayCandidate(node) {
+        return !!node && node.nodeType === 1 && (node.tagName === 'IFRAME' ||
+            node.parentNode === document.documentElement ||
+            node.parentNode === document.body);
+      }
+      let overlayCheckScheduled = false;
+      function scheduleOverlayCheck() {
+        if (overlayCheckScheduled) return;
+        overlayCheckScheduled = true;
+        const run = function() {
+          overlayCheckScheduled = false;
+          if (pageHasChallenge()) return;
+          try { removeOverlays(); } catch(e) {}
+        };
+        if (window.requestAnimationFrame) { window.requestAnimationFrame(run); }
+        else { setTimeout(run, 16); }
+      }
+      const styleObserver = new MutationObserver(function(mutations) {
+        for (let i = 0; i < mutations.length; i++) {
+          if (isOverlayCandidate(mutations[i].target)) {
+            scheduleOverlayCheck();
+            return;
+          }
+        }
       });
 
       const intervalId = setInterval(removeAds, 2000);
@@ -524,14 +692,21 @@ class AdBlockerService {
       window.__mtAdBlock = {
         stop: function() {
           try { observer.disconnect(); } catch(e) {}
+          try { styleObserver.disconnect(); } catch(e) {}
           try { clearInterval(intervalId); } catch(e) {}
         },
         removeAds: removeAds
       };
 
-      if (document.body) {
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
+      // <html> entier et pas seulement <body> : certains calques
+      // publicitaires s'accrochent directement à <html>, et sont réinsérés
+      // dès qu'on les retire.
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+      styleObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['style', 'class', 'hidden'],
+        subtree: true
+      });
 
       // Exécuter immédiatement
       removeAds();

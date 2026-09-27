@@ -131,63 +131,6 @@ l'état en mémoire de `ReadingPositionService`.
 
 ## 🐛 Problèmes Actifs
 
-### Lecteur : la vérification anti-robot Cloudflare n'aboutit pas sur certains sites
-- **Module** : `features/manga/views/web_view_io.dart`, `features/reader/services/*`
-- **Sévérité** : 🔴 Haute (bloque la lecture sur les sites concernés)
-- **Découvert le** : 2026-08-31 · **Réexaminé le** : 2026-09-05
-- **Statut** : Actif — partiellement traité, **non reproductible sans appareil**
-
-**Symptôme** : la page « Un instant… / Vérifiez que vous êtes un humain »
-boucle ou échoue dans le lecteur intégré, alors que la même page passe dans
-le navigateur du téléphone. Le bloqueur de pub désactivé ne change rien.
-Cela **fonctionnait auparavant** pendant longtemps, sans changement côté app.
-
-**Ce qui a été vérifié (2026-09-05)** :
-- Cloudflare documente officiellement que *« WebViews in mobile applications
-  may have limited functionality compared to full browsers »* et que
-  *« in-app browsers often have restricted JavaScript capabilities »*
-  (Supported browsers) ; ses pages de dépannage citent comme causes de boucle
-  un *« embedded context such as a webview or cross-origin iframe »*, un
-  cookie `cf_clearance` non posé/inutilisable, et *« browser extensions, such
-  as ad blockers or privacy tools, that may block standard browser headers or
-  the necessary challenge scripts »*.
-- Depuis WebView M116 (sept. 2023), la WebView Android envoie des indices
-  client `Sec-CH-UA` de marque **« Android WebView »** à chaque requête ; les
-  détections anti-robot les lisent. Un UA modifié ne contenant plus le UA par
-  défaut **supprime** ces indices (Chromium) → incohérence « dit Chrome, n'a
-  pas les en-têtes de Chrome ». La normalisation du UA de v0.13.0 est donc
-  retirée (décision du 2026-09-05).
-- Ticket flutter_inappwebview #2834 (mai 2026, ouvert) : *native Android
-  WebView apps pass Cloudflare Turnstile challenges on identical devices and
-  networks, while flutter_inappwebview apps get blocked* ; demande de pouvoir
-  supprimer/modifier `Sec-CH-UA`. Le différenciateur probable est donc dans
-  l'environnement JavaScript injecté par le plugin (pont
-  `window.flutter_inappwebview`, scripts utilitaires) plutôt que dans la
-  WebView elle-même.
-- Ce que 6.1.5 (dernière stable, 23 mois) permet : rien pour limiter les
-  scripts injectés. 6.2.0-beta.3 introduit `pluginScriptsForMainFrameOnly`,
-  `pluginScriptsOriginAllowList`, `javaScriptBridgeEnabled`,
-  `javaScriptBridgeForMainFrameOnly`.
-
-**Traité** : liste blanche de l'infrastructure de défi, nettoyage DOM
-suspendu pendant un défi, script arrêtable, cookies persistants, UA intact,
-en-tête `X-Requested-With` retiré, détection de boucle + sortie vers le
-navigateur système (aucune résolution automatisée : refus de principe).
-
-**Pistes restantes (à tester SUR APPAREIL, avec un site de référence)** :
-1. Comparer en conditions réelles : même page dans le lecteur, dans Chrome,
-   et dans une WebView « nue » (petite app de test) — pour confirmer ou
-   infirmer la piste « scripts injectés par le plugin ».
-2. Si confirmée : passer à flutter_inappwebview 6.2.x dès qu'une stable sort
-   (ou bêta sur une branche de test) et poser `pluginScriptsForMainFrameOnly:
-   true` + `javaScriptBridgeForMainFrameOnly: true` (le widget Turnstile est
-   un iframe tiers) — voire couper le pont pendant un défi.
-3. Solution de repli produit : ouvrir le chapitre dans un **Custom Tab**
-   Chrome (cookies et moteur du navigateur système) — perd le suivi de
-   chapitre et le bloqueur, à réserver aux sites qui échouent.
-
----
-
 ### Google Sign-In : OAuth client **Android** absent de la console GCP
 - **Module** : auth (Google Sign-In mobile)
 - **Sévérité** : 🔴 Critique (la connexion Google ne fonctionne pas du tout)
@@ -388,6 +331,117 @@ explicitement — puis retester le blocage de pub sur les sites de référence.
 ---
 
 ## ✅ Problèmes Résolus
+
+### Téléchargement : chapitres vides, série interrompue, lien de lecture réécrit
+- **Feature** : download / reader
+- **Résolu le** : 2026-09-27 (branche `fix/reader-downloads`)
+- **Symptômes** : « le téléchargement se lance avant même que la page ait
+  chargé » (chapitre enregistré vide) ; « quand on télécharge plusieurs, ça
+  ne télécharge pas les suivants ».
+- **Causes** : déclenchement 2 s après `onLoadStop` sur simple présence de
+  `cf_clearance` (déjà là pendant « Un instant… ») ; `src` (image
+  d'attente) lu avant `data-src`, lui-même supprimé du DOM avant capture ;
+  images demandées sans Referer/cookies (403 ignorés) ; chapitre sans image
+  enregistré « terminé » ; double `pop` (dans `_downloadCurrentPage` ET
+  dans l'appelant) qui fermait la fenêtre de téléchargement multiple ;
+  attente de 5 min quand le lecteur se fermait sans rappel. Aggravant : le
+  lecteur ouvert en mode téléchargement (`initialLastRead` factice)
+  réécrivait le lien de lecture et lançait la sauvegarde de position.
+- **Correctif** : voir le commit `fix(téléchargement)` —
+  `DownloadReadinessPolicy`, `ChapterImageSource`, `OfflineHtmlResult`,
+  `DownloadBatch`, `_finishAutoDownload` (une seule fermeture), mode
+  téléchargement en lecture seule.
+- **Verrouillé par** : tests `test/features/download/*` et groupe
+  « mode téléchargement » de `reader_invariants_test.dart`.
+
+### Lecteur : pubs en surimpression jamais retirées (pop-up « VPN activé recommandé »)
+- **Feature** : reader (bloqueur de publicités)
+- **Plateforme** : Android (code mobile-only)
+- **Résolu le** : 2026-09-27 (branche `fix/reader-ad-overlays`)
+- **Symptôme** : « certaines pubs qui apparaissent en plan par-dessus ne sont
+  pas enlevées », bloqueur pourtant actif.
+- **Cause racine (mesurée par DevTools sur manga-scantrad.io)** : la pop-up
+  est un `<iframe>` SANS `src` (contenu écrit par script), enfant direct
+  de `<html>` — hors `<body>` —, `position: fixed`, `z-index:
+  2147483647`, 100 % de l'écran, sans id ni classe. Le script du bloqueur
+  l'examinait bien, mais aucune règle ne pouvait le reconnaître (sélecteurs
+  sur `src`/`data-*`, heuristique sur id/classe/dimensions 300×250) ; les
+  seules règles sur `position: fixed`/`z-index` vivaient dans les
+  `ContentBlocker`, jamais actifs. Aggravant : l'observateur ne surveillait
+  que `<body>`.
+- **Correctif** : passe « surimpressions » géométrique dans le script
+  (`isAdOverlay`, seuils dans `AdOverlayRules`) : élément fixé à l'écran,
+  au-dessus de tout (iframe ≥ 1000 et ≥ 30 % de l'écran, sans adresse ou
+  d'un autre site ; autre élément ≥ 100000 et ≥ 50 %, sans image de
+  chapitre), jamais un élément de défi ; défilement débloqué après retrait ;
+  observateur sur `<html>` entier, mutations regroupées par image.
+- **Validé** : page de test dans un navigateur (pop-up réinsérée retirée en
+  1 ms, 9 fois sur 9 ; menu mobile, colorbox, lecteur plein écran du site,
+  iframe du site et images conservés ; rien touché pendant un défi) puis sur
+  appareil.
+- **Limites connues (non traitées)** : petites notifications « push » fixées
+  dans un coin (couvrent peu l'écran) ; calques à z-index modeste ;
+  `ContentBlocker` et `androidShouldInterceptRequest` toujours inertes
+  (voir Problèmes actifs) — un script publicitaire déjà chargé n'est pas
+  arrêté, seul son affichage est retiré.
+- **Verrouillé par** : `test/features/reader/ad_overlay_script_test.dart`.
+
+### Lecteur : la vérification Cloudflare boucle — laissez-passer délivré puis refusé (v0.14.0 → v0.16.0)
+- **Feature** : reader
+- **Plateforme** : Android (code mobile-only)
+- **Découvert le** : 2026-08-31 · **Résolu le** : 2026-09-27 (branche `fix/reader-cloudflare-handoff`)
+- **Symptôme** : « on accepte, ça tourne dans le vide, ça supprime la
+  sélection et on boucle sur l'écran de Cloudflare ». La même page passe dans
+  Chrome sur le même téléphone.
+- **Cause racine (mesurée sur Pixel 9 Pro XL, manga-scantrad.io, build
+  `MT_READER_DIAG` + DevTools)** : Cloudflare **valide** le défi dans le
+  lecteur et pose un `cf_clearance` neuf (cookie *Partitioned*), la WebView
+  le **renvoie**, et le serveur répond quand même `403 cf-mitigated:
+  challenge` 60 ms plus tard. Le script du défi a classé l'environnement du
+  lecteur comme robot : scripts et pont JavaScript injectés par
+  flutter_inappwebview (Android 1.1.3) dans **toutes** les frames
+  (`window.flutter_inappwebview`, `window.print` remplacée — plus native),
+  plus ce que le lecteur injecte. Preuve : la même page dans une WebView
+  **brute** (webview_flutter, même moteur, mêmes cookies, même réseau) passe
+  du premier coup, et son `cf_clearance` est ensuite **accepté** par le
+  lecteur normal.
+- **Hypothèses écartées par essais A/B sur appareil** : garde
+  anti-redirection (coupée : boucle), en-tête `X-Requested-With` (Chrome +
+  cet en-tête passe), UA normalisé de v0.13.0 (boucle), bloqueur de pub
+  (coupé : boucle), IP/réseau (Chrome passe), vieux cookie (renouvelé à
+  chaque tour).
+- **Découvertes annexes** :
+  - `requestedWithHeaderOriginAllowList: {}` est **sans effet** sur
+    WebView 153 (fonctionnalité non supportée) : `X-Requested-With:
+    <paquet>` est toujours envoyé.
+  - `CaptchaDetectionService` ne reconnaît pas la page de défi actuelle
+    (`captcha.check type=none` à chaque tour) : compteur de boucle et
+    dialogue de sortie n'étaient jamais déclenchés.
+  - Le téléchargement automatique partait sur la page « Un instant… »
+    (déclenché par la seule présence de `cf_clearance`, déjà là pendant le
+    défi) et le timer de position tournait sur cette page.
+- **Correctif** :
+  - `CloudflareChallenge` (pur, testé) : défi repéré à la **réponse** du
+    document principal (`cf-mitigated: challenge` dans
+    `onReceivedHttpError`), avant que le moindre script du défi ne tourne.
+  - Le lecteur arrête aussitôt sa page (`about:blank`) et confie le défi à
+    `ChallengeHandoffView` : WebView webview_flutter **sans aucun ajout**,
+    posée par-dessus le lecteur (qui reste monté). Réussite lue dans le
+    magasin de cookies (nouveau `cf_clearance`), puis rechargement de la
+    page dans le lecteur : protection, bloqueur et suivi des chapitres
+    intacts.
+  - Pendant la délégation : `onLoadStop` ne fait rien (plus de
+    téléchargement ni de position écrasée), et la sortie ne sauvegarde pas de
+    position ni ne pose la question de fin de chapitre.
+  - Boucle malgré tout (3 présentations en 90 s) : dialogue « Vérification
+    bloquée » existant (navigateur externe).
+- **Verrouillé par** : `test/features/reader/cloudflare_challenge_test.dart`,
+  `challenge_handoff_banner_test.dart`, groupe « vérification Cloudflare »
+  de `reader_invariants_test.dart` (la WebView de vérification n'injecte
+  rien).
+- **Leçon** : trois correctifs successifs (UA, en-têtes, cookies) reposaient
+  sur des théories non mesurées ; seul le diagnostic sur appareil (journal
+  `MT_READER_DIAG` + DevTools via `adb forward`) a tranché.
 
 ### Lecteur : la progression est décalée d'un chapitre dans le futur (v0.8.0 → v0.14.0)
 - **Feature** : reader (en ligne **et** hors ligne)

@@ -2186,6 +2186,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'Open in browser';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'Site security check: follow its instructions and reading will resume automatically.';
+
+  @override
+  String get downloadNoImages =>
+      'No chapter image could be saved: download cancelled.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'This page is not chapter $chapter: download cancelled.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'The chapter did not finish loading: download abandoned.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done chapter(s) downloaded, $failed failed';
+  }
+
+  @override
+  String downloadSelectRange(int from, int to) {
+    return 'Select the whole range ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Long press: selects the whole range from the last checked chapter. Long press and drag: selects continuously.';
+
+  @override
+  String get chapterReadBadge => 'Read';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Already downloaded';
+
+  @override
   String get readerRefresh => 'Refresh page';
 
   @override

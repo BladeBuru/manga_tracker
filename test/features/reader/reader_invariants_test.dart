@@ -384,4 +384,113 @@ void main() {
       );
     });
   });
+
+  // Le lecteur ouvert pour TÉLÉCHARGER reçoit un `initialLastRead` factice
+  // (chapitre demandé − 1) : s'il suivait la lecture, il réécrivait le lien
+  // de lecture et la position, et pouvait poser la question de fin de
+  // chapitre (constaté le 2026-09-27).
+  group('mode téléchargement — le lecteur n\'enregistre rien', () {
+    /// Corps d'une méthode du lecteur, jusqu'à la déclaration suivante.
+    String methodBody(String signature) {
+      final code = withoutComments(reader);
+      final start = code.indexOf(signature);
+      expect(start, isNot(-1), reason: '$signature introuvable');
+      final next = code.indexOf(RegExp(r'\n  (Future|void|bool|int|String|static|@override)'),
+          start + signature.length);
+      return code.substring(start, next == -1 ? code.length : next);
+    }
+
+    test('aucun suivi de chapitre (ni lien de lecture, ni position)', () {
+      expect(methodBody('void _handleDetected('),
+          contains('if (_downloadMode) return;'));
+    });
+
+    test('la sortie n\'enregistre rien et ne pose aucune question', () {
+      expect(methodBody('Future<bool> _onWillPop('),
+          contains('if (_downloadMode) return true;'));
+    });
+
+    test('le téléchargement d\'une page ne ferme jamais le lecteur lui-même',
+        () {
+      expect(
+        methodBody('Future<bool> _downloadCurrentPage('),
+        isNot(contains('Navigator')),
+        reason: 'Fermer ici ET dans l\'appelant dépilait aussi la fenêtre de '
+            'téléchargement multiple : la série mourait en silence.',
+      );
+      expect(methodBody('Future<void> _finishAutoDownload('),
+          contains('if (_downloadReported) return;'),
+          reason: 'Une seule fermeture, quel que soit le chemin.');
+    });
+
+    test('un chapitre sans image n\'est jamais enregistré', () {
+      expect(methodBody('Future<bool> _downloadCurrentPage('),
+          contains('if (!processed.hasContent)'));
+    });
+  });
+
+  // Mesuré sur appareil le 2026-09-27 : exécuté dans la WebView du lecteur,
+  // le défi Cloudflare est « validé » avec un cf_clearance que Cloudflare
+  // refuse ensuite — boucle infinie. Dans une WebView brute, il passe.
+  group('vérification Cloudflare — confiée à une WebView brute', () {
+    const handoffPath =
+        'lib/features/reader/widgets/challenge_handoff_view.dart';
+
+    test('le défi est repéré à la réponse HTTP, en production', () {
+      final code = withoutComments(reader);
+      expect(code, contains('CloudflareChallenge.isChallengeResponse('));
+      expect(code, contains('_startChallengeHandoff('));
+      expect(
+        code,
+        isNot(contains('onReceivedHttpError: ReaderDiagnostics.enabled')),
+        reason: 'onReceivedHttpError porte la détection du défi : il ne doit '
+            'plus dépendre du build de diagnostic.',
+      );
+    });
+
+    test('la page de défi du lecteur est arrêtée avant de s\'exécuter', () {
+      expect(
+        withoutComments(reader),
+        contains("WebUri('about:blank')"),
+        reason: 'Laissé à lui-même dans le lecteur, le défi pose un '
+            'cf_clearance refusé qui écraserait le bon.',
+      );
+    });
+
+    test('pendant la vérification, onLoadStop ne fait rien', () {
+      expect(
+        withoutComments(reader),
+        contains('if (_challengePending) return;'),
+        reason: 'Sinon le téléchargement automatique part sur la page '
+            '« Un instant… » et la position du chapitre est écrasée.',
+      );
+    });
+
+    test('le mode téléchargement ne démarre pas sur un cookie', () {
+      expect(
+        withoutComments(reader),
+        isNot(contains("c.name.contains('cf_clearance')")),
+        reason: 'cf_clearance est déjà présent sur la page « Un instant… » : '
+            'le téléchargement partait avant le chargement du chapitre.',
+      );
+      expect(withoutComments(reader), contains('DownloadReadinessPolicy'));
+    });
+
+    test('la WebView de vérification n\'injecte RIEN dans la page', () {
+      final handoff = withoutComments(File(handoffPath).readAsStringSync());
+      for (final forbidden in [
+        'runJavaScript',
+        'addJavaScriptChannel',
+        'onNavigationRequest',
+        'flutter_inappwebview',
+      ]) {
+        expect(
+          handoff,
+          isNot(contains(forbidden)),
+          reason: '$forbidden : c\'est précisément l\'environnement ajouté à '
+              'la page qui fait échouer la vérification Cloudflare.',
+        );
+      }
+    });
+  });
 }

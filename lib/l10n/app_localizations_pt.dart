@@ -2210,6 +2210,43 @@ class AppLocalizationsPt extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'Abrir no navegador';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'Verificação de segurança do site: siga as instruções e a leitura será retomada automaticamente.';
+
+  @override
+  String get downloadNoImages =>
+      'Nenhuma imagem do capítulo pôde ser salva: download cancelado.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'Esta página não é o capítulo $chapter: download cancelado.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'O capítulo não terminou de carregar: download abandonado.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done capítulo(s) baixado(s), $failed falha(s)';
+  }
+
+  @override
+  String downloadSelectRange(int from, int to) {
+    return 'Selecionar todo o intervalo ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Toque longo: seleciona todo o intervalo a partir do último capítulo marcado. Toque longo e arraste: seleciona de forma contínua.';
+
+  @override
+  String get chapterReadBadge => 'Lido';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Já baixado';
+
+  @override
   String get readerRefresh => 'Atualizar a página';
 
   @override

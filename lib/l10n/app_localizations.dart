@@ -3952,6 +3952,60 @@ abstract class AppLocalizations {
   /// **'Ouvrir dans le navigateur'**
   String get challengeLoopOpenBrowser;
 
+  /// Bandeau au-dessus de la verification anti-robot confiee a une WebView sans ajout ; la lecture reprend seule une fois la verification validee
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.'**
+  String get readerChallengeHandoffInfo;
+
+  /// Telechargement d'un chapitre : aucune image enregistree, le chapitre n'est pas marque comme telecharge
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune image du chapitre n\'a pu être enregistrée : téléchargement annulé.'**
+  String get downloadNoImages;
+
+  /// Telechargement : la page ouverte n'est pas le chapitre demande (redirection)
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette page n\'est pas le chapitre {chapter} : téléchargement annulé.'**
+  String downloadWrongChapter(String chapter);
+
+  /// Telechargement : la page n'a pas fini de charger dans le delai
+  ///
+  /// In fr, this message translates to:
+  /// **'Le chapitre n\'a pas fini de se charger : téléchargement abandonné.'**
+  String get downloadNotReady;
+
+  /// Bilan d'un telechargement de plusieurs chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'{done} chapitre(s) téléchargé(s), {failed} échec(s)'**
+  String downloadBatchSummary(int done, int failed);
+
+  /// Bouton : coche tous les chapitres entre les deux derniers coches
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner tout l\'intervalle ({from} → {to})'**
+  String downloadSelectRange(int from, int to);
+
+  /// Astuce sous la liste de telechargement : gestes de selection par intervalle
+  ///
+  /// In fr, this message translates to:
+  /// **'Appui long : coche tout l\'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.'**
+  String get downloadSelectionHint;
+
+  /// Pastille d'un chapitre deja lu dans la liste de telechargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu'**
+  String get chapterReadBadge;
+
+  /// Libelle accessible d'un chapitre deja telecharge
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà téléchargé'**
+  String get chapterAlreadyDownloaded;
+
   /// Tooltip du bouton de rechargement de la page du lecteur
   ///
   /// In fr, this message translates to:

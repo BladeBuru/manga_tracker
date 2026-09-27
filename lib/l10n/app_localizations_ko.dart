@@ -2133,6 +2133,41 @@ class AppLocalizationsKo extends AppLocalizations {
   String get challengeLoopOpenBrowser => '브라우저에서 열기';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      '사이트 보안 확인입니다. 안내에 따라 주세요. 완료되면 자동으로 읽기가 재개됩니다.';
+
+  @override
+  String get downloadNoImages => '챕터 이미지를 저장하지 못했습니다. 다운로드를 취소했습니다.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return '이 페이지는 $chapter화가 아닙니다. 다운로드를 취소했습니다.';
+  }
+
+  @override
+  String get downloadNotReady => '챕터 로딩이 끝나지 않았습니다. 다운로드를 중단했습니다.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done개 챕터 다운로드, $failed개 실패';
+  }
+
+  @override
+  String downloadSelectRange(int from, int to) {
+    return '구간 전체 선택 ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      '길게 누르기: 마지막으로 선택한 챕터부터 구간 전체 선택. 길게 누른 채 드래그: 연속 선택.';
+
+  @override
+  String get chapterReadBadge => '읽음';
+
+  @override
+  String get chapterAlreadyDownloaded => '이미 다운로드됨';
+
+  @override
   String get readerRefresh => '페이지 새로고침';
 
   @override

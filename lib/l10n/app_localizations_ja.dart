@@ -2131,6 +2131,41 @@ class AppLocalizationsJa extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'ブラウザで開く';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'サイトのセキュリティ確認です。表示される指示に従ってください。完了すると自動的に読書を再開します。';
+
+  @override
+  String get downloadNoImages => '章の画像を保存できませんでした。ダウンロードを中止しました。';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'このページは第$chapter章ではありません。ダウンロードを中止しました。';
+  }
+
+  @override
+  String get downloadNotReady => '章の読み込みが完了しませんでした。ダウンロードを中止しました。';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done章をダウンロード、$failed件失敗';
+  }
+
+  @override
+  String downloadSelectRange(int from, int to) {
+    return '範囲をすべて選択（$from → $to）';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      '長押し：最後にチェックした章から範囲をまとめて選択。長押ししてドラッグ：連続して選択。';
+
+  @override
+  String get chapterReadBadge => '既読';
+
+  @override
+  String get chapterAlreadyDownloaded => 'ダウンロード済み';
+
+  @override
   String get readerRefresh => 'ページを再読み込み';
 
   @override

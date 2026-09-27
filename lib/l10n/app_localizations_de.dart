@@ -2217,6 +2217,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'Im Browser öffnen';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'Sicherheitsprüfung der Website: Folgen Sie den Anweisungen, danach geht das Lesen automatisch weiter.';
+
+  @override
+  String get downloadNoImages =>
+      'Kein Bild des Kapitels konnte gespeichert werden: Download abgebrochen.';
+
+  @override
+  String downloadWrongChapter(String chapter) {
+    return 'Diese Seite ist nicht Kapitel $chapter: Download abgebrochen.';
+  }
+
+  @override
+  String get downloadNotReady =>
+      'Das Kapitel wurde nicht fertig geladen: Download abgebrochen.';
+
+  @override
+  String downloadBatchSummary(int done, int failed) {
+    return '$done Kapitel heruntergeladen, $failed fehlgeschlagen';
+  }
+
+  @override
+  String downloadSelectRange(int from, int to) {
+    return 'Gesamten Bereich auswählen ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Lange drücken: wählt den ganzen Bereich ab dem zuletzt markierten Kapitel. Lange drücken und ziehen: fortlaufend auswählen.';
+
+  @override
+  String get chapterReadBadge => 'Gelesen';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Bereits heruntergeladen';
+
+  @override
   String get readerRefresh => 'Seite aktualisieren';
 
   @override

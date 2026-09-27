@@ -166,6 +166,48 @@ exclu. Piste documentée dans `known-issues.md`.
 par défaut (les indices client resteraient envoyés) — sans bénéfice : la
 WebView resterait identifiée comme telle par `Sec-CH-UA`.
 
+**Correctif mesuré (2026-09-27)** : le point (3) est **sans effet** sur les
+WebView récentes (153 testée) — la fonctionnalité `REQUESTED_WITH_HEADER_ALLOW_LIST`
+n'y est plus prise en charge, `X-Requested-With: <paquet>` part toujours. Le
+réglage est conservé (inoffensif, utile sur d'anciennes WebView). Mesuré aussi :
+cet en-tête n'est PAS ce qui fait échouer Cloudflare (Chrome qui l'envoie passe).
+
+---
+
+### 🆕 Lecteur en ligne : vérification Cloudflare confiée à une WebView brute (2026-09-27)
+
+**Décision** : quand la réponse du document principal est un défi Cloudflare
+(`cf-mitigated: challenge`, lu dans `onReceivedHttpError`), le lecteur arrête
+aussitôt sa page (`about:blank`) et affiche par-dessus `ChallengeHandoffView` :
+une WebView **webview_flutter sans aucun ajout** (ni script, ni canal
+JavaScript, ni `onNavigationRequest`). Dès qu'un nouveau `cf_clearance`
+apparaît dans le magasin de cookies partagé, la vue se retire et le lecteur
+recharge la page. `webview_flutter_android` devient une dépendance directe
+(déjà résolue en transitif) pour accepter les cookies tiers du widget.
+
+**Pourquoi** : mesuré sur appareil (Pixel 9 Pro XL, manga-scantrad.io, build
+`MT_READER_DIAG` + DevTools) — dans la WebView flutter_inappwebview, Cloudflare
+valide le défi et pose un `cf_clearance`, puis le refuse à la requête suivante :
+l'environnement injecté par le plugin (pont `window.flutter_inappwebview`,
+`window.print` remplacée, dans toutes les frames) est classé comme robot. Une
+WebView brute passe du premier coup et son cookie est accepté ensuite par le
+lecteur. Essais A/B : garde anti-redirection, UA, `X-Requested-With`,
+bloqueur et réseau écartés. Détails : `known-issues.md` (Problèmes résolus).
+
+**Invariants** :
+- Le défi ne doit JAMAIS s'exécuter dans le lecteur : son « succès » y pose un
+  cookie refusé qui écraserait le bon.
+- Aucune résolution automatisée : c'est l'utilisateur qui fait le défi.
+- Pendant la délégation, le lecteur ne mesure, ne sauvegarde, ne valide et ne
+  télécharge rien.
+
+**Alternatives écartées** :
+- flutter_inappwebview 6.2.0-beta (`pluginScriptsForMainFrameOnly`…) : bêta,
+  et le défi tourne AUSSI dans la frame principale — restreindre aux frames
+  tierces ne suffirait pas ; non prouvé.
+- Custom Tab Chrome pour les sites protégés : passe, mais perd bloqueur,
+  protection anti-redirection et suivi des chapitres.
+
 ---
 
 ## Décisions Futures à Prendre
