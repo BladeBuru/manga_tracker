@@ -332,6 +332,38 @@ explicitement — puis retester le blocage de pub sur les sites de référence.
 
 ## ✅ Problèmes Résolus
 
+### Lecteur : pubs en surimpression jamais retirées (pop-up « VPN activé recommandé »)
+- **Feature** : reader (bloqueur de publicités)
+- **Plateforme** : Android (code mobile-only)
+- **Résolu le** : 2026-09-27 (branche `fix/reader-ad-overlays`)
+- **Symptôme** : « certaines pubs qui apparaissent en plan par-dessus ne sont
+  pas enlevées », bloqueur pourtant actif.
+- **Cause racine (mesurée par DevTools sur manga-scantrad.io)** : la pop-up
+  est un `<iframe>` SANS `src` (contenu écrit par script), enfant direct
+  de `<html>` — hors `<body>` —, `position: fixed`, `z-index:
+  2147483647`, 100 % de l'écran, sans id ni classe. Le script du bloqueur
+  l'examinait bien, mais aucune règle ne pouvait le reconnaître (sélecteurs
+  sur `src`/`data-*`, heuristique sur id/classe/dimensions 300×250) ; les
+  seules règles sur `position: fixed`/`z-index` vivaient dans les
+  `ContentBlocker`, jamais actifs. Aggravant : l'observateur ne surveillait
+  que `<body>`.
+- **Correctif** : passe « surimpressions » géométrique dans le script
+  (`isAdOverlay`, seuils dans `AdOverlayRules`) : élément fixé à l'écran,
+  au-dessus de tout (iframe ≥ 1000 et ≥ 30 % de l'écran, sans adresse ou
+  d'un autre site ; autre élément ≥ 100000 et ≥ 50 %, sans image de
+  chapitre), jamais un élément de défi ; défilement débloqué après retrait ;
+  observateur sur `<html>` entier, mutations regroupées par image.
+- **Validé** : page de test dans un navigateur (pop-up réinsérée retirée en
+  1 ms, 9 fois sur 9 ; menu mobile, colorbox, lecteur plein écran du site,
+  iframe du site et images conservés ; rien touché pendant un défi) puis sur
+  appareil.
+- **Limites connues (non traitées)** : petites notifications « push » fixées
+  dans un coin (couvrent peu l'écran) ; calques à z-index modeste ;
+  `ContentBlocker` et `androidShouldInterceptRequest` toujours inertes
+  (voir Problèmes actifs) — un script publicitaire déjà chargé n'est pas
+  arrêté, seul son affichage est retiré.
+- **Verrouillé par** : `test/features/reader/ad_overlay_script_test.dart`.
+
 ### Lecteur : la vérification Cloudflare boucle — laissez-passer délivré puis refusé (v0.14.0 → v0.16.0)
 - **Feature** : reader
 - **Plateforme** : Android (code mobile-only)
