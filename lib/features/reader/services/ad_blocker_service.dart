@@ -653,6 +653,38 @@ class AdBlockerService {
 
       const observer = new MutationObserver(scheduleRemoveAds);
 
+      // Une surimpression peut être insérée discrètement puis rendue visible
+      // par un simple changement de style (mesuré sur appareil : retirée
+      // seulement au tick de 2 s suivant). On surveille donc aussi les
+      // changements de style — mais uniquement ceux des candidats (iframes,
+      // enfants directs de <html> et <body>) : une page de chapitre modifie
+      // sans cesse les attributs de ses images.
+      function isOverlayCandidate(node) {
+        return !!node && node.nodeType === 1 && (node.tagName === 'IFRAME' ||
+            node.parentNode === document.documentElement ||
+            node.parentNode === document.body);
+      }
+      let overlayCheckScheduled = false;
+      function scheduleOverlayCheck() {
+        if (overlayCheckScheduled) return;
+        overlayCheckScheduled = true;
+        const run = function() {
+          overlayCheckScheduled = false;
+          if (pageHasChallenge()) return;
+          try { removeOverlays(); } catch(e) {}
+        };
+        if (window.requestAnimationFrame) { window.requestAnimationFrame(run); }
+        else { setTimeout(run, 16); }
+      }
+      const styleObserver = new MutationObserver(function(mutations) {
+        for (let i = 0; i < mutations.length; i++) {
+          if (isOverlayCandidate(mutations[i].target)) {
+            scheduleOverlayCheck();
+            return;
+          }
+        }
+      });
+
       const intervalId = setInterval(removeAds, 2000);
 
       // Registre permettant à l'application d'arrêter le nettoyage — par
@@ -660,6 +692,7 @@ class AdBlockerService {
       window.__mtAdBlock = {
         stop: function() {
           try { observer.disconnect(); } catch(e) {}
+          try { styleObserver.disconnect(); } catch(e) {}
           try { clearInterval(intervalId); } catch(e) {}
         },
         removeAds: removeAds
@@ -669,6 +702,11 @@ class AdBlockerService {
       // publicitaires s'accrochent directement à <html>, et sont réinsérés
       // dès qu'on les retire.
       observer.observe(document.documentElement, { childList: true, subtree: true });
+      styleObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['style', 'class', 'hidden'],
+        subtree: true
+      });
 
       // Exécuter immédiatement
       removeAds();

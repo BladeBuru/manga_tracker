@@ -112,6 +112,16 @@ void main() {
       expect(script, isNot(contains('observer.observe(document.body')));
     });
 
+    test('une surimpression rendue visible par son style est vue aussitôt',
+        () {
+      expect(script, contains("attributeFilter: ['style', 'class', 'hidden']"));
+      // … mais seulement pour les candidats, pas pour chaque image.
+      expect(functionBody('isOverlayCandidate'),
+          contains("node.tagName === 'IFRAME'"));
+      expect(script, contains('try { styleObserver.disconnect(); }'),
+          reason: 'stop() doit aussi arrêter cet observateur.');
+    });
+
     test('les mutations sont regroupées', () {
       expect(script, contains('new MutationObserver(scheduleRemoveAds)'));
       expect(functionBody('scheduleRemoveAds'),
