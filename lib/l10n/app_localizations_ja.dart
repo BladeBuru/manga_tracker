@@ -2151,6 +2151,21 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String downloadSelectRange(int from, int to) {
+    return '範囲をすべて選択（$from → $to）';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      '長押し：最後にチェックした章から範囲をまとめて選択。長押ししてドラッグ：連続して選択。';
+
+  @override
+  String get chapterReadBadge => '既読';
+
+  @override
+  String get chapterAlreadyDownloaded => 'ダウンロード済み';
+
+  @override
   String get readerRefresh => 'ページを再読み込み';
 
   @override

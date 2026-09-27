@@ -2242,6 +2242,21 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String downloadSelectRange(int from, int to) {
+    return 'Sélectionner tout l\'intervalle ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Appui long : coche tout l\'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.';
+
+  @override
+  String get chapterReadBadge => 'Lu';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Déjà téléchargé';
+
+  @override
   String get readerRefresh => 'Rafraîchir la page';
 
   @override

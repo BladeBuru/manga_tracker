@@ -2330,6 +2330,30 @@
       }
     }
   },
+  "downloadSelectRange": "Sélectionner tout l'intervalle ({from} → {to})",
+  "@downloadSelectRange": {
+    "description": "Bouton : coche tous les chapitres entre les deux derniers coches",
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectionHint": "Appui long : coche tout l'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.",
+  "@downloadSelectionHint": {
+    "description": "Astuce sous la liste de telechargement : gestes de selection par intervalle"
+  },
+  "chapterReadBadge": "Lu",
+  "@chapterReadBadge": {
+    "description": "Pastille d'un chapitre deja lu dans la liste de telechargement"
+  },
+  "chapterAlreadyDownloaded": "Déjà téléchargé",
+  "@chapterAlreadyDownloaded": {
+    "description": "Libelle accessible d'un chapitre deja telecharge"
+  },
   "readerRefresh": "Rafraîchir la page",
   "@readerRefresh": {
     "description": "Tooltip du bouton de rechargement de la page du lecteur"

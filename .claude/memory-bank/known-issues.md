@@ -332,6 +332,28 @@ explicitement — puis retester le blocage de pub sur les sites de référence.
 
 ## ✅ Problèmes Résolus
 
+### Téléchargement : chapitres vides, série interrompue, lien de lecture réécrit
+- **Feature** : download / reader
+- **Résolu le** : 2026-09-27 (branche `fix/reader-downloads`)
+- **Symptômes** : « le téléchargement se lance avant même que la page ait
+  chargé » (chapitre enregistré vide) ; « quand on télécharge plusieurs, ça
+  ne télécharge pas les suivants ».
+- **Causes** : déclenchement 2 s après `onLoadStop` sur simple présence de
+  `cf_clearance` (déjà là pendant « Un instant… ») ; `src` (image
+  d'attente) lu avant `data-src`, lui-même supprimé du DOM avant capture ;
+  images demandées sans Referer/cookies (403 ignorés) ; chapitre sans image
+  enregistré « terminé » ; double `pop` (dans `_downloadCurrentPage` ET
+  dans l'appelant) qui fermait la fenêtre de téléchargement multiple ;
+  attente de 5 min quand le lecteur se fermait sans rappel. Aggravant : le
+  lecteur ouvert en mode téléchargement (`initialLastRead` factice)
+  réécrivait le lien de lecture et lançait la sauvegarde de position.
+- **Correctif** : voir le commit `fix(téléchargement)` —
+  `DownloadReadinessPolicy`, `ChapterImageSource`, `OfflineHtmlResult`,
+  `DownloadBatch`, `_finishAutoDownload` (une seule fermeture), mode
+  téléchargement en lecture seule.
+- **Verrouillé par** : tests `test/features/download/*` et groupe
+  « mode téléchargement » de `reader_invariants_test.dart`.
+
 ### Lecteur : pubs en surimpression jamais retirées (pop-up « VPN activé recommandé »)
 - **Feature** : reader (bloqueur de publicités)
 - **Plateforme** : Android (code mobile-only)

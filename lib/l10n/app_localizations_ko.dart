@@ -2153,6 +2153,21 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String downloadSelectRange(int from, int to) {
+    return '구간 전체 선택 ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      '길게 누르기: 마지막으로 선택한 챕터부터 구간 전체 선택. 길게 누른 채 드래그: 연속 선택.';
+
+  @override
+  String get chapterReadBadge => '읽음';
+
+  @override
+  String get chapterAlreadyDownloaded => '이미 다운로드됨';
+
+  @override
   String get readerRefresh => '페이지 새로고침';
 
   @override

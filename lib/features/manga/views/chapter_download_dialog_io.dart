@@ -6,6 +6,8 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/download/services/chapter_download_service.dart';
 import 'package:mangatracker/features/download/services/download_batch.dart';
+import 'package:mangatracker/features/manga/utils/chapter_range_selection.dart';
+import 'package:mangatracker/features/manga/widgets/chapter_selection_list.dart';
 import 'package:mangatracker/features/reader/utils/chapter_link_resolver.dart';
 
 /// Dialog pour sélectionner et télécharger des chapitres
@@ -53,15 +55,21 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
     });
   }
 
-  void _toggleChapter(int chapterNumber) {
-    setState(() {
-      if (_selectedChapters.contains(chapterNumber)) {
-        _selectedChapters.remove(chapterNumber);
-      } else {
-        _selectedChapters.add(chapterNumber);
-      }
-    });
-  }
+  /// Deux derniers chapitres cochés (bouton « intervalle »).
+  List<int> _anchors = const [];
+
+  Set<int> get _downloadedSet => {
+        for (final entry in _downloadedChapters.entries)
+          if (entry.value) entry.key,
+      };
+
+  /// Intervalle à compléter entre les deux derniers chapitres cochés.
+  ({int from, int to})? get _pendingInterval =>
+      ChapterRangeSelection.pendingInterval(
+        anchors: _anchors,
+        selected: _selectedChapters,
+        excluded: _downloadedSet,
+      );
 
   /// Télécharge les chapitres sélectionnés, l'un après l'autre.
   ///
@@ -272,39 +280,51 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                       'Sélectionnez les chapitres à télécharger:',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    const SizedBox(height: 16),
-                    // Liste des chapitres disponibles
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 400),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: widget.totalChapters,
-                        itemBuilder: (context, index) {
-                          final chapterNumber = index + 1;
-                          final isDownloaded = _downloadedChapters[chapterNumber] ?? false;
-                          final isSelected = _selectedChapters.contains(chapterNumber);
-
-                          return CheckboxListTile(
-                            title: Text('Chapitre $chapterNumber'),
-                            subtitle: isDownloaded
-                                ? Text(
-                                    'Déjà téléchargé',
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 12,
-                                    ),
-                                  )
-                                : null,
-                            value: isSelected,
-                            onChanged: isDownloaded
-                                ? null
-                                : (value) => _toggleChapter(chapterNumber),
-                            secondary: isDownloaded
-                                ? const Icon(Icons.check_circle, color: Colors.green)
-                                : null,
-                          );
-                        },
+                    if (_pendingInterval case final interval?) ...[
+                      const SizedBox(height: 8),
+                      FilledButton.tonalIcon(
+                        icon: const Icon(Icons.playlist_add_check, size: 18),
+                        label: Text(
+                          l10n?.downloadSelectRange(interval.from, interval.to) ??
+                              "Sélectionner tout l'intervalle (${interval.from} → ${interval.to})",
+                        ),
+                        onPressed: () => setState(() {
+                          _selectedChapters.addAll(ChapterRangeSelection.range(
+                            interval.from,
+                            interval.to,
+                            excluded: _downloadedSet,
+                          ));
+                        }),
                       ),
+                    ],
+                    const SizedBox(height: 8),
+                    // Liste des chapitres : ouverte sur le premier non lu,
+                    // sélection à l'unité, par intervalle ou en glissant.
+                    SizedBox(
+                      height: 360,
+                      child: ChapterSelectionList(
+                        totalChapters: widget.totalChapters,
+                        readChapters: widget.readChapters,
+                        downloaded: _downloadedSet,
+                        selected: _selectedChapters,
+                        onSelectionChanged: (selection) => setState(() {
+                          _selectedChapters
+                            ..clear()
+                            ..addAll(selection);
+                        }),
+                        onAnchor: (chapter) => setState(() {
+                          _anchors =
+                              ChapterRangeSelection.pushAnchor(_anchors, chapter);
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n?.downloadSelectionHint ??
+                          "Appui long : coche tout l'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   ],
                 ),

@@ -2239,6 +2239,21 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String downloadSelectRange(int from, int to) {
+    return 'Gesamten Bereich auswählen ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Lange drücken: wählt den ganzen Bereich ab dem zuletzt markierten Kapitel. Lange drücken und ziehen: fortlaufend auswählen.';
+
+  @override
+  String get chapterReadBadge => 'Gelesen';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Bereits heruntergeladen';
+
+  @override
   String get readerRefresh => 'Seite aktualisieren';
 
   @override

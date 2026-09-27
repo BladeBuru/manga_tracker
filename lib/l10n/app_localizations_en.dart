@@ -2208,6 +2208,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String downloadSelectRange(int from, int to) {
+    return 'Select the whole range ($from → $to)';
+  }
+
+  @override
+  String get downloadSelectionHint =>
+      'Long press: selects the whole range from the last checked chapter. Long press and drag: selects continuously.';
+
+  @override
+  String get chapterReadBadge => 'Read';
+
+  @override
+  String get chapterAlreadyDownloaded => 'Already downloaded';
+
+  @override
   String get readerRefresh => 'Refresh page';
 
   @override

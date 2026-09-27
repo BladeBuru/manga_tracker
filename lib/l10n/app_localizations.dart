@@ -3982,6 +3982,30 @@ abstract class AppLocalizations {
   /// **'{done} chapitre(s) téléchargé(s), {failed} échec(s)'**
   String downloadBatchSummary(int done, int failed);
 
+  /// Bouton : coche tous les chapitres entre les deux derniers coches
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner tout l\'intervalle ({from} → {to})'**
+  String downloadSelectRange(int from, int to);
+
+  /// Astuce sous la liste de telechargement : gestes de selection par intervalle
+  ///
+  /// In fr, this message translates to:
+  /// **'Appui long : coche tout l\'intervalle depuis le dernier chapitre coché. Appui long puis glisser : coche en continu.'**
+  String get downloadSelectionHint;
+
+  /// Pastille d'un chapitre deja lu dans la liste de telechargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Lu'**
+  String get chapterReadBadge;
+
+  /// Libelle accessible d'un chapitre deja telecharge
+  ///
+  /// In fr, this message translates to:
+  /// **'Déjà téléchargé'**
+  String get chapterAlreadyDownloaded;
+
   /// Tooltip du bouton de rechargement de la page du lecteur
   ///
   /// In fr, this message translates to:

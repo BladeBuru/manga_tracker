@@ -23,6 +23,31 @@
 
 ## ✅ Complété
 
+### 📥 Téléchargements fiabilisés + pubs en surimpression + sélection par intervalle (2026-09-27)
+
+Branches empilées sur `fix/reader-cloudflare-handoff` : `fix/reader-ad-overlays`,
+`fix/reader-downloads`, `feat/downloads-ux`. Validé sur Pixel 9 Pro XL.
+
+- **Pubs** : passe « surimpressions » géométrique (`AdOverlayRules`) — la
+  pop-up « VPN activé recommandé » (iframe `about:blank` hors `<body>`)
+  est retirée 0,7 s après le chargement ; rien touché pendant un défi.
+- **Téléchargements** : `DownloadReadinessPolicy` (plus de déclenchement
+  sur cookie), `ChapterImageSource` (vraie adresse des images
+  différées), en-têtes Referer/cookies/UA, refus d'un chapitre sans image,
+  une seule fermeture du lecteur (la série ne meurt plus), `DownloadBatch`
+  (bilan, annulation), mode téléchargement en lecture seule (le lien de
+  lecture n'est plus réécrit).
+- **Hors ligne** : page « images seules » (`OfflineChapterPage`) ; page
+  textuelle (roman) gardée complète.
+- **Fenêtre de téléchargement** : ouverte sur le premier non lu, « Lu » et
+  « déjà téléchargé » signalés, intervalle par bouton, appui long ou
+  glisser (`ChapterSelectionList`, `ChapterRangeSelection`).
+- **Tests** : 581 verts.
+- **Reste à faire** : chaînes en dur préexistantes de la fenêtre de
+  téléchargement (« Tout sélectionner »…) à passer en i18n ; cookies
+  `cf_clearance` stockés en clair dans SharedPreferences par
+  `_saveCookiesForDomain` (dette sécurité préexistante).
+
 ### 🛡️ Lecteur : boucle Cloudflare résolue — vérification confiée à une WebView brute (2026-09-27)
 
 Branche `fix/reader-cloudflare-handoff` (base `a5b345c`, v0.16.0). Validé sur

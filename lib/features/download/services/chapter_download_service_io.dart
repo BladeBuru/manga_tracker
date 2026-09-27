@@ -9,6 +9,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:mangatracker/features/download/models/downloaded_chapter.model.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/download/services/chapter_image_source.dart';
+import 'package:mangatracker/features/download/services/offline_chapter_page.dart';
 import 'package:mangatracker/features/download/services/offline_html_result.dart';
 
 export 'package:mangatracker/features/download/services/offline_html_result.dart';
@@ -339,12 +340,29 @@ class ChapterDownloadService {
         }
       }
       
+      // Utiliser un baseUrl local au lieu de l'URL distante
+      final localBaseUrl = 'file://$chapterPath/';
+
+      // Chapitre en images : page minimale « images seules » (fond sombre,
+      // pages empilées) plutôt que le HTML du site, qui s'affiche mal hors
+      // ligne et n'apporte que menus, scripts et publicités. Une page
+      // textuelle (roman) garde son HTML complet.
+      final pages = OfflineChapterPage.chapterImages(document);
+      if (pages != null) {
+        return OfflineHtmlResult(
+          html: OfflineChapterPage.build(
+            title: document.querySelector('title')?.text.trim() ?? '',
+            baseHref: localBaseUrl,
+            images: pages,
+          ),
+          imagesFound: imagesFound,
+          imagesSaved: downloadedImages,
+        );
+      }
+
       // Retourner le HTML traité en préservant la structure complète
       final htmlBody = document.body?.innerHtml ?? '';
       final htmlHead = document.head?.innerHtml ?? '';
-      
-      // Utiliser un baseUrl local au lieu de l'URL distante
-      final localBaseUrl = 'file://$chapterPath/';
       final baseTag = '<base href="$localBaseUrl">';
       
       // Préserver le DOCTYPE et reconstruire le HTML complet
