@@ -4,6 +4,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/manga/services/custom_selectors.service.dart';
 import 'package:mangatracker/features/reader/services/challenge_allowlist.dart';
+import 'package:mangatracker/features/reader/services/reader_diagnostics.dart';
 
 /// Service pour gérer le blocage de publicités dans les WebViews
 class AdBlockerService {
@@ -326,7 +327,24 @@ class AdBlockerService {
       const adSelectors = [
         $escapedSelectors
       ];
-      
+
+      // --- Diagnostic (build MT_READER_DIAG uniquement) -------------------
+      // Trace chaque élément retiré : relu par onConsoleMessage côté app.
+      // N'altère pas le nettoyage lui-même.
+      const MT_DIAG = ${ReaderDiagnostics.enabled};
+      let mtReported = 0;
+      function report(rule, el) {
+        if (!MT_DIAG || mtReported >= 80) return;
+        mtReported++;
+        try {
+          const cls = (typeof el.className === 'string') ? el.className.trim().slice(0, 80) : '';
+          const imgs = el.querySelectorAll ? el.querySelectorAll('img').length : 0;
+          console.log('[MT-ADBLOCK] rule=' + rule + ' el=' + el.tagName.toLowerCase() +
+            (el.id ? '#' + el.id : '') + (cls ? ' class="' + cls + '"' : '') +
+            ' imgs=' + imgs + ' textLen=' + ((el.innerText || '').length));
+        } catch(e) {}
+      }
+
       // --- Protection des vérifications anti-robot -----------------------
       // Sélecteurs identifiant un défi (Cloudflare Turnstile, hCaptcha,
       // reCAPTCHA). Aucun élément de défi ne doit JAMAIS être supprimé :
@@ -470,6 +488,7 @@ class AdBlockerService {
               // Vérifier que ce n'est pas une image du chapitre
               const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
               if (!isChapterImage) {
+                report('selector:' + selector, el);
                 el.remove();
               }
             });
@@ -482,6 +501,7 @@ class AdBlockerService {
             if (isAdElement(el)) {
               const isChapterImage = el.closest('.chapter-content, .chapter-images, .manga-reader, .reader-content, .reading-content, [class*="chapter"], [id*="chapter"]');
               if (!isChapterImage) {
+                report('heuristic', el);
                 el.remove();
               }
             }
@@ -500,6 +520,7 @@ class AdBlockerService {
                 content.includes('pubfuturetag') || content.includes('popMagic') ||
                 content.includes('window.pubfuturetag') || content.includes('popmagic') ||
                 content.includes('aclib.runInPagePush') || content.includes('AdProvider')) {
+              report('script', script);
               script.remove();
             }
           });

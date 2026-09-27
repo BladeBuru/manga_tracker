@@ -21,6 +21,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import '../../reader/utils/chapter_link_resolver.dart';
 import '../../reader/helpers/reading_resume_prompt.dart';
+import '../../reader/services/reader_diagnostics.dart';
 import '../dto/manga_recommendation_view.dto.dart';
 import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
@@ -661,6 +662,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       muId,
       nextChapterNumber,
     );
+    ReaderDiagnostics.log('readOnline', {
+      'muId': muId,
+      'lastRead': lastRead,
+      'resumeChapter': nextChapterNumber,
+      'resumePercent': resume.positionPercent,
+      'customLink': customLink,
+      'targetUrl': targetUrl,
+      'downloaded': isDownloaded,
+    });
     if (!mounted) return;
 
     if (isDownloaded && mangaTitle != null) {

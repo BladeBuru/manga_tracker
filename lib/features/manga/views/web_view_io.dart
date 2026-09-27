@@ -27,6 +27,7 @@ import 'package:mangatracker/features/reader/services/captcha_detection_service.
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
 import 'package:mangatracker/features/reader/services/reader_navigation_policy.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
+import 'package:mangatracker/features/reader/services/reader_diagnostics.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_skip_dialog.dart';
@@ -154,6 +155,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
       blocksRequest: _adBlockerService.shouldBlockRequest,
       allowsHost: _isAllowedDomain,
     );
+    ReaderDiagnostics.log('open', {
+      'muId': widget.muId,
+      'lastRead': widget.initialLastRead,
+      'initialUrl': widget.initialUrl,
+      'baseUserLink': widget.baseUserLink,
+      'originHost': _originHost,
+      'resumePercent': widget.initialPositionPercent,
+      'autoDownload': widget.autoDownload,
+    });
+    unawaited(ReaderDiagnostics.logEnvironment());
+    unawaited(ReaderDiagnostics.enableRemoteInspection());
     _loadAdBlockerPreference();
     // Charger les blockers de manière asynchrone
     _loadBlockers();
@@ -195,6 +207,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
       final nextChapterNumber = widget.initialLastRead + 1;
       final isDownloaded = await _downloadManager.isChapterDownloaded(widget.muId, nextChapterNumber);
       
+      ReaderDiagnostics.log('offline.check', {
+        'chapter': nextChapterNumber,
+        'downloaded': isDownloaded,
+      });
       if (isDownloaded && widget.mangaTitle != null && mounted) {
         // Attendre un peu pour que le widget soit complètement monté
         await Future.delayed(const Duration(milliseconds: 100));
@@ -225,6 +241,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     setState(() {
       _adBlockerEnabled = prefs.getBool('ad_blocker_enabled') ?? true;
     });
+    ReaderDiagnostics.log('adblock.pref', {'enabled': _adBlockerEnabled});
   }
 
   /// Bascule le bloqueur de publicités **et applique l'effet à la page en
@@ -343,10 +360,15 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
   /// La vérification boucle : on cesse d'insister et on propose une sortie.
   Future<void> _handleChallengeLoop(WebUri url) async {
+    ReaderDiagnostics.log('challenge.loop', {
+      'url': url,
+      'count': _loopDetector.failureCount,
+    });
     final action = await ChallengeEscapeDialog.show(
       context: context,
       url: url.toString(),
     );
+    ReaderDiagnostics.log('challenge.loop.answer', {'action': action});
     if (action == ChallengeEscapeAction.retry && mounted) {
       _loopDetector.reset();
       await _controller?.reload();
@@ -357,6 +379,12 @@ class _ReaderWebViewState extends State<ReaderWebView>
   Future<void> _detectAndHandleCaptcha(InAppWebViewController controller, WebUri url) async {
     try {
       final captchaType = await _captchaDetectionService.detectCaptcha(controller);
+      ReaderDiagnostics.log('captcha.check', {
+        'url': url,
+        'type': captchaType ?? 'none',
+        'flagged': _captchaDetected,
+        'loopCount': _loopDetector.failureCount,
+      });
 
       if (captchaType != null) {
         // Le script de nettoyage déjà injecté tourne sur un intervalle de 2 s
@@ -838,6 +866,13 @@ class _ReaderWebViewState extends State<ReaderWebView>
       _originHost,
       _currentChapter,
     );
+    ReaderDiagnostics.log('chapter.detect', {
+      'url': uri,
+      'previous': _currentChapter,
+      'result': result == null
+          ? 'null'
+          : '${result.changeType} ${result.previousChapter}->${result.newChapter}',
+    });
     if (result == null) return;
 
     final decision = _commitPolicy.onTransition(
@@ -1150,6 +1185,23 @@ class _ReaderWebViewState extends State<ReaderWebView>
               url: uri,
               isForMainFrame: action.isForMainFrame,
             );
+            ReaderDiagnostics.log('nav', {
+              'decision': decision.name,
+              'reason': uri == null
+                  ? 'no-url'
+                  : _adBlockerService.shouldBlockRequest(uri.toString())
+                      ? 'ad-url'
+                      : (action.isForMainFrame && !_isAllowedDomain(uri.host))
+                          ? 'foreign-host(origin=$_originHost)'
+                          : 'allowed',
+              'main': action.isForMainFrame,
+              'redirect': action.isRedirect,
+              'gesture': action.hasGesture,
+              'method': action.request.method,
+              // Noms seulement : ce que la relance via loadUrl renverra.
+              'headers': action.request.headers?.keys.join(','),
+              'url': uri,
+            });
             if (decision == ReaderNavigationDecision.cancel) {
               return NavigationActionPolicy.CANCEL;
             }
@@ -1161,6 +1213,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
           // 2) Début de chargement - Vérification supplémentaire et détection précoce de captcha
           onLoadStart: (controller, url) async {
+            ReaderDiagnostics.log('load.start', {
+              'url': url,
+              'allowedHost': url == null ? null : _isAllowedDomain(url.host),
+            });
             if (url != null) {
               final uri = url;
               final host = uri.host;
@@ -1189,7 +1245,8 @@ class _ReaderWebViewState extends State<ReaderWebView>
           },
 
           // 3) SPA / pushState
-          onUpdateVisitedHistory: (controller, url, _) {
+          onUpdateVisitedHistory: (controller, url, isReload) {
+            ReaderDiagnostics.log('history', {'url': url, 'reload': isReload});
             if (url != null) {
               final uri = url;
               final host = uri.host;
@@ -1201,6 +1258,11 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
           // 4) Injection JavaScript après chargement pour nettoyer les publicités
           onLoadStop: (controller, url) async {
+            ReaderDiagnostics.log('load.stop', {'url': url});
+            if (ReaderDiagnostics.enabled && url != null) {
+              await ReaderDiagnostics.probePage(controller, 'loadStop');
+              await ReaderDiagnostics.logCookies(url, 'loadStop');
+            }
             // Détecter la présence d'un captcha
             if (url != null && mounted) {
               await _detectAndHandleCaptcha(controller, url);
@@ -1299,6 +1361,12 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
           // 5) Gestion des erreurs CORS en mode web
           onReceivedError: (controller, request, error) {
+            ReaderDiagnostics.log('error', {
+              'main': request.isForMainFrame,
+              'type': error.type,
+              'description': error.description,
+              'url': request.url,
+            });
             if (kIsWeb && error.description.contains('CORS')) {
               setState(() {
                 _corsBlocked = true;
@@ -1306,7 +1374,42 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
           },
 
+          // Diagnostic uniquement : hors build de diagnostic, ces rappels
+          // restent absents pour ne rien changer au comportement.
+          onReceivedHttpError: ReaderDiagnostics.enabled
+              ? (controller, request, response) {
+                  final headers = response.headers ?? const {};
+                  String? header(String name) => headers.entries
+                      .where((e) => e.key.toLowerCase() == name)
+                      .map((e) => e.value)
+                      .firstOrNull;
+                  ReaderDiagnostics.log('http', {
+                    'status': response.statusCode,
+                    'reason': response.reasonPhrase,
+                    'main': request.isForMainFrame,
+                    'server': header('server'),
+                    'cfMitigated': header('cf-mitigated'),
+                    'cfRay': header('cf-ray'),
+                    'url': request.url,
+                  });
+                }
+              : null,
+
+          onTitleChanged: ReaderDiagnostics.enabled
+              ? (controller, title) =>
+                  ReaderDiagnostics.log('title', {'title': title})
+              : null,
+
+          onRenderProcessGone: ReaderDiagnostics.enabled
+              ? (controller, detail) => ReaderDiagnostics.log(
+                  'render.gone', {'crash': detail.didCrash})
+              : null,
+
           onConsoleMessage: (controller, consoleMessage) {
+            ReaderDiagnostics.log('console', {
+              'level': consoleMessage.messageLevel,
+              'message': consoleMessage.message,
+            });
             if (kIsWeb && consoleMessage.message.contains('CORS')) {
               setState(() {
                 _corsBlocked = true;
