@@ -124,6 +124,7 @@ class _ChallengeHandoffViewState extends State<ChallengeHandoffView> {
         _passed = true;
         _poll?.cancel();
         ReaderDiagnostics.log('handoff.passed', {'url': widget.url});
+        _unload();
         widget.onPassed();
       }
     } finally {
@@ -131,9 +132,23 @@ class _ChallengeHandoffViewState extends State<ChallengeHandoffView> {
     }
   }
 
+  /// Vide la WebView de vérification.
+  ///
+  /// Retirer la vue de l'écran ne détruit pas aussitôt la WebView Android :
+  /// mesuré sur appareil, elle restait chargée (détachée) avec la page du
+  /// chapitre — publicités et scripts compris — qui continuait de tourner
+  /// en arrière-plan, en plus du lecteur. Le défi réussi, elle n'a plus rien
+  /// à afficher.
+  void _unload() {
+    unawaited(_controller
+        .loadRequest(Uri.parse('about:blank'))
+        .then((_) {}, onError: (Object _) {}));
+  }
+
   @override
   void dispose() {
     _poll?.cancel();
+    if (!_passed) _unload();
     super.dispose();
   }
 
