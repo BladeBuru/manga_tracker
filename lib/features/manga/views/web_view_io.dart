@@ -25,10 +25,12 @@ import 'package:mangatracker/features/reader/services/reading_position.service.d
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
 import 'package:mangatracker/features/reader/services/captcha_detection_service.dart';
 import 'package:mangatracker/features/reader/services/challenge_loop_detector.dart';
+import 'package:mangatracker/features/reader/services/cloudflare_challenge.dart';
 import 'package:mangatracker/features/reader/services/reader_navigation_policy.dart';
 import 'package:mangatracker/features/reader/services/reader_web_view_settings.dart';
 import 'package:mangatracker/features/reader/services/reader_diagnostics.dart';
 import 'package:mangatracker/features/reader/widgets/challenge_escape_dialog.dart';
+import 'package:mangatracker/features/reader/widgets/challenge_handoff_view.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_skip_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
@@ -126,6 +128,15 @@ class _ReaderWebViewState extends State<ReaderWebView>
   // documentation de ReaderNavigationPolicy avant d'y toucher.
   late final ReaderNavigationPolicy _navigationPolicy;
 
+  // Vérification Cloudflare confiée à une WebView brute (voir
+  // ChallengeHandoffView). Tant que `_challengePending` est vrai, la WebView
+  // du lecteur affiche une page vierge : rien à lire, mesurer, sauvegarder
+  // ni télécharger.
+  WebUri? _challengeUrl;
+  bool _challengePending = false;
+  bool _showHandoff = false;
+  String? _clearanceBefore;
+
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
   Future<List<ContentBlocker>> _getBlockers() async {
     return await _adBlockerService.getBlockers(
@@ -187,7 +198,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     }
     final controller = _controller;
     final chapter = _currentChapter;
-    if (controller == null || chapter == null) return;
+    if (controller == null || chapter == null || _challengePending) return;
     unawaited(
       _scrollPositionService
           .saveScrollPosition(controller, widget.muId, chapter, immediate: true)
@@ -308,6 +319,15 @@ class _ReaderWebViewState extends State<ReaderWebView>
     final controller = _controller;
     if (controller == null) return;
 
+    // Vérification en cours : la WebView affiche une page vierge. Rafraîchir,
+    // c'est redemander la page du défi (geste délibéré : hors boucle).
+    final challengeUrl = _challengeUrl;
+    if (_challengePending && challengeUrl != null) {
+      _loopDetector.reset();
+      await _reloadAfterChallenge(challengeUrl);
+      return;
+    }
+
     final chapter = _currentChapter;
     if (chapter != null) {
       await _scrollPositionService.saveScrollPosition(
@@ -371,7 +391,103 @@ class _ReaderWebViewState extends State<ReaderWebView>
     ReaderDiagnostics.log('challenge.loop.answer', {'action': action});
     if (action == ChallengeEscapeAction.retry && mounted) {
       _loopDetector.reset();
-      await _controller?.reload();
+      if (_challengePending) {
+        // La WebView affiche une page vierge : recharger la page du défi.
+        await _reloadAfterChallenge(url);
+      } else {
+        await _controller?.reload();
+      }
+    }
+  }
+
+  /// `cf_clearance` courant de [url]. En mémoire seulement : c'est un jeton
+  /// d'autorisation, il n'est JAMAIS journalisé.
+  Future<String?> _readClearance(WebUri url) async {
+    try {
+      final cookie = await CookieManager.instance().getCookie(
+        url: url,
+        name: CloudflareChallenge.clearanceCookie,
+      );
+      return cookie?.value?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// La page principale est une vérification Cloudflare : on la confie à une
+  /// WebView brute (voir ChallengeHandoffView pour le pourquoi, mesuré sur
+  /// appareil).
+  ///
+  /// Appelé à la RÉPONSE du document, avant que le moindre script du défi ne
+  /// tourne dans le lecteur. C'est essentiel : exécuté ici, le défi est
+  /// « validé » avec un `cf_clearance` que Cloudflare refuse ensuite — et ce
+  /// cookie écraserait celui obtenu par la WebView brute.
+  Future<void> _startChallengeHandoff(
+    InAppWebViewController controller,
+    WebUri url,
+  ) async {
+    if (_challengePending || !mounted) return;
+    _challengePending = true;
+    _challengeUrl = url;
+    ReaderDiagnostics.log('handoff.start', {
+      'url': url,
+      'loopCount': _loopDetector.failureCount,
+    });
+    // La page vierge n'a pas de position de lecture à sauvegarder.
+    _scrollPositionService.stopSaveTimer();
+    try {
+      await controller.stopLoading();
+      await controller.loadUrl(
+        urlRequest: URLRequest(url: WebUri('about:blank')),
+      );
+    } catch (e) {
+      debugPrint('⚠️ Arrêt de la page de vérification impossible: $e');
+    }
+    if (!mounted) return;
+
+    // Le défi revient encore et encore, même délégué : cesser d'insister et
+    // proposer la sortie vers le navigateur.
+    if (_loopDetector.recordChallenge(url.toString())) {
+      await _handleChallengeLoop(url);
+      return;
+    }
+
+    final before = await _readClearance(url);
+    if (!mounted) return;
+    setState(() {
+      _clearanceBefore = before;
+      _showHandoff = true;
+    });
+  }
+
+  /// La WebView brute a obtenu un nouveau `cf_clearance` : le lecteur
+  /// recharge la page, cette fois acceptée par Cloudflare.
+  Future<void> _onHandoffPassed() async {
+    final url = _challengeUrl;
+    if (url == null || !mounted) return;
+    ReaderDiagnostics.log('handoff.done', {'url': url});
+    await _reloadAfterChallenge(url);
+  }
+
+  /// Quitte l'état « vérification » et recharge [url] dans le lecteur.
+  ///
+  /// Même page, même chapitre : `detectChapterChange` conclut à `noChange`,
+  /// aucun chapitre n'est validé, et `onLoadStop` restaure la position.
+  Future<void> _reloadAfterChallenge(WebUri url) async {
+    _challengePending = false;
+    _hasRestoredScroll = false;
+    if (mounted) setState(() => _showHandoff = false);
+    await _controller?.loadUrl(urlRequest: URLRequest(url: url));
+  }
+
+  Future<void> _openChallengeInBrowser() async {
+    final url = _challengeUrl;
+    if (url == null) return;
+    try {
+      await launchUrl(Uri.parse(url.toString()),
+          mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('⚠️ Ouverture dans le navigateur impossible: $e');
     }
   }
 
@@ -978,7 +1094,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // Sauvegarder la position de scroll avant de fermer
     debugPrint('🔍 _onWillPop - Sauvegarde de la position avant fermeture');
     debugPrint('🔍 _onWillPop - Controller: ${_controller != null}, Chapitre: $_currentChapter');
-    if (_controller != null && _currentChapter != null) {
+    // Vérification en cours : la WebView montre une page vierge, il n'y a ni
+    // position à sauvegarder ni chapitre à proposer.
+    final challengePending = _challengePending;
+    if (_controller != null && _currentChapter != null && !challengePending) {
       debugPrint('🔍 _onWillPop - Sauvegarde de la position pour chapitre $_currentChapter');
       await _scrollPositionService.saveScrollPosition(
         _controller!,
@@ -994,7 +1113,8 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // Si autoDownload est activé et que le callback existe, l'appeler avec false si on ferme sans télécharger
     if (widget.autoDownload && widget.onDownloadComplete != null) {
       // Vérifier si le chapitre a été téléchargé avant de fermer
-      final url = await _controller?.getUrl();
+      final url =
+          challengePending ? _challengeUrl : await _controller?.getUrl();
       if (url != null) {
         final urlString = url.toString();
         final chapterNumber = await ChapterLinkResolver.extractChapter(urlString);
@@ -1015,7 +1135,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     final exit = _commitPolicy.onExit(
       currentChapter: _currentChapter,
       lastCommitted: _lastCommitted,
-      isNearEnd: await _isNearEndOfChapter(),
+      isNearEnd: challengePending ? false : await _isNearEndOfChapter(),
     );
 
     final chapter = exit.askUserToCommitChapter;
@@ -1151,7 +1271,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
             ),
           ],
         ),
-        body: InAppWebView(
+        body: Stack(
+          children: [
+            InAppWebView(
           initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
           // INVARIANT (régression v0.13.0) : `initialSettings` est le SEUL
           // endroit où les réglages sont posés. Ne JAMAIS appeler
@@ -1259,6 +1381,12 @@ class _ReaderWebViewState extends State<ReaderWebView>
           // 4) Injection JavaScript après chargement pour nettoyer les publicités
           onLoadStop: (controller, url) async {
             ReaderDiagnostics.log('load.stop', {'url': url});
+            // Vérification Cloudflare en cours (page vierge ou page de défi) :
+            // rien à nettoyer, mesurer, restaurer ni télécharger. Sans cette
+            // garde, le téléchargement automatique partait sur la page
+            // « Un instant… » (le cookie cf_clearance y est déjà présent) et
+            // la position du chapitre était écrasée par celle de cette page.
+            if (_challengePending) return;
             if (ReaderDiagnostics.enabled && url != null) {
               await ReaderDiagnostics.probePage(controller, 'loadStop');
               await ReaderDiagnostics.logCookies(url, 'loadStop');
@@ -1374,27 +1502,39 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
           },
 
+          // 5 bis) Vérification Cloudflare : repérée à la RÉPONSE du document
+          // principal (en-tête `cf-mitigated: challenge`), avant que le
+          // moindre script du défi ne tourne, puis confiée à une WebView
+          // brute. Voir ChallengeHandoffView (cause mesurée sur appareil).
+          onReceivedHttpError: (controller, request, response) {
+            final isMainFrame = request.isForMainFrame ?? false;
+            if (ReaderDiagnostics.enabled) {
+              final headers = response.headers ?? const {};
+              String? header(String name) => headers.entries
+                  .where((e) => e.key.toLowerCase() == name)
+                  .map((e) => e.value)
+                  .firstOrNull;
+              ReaderDiagnostics.log('http', {
+                'status': response.statusCode,
+                'reason': response.reasonPhrase,
+                'main': isMainFrame,
+                'server': header('server'),
+                'cfMitigated': header('cf-mitigated'),
+                'cfRay': header('cf-ray'),
+                'url': request.url,
+              });
+            }
+            if (CloudflareChallenge.isChallengeResponse(
+              isForMainFrame: isMainFrame,
+              statusCode: response.statusCode,
+              headers: response.headers,
+            )) {
+              unawaited(_startChallengeHandoff(controller, request.url));
+            }
+          },
+
           // Diagnostic uniquement : hors build de diagnostic, ces rappels
           // restent absents pour ne rien changer au comportement.
-          onReceivedHttpError: ReaderDiagnostics.enabled
-              ? (controller, request, response) {
-                  final headers = response.headers ?? const {};
-                  String? header(String name) => headers.entries
-                      .where((e) => e.key.toLowerCase() == name)
-                      .map((e) => e.value)
-                      .firstOrNull;
-                  ReaderDiagnostics.log('http', {
-                    'status': response.statusCode,
-                    'reason': response.reasonPhrase,
-                    'main': request.isForMainFrame,
-                    'server': header('server'),
-                    'cfMitigated': header('cf-mitigated'),
-                    'cfRay': header('cf-ray'),
-                    'url': request.url,
-                  });
-                }
-              : null,
-
           onTitleChanged: ReaderDiagnostics.enabled
               ? (controller, title) =>
                   ReaderDiagnostics.log('title', {'title': title})
@@ -1434,6 +1574,21 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return null;
           },
         ),
+            // Par-dessus le lecteur (qui reste monté : son contrôleur et son
+            // état de lecture survivent à la vérification).
+            if (_showHandoff && _challengeUrl != null)
+              Positioned.fill(
+                child: ChallengeHandoffView(
+                  key: ValueKey(_challengeUrl.toString()),
+                  url: Uri.parse(_challengeUrl.toString()),
+                  clearanceBefore: _clearanceBefore,
+                  readClearance: () => _readClearance(_challengeUrl!),
+                  onPassed: _onHandoffPassed,
+                  onOpenInBrowser: _openChallengeInBrowser,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1449,7 +1604,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     _scrollPositionService.stopSaveTimer();
     // Sauvegarder la position de scroll avant de fermer (sans await car dispose ne peut pas être async)
     // La sauvegarde sera faite de manière synchrone dans le service
-    if (_controller != null && _currentChapter != null) {
+    if (_controller != null && _currentChapter != null && !_challengePending) {
       debugPrint('🔍 dispose() - Sauvegarde de la position pour chapitre $_currentChapter');
       // Utiliser un Future pour sauvegarder sans bloquer dispose
       _scrollPositionService.saveScrollPosition(

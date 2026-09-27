@@ -63,6 +63,10 @@ dependencies:
   flutter_markdown: ^0.7.1
   url_launcher: ^6.3.1
   webview_flutter: ^4.0.7
+  # Implémentation Android de webview_flutter (déjà résolue en transitif) :
+  # importée par ChallengeHandoffView pour accepter les cookies tiers du
+  # widget Cloudflare. Usage gardé par `is AndroidWebViewController`.
+  webview_flutter_android: ^4.9.1
   webview_flutter_web: ^0.2.3
   flutter_inappwebview: ^6.0.0
   go_router: ^14.6.2

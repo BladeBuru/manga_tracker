@@ -1156,6 +1156,7 @@
   "challengeLoopTitle": "Verificación bloqueada",
   "challengeLoopMessage": "La verificación antirrobot de este sitio no se completa: se recarga una y otra vez. Abre la página en tu navegador para completarla y luego vuelve aquí.",
   "challengeLoopOpenBrowser": "Abrir en el navegador",
+  "readerChallengeHandoffInfo": "Verificación de seguridad del sitio: sigue sus instrucciones y la lectura se reanudará automáticamente.",
   "readerRefresh": "Actualizar la página",
   "readerMoreActions": "Más acciones",
   "readerDownloadPage": "Descargar esta página",

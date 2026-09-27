@@ -1156,6 +1156,7 @@
   "challengeLoopTitle": "인증이 완료되지 않음",
   "challengeLoopMessage": "이 사이트의 로봇 확인이 완료되지 않고 계속 새로고침됩니다. 브라우저에서 페이지를 열어 인증을 완료한 후 다시 돌아오세요.",
   "challengeLoopOpenBrowser": "브라우저에서 열기",
+  "readerChallengeHandoffInfo": "사이트 보안 확인입니다. 안내에 따라 주세요. 완료되면 자동으로 읽기가 재개됩니다.",
   "readerRefresh": "페이지 새로고침",
   "readerMoreActions": "추가 작업",
   "readerDownloadPage": "이 페이지 다운로드",

@@ -291,6 +291,18 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   plus le UA par défaut supprime les indices client (`Sec-CH-UA`) — signal
   d'incohérence pour les vérifications anti-robot. Décision dans
   `.claude/memory-bank/decisions.md`.
+- 🔒 **Vérification Cloudflare confiée à une WebView brute**
+  (`ChallengeHandoffView`) : repérée à la réponse du document principal
+  (`cf-mitigated: challenge`), la page de défi est arrêtée dans le lecteur
+  AVANT de s'exécuter (dans la WebView flutter_inappwebview, Cloudflare la
+  « valide » puis refuse le cookie — mesuré sur appareil le 2026-09-27).
+  ❌ **JAMAIS** de script, canal JavaScript ni `onNavigationRequest` dans
+  cette vue. Pendant la délégation, le lecteur ne mesure, ne sauvegarde, ne
+  valide et ne télécharge rien. Verrouillé par `reader_invariants_test.dart`.
+- 🔬 **Diagnostic sur appareil** : `--dart-define=MT_READER_DIAG=true` active
+  le journal `[MT-READER]` (`adb logcat -s flutter`) et l'inspection DevTools
+  (`adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>`).
+  Mesurer avant de théoriser.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.

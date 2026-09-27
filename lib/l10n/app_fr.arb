@@ -2297,6 +2297,10 @@
   "@challengeLoopOpenBrowser": {
     "description": "Bouton ouvrant la page dans le navigateur externe"
   },
+  "readerChallengeHandoffInfo": "Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.",
+  "@readerChallengeHandoffInfo": {
+    "description": "Bandeau au-dessus de la verification anti-robot confiee a une WebView sans ajout ; la lecture reprend seule une fois la verification validee"
+  },
   "readerRefresh": "Rafraîchir la page",
   "@readerRefresh": {
     "description": "Tooltip du bouton de rechargement de la page du lecteur"

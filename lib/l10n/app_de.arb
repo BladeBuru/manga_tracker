@@ -1156,6 +1156,7 @@
   "challengeLoopTitle": "Überprüfung blockiert",
   "challengeLoopMessage": "Die Roboterprüfung dieser Seite wird nicht abgeschlossen – sie lädt immer wieder neu. Öffnen Sie die Seite im Browser, um sie abzuschließen, und kehren Sie dann hierher zurück.",
   "challengeLoopOpenBrowser": "Im Browser öffnen",
+  "readerChallengeHandoffInfo": "Sicherheitsprüfung der Website: Folgen Sie den Anweisungen, danach geht das Lesen automatisch weiter.",
   "readerRefresh": "Seite aktualisieren",
   "readerMoreActions": "Weitere Aktionen",
   "readerDownloadPage": "Diese Seite herunterladen",

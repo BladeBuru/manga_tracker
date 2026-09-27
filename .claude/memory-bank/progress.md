@@ -23,6 +23,28 @@
 
 ## ✅ Complété
 
+### 🛡️ Lecteur : boucle Cloudflare résolue — vérification confiée à une WebView brute (2026-09-27)
+
+Branche `fix/reader-cloudflare-handoff` (base `a5b345c`, v0.16.0). Validé sur
+Pixel 9 Pro XL (manga-scantrad.io) : défi intercepté, réussi en 2,8 s dans la
+WebView brute, chapitre rechargé dans le lecteur, aucun chapitre ni
+téléchargement ni position touchés.
+
+- **Diagnostic** : journal `ReaderDiagnostics` (`MT_READER_DIAG`, désactivé
+  par défaut) + DevTools. Cause mesurée : Cloudflare délivre un `cf_clearance`
+  au lecteur puis le refuse — environnement flutter_inappwebview classé robot.
+  UA, garde anti-redirection, `X-Requested-With`, bloqueur, réseau écartés.
+- **Correctif** : `CloudflareChallenge` (pur) + `ChallengeHandoffView`
+  (webview_flutter sans ajout) + `ChallengeHandoffBanner` (i18n 7 langues).
+- **Effets de bord corrigés** : plus de téléchargement automatique ni de
+  timer de position sur la page « Un instant… ».
+- **Tests** : `cloudflare_challenge_test.dart`,
+  `challenge_handoff_banner_test.dart`, 4 nouveaux fils de détente dans
+  `reader_invariants_test.dart`. Suite complète : 519 tests verts.
+- **Suites identifiées** (chantiers séparés) : pubs en surimpression non
+  retirées (iframe `about:blank` plein écran hors `<body>`), fiabilité des
+  téléchargements (déclenchement prématuré, enchaînement multiple).
+
 ### ⭐ Recommandations : ordre cohérent + geste « pas intéressé » découvrable (2026-09-09)
 
 Branche `feat/reco-order-dismiss` (base `a4e055d`, v0.15.0).

@@ -2133,6 +2133,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get challengeLoopOpenBrowser => '브라우저에서 열기';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      '사이트 보안 확인입니다. 안내에 따라 주세요. 완료되면 자동으로 읽기가 재개됩니다.';
+
+  @override
   String get readerRefresh => '페이지 새로고침';
 
   @override

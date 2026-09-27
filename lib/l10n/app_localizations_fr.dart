@@ -2220,6 +2220,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'Ouvrir dans le navigateur';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.';
+
+  @override
   String get readerRefresh => 'Rafraîchir la page';
 
   @override

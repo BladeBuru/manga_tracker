@@ -54,7 +54,10 @@ class ReaderWebViewSettings {
       // de lecture, identifie l'application auprès de tiers, et Android
       // lui-même le retire progressivement (API d'opt-in par origine). Une
       // liste vide = envoyé à aucune origine. Sans effet sur les WebView qui
-      // ne supportent pas la fonctionnalité (le plugin vérifie avant).
+      // ne supportent pas la fonctionnalité (le plugin vérifie avant) — c'est
+      // le cas des WebView récentes : mesuré le 2026-09-27 sur WebView 153,
+      // l'en-tête part toujours. Mesuré aussi : ce n'est PAS lui qui fait
+      // échouer Cloudflare (voir ChallengeHandoffView).
       requestedWithHeaderOriginAllowList: const <String>{},
 
       // --- Persistance du cookie d'autorisation ------------------------

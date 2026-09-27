@@ -2210,6 +2210,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'Abrir no navegador';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'Verificação de segurança do site: siga as instruções e a leitura será retomada automaticamente.';
+
+  @override
   String get readerRefresh => 'Atualizar a página';
 
   @override

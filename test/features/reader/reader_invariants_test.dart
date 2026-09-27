@@ -384,4 +384,59 @@ void main() {
       );
     });
   });
+
+  // Mesuré sur appareil le 2026-09-27 : exécuté dans la WebView du lecteur,
+  // le défi Cloudflare est « validé » avec un cf_clearance que Cloudflare
+  // refuse ensuite — boucle infinie. Dans une WebView brute, il passe.
+  group('vérification Cloudflare — confiée à une WebView brute', () {
+    const handoffPath =
+        'lib/features/reader/widgets/challenge_handoff_view.dart';
+
+    test('le défi est repéré à la réponse HTTP, en production', () {
+      final code = withoutComments(reader);
+      expect(code, contains('CloudflareChallenge.isChallengeResponse('));
+      expect(code, contains('_startChallengeHandoff('));
+      expect(
+        code,
+        isNot(contains('onReceivedHttpError: ReaderDiagnostics.enabled')),
+        reason: 'onReceivedHttpError porte la détection du défi : il ne doit '
+            'plus dépendre du build de diagnostic.',
+      );
+    });
+
+    test('la page de défi du lecteur est arrêtée avant de s\'exécuter', () {
+      expect(
+        withoutComments(reader),
+        contains("WebUri('about:blank')"),
+        reason: 'Laissé à lui-même dans le lecteur, le défi pose un '
+            'cf_clearance refusé qui écraserait le bon.',
+      );
+    });
+
+    test('pendant la vérification, onLoadStop ne fait rien', () {
+      expect(
+        withoutComments(reader),
+        contains('if (_challengePending) return;'),
+        reason: 'Sinon le téléchargement automatique part sur la page '
+            '« Un instant… » et la position du chapitre est écrasée.',
+      );
+    });
+
+    test('la WebView de vérification n\'injecte RIEN dans la page', () {
+      final handoff = withoutComments(File(handoffPath).readAsStringSync());
+      for (final forbidden in [
+        'runJavaScript',
+        'addJavaScriptChannel',
+        'onNavigationRequest',
+        'flutter_inappwebview',
+      ]) {
+        expect(
+          handoff,
+          isNot(contains(forbidden)),
+          reason: '$forbidden : c\'est précisément l\'environnement ajouté à '
+              'la page qui fait échouer la vérification Cloudflare.',
+        );
+      }
+    });
+  });
 }

@@ -2131,6 +2131,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get challengeLoopOpenBrowser => 'ブラウザで開く';
 
   @override
+  String get readerChallengeHandoffInfo =>
+      'サイトのセキュリティ確認です。表示される指示に従ってください。完了すると自動的に読書を再開します。';
+
+  @override
   String get readerRefresh => 'ページを再読み込み';
 
   @override

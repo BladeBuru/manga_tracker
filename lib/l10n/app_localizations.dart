@@ -3952,6 +3952,12 @@ abstract class AppLocalizations {
   /// **'Ouvrir dans le navigateur'**
   String get challengeLoopOpenBrowser;
 
+  /// Bandeau au-dessus de la verification anti-robot confiee a une WebView sans ajout ; la lecture reprend seule une fois la verification validee
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérification de sécurité du site : suivez ses instructions, la lecture reprendra automatiquement.'**
+  String get readerChallengeHandoffInfo;
+
   /// Tooltip du bouton de rechargement de la page du lecteur
   ///
   /// In fr, this message translates to:
