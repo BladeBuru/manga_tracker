@@ -2469,4 +2469,154 @@ class AppLocalizationsFr extends AppLocalizations {
   String searchGenreChipAccessibility(String genre) {
     return 'Voir les œuvres du genre $genre';
   }
+
+  @override
+  String get ratingGlobalLabel => 'Note globale';
+
+  @override
+  String get ratingSourceMangaUpdates => 'MangaUpdates';
+
+  @override
+  String get ratingSourceApp => 'Manga Tracker';
+
+  @override
+  String get ratingGlobalExplanation =>
+      'Moyenne des votes MangaUpdates et Manga Tracker, chaque vote compte autant.';
+
+  @override
+  String get communityRecoTitle => 'Si vous avez aimé ce titre';
+
+  @override
+  String get communityRecoSubtitle =>
+      'Recommandations des lecteurs de MangaUpdates et de Manga Tracker';
+
+  @override
+  String communityRecoVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recommandations',
+      one: '1 recommandation',
+      zero: 'Aucune recommandation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String communityRecoAppVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'dont $count sur Manga Tracker',
+      one: 'dont 1 sur Manga Tracker',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityRecoAdd => 'Recommander une œuvre';
+
+  @override
+  String get communityRecoToggleOn => 'Je recommande aussi';
+
+  @override
+  String get communityRecoToggleOff => 'Retirer ma recommandation';
+
+  @override
+  String get communityRecoAdded =>
+      'Merci ! Votre recommandation est enregistrée';
+
+  @override
+  String get communityRecoRemoved => 'Recommandation retirée';
+
+  @override
+  String get communityRecoEmpty =>
+      'Personne n\'a encore recommandé d\'œuvre pour ce titre. Soyez le premier !';
+
+  @override
+  String get communityRecoLoadError =>
+      'Impossible de charger les recommandations';
+
+  @override
+  String get communityRecoActionError =>
+      'Impossible d\'enregistrer la recommandation. Réessayez plus tard.';
+
+  @override
+  String get communityRecoThrottled =>
+      'Vous avez recommandé beaucoup d\'œuvres d\'un coup. Réessayez dans un moment.';
+
+  @override
+  String get communityRecoPickerTitle => 'Quelle œuvre recommandez-vous ?';
+
+  @override
+  String get communityRecoPickerHint => 'Rechercher un titre';
+
+  @override
+  String get communityRecoPickerEmpty => 'Aucun titre trouvé';
+
+  @override
+  String get communityRecoReadersAlsoRead =>
+      'Les lecteurs de ce titre lisent aussi';
+
+  @override
+  String get communityRecoSelf =>
+      'Une œuvre ne peut pas se recommander elle-même';
+
+  @override
+  String authorOpenAccessibility(String name) {
+    return 'Voir la fiche et les œuvres de $name';
+  }
+
+  @override
+  String authorWorksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count œuvres',
+      one: '1 œuvre',
+      zero: 'Œuvres',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String authorBirthday(String date) {
+    return 'Naissance : $date';
+  }
+
+  @override
+  String authorBirthplace(String place) {
+    return 'Origine : $place';
+  }
+
+  @override
+  String authorOtherNames(String names) {
+    return 'Autres noms : $names';
+  }
+
+  @override
+  String get authorOfficialSite => 'Site officiel';
+
+  @override
+  String get authorBioMore => 'Lire la suite';
+
+  @override
+  String get authorBioLess => 'Réduire';
+
+  @override
+  String get authorNoBio => 'Pas encore de biographie pour cet auteur.';
+
+  @override
+  String get authorNoWorks => 'Aucune œuvre trouvée pour cet auteur.';
+
+  @override
+  String get authorWorksIncomplete =>
+      'La liste complète des œuvres n\'a pas pu être chargée.';
+
+  @override
+  String get authorLoadError =>
+      'Impossible de charger la fiche de cet auteur pour le moment.';
+
+  @override
+  String get authorNotFound => 'Auteur introuvable.';
 }

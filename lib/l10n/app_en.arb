@@ -1304,5 +1304,89 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ratingGlobalLabel": "Overall rating",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "Average of MangaUpdates and Manga Tracker votes, every vote counts equally.",
+  "communityRecoTitle": "If you liked this title",
+  "communityRecoSubtitle": "Recommendations from MangaUpdates and Manga Tracker readers",
+  "communityRecoVotes": "{count, plural, =0{No recommendations} =1{1 recommendation} other{{count} recommendations}}",
+  "@communityRecoVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, =1{including 1 on Manga Tracker} other{including {count} on Manga Tracker}}",
+  "@communityRecoAppVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "Recommend a title",
+  "communityRecoToggleOn": "I recommend it too",
+  "communityRecoToggleOff": "Remove my recommendation",
+  "communityRecoAdded": "Thanks! Your recommendation has been saved",
+  "communityRecoRemoved": "Recommendation removed",
+  "communityRecoEmpty": "Nobody has recommended a title for this one yet. Be the first!",
+  "communityRecoLoadError": "Couldn't load the recommendations",
+  "communityRecoActionError": "Couldn't save the recommendation. Please try again later.",
+  "communityRecoThrottled": "You've recommended a lot of titles at once. Try again in a moment.",
+  "communityRecoPickerTitle": "Which title do you recommend?",
+  "communityRecoPickerHint": "Search for a title",
+  "communityRecoPickerEmpty": "No title found",
+  "communityRecoReadersAlsoRead": "Readers of this title also read",
+  "communityRecoSelf": "A title can't recommend itself",
+  "authorOpenAccessibility": "See {name}'s profile and works",
+  "@authorOpenAccessibility": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, =0{Works} =1{1 work} other{{count} works}}",
+  "@authorWorksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "Born: {date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "From: {place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "Also known as: {names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "Official website",
+  "authorBioMore": "Read more",
+  "authorBioLess": "Show less",
+  "authorNoBio": "No biography for this author yet.",
+  "authorNoWorks": "No works found for this author.",
+  "authorWorksIncomplete": "The full list of works couldn't be loaded.",
+  "authorLoadError": "Couldn't load this author's profile right now.",
+  "authorNotFound": "Author not found."
 }

@@ -26,7 +26,7 @@ import '../dto/manga_recommendation_view.dto.dart';
 import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
 import 'package:mangatracker/features/manga/widgets/detail_read_online_button.dart';
-import 'package:mangatracker/features/manga/widgets/detail_recommendations_section.dart';
+import 'package:mangatracker/features/manga/widgets/community_recommendations_sheet.dart';
 // `DetailStatusSelector` et `DetailStatusButton` ne sont plus utilisés —
 // le statut est désormais une icône dans l'action bar (`_StatusIconButton`).
 // `DetailAddToLibraryButton` est encore utilisé (CTA "Ajouter à la
@@ -483,7 +483,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       // traduite (Accept-Language) — fallback sur l'original.
                       mangaDescription:
                           manga.translatedDescription ?? manga.description,
-                      rating: manga.rating,
+                      // Note globale (MangaUpdates + Manga Tracker) et total
+                      // des votes ; repli sur la note MangaUpdates.
+                      rating: manga.displayRating,
+                      ratingVotes: manga.totalRatingVotes,
                       mangaTotalChapters: manga.totalChapters,
                       officialTotalChapters: manga.officialTotalChapters,
                       isCompleted: manga.isCompleted,
@@ -517,6 +520,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                               userRating: manga.userRating,
                               communityRating: manga.communityRating,
                               communityRatingCount: manga.communityRatingCount,
+                              muRating: manga.muRating,
+                              muRatingVotes: manga.muRatingVotes,
+                              globalRating: manga.aggregatedRating,
+                              totalRatingVotes: manga.totalRatingVotes,
                             )
                           : null,
                     ),
@@ -706,51 +713,13 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     }
     if (!mounted) return;
 
-    final recos = _mangaRecommendationsCache ?? [];
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        final l10n = AppLocalizations.of(ctx);
-        return SafeArea(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.s),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.m,
-                        AppSpacing.s,
-                        AppSpacing.m,
-                        0,
-                      ),
-                      child: Text(
-                        l10n?.recommendedMangas ?? 'Mangas recommandés',
-                        style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ),
-                    DetailRecommendationsSection(
-                      recommendations: recos,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+    // « Si vous avez aimé ce titre » : votes MangaUpdates + Manga Tracker,
+    // l'utilisateur peut recommander à son tour. L'ancienne liste (titres
+    // souvent dans les mêmes bibliothèques) reste affichée en dessous.
+    await showCommunityRecommendationsSheet(
+      context,
+      muId: muId,
+      readersAlsoRead: _mangaRecommendationsCache ?? const [],
     );
   }
 

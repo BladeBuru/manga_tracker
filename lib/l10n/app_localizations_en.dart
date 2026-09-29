@@ -2431,4 +2431,150 @@ class AppLocalizationsEn extends AppLocalizations {
   String searchGenreChipAccessibility(String genre) {
     return 'Browse $genre titles';
   }
+
+  @override
+  String get ratingGlobalLabel => 'Overall rating';
+
+  @override
+  String get ratingSourceMangaUpdates => 'MangaUpdates';
+
+  @override
+  String get ratingSourceApp => 'Manga Tracker';
+
+  @override
+  String get ratingGlobalExplanation =>
+      'Average of MangaUpdates and Manga Tracker votes, every vote counts equally.';
+
+  @override
+  String get communityRecoTitle => 'If you liked this title';
+
+  @override
+  String get communityRecoSubtitle =>
+      'Recommendations from MangaUpdates and Manga Tracker readers';
+
+  @override
+  String communityRecoVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recommendations',
+      one: '1 recommendation',
+      zero: 'No recommendations',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String communityRecoAppVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'including $count on Manga Tracker',
+      one: 'including 1 on Manga Tracker',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityRecoAdd => 'Recommend a title';
+
+  @override
+  String get communityRecoToggleOn => 'I recommend it too';
+
+  @override
+  String get communityRecoToggleOff => 'Remove my recommendation';
+
+  @override
+  String get communityRecoAdded => 'Thanks! Your recommendation has been saved';
+
+  @override
+  String get communityRecoRemoved => 'Recommendation removed';
+
+  @override
+  String get communityRecoEmpty =>
+      'Nobody has recommended a title for this one yet. Be the first!';
+
+  @override
+  String get communityRecoLoadError => 'Couldn\'t load the recommendations';
+
+  @override
+  String get communityRecoActionError =>
+      'Couldn\'t save the recommendation. Please try again later.';
+
+  @override
+  String get communityRecoThrottled =>
+      'You\'ve recommended a lot of titles at once. Try again in a moment.';
+
+  @override
+  String get communityRecoPickerTitle => 'Which title do you recommend?';
+
+  @override
+  String get communityRecoPickerHint => 'Search for a title';
+
+  @override
+  String get communityRecoPickerEmpty => 'No title found';
+
+  @override
+  String get communityRecoReadersAlsoRead => 'Readers of this title also read';
+
+  @override
+  String get communityRecoSelf => 'A title can\'t recommend itself';
+
+  @override
+  String authorOpenAccessibility(String name) {
+    return 'See $name\'s profile and works';
+  }
+
+  @override
+  String authorWorksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count works',
+      one: '1 work',
+      zero: 'Works',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String authorBirthday(String date) {
+    return 'Born: $date';
+  }
+
+  @override
+  String authorBirthplace(String place) {
+    return 'From: $place';
+  }
+
+  @override
+  String authorOtherNames(String names) {
+    return 'Also known as: $names';
+  }
+
+  @override
+  String get authorOfficialSite => 'Official website';
+
+  @override
+  String get authorBioMore => 'Read more';
+
+  @override
+  String get authorBioLess => 'Show less';
+
+  @override
+  String get authorNoBio => 'No biography for this author yet.';
+
+  @override
+  String get authorNoWorks => 'No works found for this author.';
+
+  @override
+  String get authorWorksIncomplete =>
+      'The full list of works couldn\'t be loaded.';
+
+  @override
+  String get authorLoadError =>
+      'Couldn\'t load this author\'s profile right now.';
+
+  @override
+  String get authorNotFound => 'Author not found.';
 }

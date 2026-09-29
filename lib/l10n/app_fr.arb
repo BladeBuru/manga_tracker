@@ -2622,5 +2622,93 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ratingGlobalLabel": "Note globale",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "Moyenne des votes MangaUpdates et Manga Tracker, chaque vote compte autant.",
+  "communityRecoTitle": "Si vous avez aimé ce titre",
+  "communityRecoSubtitle": "Recommandations des lecteurs de MangaUpdates et de Manga Tracker",
+  "communityRecoVotes": "{count, plural, =0{Aucune recommandation} =1{1 recommandation} other{{count} recommandations}}",
+  "@communityRecoVotes": {
+    "description": "Total des recommandations (MangaUpdates + Manga Tracker) d'une œuvre",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, =1{dont 1 sur Manga Tracker} other{dont {count} sur Manga Tracker}}",
+  "@communityRecoAppVotes": {
+    "description": "Part des recommandations venant des utilisateurs Manga Tracker",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "Recommander une œuvre",
+  "communityRecoToggleOn": "Je recommande aussi",
+  "communityRecoToggleOff": "Retirer ma recommandation",
+  "communityRecoAdded": "Merci ! Votre recommandation est enregistrée",
+  "communityRecoRemoved": "Recommandation retirée",
+  "communityRecoEmpty": "Personne n'a encore recommandé d'œuvre pour ce titre. Soyez le premier !",
+  "communityRecoLoadError": "Impossible de charger les recommandations",
+  "communityRecoActionError": "Impossible d'enregistrer la recommandation. Réessayez plus tard.",
+  "communityRecoThrottled": "Vous avez recommandé beaucoup d'œuvres d'un coup. Réessayez dans un moment.",
+  "communityRecoPickerTitle": "Quelle œuvre recommandez-vous ?",
+  "communityRecoPickerHint": "Rechercher un titre",
+  "communityRecoPickerEmpty": "Aucun titre trouvé",
+  "communityRecoReadersAlsoRead": "Les lecteurs de ce titre lisent aussi",
+  "communityRecoSelf": "Une œuvre ne peut pas se recommander elle-même",
+  "authorOpenAccessibility": "Voir la fiche et les œuvres de {name}",
+  "@authorOpenAccessibility": {
+    "description": "Libellé d'accessibilité d'un nom d'auteur cliquable sur la fiche manga",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, =0{Œuvres} =1{1 œuvre} other{{count} œuvres}}",
+  "@authorWorksTitle": {
+    "description": "Titre de la liste des œuvres d'un auteur",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "Naissance : {date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "Origine : {place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "Autres noms : {names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "Site officiel",
+  "authorBioMore": "Lire la suite",
+  "authorBioLess": "Réduire",
+  "authorNoBio": "Pas encore de biographie pour cet auteur.",
+  "authorNoWorks": "Aucune œuvre trouvée pour cet auteur.",
+  "authorWorksIncomplete": "La liste complète des œuvres n'a pas pu être chargée.",
+  "authorLoadError": "Impossible de charger la fiche de cet auteur pour le moment.",
+  "authorNotFound": "Auteur introuvable."
 }

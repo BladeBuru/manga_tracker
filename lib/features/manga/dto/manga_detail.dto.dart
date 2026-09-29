@@ -53,8 +53,15 @@ class MangaDetailDto {
   /// Nombre d'utilisateurs locaux ayant noté ce manga.
   final int communityRatingCount;
 
-  /// Note agrégée Bayesian (combine la note globale MU et la note communautaire locale).
+  /// Note globale : note MangaUpdates et notes Manga Tracker fusionnées au
+  /// prorata des votes (calculée par l'API).
   final double? aggregatedRating;
+
+  /// Votants MangaUpdates (`null` si inconnu).
+  final int? muRatingVotes;
+
+  /// Total des votes derrière la note globale (MangaUpdates + Manga Tracker).
+  final int totalRatingVotes;
 
   const MangaDetailDto({
     required this.muId,
@@ -86,7 +93,22 @@ class MangaDetailDto {
     this.communityRating,
     this.communityRatingCount = 0,
     this.aggregatedRating,
+    this.muRatingVotes,
+    this.totalRatingVotes = 0,
   });
+
+  /// Note affichée en tête de fiche : la note globale quand l'API la
+  /// fournit, sinon la note MangaUpdates brute (« N/A » si aucune).
+  String get displayRating {
+    final global = aggregatedRating;
+    if (global != null && global > 0) {
+      return global.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+    }
+    return rating;
+  }
+
+  /// Note MangaUpdates seule, `null` si absente.
+  double? get muRating => double.tryParse(rating);
 
   factory MangaDetailDto.fromJson(Map<String, dynamic> j) {
     final authors = (j['authors'] as List?)
@@ -164,6 +186,13 @@ class MangaDetailDto {
           : double.tryParse(
               (j['aggregatedRating'] ?? j['aggregated_rating']).toString(),
             ),
+      muRatingVotes: int.tryParse(
+          (j['muRatingVotes'] ?? j['mu_rating_votes'] ?? '').toString()),
+      totalRatingVotes: int.tryParse(
+            (j['totalRatingVotes'] ?? j['total_rating_votes'] ?? 0)
+                .toString(),
+          ) ??
+          0,
     );
   }
 
@@ -174,6 +203,8 @@ class MangaDetailDto {
     double? communityRating,
     int? communityRatingCount,
     double? aggregatedRating,
+    int? muRatingVotes,
+    int? totalRatingVotes,
     bool? inLibrary,
     int? readChaptersCount,
     ReadingStatus? readingStatus,
@@ -214,6 +245,8 @@ class MangaDetailDto {
       communityRating: communityRating ?? this.communityRating,
       communityRatingCount: communityRatingCount ?? this.communityRatingCount,
       aggregatedRating: aggregatedRating ?? this.aggregatedRating,
+      muRatingVotes: muRatingVotes ?? this.muRatingVotes,
+      totalRatingVotes: totalRatingVotes ?? this.totalRatingVotes,
     );
   }
   
@@ -248,6 +281,8 @@ class MangaDetailDto {
       'communityRating': communityRating,
       'communityRatingCount': communityRatingCount,
       'aggregatedRating': aggregatedRating,
+      'muRatingVotes': muRatingVotes,
+      'totalRatingVotes': totalRatingVotes,
     };
   }
 }

@@ -27,38 +27,45 @@ void main() {
   setUpAll(() {
     dotenv.testLoad(fileInput: 'MT_API_URL=https://api.test');
     registerFallbackValue(Uri());
-    registerFallbackValue(const UserInformationDto(
-      email: '',
-      username: '',
-      emailVerified: false,
-    ));
+    registerFallbackValue(
+      const UserInformationDto(email: '', username: '', emailVerified: false),
+    );
   });
 
   group('Nom affiché', () {
     test('la salutation utilise le nom à afficher, sinon l\'identifiant', () {
       expect(
-        const UserDto(username: 'john', displayName: 'Jean', email: 'e')
-            .greetingName,
+        const UserDto(
+          username: 'john',
+          displayName: 'Jean',
+          email: 'e',
+        ).greetingName,
         'Jean',
       );
       expect(
-        const UserDto(username: 'john', displayName: '  ', email: 'e')
-            .greetingName,
+        const UserDto(
+          username: 'john',
+          displayName: '  ',
+          email: 'e',
+        ).greetingName,
         'john',
       );
     });
 
-    testWidgets('l\'en-tête du profil montre le nom et l\'identifiant',
-        (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(
-          body: ProfileHeader(
-            username: 'Jean le Lecteur',
-            handle: 'john',
-            email: 'john@example.com',
+    testWidgets('l\'en-tête du profil montre le nom et l\'identifiant', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ProfileHeader(
+              username: 'Jean le Lecteur',
+              handle: 'john',
+              email: 'john@example.com',
+            ),
           ),
         ),
-      ));
+      );
       expect(find.text('Jean le Lecteur'), findsOneWidget);
       expect(find.text('@john'), findsOneWidget);
     });
@@ -75,11 +82,16 @@ void main() {
       cache = MockOfflineCacheService();
       sentBody = null;
       when(() => cache.cacheUserInformation(any())).thenAnswer((_) async {});
-      when(() => http.patchWithAuthTokens(any(),
+      when(
+        () => http.patchWithAuthTokens(
+          any(),
           headers: any(named: 'headers'),
-          body: any(named: 'body'))).thenAnswer((invocation) async {
-        sentBody = jsonDecode(invocation.namedArguments[#body] as String)
-            as Map<String, dynamic>;
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer((invocation) async {
+        sentBody =
+            jsonDecode(invocation.namedArguments[#body] as String)
+                as Map<String, dynamic>;
         return Response(
           jsonEncode({
             'email': 'john@example.com',
@@ -97,8 +109,9 @@ void main() {
     tearDown(() => getIt.reset());
 
     test('le nouveau nom est envoyé, rogné', () async {
-      final updated =
-          await UserService().updateProfile(displayName: '  Jean  ');
+      final updated = await UserService().updateProfile(
+        displayName: '  Jean  ',
+      );
       expect(sentBody!['displayName'], 'Jean');
       expect(updated.effectiveDisplayName, 'Jean');
     });

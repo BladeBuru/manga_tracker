@@ -60,6 +60,9 @@ import 'package:mangatracker/features/stats/views/stats_view.dart';
 import 'package:mangatracker/features/friends/views/friends_list_page.dart';
 import 'package:mangatracker/features/friends/views/friend_profile_view.dart';
 
+// Auteurs
+import 'package:mangatracker/features/authors/views/author_page.dart';
+
 // Inbox (Phase 8.1)
 import 'package:mangatracker/features/sharing/views/inbox_page.dart';
 
@@ -89,6 +92,13 @@ class HomeSectionExtras {
     required this.kind,
     this.params = HomeSectionParams.none,
   });
+}
+
+/// Extras passés via `context.push('/authors/:authorId', extra: ...)` — le
+/// nom s'affiche dans la barre avant la réponse de l'API.
+class AuthorPageExtras {
+  final String name;
+  const AuthorPageExtras({required this.name});
 }
 
 /// Extras passés via `context.push('/friends/:userId', extra: ...)` —
@@ -213,6 +223,21 @@ GoRouter buildAppRouter() {
             },
           ),
         ],
+      ),
+
+      // ──────────────────────────────────────────────────────────────
+      // Auteurs — mini bio + œuvres (noms cliquables de la fiche manga)
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/authors/:authorId',
+        name: 'author',
+        builder: (context, state) {
+          final extras = state.extra as AuthorPageExtras?;
+          return AuthorPage(
+            authorId: int.tryParse(state.pathParameters['authorId'] ?? '') ?? 0,
+            initialName: extras?.name,
+          );
+        },
       ),
 
       // ──────────────────────────────────────────────────────────────

@@ -2370,4 +2370,139 @@ class AppLocalizationsJa extends AppLocalizations {
   String searchGenreChipAccessibility(String genre) {
     return '$genreジャンルの作品を見る';
   }
+
+  @override
+  String get ratingGlobalLabel => '総合評価';
+
+  @override
+  String get ratingSourceMangaUpdates => 'MangaUpdates';
+
+  @override
+  String get ratingSourceApp => 'Manga Tracker';
+
+  @override
+  String get ratingGlobalExplanation =>
+      'MangaUpdatesとManga Trackerの投票の平均（1票の重みはすべて同じ）。';
+
+  @override
+  String get communityRecoTitle => 'この作品が好きなら';
+
+  @override
+  String get communityRecoSubtitle => 'MangaUpdatesとManga Trackerの読者によるおすすめ';
+
+  @override
+  String communityRecoVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'おすすめ $count 件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String communityRecoAppVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'うちManga Tracker $count 件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityRecoAdd => '作品をおすすめする';
+
+  @override
+  String get communityRecoToggleOn => '私もおすすめ';
+
+  @override
+  String get communityRecoToggleOff => 'おすすめを取り消す';
+
+  @override
+  String get communityRecoAdded => 'ありがとうございます！おすすめを登録しました';
+
+  @override
+  String get communityRecoRemoved => 'おすすめを取り消しました';
+
+  @override
+  String get communityRecoEmpty => 'この作品へのおすすめはまだありません。最初のおすすめをしてみましょう！';
+
+  @override
+  String get communityRecoLoadError => 'おすすめを読み込めませんでした';
+
+  @override
+  String get communityRecoActionError => 'おすすめを保存できませんでした。後でもう一度お試しください。';
+
+  @override
+  String get communityRecoThrottled => '短時間に多くの作品をおすすめしました。しばらくしてからお試しください。';
+
+  @override
+  String get communityRecoPickerTitle => 'どの作品をおすすめしますか？';
+
+  @override
+  String get communityRecoPickerHint => '作品を検索';
+
+  @override
+  String get communityRecoPickerEmpty => '作品が見つかりません';
+
+  @override
+  String get communityRecoReadersAlsoRead => 'この作品の読者はこちらも読んでいます';
+
+  @override
+  String get communityRecoSelf => '作品自身をおすすめすることはできません';
+
+  @override
+  String authorOpenAccessibility(String name) {
+    return '$nameのプロフィールと作品を見る';
+  }
+
+  @override
+  String authorWorksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '作品 $count 件',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String authorBirthday(String date) {
+    return '生年月日：$date';
+  }
+
+  @override
+  String authorBirthplace(String place) {
+    return '出身：$place';
+  }
+
+  @override
+  String authorOtherNames(String names) {
+    return '別名：$names';
+  }
+
+  @override
+  String get authorOfficialSite => '公式サイト';
+
+  @override
+  String get authorBioMore => '続きを読む';
+
+  @override
+  String get authorBioLess => '閉じる';
+
+  @override
+  String get authorNoBio => 'この作者の紹介はまだありません。';
+
+  @override
+  String get authorNoWorks => 'この作者の作品は見つかりませんでした。';
+
+  @override
+  String get authorWorksIncomplete => '作品の一覧をすべて読み込めませんでした。';
+
+  @override
+  String get authorLoadError => '現在この作者のプロフィールを読み込めません。';
+
+  @override
+  String get authorNotFound => '作者が見つかりません。';
 }

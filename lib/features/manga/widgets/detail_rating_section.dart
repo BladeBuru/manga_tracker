@@ -4,6 +4,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
+import 'package:mangatracker/features/manga/widgets/detail_rating_breakdown.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
@@ -26,12 +27,23 @@ class DetailRatingSection extends StatelessWidget {
   final double? communityRating;
   final int communityRatingCount;
 
+  /// Note et votants MangaUpdates, note globale et total des votes : la
+  /// section détaille d'où vient la note affichée en tête de fiche.
+  final double? muRating;
+  final int? muRatingVotes;
+  final double? globalRating;
+  final int totalRatingVotes;
+
   const DetailRatingSection({
     super.key,
     required this.muId,
     required this.userRating,
     this.communityRating,
     this.communityRatingCount = 0,
+    this.muRating,
+    this.muRatingVotes,
+    this.globalRating,
+    this.totalRatingVotes = 0,
   });
 
   @override
@@ -40,8 +52,15 @@ class DetailRatingSection extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isDark = brightness == Brightness.dark;
-    final showCommunity =
-        communityRating != null && communityRatingCount > 0;
+    final breakdown = DetailRatingBreakdown(
+      muRating: muRating,
+      muRatingVotes: muRatingVotes,
+      appRating: communityRating,
+      appRatingCount: communityRatingCount,
+      globalRating: globalRating,
+      totalRatingVotes: totalRatingVotes,
+    );
+    final showCommunity = breakdown.hasContent;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -104,42 +123,7 @@ class DetailRatingSection extends StatelessWidget {
                 color: AppColors.dsHairline(brightness),
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(
-                    Icons.groups_outlined,
-                    size: 16,
-                    color: AppColors.dsText2(brightness),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n.votesCount(communityRatingCount),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.dsText2(brightness),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    communityRating!.toStringAsFixed(1),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.primary,
-                    ),
-                  ),
-                  Text(
-                    '/10',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.dsText3(brightness),
-                    ),
-                  ),
-                ],
-              ),
+              breakdown,
             ],
           ],
         ),

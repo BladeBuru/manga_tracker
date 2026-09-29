@@ -1298,5 +1298,89 @@
         "type": "String"
       }
     }
-  }
+  },
+  "ratingGlobalLabel": "Nota geral",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "Média dos votos do MangaUpdates e do Manga Tracker, cada voto vale o mesmo.",
+  "communityRecoTitle": "Se você gostou deste título",
+  "communityRecoSubtitle": "Recomendações dos leitores do MangaUpdates e do Manga Tracker",
+  "communityRecoVotes": "{count, plural, =0{Nenhuma recomendação} =1{1 recomendação} other{{count} recomendações}}",
+  "@communityRecoVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, =1{incluindo 1 no Manga Tracker} other{incluindo {count} no Manga Tracker}}",
+  "@communityRecoAppVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "Recomendar uma obra",
+  "communityRecoToggleOn": "Também recomendo",
+  "communityRecoToggleOff": "Remover minha recomendação",
+  "communityRecoAdded": "Obrigado! Sua recomendação foi salva",
+  "communityRecoRemoved": "Recomendação removida",
+  "communityRecoEmpty": "Ninguém recomendou uma obra para este título ainda. Seja o primeiro!",
+  "communityRecoLoadError": "Não foi possível carregar as recomendações",
+  "communityRecoActionError": "Não foi possível salvar a recomendação. Tente novamente mais tarde.",
+  "communityRecoThrottled": "Você recomendou muitas obras de uma vez. Tente novamente em instantes.",
+  "communityRecoPickerTitle": "Qual obra você recomenda?",
+  "communityRecoPickerHint": "Pesquisar um título",
+  "communityRecoPickerEmpty": "Nenhum título encontrado",
+  "communityRecoReadersAlsoRead": "Leitores deste título também leem",
+  "communityRecoSelf": "Uma obra não pode recomendar a si mesma",
+  "authorOpenAccessibility": "Ver o perfil e as obras de {name}",
+  "@authorOpenAccessibility": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, =0{Obras} =1{1 obra} other{{count} obras}}",
+  "@authorWorksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "Nascimento: {date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "Origem: {place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "Outros nomes: {names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "Site oficial",
+  "authorBioMore": "Ler mais",
+  "authorBioLess": "Mostrar menos",
+  "authorNoBio": "Ainda não há biografia para este autor.",
+  "authorNoWorks": "Nenhuma obra encontrada para este autor.",
+  "authorWorksIncomplete": "Não foi possível carregar a lista completa de obras.",
+  "authorLoadError": "Não foi possível carregar o perfil deste autor agora.",
+  "authorNotFound": "Autor não encontrado."
 }
