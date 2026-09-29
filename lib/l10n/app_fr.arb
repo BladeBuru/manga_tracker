@@ -2607,5 +2607,20 @@
   "dataSourceCredit": "Fiches, catalogue et suggestions fournis par MangaUpdates",
   "@dataSourceCredit": {
     "description": "Credit de la source de donnees, affiche en pied de l'accueil, de la page d'une section et du profil"
+  },
+  "genreShounen": "Shōnen",
+  "genreSeinen": "Seinen",
+  "genreShoujo": "Shōjo",
+  "genreJosei": "Josei",
+  "genreSports": "Sport",
+  "genreTragedy": "Tragédie",
+  "searchGenreChipAccessibility": "Voir les œuvres du genre {genre}",
+  "@searchGenreChipAccessibility": {
+    "description": "Libellé d'accessibilité d'une pastille de genre populaire (page Recherche)",
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
   }
 }

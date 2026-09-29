@@ -1284,5 +1284,19 @@
   "resumeReadingDecline": "{chapter}화 열기",
   "homeSectionLoadingMore": "다음 작품을 불러오는 중",
   "libraryOwnedBadge": "이미 내 서재에 있음",
-  "dataSourceCredit": "작품 정보, 카탈로그, 추천 제공: MangaUpdates"
+  "dataSourceCredit": "작품 정보, 카탈로그, 추천 제공: MangaUpdates",
+  "genreShounen": "소년",
+  "genreSeinen": "청년",
+  "genreShoujo": "소녀",
+  "genreJosei": "여성",
+  "genreSports": "스포츠",
+  "genreTragedy": "비극",
+  "searchGenreChipAccessibility": "{genre} 장르 작품 보기",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  }
 }

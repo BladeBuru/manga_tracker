@@ -4329,6 +4329,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Fiches, catalogue et suggestions fournis par MangaUpdates'**
   String get dataSourceCredit;
+
+  /// No description provided for @genreShounen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Shōnen'**
+  String get genreShounen;
+
+  /// No description provided for @genreSeinen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Seinen'**
+  String get genreSeinen;
+
+  /// No description provided for @genreShoujo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Shōjo'**
+  String get genreShoujo;
+
+  /// No description provided for @genreJosei.
+  ///
+  /// In fr, this message translates to:
+  /// **'Josei'**
+  String get genreJosei;
+
+  /// No description provided for @genreSports.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sport'**
+  String get genreSports;
+
+  /// No description provided for @genreTragedy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tragédie'**
+  String get genreTragedy;
+
+  /// Libellé d'accessibilité d'une pastille de genre populaire (page Recherche)
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir les œuvres du genre {genre}'**
+  String searchGenreChipAccessibility(String genre);
 }
 
 class _AppLocalizationsDelegate

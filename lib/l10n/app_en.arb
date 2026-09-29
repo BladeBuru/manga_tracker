@@ -1290,5 +1290,19 @@
   "resumeReadingDecline": "Open chapter {chapter}",
   "homeSectionLoadingMore": "Loading more titles",
   "libraryOwnedBadge": "Already in my library",
-  "dataSourceCredit": "Series data, catalogue and suggestions provided by MangaUpdates"
+  "dataSourceCredit": "Series data, catalogue and suggestions provided by MangaUpdates",
+  "genreShounen": "Shounen",
+  "genreSeinen": "Seinen",
+  "genreShoujo": "Shoujo",
+  "genreJosei": "Josei",
+  "genreSports": "Sports",
+  "genreTragedy": "Tragedy",
+  "searchGenreChipAccessibility": "Browse {genre} titles",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  }
 }

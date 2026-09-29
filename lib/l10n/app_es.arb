@@ -1284,5 +1284,19 @@
   "resumeReadingDecline": "Abrir el capítulo {chapter}",
   "homeSectionLoadingMore": "Cargando más títulos",
   "libraryOwnedBadge": "Ya está en mi biblioteca",
-  "dataSourceCredit": "Fichas, catálogo y sugerencias proporcionados por MangaUpdates"
+  "dataSourceCredit": "Fichas, catálogo y sugerencias proporcionados por MangaUpdates",
+  "genreShounen": "Shōnen",
+  "genreSeinen": "Seinen",
+  "genreShoujo": "Shōjo",
+  "genreJosei": "Josei",
+  "genreSports": "Deportes",
+  "genreTragedy": "Tragedia",
+  "searchGenreChipAccessibility": "Ver obras del género {genre}",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  }
 }

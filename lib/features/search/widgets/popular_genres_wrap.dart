@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/home/helpers/home_section_l10n.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Section "Genres populaires" — header petit gris + Wrap de chips pilule.
@@ -45,14 +46,15 @@ class PopularGenresWrap extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: genres
-                .map(
-                  (g) => _GenreChip(
-                    label: g,
-                    onTap: () => onSelectGenre(g),
-                  ),
-                )
-                .toList(),
+            children:
+                genres
+                    .map(
+                      (g) => _GenreChip(
+                        label: HomeSectionL10n.genre(l10n, g),
+                        onTap: () => onSelectGenre(g),
+                      ),
+                    )
+                    .toList(),
           ),
         ],
       ),
@@ -77,28 +79,30 @@ class _GenreChip extends StatelessWidget {
     // chaque chip prenait 100 % de la largeur du parent au lieu de se
     // dimensionner sur le texte. Le `Wrap` parent passe des contraintes
     // loose, on laisse le Container size-to-content.
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: AppColors.dsBorder(brightness),
-            width: 1,
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context)!.searchGenreChipAccessibility(label),
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: AppColors.dsBorder(brightness), width: 1),
           ),
-        ),
-        child: Center(
-          // Center juste vertical (largeur intrinsèque)
-          widthFactor: 1,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-              color: AppColors.dsText2(brightness),
+          child: Center(
+            // Center juste vertical (largeur intrinsèque)
+            widthFactor: 1,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.dsText2(brightness),
+              ),
             ),
           ),
         ),

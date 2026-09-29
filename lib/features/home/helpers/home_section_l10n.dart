@@ -32,6 +32,12 @@ class HomeSectionL10n {
     'scifi': (l) => l.genreSciFi,
     'horror': (l) => l.genreHorror,
     'martialarts': (l) => l.genreMartialArts,
+    'shounen': (l) => l.genreShounen,
+    'seinen': (l) => l.genreSeinen,
+    'shoujo': (l) => l.genreShoujo,
+    'josei': (l) => l.genreJosei,
+    'sports': (l) => l.genreSports,
+    'tragedy': (l) => l.genreTragedy,
   };
 
   /// Genres couverts par une traduction (forme normalisee).

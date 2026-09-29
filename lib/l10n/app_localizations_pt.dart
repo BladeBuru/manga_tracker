@@ -2437,4 +2437,27 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get dataSourceCredit =>
       'Fichas, catálogo e sugestões fornecidos pelo MangaUpdates';
+
+  @override
+  String get genreShounen => 'Shōnen';
+
+  @override
+  String get genreSeinen => 'Seinen';
+
+  @override
+  String get genreShoujo => 'Shōjo';
+
+  @override
+  String get genreJosei => 'Josei';
+
+  @override
+  String get genreSports => 'Esportes';
+
+  @override
+  String get genreTragedy => 'Tragédia';
+
+  @override
+  String searchGenreChipAccessibility(String genre) {
+    return 'Ver obras do gênero $genre';
+  }
 }

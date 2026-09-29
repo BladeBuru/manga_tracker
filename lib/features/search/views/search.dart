@@ -2,11 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/home/dto/home_section.dto.dart';
+import 'package:mangatracker/features/home/dto/home_section_kind.dart';
 import 'package:mangatracker/features/search/bloc/search_bloc.dart';
 import 'package:mangatracker/features/search/services/search_history.service.dart';
 import 'package:mangatracker/features/search/widgets/popular_genres_wrap.dart';
@@ -41,17 +45,25 @@ class _SearchState extends State<Search> {
   Timer? _debounce;
   List<String> _history = const [];
 
-  // Genres populaires — hardcodés (correspondent au design source).
-  // Ne sont pas traduits : ce sont des termes de recherche manga universels.
+  // Genres populaires : noms CANONIQUES MangaUpdates (« Adventure »,
+  // « Sci-fi »), traduits à l'affichage. Une pastille ouvre la liste des
+  // œuvres du genre — elle ne tape plus le nom du genre dans la barre de
+  // recherche (qui cherchait alors des TITRES contenant « shounen »).
   static const List<String> _popularGenres = [
     'Shounen',
     'Seinen',
+    'Shoujo',
     'Romance',
     'Action',
-    'Aventure',
+    'Adventure',
+    'Comedy',
     'Drama',
     'Fantasy',
-    'Sci-Fi',
+    'Sci-fi',
+    'Slice of Life',
+    'Mystery',
+    'Horror',
+    'Sports',
   ];
 
   SearchHistoryService get _historyService {
@@ -90,7 +102,6 @@ class _SearchState extends State<Search> {
 
   @override
   void dispose() {
-    _historyService.saveHistory(_history);
     _controller.dispose();
     _debounce?.cancel();
     super.dispose();
@@ -107,7 +118,11 @@ class _SearchState extends State<Search> {
     }
   }
 
+  /// Enregistre une recherche VALIDÉE (clavier, résultat ouvert, terme
+  /// repris de l'historique). La recherche automatique après une pause de
+  /// frappe n'y passe jamais.
   Future<void> _addToHistory(String query) async {
+    if (query.trim().isEmpty) return;
     final updated = await _historyService.addSearch(query);
     if (!mounted) return;
     setState(() => _history = updated);
@@ -142,18 +157,39 @@ class _SearchState extends State<Search> {
       return;
     }
     _debounce?.cancel();
-    _debounce = Timer(
-      const Duration(milliseconds: 800),
-      _runSearch,
-    );
+    _debounce = Timer(const Duration(milliseconds: 800), _runSearch);
   }
 
-  Future<void> _runSearch() async {
+  /// Recherche automatique (pause de frappe, réessai) : n'enregistre rien.
+  void _runSearch() {
     final query = _controller.text.trim();
     if (query.isEmpty) return;
-    await _addToHistory(query);
-    if (!mounted) return;
     _searchBloc.add(SearchRequested(query));
+  }
+
+  /// Validation au clavier : recherche immédiate + historique.
+  void _onSubmitted(String _) {
+    _debounce?.cancel();
+    final query = _controller.text.trim();
+    if (query.isEmpty) return;
+    final current = _searchBloc.state;
+    final alreadyShown =
+        (current is SearchLoaded && current.query == query) ||
+        (current is SearchLoading && current.query == query);
+    if (!alreadyShown) _runSearch();
+    _addToHistory(query);
+  }
+
+  /// Une pastille de genre ouvre la page « œuvres du genre » (catalogue
+  /// filtré par genre, trié par note, défilement infini).
+  void _openGenre(String genre) {
+    context.push(
+      '/home/section/${Uri.encodeComponent('genre:$genre')}',
+      extra: HomeSectionExtras(
+        kind: HomeSectionKind.genre,
+        params: HomeSectionParams(genre: genre),
+      ),
+    );
   }
 
   void _clearQuery() {
@@ -171,14 +207,16 @@ class _SearchState extends State<Search> {
     _debounce?.cancel();
     setState(() {}); // re-render barre
     _runSearch();
+    _addToHistory(term);
   }
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final bg = brightness == Brightness.dark
-        ? AppColors.dsBgDark
-        : AppColors.dsBgLight;
+    final bg =
+        brightness == Brightness.dark
+            ? AppColors.dsBgDark
+            : AppColors.dsBgLight;
     return Scaffold(
       backgroundColor: bg,
       resizeToAvoidBottomInset: false,
@@ -204,26 +242,33 @@ class _SearchState extends State<Search> {
                     controller: _controller,
                     onChanged: _onQueryChanged,
                     onClear: _clearQuery,
+                    onSubmitted: _onSubmitted,
                   ),
                 ),
                 Expanded(
                   child: BlocBuilder<SearchBloc, SearchState>(
-                    builder: (context, state) => switch (state) {
-                      SearchLoading() =>
-                        const Center(child: CircularProgressIndicator()),
-                      SearchLoaded() => SearchResultsList(state: state),
-                      SearchError() => _SearchErrorView(
-                          state: state,
-                          onRetry: _runSearch,
-                        ),
-                      _ => _BrowseContent(
-                          history: _history,
-                          genres: _popularGenres,
-                          onSelectTerm: _selectTerm,
-                          onRemoveTerm: _removeFromHistory,
-                          onClearHistory: _clearHistory,
-                        ),
-                    },
+                    builder:
+                        (context, state) => switch (state) {
+                          SearchLoading() => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          SearchLoaded() => SearchResultsList(
+                            state: state,
+                            onResultOpened: _addToHistory,
+                          ),
+                          SearchError() => _SearchErrorView(
+                            state: state,
+                            onRetry: _runSearch,
+                          ),
+                          _ => _BrowseContent(
+                            history: _history,
+                            genres: _popularGenres,
+                            onSelectTerm: _selectTerm,
+                            onSelectGenre: _openGenre,
+                            onRemoveTerm: _removeFromHistory,
+                            onClearHistory: _clearHistory,
+                          ),
+                        },
                   ),
                 ),
               ],
@@ -240,6 +285,7 @@ class _BrowseContent extends StatelessWidget {
   final List<String> history;
   final List<String> genres;
   final ValueChanged<String> onSelectTerm;
+  final ValueChanged<String> onSelectGenre;
   final ValueChanged<String> onRemoveTerm;
   final VoidCallback onClearHistory;
 
@@ -247,6 +293,7 @@ class _BrowseContent extends StatelessWidget {
     required this.history,
     required this.genres,
     required this.onSelectTerm,
+    required this.onSelectGenre,
     required this.onRemoveTerm,
     required this.onClearHistory,
   });
@@ -266,10 +313,7 @@ class _BrowseContent extends StatelessWidget {
             onSelect: onSelectTerm,
             onRemove: onRemoveTerm,
           ),
-          PopularGenresWrap(
-            genres: genres,
-            onSelectGenre: onSelectTerm,
-          ),
+          PopularGenresWrap(genres: genres, onSelectGenre: onSelectGenre),
           const SizedBox(height: AppSpacing.l),
         ],
       ),
@@ -288,9 +332,11 @@ class _SearchErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AppErrorState(
-      message: state.isOffline
-          ? (l10n?.networkError ?? 'Veuillez vérifier votre connexion internet')
-          : (l10n?.searchLoadFailed ?? 'La recherche a échoué'),
+      message:
+          state.isOffline
+              ? (l10n?.networkError ??
+                  'Veuillez vérifier votre connexion internet')
+              : (l10n?.searchLoadFailed ?? 'La recherche a échoué'),
       retryLabel: l10n?.retry,
       onRetry: onRetry,
     );

@@ -2347,4 +2347,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get dataSourceCredit => '作品情報・カタログ・おすすめの提供元は MangaUpdates です';
+
+  @override
+  String get genreShounen => '少年';
+
+  @override
+  String get genreSeinen => '青年';
+
+  @override
+  String get genreShoujo => '少女';
+
+  @override
+  String get genreJosei => '女性';
+
+  @override
+  String get genreSports => 'スポーツ';
+
+  @override
+  String get genreTragedy => '悲劇';
+
+  @override
+  String searchGenreChipAccessibility(String genre) {
+    return '$genreジャンルの作品を見る';
+  }
 }

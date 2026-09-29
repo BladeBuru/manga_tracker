@@ -18,6 +18,10 @@ class MangaRow extends StatelessWidget {
   final String? mediumImgPath;
   final String? rating;
   final VoidCallback? onDetailReturn;
+
+  /// Appelé à l'ouverture de la ligne, avant la navigation (ex. la page
+  /// Recherche y enregistre la recherche dans l'historique).
+  final VoidCallback? onOpen;
   final bool hasNewChapters;
   final int? newChaptersCount;
   final bool showDownloadedOnly; // Nouveau paramètre
@@ -44,6 +48,7 @@ class MangaRow extends StatelessWidget {
     this.rating,
     this.mediumImgPath,
     this.onDetailReturn,
+    this.onOpen,
     this.hasNewChapters = false,
     this.newChaptersCount,
     this.showDownloadedOnly = false, // Par défaut false
@@ -71,6 +76,7 @@ class MangaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        onOpen?.call();
         // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
         if (showDownloadedOnly) {
           final downloadManager = DownloadManagerService();

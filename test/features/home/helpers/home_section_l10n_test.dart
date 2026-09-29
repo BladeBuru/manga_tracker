@@ -97,7 +97,7 @@ void main() {
   group('HomeSectionL10n.genre', () {
     test('table des 15 genres frequents (fr), insensible a la casse', () async {
       final fr = await load('fr');
-      expect(HomeSectionL10n.knownGenres, hasLength(15));
+      expect(HomeSectionL10n.knownGenres, hasLength(21));
       expect(HomeSectionL10n.genre(fr, 'Romance'), 'Romance');
       expect(HomeSectionL10n.genre(fr, 'Drama'), 'Drame');
       expect(HomeSectionL10n.genre(fr, 'Fantasy'), 'Fantasy');

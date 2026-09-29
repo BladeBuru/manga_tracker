@@ -2349,4 +2349,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dataSourceCredit => '작품 정보, 카탈로그, 추천 제공: MangaUpdates';
+
+  @override
+  String get genreShounen => '소년';
+
+  @override
+  String get genreSeinen => '청년';
+
+  @override
+  String get genreShoujo => '소녀';
+
+  @override
+  String get genreJosei => '여성';
+
+  @override
+  String get genreSports => '스포츠';
+
+  @override
+  String get genreTragedy => '비극';
+
+  @override
+  String searchGenreChipAccessibility(String genre) {
+    return '$genre 장르 작품 보기';
+  }
 }

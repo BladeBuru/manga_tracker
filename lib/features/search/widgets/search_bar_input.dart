@@ -17,11 +17,16 @@ class SearchBarInput extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
 
+  /// Validation au clavier (touche « Rechercher ») : c'est elle qui
+  /// enregistre la recherche dans l'historique.
+  final ValueChanged<String>? onSubmitted;
+
   const SearchBarInput({
     super.key,
     required this.controller,
     required this.onChanged,
     required this.onClear,
+    this.onSubmitted,
   });
 
   @override
@@ -30,9 +35,8 @@ class SearchBarInput extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final hasQuery = controller.text.isNotEmpty;
-    final bg = brightness == Brightness.dark
-        ? AppColors.dsSurfaceDark
-        : Colors.white;
+    final bg =
+        brightness == Brightness.dark ? AppColors.dsSurfaceDark : Colors.white;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -40,9 +44,7 @@ class SearchBarInput extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: hasQuery
-              ? scheme.primary
-              : AppColors.dsHairline(brightness),
+          color: hasQuery ? scheme.primary : AppColors.dsHairline(brightness),
           width: 1.5,
         ),
       ),
@@ -55,15 +57,15 @@ class SearchBarInput extends StatelessWidget {
           Icon(
             Icons.search_outlined,
             size: 20,
-            color: hasQuery
-                ? scheme.primary
-                : AppColors.dsText3(brightness),
+            color: hasQuery ? scheme.primary : AppColors.dsText3(brightness),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: controller,
               onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              textInputAction: TextInputAction.search,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -100,4 +102,3 @@ class SearchBarInput extends StatelessWidget {
     );
   }
 }
-
