@@ -1945,7 +1945,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String readingGroupActionsCopyFriendLink(String friend) {
-    return 'Copier le lien de $friend';
+    return 'Utiliser le lien de $friend';
   }
 
   @override
@@ -2619,4 +2619,48 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authorNotFound => 'Auteur introuvable.';
+
+  @override
+  String get readerSetAsMangaLink => 'Ceci est le nouveau lien';
+
+  @override
+  String get readerLinkSaveFailed =>
+      'Impossible d\'enregistrer ce lien. Réessayez.';
+
+  @override
+  String linkDiscoveryHint(String title) {
+    return 'Cherchez « $title » sur ce site (le titre est copié), ouvrez sa page, puis enregistrez-la.';
+  }
+
+  @override
+  String get linkDiscoveryHintNoTitle =>
+      'Cherchez le titre sur ce site, ouvrez sa page, puis enregistrez-la.';
+
+  @override
+  String linkDiscoveryTitleCopied(String title) {
+    return '« $title » copié : collez-le dans la recherche du site';
+  }
+
+  @override
+  String linkSuggestionTitle(String host) {
+    return 'Trouver ce titre sur $host';
+  }
+
+  @override
+  String linkSuggestionSource(String title) {
+    return 'Site de votre dernière lecture : $title';
+  }
+
+  @override
+  String get linkSuggestionCopy => 'Copier le lien';
+
+  @override
+  String get linkSuggestionSearch => 'Chercher sur le site';
+
+  @override
+  String get readingGroupActionsCopyLink => 'Copier le lien de lecture';
+
+  @override
+  String get readingGroupActionsCopyLinkSubtitle =>
+      'Pour l\'ouvrir ailleurs ou le partager';
 }

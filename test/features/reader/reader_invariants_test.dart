@@ -400,14 +400,32 @@ void main() {
       return code.substring(start, next == -1 ? code.length : next);
     }
 
+    // Depuis le 2026-09-30 les gardes portent sur `_readOnlyMode`, qui
+    // COUVRE le mode téléchargement (et le mode « recherche de lien »).
+    test('le mode téléchargement est un mode en lecture seule', () {
+      expect(
+        withoutComments(reader),
+        contains('bool get _readOnlyMode => _downloadMode || '),
+      );
+    });
+
     test('aucun suivi de chapitre (ni lien de lecture, ni position)', () {
       expect(methodBody('void _handleDetected('),
-          contains('if (_downloadMode) return;'));
+          contains('if (_readOnlyMode) return;'));
     });
 
     test('la sortie n\'enregistre rien et ne pose aucune question', () {
       expect(methodBody('Future<bool> _onWillPop('),
-          contains('if (_downloadMode) return true;'));
+          contains('if (_readOnlyMode) return true;'));
+    });
+
+    test('aucune détection ni restauration de position au chargement', () {
+      final code = withoutComments(reader);
+      expect(
+        code,
+        contains('if (!_readOnlyMode && _currentChapter == null && url != null)'),
+      );
+      expect(code, contains('if (!_readOnlyMode &&\n                _currentChapter != null'));
     });
 
     test('le téléchargement d\'une page ne ferme jamais le lecteur lui-même',
@@ -491,6 +509,36 @@ void main() {
               'la page qui fait échouer la vérification Cloudflare.',
         );
       }
+    });
+  });
+
+  // Mode « recherche de lien » (2026-09-30) : le lecteur s'ouvre sur le site
+  // d'une AUTRE lecture pour y trouver ce titre. La page affichée n'est pas
+  // un chapitre de ce titre : y détecter un chapitre corromprait sa
+  // progression et réécrirait son lien. Seule écriture permise : « Ceci est
+  // le nouveau lien », sur geste explicite.
+  group('mode « recherche de lien » — lecture seule', () {
+    test('il est couvert par _readOnlyMode', () {
+      expect(
+        withoutComments(reader),
+        contains('_downloadMode || widget.linkDiscovery'),
+      );
+    });
+
+    test('pas de redirection vers le lecteur hors ligne', () {
+      final code = withoutComments(reader);
+      final start = code.indexOf('Future<void> _checkAndRedirectToOffline(');
+      expect(start, isNot(-1));
+      expect(
+        code.substring(start, start + 200),
+        contains('if (widget.linkDiscovery) return;'),
+      );
+    });
+
+    test('la seule écriture est le lien choisi par l\'utilisateur', () {
+      final code = withoutComments(reader);
+      expect(code, contains('case ReaderOverflowAction.setAsMangaLink:'));
+      expect(code, contains('await _library.updateCustomLink(widget.muId, url!)'));
     });
   });
 }

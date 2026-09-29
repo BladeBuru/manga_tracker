@@ -124,6 +124,11 @@ class ReaderWebExtras {
   /// forcement plus fidele.
   final double? initialPositionPercent;
 
+  /// Mode « recherche de lien » : le lecteur s'ouvre sur le site d'une
+  /// autre lecture pour y trouver ce titre ; il n'enregistre rien tant que
+  /// l'utilisateur n'a pas choisi « Ceci est le nouveau lien ».
+  final bool linkDiscovery;
+
   const ReaderWebExtras({
     this.mangaTitle,
     required this.initialLastRead,
@@ -132,6 +137,7 @@ class ReaderWebExtras {
     this.autoDownload = false,
     this.onDownloadComplete,
     this.initialPositionPercent,
+    this.linkDiscovery = false,
   });
 }
 
@@ -277,6 +283,7 @@ GoRouter buildAppRouter() {
                 initialPositionPercent: extras.initialPositionPercent,
                 autoDownload: extras.autoDownload,
                 onDownloadComplete: extras.onDownloadComplete,
+                linkDiscovery: extras.linkDiscovery,
               );
             },
           ),

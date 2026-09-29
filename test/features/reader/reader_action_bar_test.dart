@@ -22,6 +22,7 @@ Future<void> _pumpBar(
   VoidCallback? onRefresh,
   ValueChanged<bool>? onToggleAdBlocker,
   ValueChanged<ReaderOverflowAction>? onOverflowAction,
+  bool linkDiscovery = false,
 }) async {
   final view = tester.view;
   view.devicePixelRatio = 1.0;
@@ -51,6 +52,7 @@ Future<void> _pumpBar(
               onRefresh: onRefresh ?? () {},
               onToggleAdBlocker: onToggleAdBlocker ?? (_) {},
               onOverflowAction: onOverflowAction ?? (_) {},
+              linkDiscovery: linkDiscovery,
             ),
           ],
         ),
@@ -224,6 +226,35 @@ void main() {
         ReaderOverflowAction.downloadPage,
         ReaderOverflowAction.adBlockerInfo,
       ]);
+    });
+  });
+
+  group('mode « recherche de lien »', () {
+    testWidgets('« Ceci est le nouveau lien » remplace le téléchargement',
+        (tester) async {
+      final selected = <ReaderOverflowAction>[];
+      await _pumpBar(
+        tester,
+        linkDiscovery: true,
+        onOverflowAction: selected.add,
+      );
+
+      await tester.tap(find.byTooltip(_moreLabel));
+      await tester.pumpAndSettle();
+
+      expect(find.text(_downloadLabel), findsNothing);
+      expect(find.text(_copyLabel), findsOneWidget);
+      await tester.tap(find.text('Ceci est le nouveau lien'));
+      await tester.pumpAndSettle();
+
+      expect(selected, [ReaderOverflowAction.setAsMangaLink]);
+    });
+
+    testWidgets('hors de ce mode, l\'entrée n\'existe pas', (tester) async {
+      await _pumpBar(tester);
+      await tester.tap(find.byTooltip(_moreLabel));
+      await tester.pumpAndSettle();
+      expect(find.text('Ceci est le nouveau lien'), findsNothing);
     });
   });
 }

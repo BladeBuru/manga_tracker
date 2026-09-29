@@ -15,6 +15,10 @@ enum ReaderOverflowAction {
 
   /// Afficher l'explication du bloqueur de publicités.
   adBlockerInfo,
+
+  /// Mode « recherche de lien » : enregistrer la page courante comme lien
+  /// de lecture du titre (« Ceci est le nouveau lien »).
+  setAsMangaLink,
 }
 
 /// Barre d'actions de la vue de lecture en ligne.
@@ -37,7 +41,12 @@ class ReaderActionBar extends StatelessWidget {
     required this.onRefresh,
     required this.onToggleAdBlocker,
     required this.onOverflowAction,
+    this.linkDiscovery = false,
   });
+
+  /// Mode « recherche de lien » : le menu propose « Ceci est le nouveau
+  /// lien » et masque le téléchargement (la page affichée n'est pas un
+  /// chapitre de ce titre tant que le lien n'est pas trouvé).
 
   /// État courant du bloqueur de publicités.
   final bool adBlockerEnabled;
@@ -52,6 +61,8 @@ class ReaderActionBar extends StatelessWidget {
   final ValueChanged<bool> onToggleAdBlocker;
 
   final ValueChanged<ReaderOverflowAction> onOverflowAction;
+
+  final bool linkDiscovery;
 
   @override
   Widget build(BuildContext context) {
@@ -90,11 +101,18 @@ class ReaderActionBar extends StatelessWidget {
       tooltip: moreLabel,
       onSelected: onOverflowAction,
       itemBuilder: (context) => [
-        _item(
-          ReaderOverflowAction.downloadPage,
-          Icons.download_outlined,
-          l10n?.readerDownloadPage ?? 'Télécharger cette page',
-        ),
+        if (linkDiscovery)
+          _item(
+            ReaderOverflowAction.setAsMangaLink,
+            Icons.link_rounded,
+            l10n?.readerSetAsMangaLink ?? 'Ceci est le nouveau lien',
+          ),
+        if (!linkDiscovery)
+          _item(
+            ReaderOverflowAction.downloadPage,
+            Icons.download_outlined,
+            l10n?.readerDownloadPage ?? 'Télécharger cette page',
+          ),
         _item(
           ReaderOverflowAction.copyUrl,
           Icons.content_copy_outlined,

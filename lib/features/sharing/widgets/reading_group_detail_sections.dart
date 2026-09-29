@@ -5,14 +5,13 @@ import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
-import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_sections.dart';
-import 'package:mangatracker/features/reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/features/sharing/bloc/reading_groups_bloc.dart';
 import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/services/reading_groups.service.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_action_row.dart';
+import 'package:mangatracker/features/sharing/widgets/reading_group_links.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_progress_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -184,75 +183,6 @@ class ReadingGroupActionsSection extends StatelessWidget {
     );
   }
 
-  /// Récupère le membre OTHER (ami) avec un `customLink` non null.
-  /// Retourne null si pas de partenaire ou si l'ami n'a pas de lien.
-  ReadingGroupMemberDto? _friendWithLink() {
-    for (final m in group.members) {
-      if (m.userId == currentUserId) continue;
-      final link = m.customLink;
-      if (link != null && link.isNotEmpty) return m;
-    }
-    return null;
-  }
-
-  ReadingGroupMemberDto? _meMember() {
-    if (currentUserId == null) return null;
-    for (final m in group.members) {
-      if (m.userId == currentUserId) return m;
-    }
-    return null;
-  }
-
-  /// Chapitre cible pour la substitution : le **prochain à lire** côté user.
-  /// Si l'user n'a rien lu → 1.
-  int _targetChapter() {
-    final me = _meMember();
-    final read = me?.readChapters ?? 0;
-    return read > 0 ? read + 1 : 1;
-  }
-
-  /// Substitue le numéro de chapitre dans l'URL de l'ami et **enregistre
-  /// directement** comme `customLink` du manga sur le profil de l'utilisateur
-  /// (refactor 2026-05-19 : avant on copiait dans le presse-papier, mais
-  /// puisqu'on a le contrôle total de l'app, on l'écrit directement → 1 tap,
-  /// l'user n'a plus qu'à revenir et tap "Lire en ligne").
-  Future<void> _applyFriendLink(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    final friend = _friendWithLink();
-    if (friend == null || friend.customLink == null) return;
-    final muId = int.tryParse(group.mangaMuId);
-    if (muId == null || muId <= 0) return;
-    final target = _targetChapter();
-    final adapted = await ChapterLinkResolver.buildUrlForChapter(
-      friend.customLink!,
-      target,
-    );
-    if (adapted == null || adapted.isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.readingGroupCopyLinkFailed),
-          backgroundColor: scheme.error,
-        ),
-      );
-      return;
-    }
-    try {
-      await getIt<LibraryService>().updateCustomLink(muId, adapted);
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.readingGroupApplyLinkSuccess(target))),
-      );
-    } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('${l10n.readingGroupCopyLinkFailed}: $e'),
-          backgroundColor: scheme.error,
-        ),
-      );
-    }
-  }
-
   void _inviteFriend(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // L'endpoint POST /reading-groups/:id/invite existe côté service, mais
@@ -328,8 +258,10 @@ class ReadingGroupActionsSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final muId = int.tryParse(group.mangaMuId);
     final canOpenManga = muId != null && muId > 0;
-    final friend = _friendWithLink();
-    final targetChapter = _targetChapter();
+    final links =
+        ReadingGroupLinks(group: group, currentUserId: currentUserId);
+    final friend = links.friendWithLink();
+    final targetChapter = links.targetChapter();
 
     return ProfileEditSection(
       label: l10n.readingGroupSectionActions,
@@ -345,6 +277,16 @@ class ReadingGroupActionsSection extends StatelessWidget {
         // Visible uniquement si l'ami a configuré un customLink sur ce
         // manga. Substitue le numéro de chapitre via `ChapterLinkResolver`
         // pour pointer sur le prochain chapitre à lire côté user.
+        // Copie réelle dans le presse-papiers (son lien, sinon celui de
+        // l'ami adapté à son prochain chapitre).
+        if (links.hasAnyLink)
+          ReadingGroupActionRow(
+            icon: Icons.content_copy_outlined,
+            color: PastelTileColor.teal,
+            title: l10n.readingGroupActionsCopyLink,
+            subtitle: l10n.readingGroupActionsCopyLinkSubtitle,
+            onTap: () => copyReadingGroupLink(context, links),
+          ),
         if (friend != null)
           ReadingGroupActionRow(
             icon: Icons.link_outlined,
@@ -355,7 +297,7 @@ class ReadingGroupActionsSection extends StatelessWidget {
             subtitle: l10n.readingGroupActionsCopyFriendLinkSubtitle(
               targetChapter,
             ),
-            onTap: () => _applyFriendLink(context),
+            onTap: () => applyReadingGroupFriendLink(context, links),
           ),
         ReadingGroupActionRow(
           icon: Icons.person_add_alt_1_outlined,

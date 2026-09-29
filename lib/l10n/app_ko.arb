@@ -995,7 +995,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "친구 초대하기",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "{friend}의 링크 복사",
+  "readingGroupActionsCopyFriendLink": "{friend}의 링크 사용",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1382,5 +1382,44 @@
   "authorNoWorks": "이 작가의 작품을 찾지 못했습니다.",
   "authorWorksIncomplete": "전체 작품 목록을 불러오지 못했습니다.",
   "authorLoadError": "지금은 이 작가의 프로필을 불러올 수 없습니다.",
-  "authorNotFound": "작가를 찾을 수 없습니다."
+  "authorNotFound": "작가를 찾을 수 없습니다.",
+  "readerSetAsMangaLink": "이 페이지를 새 링크로",
+  "readerLinkSaveFailed": "이 링크를 저장하지 못했습니다. 다시 시도해 주세요.",
+  "linkDiscoveryHint": "이 사이트에서 “{title}”을(를) 검색하고(제목이 복사됨) 작품 페이지를 연 뒤 저장하세요.",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "이 사이트에서 작품을 검색하고 페이지를 연 뒤 저장하세요.",
+  "linkDiscoveryTitleCopied": "“{title}” 복사됨: 사이트 검색창에 붙여 넣으세요",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "{host}에서 이 작품 찾기",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "최근에 읽은 작품의 사이트: {title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "링크 복사",
+  "linkSuggestionSearch": "사이트에서 찾기",
+  "readingGroupActionsCopyLink": "읽기 링크 복사",
+  "readingGroupActionsCopyLinkSubtitle": "다른 곳에서 열거나 공유하기"
 }

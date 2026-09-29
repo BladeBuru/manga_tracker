@@ -1064,7 +1064,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "Invite a friend",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "Copy {friend}'s link",
+  "readingGroupActionsCopyFriendLink": "Use {friend}'s link",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1388,5 +1388,44 @@
   "authorNoWorks": "No works found for this author.",
   "authorWorksIncomplete": "The full list of works couldn't be loaded.",
   "authorLoadError": "Couldn't load this author's profile right now.",
-  "authorNotFound": "Author not found."
+  "authorNotFound": "Author not found.",
+  "readerSetAsMangaLink": "This is the new link",
+  "readerLinkSaveFailed": "Couldn't save this link. Please try again.",
+  "linkDiscoveryHint": "Search for “{title}” on this site (the title is copied), open its page, then save it.",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "Search for the title on this site, open its page, then save it.",
+  "linkDiscoveryTitleCopied": "“{title}” copied: paste it into the site's search",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "Find this title on {host}",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "Site of your latest read: {title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "Copy the link",
+  "linkSuggestionSearch": "Search on the site",
+  "readingGroupActionsCopyLink": "Copy the reading link",
+  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it"
 }

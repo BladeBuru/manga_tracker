@@ -38,6 +38,7 @@ import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.d
 import 'package:mangatracker/features/reader/widgets/chapter_skip_dialog.dart';
 import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
 import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
+import 'package:mangatracker/features/reader/widgets/link_discovery_banner.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
 import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
@@ -58,6 +59,11 @@ class ReaderWebView extends StatefulWidget {
   /// le premier chapitre affiché.
   final double? initialPositionPercent;
 
+  /// Mode « recherche de lien » (voir `ReaderWebExtras.linkDiscovery`) :
+  /// lecture seule, comme le mode téléchargement, plus l'action « Ceci est
+  /// le nouveau lien ».
+  final bool linkDiscovery;
+
   const ReaderWebView({
     super.key,
     required this.muId,
@@ -68,6 +74,7 @@ class ReaderWebView extends StatefulWidget {
     this.autoDownload = false,    // Par défaut false
     this.onDownloadComplete,     // Callback optionnel
     this.initialPositionPercent,
+    this.linkDiscovery = false,
   });
 
   @override
@@ -146,8 +153,16 @@ class _ReaderWebViewState extends State<ReaderWebView>
   // factice (chapitre demandé − 1), et télécharger les chapitres 10 à 12
   // réécrivait le lien de lecture d'un lecteur rendu au chapitre 95.
   bool get _downloadMode => widget.autoDownload;
+
+  // Lecture seule : ni chapitre lu, ni lien réécrit, ni position. Le mode
+  // « recherche de lien » y ajoute la seule écriture voulue par
+  // l'utilisateur (« Ceci est le nouveau lien »). Invariant : la page
+  // affichée n'est PAS un chapitre de ce titre tant que le lien n'est pas
+  // trouvé — y détecter des chapitres corromprait sa progression.
+  bool get _readOnlyMode => _downloadMode || widget.linkDiscovery;
   int get _expectedDownloadChapter => widget.initialLastRead + 1;
   bool _autoDownloadRunning = false;
+  bool _discoveryHintVisible = true;
   bool _downloadReported = false;
 
   // Ad-blocker amélioré avec sélecteurs CSS plus précis
@@ -227,6 +242,8 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// avant toute lecture (aucun chapitre n'est encore détecté), et le lecteur
   /// hors ligne pose lui-même la question à sa propre sortie.
   Future<void> _checkAndRedirectToOffline() async {
+    // Recherche de lien : on navigue sur le site, pas dans un chapitre.
+    if (widget.linkDiscovery) return;
     try {
       final nextChapterNumber = widget.initialLastRead + 1;
       final isDownloaded = await _downloadManager.isChapterDownloaded(widget.muId, nextChapterNumber);
@@ -378,6 +395,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
         break;
       case ReaderOverflowAction.adBlockerInfo:
         await _showAdBlockerInfo();
+        break;
+      case ReaderOverflowAction.setAsMangaLink:
+        await _saveCurrentUrlAsLink();
         break;
     }
   }
@@ -569,6 +589,32 @@ class _ReaderWebViewState extends State<ReaderWebView>
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la détection du captcha: $e');
     }
+  }
+
+  /// « Ceci est le nouveau lien » : la page affichée devient le lien de
+  /// lecture du titre, puis on revient à sa fiche. Seule écriture du mode
+  /// « recherche de lien », et uniquement sur geste explicite.
+  Future<void> _saveCurrentUrlAsLink() async {
+    final l10n = AppLocalizations.of(context);
+    final url = (await _controller?.getUrl())?.toString();
+    final uri = url == null ? null : Uri.tryParse(url);
+    if (uri == null ||
+        uri.host.isEmpty ||
+        (uri.scheme != 'http' && uri.scheme != 'https')) {
+      _notifier.error(l10n?.invalidLink ??
+          'Lien invalide. Le lien doit commencer par http:// ou https://');
+      return;
+    }
+    final saved = await _library.updateCustomLink(widget.muId, url!);
+    if (!mounted) return;
+    if (!saved) {
+      _notifier.error(l10n?.readerLinkSaveFailed ??
+          "Impossible d'enregistrer ce lien. Réessayez.");
+      return;
+    }
+    _notifier.success(l10n?.linkSaved ?? 'Lien enregistré !');
+    // Sortie directe (PopScope ne concerne que les retours de l'utilisateur).
+    Navigator.of(context).pop(true);
   }
 
   Future<void> _copyCurrentUrl() async {
@@ -1078,8 +1124,8 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// navigation qui survient pendant un traitement est mise en attente (la
   /// plus récente gagne) au lieu d'être perdue.
   void _handleDetected(Uri uri) {
-    // Mode téléchargement : aucun suivi de lecture (voir _downloadMode).
-    if (_downloadMode) return;
+    // Lecture seule (téléchargement, recherche de lien) : aucun suivi.
+    if (_readOnlyMode) return;
     if (uri.toString() == _lastHandledUrl) return;
     if (_processingDetection) {
       _pendingDetection = uri;
@@ -1233,7 +1279,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // chapitre à proposer. Quitter ANNULE : la fenêtre de téléchargement
     // multiple reçoit un résultat `null` et arrête la série (au lieu
     // d'ouvrir aussitôt le chapitre suivant).
-    if (_downloadMode) return true;
+    if (_readOnlyMode) return true;
 
     // Sauvegarder la position de scroll avant de fermer
     debugPrint('🔍 _onWillPop - Sauvegarde de la position avant fermeture');
@@ -1393,6 +1439,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
               onRefresh: _refreshPage,
               onToggleAdBlocker: _toggleAdBlocker,
               onOverflowAction: _handleOverflowAction,
+              linkDiscovery: widget.linkDiscovery,
             ),
           ],
         ),
@@ -1543,7 +1590,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
             // Détecter le chapitre depuis l'URL si pas encore détecté
             // (jamais en mode téléchargement : cela réécrivait le lien de
             // lecture de l'utilisateur).
-            if (!_downloadMode && _currentChapter == null && url != null) {
+            if (!_readOnlyMode && _currentChapter == null && url != null) {
               final uri = url;
               final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
               if (newCh != null) {
@@ -1555,7 +1602,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
             
             // Restaurer la position de scroll si disponible (en arrière-plan pour ne pas bloquer)
-            if (!_downloadMode &&
+            if (!_readOnlyMode &&
                 _currentChapter != null &&
                 mounted &&
                 _controller != null) {
@@ -1697,6 +1744,20 @@ class _ReaderWebViewState extends State<ReaderWebView>
                   readClearance: () => _readClearance(_challengeUrl!),
                   onPassed: _onHandoffPassed,
                   onOpenInBrowser: _openChallengeInBrowser,
+                ),
+              ),
+            // Recherche de lien : consigne + raccourci « Ceci est le nouveau
+            // lien » (aussi dans le menu ⋮).
+            if (widget.linkDiscovery && !_showHandoff && _discoveryHintVisible)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: LinkDiscoveryBanner(
+                  mangaTitle: widget.mangaTitle,
+                  onSaveLink: _saveCurrentUrlAsLink,
+                  onDismiss: () =>
+                      setState(() => _discoveryHintVisible = false),
                 ),
               ),
           ],

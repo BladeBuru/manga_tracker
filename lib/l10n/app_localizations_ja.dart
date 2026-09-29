@@ -1873,7 +1873,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String readingGroupActionsCopyFriendLink(String friend) {
-    return '$friendのリンクをコピー';
+    return '$friendのリンクを使う';
   }
 
   @override
@@ -2505,4 +2505,45 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get authorNotFound => '作者が見つかりません。';
+
+  @override
+  String get readerSetAsMangaLink => 'これを新しいリンクにする';
+
+  @override
+  String get readerLinkSaveFailed => 'このリンクを保存できませんでした。もう一度お試しください。';
+
+  @override
+  String linkDiscoveryHint(String title) {
+    return 'このサイトで「$title」を検索し（タイトルはコピー済み）、作品ページを開いて保存してください。';
+  }
+
+  @override
+  String get linkDiscoveryHintNoTitle => 'このサイトで作品を検索し、作品ページを開いて保存してください。';
+
+  @override
+  String linkDiscoveryTitleCopied(String title) {
+    return '「$title」をコピーしました：サイトの検索に貼り付けてください';
+  }
+
+  @override
+  String linkSuggestionTitle(String host) {
+    return '$hostでこの作品を探す';
+  }
+
+  @override
+  String linkSuggestionSource(String title) {
+    return '最近読んだ作品のサイト：$title';
+  }
+
+  @override
+  String get linkSuggestionCopy => 'リンクをコピー';
+
+  @override
+  String get linkSuggestionSearch => 'サイトで探す';
+
+  @override
+  String get readingGroupActionsCopyLink => '読書リンクをコピー';
+
+  @override
+  String get readingGroupActionsCopyLinkSubtitle => '他のアプリで開いたり共有したりできます';
 }

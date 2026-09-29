@@ -1875,7 +1875,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String readingGroupActionsCopyFriendLink(String friend) {
-    return '$friend의 링크 복사';
+    return '$friend의 링크 사용';
   }
 
   @override
@@ -2508,4 +2508,45 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get authorNotFound => '작가를 찾을 수 없습니다.';
+
+  @override
+  String get readerSetAsMangaLink => '이 페이지를 새 링크로';
+
+  @override
+  String get readerLinkSaveFailed => '이 링크를 저장하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String linkDiscoveryHint(String title) {
+    return '이 사이트에서 “$title”을(를) 검색하고(제목이 복사됨) 작품 페이지를 연 뒤 저장하세요.';
+  }
+
+  @override
+  String get linkDiscoveryHintNoTitle => '이 사이트에서 작품을 검색하고 페이지를 연 뒤 저장하세요.';
+
+  @override
+  String linkDiscoveryTitleCopied(String title) {
+    return '“$title” 복사됨: 사이트 검색창에 붙여 넣으세요';
+  }
+
+  @override
+  String linkSuggestionTitle(String host) {
+    return '$host에서 이 작품 찾기';
+  }
+
+  @override
+  String linkSuggestionSource(String title) {
+    return '최근에 읽은 작품의 사이트: $title';
+  }
+
+  @override
+  String get linkSuggestionCopy => '링크 복사';
+
+  @override
+  String get linkSuggestionSearch => '사이트에서 찾기';
+
+  @override
+  String get readingGroupActionsCopyLink => '읽기 링크 복사';
+
+  @override
+  String get readingGroupActionsCopyLinkSubtitle => '다른 곳에서 열거나 공유하기';
 }

@@ -1995,7 +1995,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "Inviter un ami",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "Copier le lien de {friend}",
+  "readingGroupActionsCopyFriendLink": "Utiliser le lien de {friend}",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -2710,5 +2710,46 @@
   "authorNoWorks": "Aucune œuvre trouvée pour cet auteur.",
   "authorWorksIncomplete": "La liste complète des œuvres n'a pas pu être chargée.",
   "authorLoadError": "Impossible de charger la fiche de cet auteur pour le moment.",
-  "authorNotFound": "Auteur introuvable."
+  "authorNotFound": "Auteur introuvable.",
+  "readerSetAsMangaLink": "Ceci est le nouveau lien",
+  "readerLinkSaveFailed": "Impossible d'enregistrer ce lien. Réessayez.",
+  "linkDiscoveryHint": "Cherchez « {title} » sur ce site (le titre est copié), ouvrez sa page, puis enregistrez-la.",
+  "@linkDiscoveryHint": {
+    "description": "Consigne du lecteur en mode « recherche de lien »",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "Cherchez le titre sur ce site, ouvrez sa page, puis enregistrez-la.",
+  "linkDiscoveryTitleCopied": "« {title} » copié : collez-le dans la recherche du site",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "Trouver ce titre sur {host}",
+  "@linkSuggestionTitle": {
+    "description": "Suggestion du site de la dernière lecture pour un titre sans lien",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "Site de votre dernière lecture : {title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "Copier le lien",
+  "linkSuggestionSearch": "Chercher sur le site",
+  "readingGroupActionsCopyLink": "Copier le lien de lecture",
+  "readingGroupActionsCopyLinkSubtitle": "Pour l'ouvrir ailleurs ou le partager"
 }

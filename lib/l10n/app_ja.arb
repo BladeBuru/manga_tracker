@@ -995,7 +995,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "友達を招待",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "{friend}のリンクをコピー",
+  "readingGroupActionsCopyFriendLink": "{friend}のリンクを使う",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1382,5 +1382,44 @@
   "authorNoWorks": "この作者の作品は見つかりませんでした。",
   "authorWorksIncomplete": "作品の一覧をすべて読み込めませんでした。",
   "authorLoadError": "現在この作者のプロフィールを読み込めません。",
-  "authorNotFound": "作者が見つかりません。"
+  "authorNotFound": "作者が見つかりません。",
+  "readerSetAsMangaLink": "これを新しいリンクにする",
+  "readerLinkSaveFailed": "このリンクを保存できませんでした。もう一度お試しください。",
+  "linkDiscoveryHint": "このサイトで「{title}」を検索し（タイトルはコピー済み）、作品ページを開いて保存してください。",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "このサイトで作品を検索し、作品ページを開いて保存してください。",
+  "linkDiscoveryTitleCopied": "「{title}」をコピーしました：サイトの検索に貼り付けてください",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "{host}でこの作品を探す",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "最近読んだ作品のサイト：{title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "リンクをコピー",
+  "linkSuggestionSearch": "サイトで探す",
+  "readingGroupActionsCopyLink": "読書リンクをコピー",
+  "readingGroupActionsCopyLinkSubtitle": "他のアプリで開いたり共有したりできます"
 }

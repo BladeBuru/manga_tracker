@@ -25,6 +25,10 @@ class MangaQuickViewDto {
   /// (cf. `MangaDetailDto.officialTotalChapters` côté détail).
   final num? userReportedTotalChapters;
   final List<String>? associated;
+
+  /// Lien de lecture personnel (bibliothèque uniquement). Sert à proposer
+  /// « le site de ma dernière lecture » pour un titre sans lien.
+  final String? customLink;
   final bool hasNewChapters;
 
   /// Nombre de chapitres détectés localement au-delà du lu. Calculé par la
@@ -59,6 +63,7 @@ class MangaQuickViewDto {
     this.totalChapters,
     this.userReportedTotalChapters,
     this.associated,
+    this.customLink,
     this.hasNewChapters = false,
     this.newChaptersCount = 0,
     this.type,
@@ -99,6 +104,7 @@ class MangaQuickViewDto {
       totalChapters: totalChapters ?? this.totalChapters,
       userReportedTotalChapters: userReportedTotalChapters,
       associated: associated,
+      customLink: customLink,
       hasNewChapters: hasNewChapters ?? this.hasNewChapters,
       newChaptersCount: newChaptersCount ?? this.newChaptersCount,
       // `type` et `genres` étaient perdus à chaque copie (pastille de type
@@ -129,6 +135,7 @@ class MangaQuickViewDto {
         userReportedTotalChapters: json['userReportedTotalChapters'] ??
             json['user_reported_total_chapters'],
         associated: (json['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
+        customLink: _optionalString(json['customLink'] ?? json['custom_link']),
         hasNewChapters: json['hasNewChapters'] as bool? ?? false,
         // Champs optionnels des sections d'accueil : tolerants a l'absence
         // ET a un type inattendu (une chaine vide vaut « inconnu »).
@@ -165,6 +172,7 @@ class MangaQuickViewDto {
       'totalChapters': totalChapters,
       'userReportedTotalChapters': userReportedTotalChapters,
       'associated': associated,
+      'customLink': customLink,
       'hasNewChapters': hasNewChapters,
       'type': type,
       'genres': genres,
