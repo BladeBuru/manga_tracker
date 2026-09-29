@@ -50,32 +50,60 @@ class LibraryFiltering {
     required bool showDownloadedOnly,
     required DownloadManagerService downloadManager,
   }) async {
-    List<MangaQuickViewDto> filtered = mangas;
-
+    Set<int>? downloadedMuIds;
     if (showDownloadedOnly) {
       final downloadedChapters =
           await downloadManager.getAllDownloadedChapters();
-      final downloadedMuIds = downloadedChapters.keys.toSet();
-      filtered = filtered
-          .where((manga) => downloadedMuIds.contains(manga.muId.toInt()))
-          .toList();
+      downloadedMuIds = downloadedChapters.keys.toSet();
+    }
+    return apply(
+      mangas: mangas,
+      searchQuery: searchQuery,
+      downloadedMuIds: downloadedMuIds,
+    );
+  }
+
+  /// Version synchrone de [filter] : aucun accès disque, utilisable pendant
+  /// le rendu. [downloadedMuIds] à `null` = pas de filtre « téléchargés ».
+  ///
+  /// C'est elle que la vue appelle : filtrer via un `Future` créé pendant
+  /// le rendu remplaçait toute la liste par un indicateur de chargement à
+  /// chaque reconstruction (frappe, clavier, geste retour) — la page
+  /// « clignotait ».
+  static List<MangaQuickViewDto> apply({
+    required List<MangaQuickViewDto> mangas,
+    required String searchQuery,
+    Set<int>? downloadedMuIds,
+  }) {
+    List<MangaQuickViewDto> filtered = mangas;
+
+    if (downloadedMuIds != null) {
+      filtered =
+          filtered
+              .where((manga) => downloadedMuIds.contains(manga.muId.toInt()))
+              .toList();
     }
 
     if (searchQuery.isEmpty) return filtered;
 
-    final scored = filtered
-        .map((manga) {
-          final titleMatch = manga.title.toLowerCase().contains(searchQuery);
-          final associatedMatch = manga.associated?.any(
-                  (name) => name.toLowerCase().contains(searchQuery)) ??
-              false;
-          if (titleMatch || associatedMatch) {
-            return MapEntry(manga, calculateMatchScore(manga, searchQuery));
-          }
-          return null;
-        })
-        .whereType<MapEntry<MangaQuickViewDto, int>>()
-        .toList();
+    final scored =
+        filtered
+            .map((manga) {
+              final titleMatch = manga.title.toLowerCase().contains(
+                searchQuery,
+              );
+              final associatedMatch =
+                  manga.associated?.any(
+                    (name) => name.toLowerCase().contains(searchQuery),
+                  ) ??
+                  false;
+              if (titleMatch || associatedMatch) {
+                return MapEntry(manga, calculateMatchScore(manga, searchQuery));
+              }
+              return null;
+            })
+            .whereType<MapEntry<MangaQuickViewDto, int>>()
+            .toList();
 
     scored.sort((a, b) => b.value.compareTo(a.value));
     return scored.map((e) => e.key).toList();
@@ -117,5 +145,44 @@ class LibraryFiltering {
       }
     }
     return grouped;
+  }
+}
+
+/// Mémorise le dernier regroupement calculé pour la vue bibliothèque.
+///
+/// La vue se reconstruit pour des raisons étrangères aux données (focus de
+/// la barre de recherche, ouverture du clavier, geste retour prédictif) :
+/// tant que la liste, la recherche et le filtre « téléchargés » n'ont pas
+/// changé, le même résultat — la même instance — est rendu.
+class LibraryGroupingCache {
+  List<MangaQuickViewDto>? _mangas;
+  String? _query;
+  Set<int>? _downloaded;
+  Map<ReadingStatus, List<MangaQuickViewDto>>? _grouped;
+
+  Map<ReadingStatus, List<MangaQuickViewDto>> resolve({
+    required List<MangaQuickViewDto> mangas,
+    required String searchQuery,
+    Set<int>? downloadedMuIds,
+  }) {
+    final cached = _grouped;
+    if (cached != null &&
+        identical(mangas, _mangas) &&
+        searchQuery == _query &&
+        identical(downloadedMuIds, _downloaded)) {
+      return cached;
+    }
+    final filtered = LibraryFiltering.apply(
+      mangas: mangas,
+      searchQuery: searchQuery,
+      downloadedMuIds: downloadedMuIds,
+    );
+    _mangas = mangas;
+    _query = searchQuery;
+    _downloaded = downloadedMuIds;
+    return _grouped = LibraryFiltering.groupAndSortByStatus(
+      filtered,
+      searchQuery,
+    );
   }
 }

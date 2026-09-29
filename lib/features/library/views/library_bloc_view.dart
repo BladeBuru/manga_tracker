@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
-import 'package:mangatracker/core/components/search_bar.dart' show CustomSearchBar;
+import 'package:mangatracker/core/components/search_bar.dart'
+    show CustomSearchBar;
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
@@ -19,7 +22,6 @@ import 'package:mangatracker/features/library/widgets/library_grid_view.dart';
 import 'package:mangatracker/features/library/widgets/library_list_view.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
-import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,8 +42,8 @@ class LibraryBlocView extends StatefulWidget {
 
 class _LibraryBlocViewState extends State<LibraryBlocView> {
   final LibraryBloc _libraryBloc = getIt<LibraryBloc>();
-  final NewChapterService _newChapterService = NewChapterService();
   final DownloadManagerService _downloadManager = DownloadManagerService();
+  final LibraryGroupingCache _grouping = LibraryGroupingCache();
   final TextEditingController _searchController = TextEditingController();
   final Map<ReadingStatus, bool> _isExpanded = {
     ReadingStatus.reading: true,
@@ -54,10 +56,13 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   String _searchQuery = '';
   bool _showDownloadedOnly = false;
 
+  /// Mangas ayant au moins un chapitre téléchargé — lu UNE fois à
+  /// l'activation du filtre, jamais pendant le rendu.
+  Set<int>? _downloadedMuIds;
+
   @override
   void initState() {
     super.initState();
-    debugPrint('📚 LibraryBlocView initialisée - Utilisation du BLoC !');
     _libraryBloc.add(const LoadLibrary());
     _searchController.addListener(_onSearchChanged);
     if (_cachedViewMode != null) _isCardView = _cachedViewMode!;
@@ -67,8 +72,10 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   Future<void> _loadViewState() async {
     final prefs = await SharedPreferences.getInstance();
     final storedValue = prefs.getBool('library_view_mode');
-    if (storedValue != null) {
-      _cachedViewMode = storedValue;
+    if (storedValue == null) return;
+    _cachedViewMode = storedValue;
+    // Pas de reconstruction si le mode mémorisé est déjà celui affiché.
+    if (storedValue != _isCardView) {
       if (mounted) {
         setState(() => _isCardView = storedValue);
       } else {
@@ -90,18 +97,36 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     super.dispose();
   }
 
+  /// Le contrôleur notifie aussi les changements de sélection / de
+  /// curseur (simple appui dans le champ) : on ne reconstruit que si le
+  /// TEXTE recherché change.
   void _onSearchChanged() {
-    setState(() => _searchQuery = _searchController.text.toLowerCase());
+    final query = _searchController.text.toLowerCase();
+    if (query == _searchQuery) return;
+    setState(() => _searchQuery = query);
   }
 
-  Future<List<MangaQuickViewDto>> _filterMangas(
-          List<MangaQuickViewDto> mangas) =>
-      LibraryFiltering.filter(
-        mangas: mangas,
-        searchQuery: _searchQuery,
-        showDownloadedOnly: _showDownloadedOnly,
-        downloadManager: _downloadManager,
-      );
+  Future<void> _toggleDownloadedOnly() async {
+    if (_showDownloadedOnly) {
+      setState(() => _showDownloadedOnly = false);
+      return;
+    }
+    final chapters = await _downloadManager.getAllDownloadedChapters();
+    if (!mounted) return;
+    setState(() {
+      _downloadedMuIds = chapters.keys.toSet();
+      _showDownloadedOnly = true;
+    });
+  }
+
+  /// Attend la fin réelle du rafraîchissement (au lieu d'un délai fixe) :
+  /// l'indicateur de « tirer pour rafraîchir » disparaît avec les données,
+  /// hors ligne compris.
+  Future<void> _refresh() {
+    final done = Completer<void>();
+    _libraryBloc.add(RefreshLibrary(completer: done));
+    return done.future.timeout(const Duration(seconds: 20), onTimeout: () {});
+  }
 
   String _displayNameOf(MangaQuickViewDto manga) =>
       LibraryFiltering.displayNameOf(manga, _searchQuery);
@@ -122,9 +147,10 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
       // **V1 refactor 2026-05-18** : AppBar Material 3 supprimée — remplacée
       // par `LibraryTopBar` inline (titre large 24/900 + 3 boutons 36×36
       // radius 10). Cohérent avec `screen-library.jsx` du design source.
-      backgroundColor: brightness == Brightness.dark
-          ? AppColors.dsBgDark
-          : AppColors.dsBgLight,
+      backgroundColor:
+          brightness == Brightness.dark
+              ? AppColors.dsBgDark
+              : AppColors.dsBgLight,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -133,8 +159,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
               title: l10n?.library ?? 'Bibliothèque',
               showDownloadedOnly: _showDownloadedOnly,
               isCardView: _isCardView,
-              onToggleDownloadedFilter: () => setState(
-                  () => _showDownloadedOnly = !_showDownloadedOnly),
+              onToggleDownloadedFilter: _toggleDownloadedOnly,
               onOpenDownloads: () => context.push('/downloads'),
               onToggleView: () {
                 setState(() {
@@ -143,48 +168,52 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                 });
                 _saveViewState();
               },
-              toggleDownloadedTooltip: _showDownloadedOnly
-                  ? (l10n?.libraryShowAllMangas ?? 'Afficher tous les mangas')
-                  : (l10n?.libraryShowDownloadedOnly ??
-                      'Afficher uniquement les téléchargés'),
+              toggleDownloadedTooltip:
+                  _showDownloadedOnly
+                      ? (l10n?.libraryShowAllMangas ??
+                          'Afficher tous les mangas')
+                      : (l10n?.libraryShowDownloadedOnly ??
+                          'Afficher uniquement les téléchargés'),
               openDownloadsTooltip:
                   l10n?.manageDownloads ?? 'Gérer les téléchargements',
-              toggleViewTooltip: _isCardView
-                  ? (l10n?.libraryToggleListView ?? 'Vue liste')
-                  : (l10n?.libraryToggleCardView ?? 'Vue carte'),
+              toggleViewTooltip:
+                  _isCardView
+                      ? (l10n?.libraryToggleListView ?? 'Vue liste')
+                      : (l10n?.libraryToggleCardView ?? 'Vue carte'),
             ),
             Expanded(
               child: BlocConsumer<LibraryBloc, LibraryState>(
-        bloc: _libraryBloc,
-        listener: (context, state) {
-          if (state is LibraryError) {
-            if (state.message.contains('InvalidCredentials') ||
-                state.message.contains('Expired session')) {
-              _redirectToLoginPage();
-            }
-          }
-        },
-        builder: (context, state) {
-          // Responsive (audit 2026-06-12) : branches locales 1200/600
-          // remplacées par le wrapper unifié AppContentWidth (max 1100)
-          // + paddings issus d'AppBreakpoints.
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final bp = AppBreakpoints.of(constraints.maxWidth);
-              final hPad = bp.isWide
-                  ? 32.0
-                  : bp.isAtLeastTablet
-                      ? 24.0
-                      : 0.0;
-              return AppContentWidth(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: hPad),
-                  child: _buildBody(state),
-                ),
-              );
-            },
-          );
-        },
+                bloc: _libraryBloc,
+                listener: (context, state) {
+                  if (state is LibraryError) {
+                    if (state.message.contains('InvalidCredentials') ||
+                        state.message.contains('Expired session')) {
+                      _redirectToLoginPage();
+                    }
+                  }
+                },
+                builder: (context, state) {
+                  // Responsive (audit 2026-06-12) : branches locales 1200/600
+                  // remplacées par le wrapper unifié AppContentWidth (max 1100)
+                  // + paddings issus d'AppBreakpoints.
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final bp = AppBreakpoints.of(constraints.maxWidth);
+                      final hPad =
+                          bp.isWide
+                              ? 32.0
+                              : bp.isAtLeastTablet
+                              ? 24.0
+                              : 0.0;
+                      return AppContentWidth(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: hPad),
+                          child: _buildBody(state),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -194,7 +223,9 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   }
 
   Widget _buildBody(LibraryState state) {
-    if (state is LibraryLoading) {
+    // `LibraryInitial` = premier affichage, chargement pas encore commencé :
+    // il affichait « Erreur » une fraction de seconde.
+    if (state is LibraryLoading || state is LibraryInitial) {
       return const Center(child: CircularProgressIndicator());
     }
     if (state is LibraryError) {
@@ -219,14 +250,12 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           ),
         if (state.requiresReauth) _reauthBanner(),
         LibraryActionBanner(action: state.action),
-        Expanded(child: _buildFutureList(state.mangas)),
+        Expanded(child: _buildList(state.mangas)),
       ],
     );
   }
 
   Widget _buildLibraryContent(LibraryLoaded state) {
-    debugPrint(
-        '📚 LibraryBlocView: isOffline=${state.isOffline}, pendingActions=${state.pendingActions}, mangas=${state.mangas.length}');
     return Column(
       children: [
         _searchPadding(),
@@ -236,7 +265,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
             child: OfflineBanner(pendingActions: state.pendingActions),
           ),
         if (state.requiresReauth) _reauthBanner(),
-        Expanded(child: _buildFutureList(state.mangas)),
+        Expanded(child: _buildList(state.mangas)),
       ],
     );
   }
@@ -244,56 +273,49 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   /// Invitation non bloquante a se reconnecter : la bibliotheque en cache
   /// reste affichee et navigable derriere.
   Widget _reauthBanner() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: SessionRejectedBanner(
-          onReconnect: () => context.push('/login'),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: SessionRejectedBanner(onReconnect: () => context.push('/login')),
+  );
 
   Widget _searchPadding() => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: CustomSearchBar(
-          controller: _searchController,
-          onChanged: (value) {},
-        ),
-      );
+    padding: const EdgeInsets.all(16.0),
+    child: CustomSearchBar(
+      controller: _searchController,
+      onChanged: (value) {},
+    ),
+  );
 
-  Widget _buildFutureList(List<MangaQuickViewDto> mangas) {
-    return FutureBuilder<List<MangaQuickViewDto>>(
-      future: _filterMangas(mangas),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final filtered = snapshot.data ?? [];
-        return RefreshIndicator(
-          onRefresh: () async {
-            _libraryBloc.add(const RefreshLibrary());
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: _isCardView
+  /// Rendu SYNCHRONE : la liste reste à l'écran pendant toute
+  /// reconstruction (plus de `FutureBuilder` recréé à chaque rendu, qui
+  /// remplaçait la liste par un indicateur de chargement puis rechargeait
+  /// toutes les couvertures).
+  Widget _buildList(List<MangaQuickViewDto> mangas) {
+    final grouped = _grouping.resolve(
+      mangas: mangas,
+      searchQuery: _searchQuery,
+      downloadedMuIds: _showDownloadedOnly ? _downloadedMuIds : null,
+    );
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child:
+          _isCardView
               ? LibraryGridView(
-                  grouped: LibraryFiltering.groupAndSortByStatus(
-                      filtered, _searchQuery),
-                  isExpanded: _isExpanded,
-                  onToggleSection: _toggleSection,
-                  searchQuery: _searchQuery,
-                  showDownloadedOnly: _showDownloadedOnly,
-                  displayNameOf: _displayNameOf,
-                )
+                grouped: grouped,
+                isExpanded: _isExpanded,
+                onToggleSection: _toggleSection,
+                searchQuery: _searchQuery,
+                showDownloadedOnly: _showDownloadedOnly,
+                displayNameOf: _displayNameOf,
+              )
               : LibraryListView(
-                  grouped: LibraryFiltering.groupAndSortByStatus(
-                      filtered, _searchQuery),
-                  isExpanded: _isExpanded,
-                  onToggleSection: _toggleSection,
-                  searchQuery: _searchQuery,
-                  showDownloadedOnly: _showDownloadedOnly,
-                  newChapterService: _newChapterService,
-                  libraryBloc: _libraryBloc,
-                  displayNameOf: _displayNameOf,
-                ),
-        );
-      },
+                grouped: grouped,
+                isExpanded: _isExpanded,
+                onToggleSection: _toggleSection,
+                searchQuery: _searchQuery,
+                showDownloadedOnly: _showDownloadedOnly,
+                libraryBloc: _libraryBloc,
+                displayNameOf: _displayNameOf,
+              ),
     );
   }
 }

@@ -124,12 +124,15 @@ class BottomNavbarState extends State<BottomNavbar> {
         },
         controller: pageCont,
         children: <Widget>[
-          BlocProvider<HomePageBloc>(
-            create: (context) => getIt<HomePageBloc>(),
+          // `.value` : ces BLoCs sont des singletons GetIt. Avec `create`,
+          // le provider en devenait propriétaire et les FERMAIT quand la
+          // page quitte le PageView (changement d'onglet).
+          BlocProvider<HomePageBloc>.value(
+            value: getIt<HomePageBloc>(),
             child: const HomePageBlocView(),
           ),
-          BlocProvider<LibraryBloc>(
-            create: (context) => getIt<LibraryBloc>(),
+          BlocProvider<LibraryBloc>.value(
+            value: getIt<LibraryBloc>(),
             child: const LibraryBlocView(),
           ),
           const Search(),

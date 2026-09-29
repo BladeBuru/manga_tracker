@@ -79,6 +79,54 @@ void main() {
     return bloc.state;
   }
 
+  group('LibraryBloc — chargements successifs (clignotement)', () {
+    test('tirer pour rafraîchir se termine aussi hors ligne (repli cache)',
+        () async {
+      when(() => cacheHelper.getCachedLibrary())
+          .thenAnswer((_) async => [manga(1, 'Berserk')]);
+      when(() => libraryService.getUserSavedMangas())
+          .thenThrow(const SocketException('offline'));
+
+      final bloc = LibraryBloc();
+      addTearDown(bloc.close);
+      final done = Completer<void>();
+      bloc.add(RefreshLibrary(completer: done));
+
+      await done.future.timeout(const Duration(seconds: 2));
+      expect(bloc.state, isA<LibraryLoaded>());
+    });
+
+    test('deux chargements qui se chevauchent : seul le plus récent émet '
+        'son résultat réseau', () async {
+      final slow = Completer<List<MangaQuickViewDto>>();
+      var calls = 0;
+      when(() => cacheHelper.getCachedLibrary()).thenAnswer((_) async => null);
+      when(() => libraryService.getUserSavedMangas()).thenAnswer((_) {
+        calls++;
+        return calls == 1
+            ? slow.future
+            : Future.value([manga(2, 'Récent')]);
+      });
+
+      final bloc = LibraryBloc();
+      addTearDown(bloc.close);
+      final emitted = <LibraryState>[];
+      final sub = bloc.stream.listen(emitted.add);
+      addTearDown(sub.cancel);
+
+      bloc.add(const LoadLibrary());
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      bloc.add(const LoadLibrary());
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      slow.complete([manga(1, 'Périmé')]);
+      await settle(bloc);
+
+      final loaded = emitted.whereType<LibraryLoaded>().toList();
+      expect(loaded, hasLength(1));
+      expect(loaded.single.mangas.single.title, 'Récent');
+    });
+  });
+
   group('LibraryBloc — lecture hors ligne', () {
     test('token expiré + hors ligne → sert la bibliothèque en cache', () async {
       final cached = [manga(1, 'Berserk'), manga(2, 'Vagabond')];

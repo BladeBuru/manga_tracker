@@ -65,6 +65,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  /// Créé une seule fois : une nouvelle instance à chaque rendu notifiait
+  /// toutes les zones défilantes de l'application.
+  static final ScrollBehavior _scrollBehavior = const ScrollBehavior().copyWith(
+    physics: const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
+    ),
+  );
+
   Locale _locale = const Locale('fr', '');
   ThemeMode _themeMode = ThemeMode.system;
   DeepLinkHandler? _deepLinkHandler;
@@ -160,9 +168,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     // Adapter SystemChrome selon le thème
-    final isDark = _themeMode == ThemeMode.dark || 
-                   (_themeMode == ThemeMode.system && 
-                    MediaQuery.of(context).platformBrightness == Brightness.dark);
+    // `platformBrightnessOf` (et non `MediaQuery.of`) : l'application ne se
+    // reconstruit plus à chaque image de l'animation du clavier ou du geste
+    // retour — seulement quand la luminosité du système change.
+    final isDark = _themeMode == ThemeMode.dark ||
+        (_themeMode == ThemeMode.system &&
+            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
     
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -194,11 +205,7 @@ class _MyAppState extends State<MyApp> {
         Locale('es', ''),
       ],
       routerConfig: _router,
-      scrollBehavior: ScrollConfiguration.of(context).copyWith(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-      ),
+      scrollBehavior: _scrollBehavior,
     );
   }
 }

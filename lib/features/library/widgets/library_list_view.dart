@@ -5,7 +5,6 @@ import 'package:mangatracker/features/library/bloc/library_event.dart';
 import 'package:mangatracker/features/library/widgets/library_section.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
-import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -21,7 +20,6 @@ class LibraryListView extends StatelessWidget {
   final ValueChanged<ReadingStatus> onToggleSection;
   final String searchQuery;
   final bool showDownloadedOnly;
-  final NewChapterService newChapterService;
   final LibraryBloc libraryBloc;
   final String Function(MangaQuickViewDto manga) displayNameOf;
 
@@ -32,7 +30,6 @@ class LibraryListView extends StatelessWidget {
     required this.onToggleSection,
     required this.searchQuery,
     required this.showDownloadedOnly,
-    required this.newChapterService,
     required this.libraryBloc,
     required this.displayNameOf,
   });
@@ -47,17 +44,24 @@ class LibraryListView extends StatelessWidget {
       );
     }
 
-    return ListView(
+    final sections = grouped.entries.toList(growable: false);
+    // `ListView.builder` + clés stables : une frappe dans la recherche ou un
+    // rechargement ne recrée plus les sections ni les lignes (et donc plus
+    // les images de couverture, dont le rechargement faisait « clignoter »
+    // toute la page).
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.m,
         vertical: AppSpacing.s,
       ),
-      children: grouped.entries.map((entry) {
-        final status = entry.key;
-        final items = entry.value;
+      itemCount: sections.length,
+      itemBuilder: (context, index) {
+        final status = sections[index].key;
+        final items = sections[index].value;
         final expanded = isExpanded[status] ?? true;
 
         return Padding(
+          key: ValueKey(status),
           padding: const EdgeInsets.only(bottom: 14),
           child: LibrarySection(
             label: status.getLabel(context),
@@ -68,12 +72,11 @@ class LibraryListView extends StatelessWidget {
               items: items,
               displayNameOf: displayNameOf,
               showDownloadedOnly: showDownloadedOnly,
-              newChapterService: newChapterService,
               libraryBloc: libraryBloc,
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 }
@@ -88,14 +91,12 @@ class _LibrarySectionRows extends StatelessWidget {
   final List<MangaQuickViewDto> items;
   final String Function(MangaQuickViewDto manga) displayNameOf;
   final bool showDownloadedOnly;
-  final NewChapterService newChapterService;
   final LibraryBloc libraryBloc;
 
   const _LibrarySectionRows({
     required this.items,
     required this.displayNameOf,
     required this.showDownloadedOnly,
-    required this.newChapterService,
     required this.libraryBloc,
   });
 
@@ -113,29 +114,27 @@ class _LibrarySectionRows extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Le nombre de nouveaux chapitres est calculé une fois par
+          // chargement (`LibraryBloc`) : un `FutureBuilder` par ligne
+          // relisait les préférences à CHAQUE reconstruction et faisait
+          // disparaître puis réapparaître la pastille.
           for (final manga in items)
-            FutureBuilder<int>(
-              future: newChapterService.getNewChaptersCount(manga.muId.toInt()),
-              builder: (context, snapshot) {
-                final newChaptersCount = snapshot.data ?? 0;
-                return MangaRow(
-                  muId: manga.muId.toString(),
-                  mangaName: displayNameOf(manga),
-                  mangaAuthor: manga.year,
-                  lastChapter: manga.totalChapters,
-                  readChapter: manga.readChapters,
-                  mediumImgPath: manga.mediumCoverUrl,
-                  rating: manga.rating,
-                  hasNewChapters: manga.hasNewChapters,
-                  newChaptersCount:
-                      newChaptersCount > 0 ? newChaptersCount : null,
-                  showDownloadedOnly: showDownloadedOnly,
-                  onDetailReturn: () =>
-                      libraryBloc.add(const RefreshLibrary()),
-                  // V1 : progress bar à la place de la pill
-                  showProgressBar: true,
-                );
-              },
+            MangaRow(
+              key: ValueKey(manga.muId),
+              muId: manga.muId.toString(),
+              mangaName: displayNameOf(manga),
+              mangaAuthor: manga.year,
+              lastChapter: manga.totalChapters,
+              readChapter: manga.readChapters,
+              mediumImgPath: manga.mediumCoverUrl,
+              rating: manga.rating,
+              hasNewChapters: manga.hasNewChapters,
+              newChaptersCount:
+                  manga.newChaptersCount > 0 ? manga.newChaptersCount : null,
+              showDownloadedOnly: showDownloadedOnly,
+              onDetailReturn: () => libraryBloc.add(const RefreshLibrary()),
+              // V1 : progress bar à la place de la pill
+              showProgressBar: true,
             ),
         ],
       ),

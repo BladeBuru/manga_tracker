@@ -55,6 +55,7 @@ class ReadingStatusAutoUpdateService {
       }
       result.add(manga.copyWith(
         hasNewChapters: chapters.isNotEmpty,
+        newChaptersCount: chapters.length,
         readingStatus: flip ? ReadingStatus.reading : manga.readingStatus,
       ));
     }

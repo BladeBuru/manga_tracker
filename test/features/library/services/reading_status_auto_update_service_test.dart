@@ -140,6 +140,17 @@ void main() {
       expect(result.single.readChapters, 39);
     });
 
+    test('le nombre de nouveaux chapitres est calculé une fois, par entrée',
+        () async {
+      final result = await service.reconcileLibrary(
+        [entry(42, status: ReadingStatus.reading), entry(7)],
+        {42: [40, 41, 42]},
+      );
+
+      expect(result.first.newChaptersCount, 3);
+      expect(result.last.newChaptersCount, 0);
+    });
+
     test('session rejetée → l\'entrée apparaît « en cours » mais la demande n\'est pas mémorisée',
         () async {
       when(() => library.updateMangaStatus(any(), any()))

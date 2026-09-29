@@ -27,6 +27,11 @@ class MangaQuickViewDto {
   final List<String>? associated;
   final bool hasNewChapters;
 
+  /// Nombre de chapitres détectés localement au-delà du lu. Calculé par la
+  /// bibliothèque en une seule lecture des préférences (jamais par ligne au
+  /// moment du rendu) ; non sérialisé : c'est une donnée d'appareil.
+  final int newChaptersCount;
+
   /// Type d'oeuvre (`Manga`, `Manhwa`, `Manhua`…). Optionnel : renvoye par
   /// les sections de l'accueil (`/mangas/home/sections`), absent ailleurs.
   final String? type;
@@ -55,6 +60,7 @@ class MangaQuickViewDto {
     this.userReportedTotalChapters,
     this.associated,
     this.hasNewChapters = false,
+    this.newChaptersCount = 0,
     this.type,
     this.genres,
     this.currentChapter,
@@ -79,6 +85,7 @@ class MangaQuickViewDto {
     num? readChapters,
     num? totalChapters,
     bool? hasNewChapters,
+    int? newChaptersCount,
   }) {
     return MangaQuickViewDto(
       muId: muId,
@@ -93,6 +100,11 @@ class MangaQuickViewDto {
       userReportedTotalChapters: userReportedTotalChapters,
       associated: associated,
       hasNewChapters: hasNewChapters ?? this.hasNewChapters,
+      newChaptersCount: newChaptersCount ?? this.newChaptersCount,
+      // `type` et `genres` étaient perdus à chaque copie (pastille de type
+      // absente après un enrichissement de la bibliothèque).
+      type: type,
+      genres: genres,
       currentChapter: currentChapter,
       currentPositionPercent: currentPositionPercent,
       currentPositionUpdatedAt: currentPositionUpdatedAt,
