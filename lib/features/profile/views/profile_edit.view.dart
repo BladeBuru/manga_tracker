@@ -188,7 +188,12 @@ class _ProfileEditViewState extends State<ProfileEditView> {
       await _userService.updateProfile(
         displayName: _displayNameCtrl.text.trim(),
         bio: _bioCtrl.text.trim(),
-        avatarUrl: _validAvatarUrl,
+        // Photo renvoyée seulement si elle a changé : un avatar en data URL
+        // pèse jusqu'à 200 ko et faisait échouer tout l'enregistrement
+        // (413), nom à afficher compris.
+        avatarUrl: _validAvatarUrl == widget.currentUser.avatarUrl
+            ? null
+            : _validAvatarUrl,
         dateOfBirth: _dateOfBirth?.toIso8601String().split('T').first,
         gender: _gender?.value,
         isProfilePublic: _isProfilePublic,

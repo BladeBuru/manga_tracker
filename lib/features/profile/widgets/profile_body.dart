@@ -22,6 +22,9 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 
 class ProfileBody extends StatelessWidget {
   final String username;
+
+  /// Identifiant (`@…`), montré sous le nom quand il en diffère.
+  final String? handle;
   final String email;
   final String? avatarUrl;
   final Locale? currentLocale;
@@ -50,6 +53,7 @@ class ProfileBody extends StatelessWidget {
   const ProfileBody({
     super.key,
     required this.username,
+    this.handle,
     required this.email,
     required this.avatarUrl,
     required this.currentLocale,
@@ -91,6 +95,7 @@ class ProfileBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: ProfileHeader(
             username: username,
+            handle: handle,
             email: email,
             avatarUrl: avatarUrl,
             onAvatarTap: onAvatarTap,

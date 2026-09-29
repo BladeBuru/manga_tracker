@@ -3,6 +3,10 @@ import 'package:equatable/equatable.dart';
 /// DTO pour les informations utilisateur
 class UserDto extends Equatable {
   final String username;
+
+  /// Nom à afficher choisi par l'utilisateur (page « Modifier le profil »).
+  /// `null` = non renseigné : l'identifiant sert alors de nom.
+  final String? displayName;
   final String email;
   final String? avatar;
   final DateTime? lastLogin;
@@ -14,6 +18,7 @@ class UserDto extends Equatable {
 
   const UserDto({
     required this.username,
+    this.displayName,
     required this.email,
     this.avatar,
     this.lastLogin,
@@ -22,11 +27,17 @@ class UserDto extends Equatable {
 
   @override
   List<Object?> get props =>
-      [username, email, avatar, lastLogin, emailVerified];
+      [username, displayName, email, avatar, lastLogin, emailVerified];
+
+  /// Nom montré à l'utilisateur (salutation) : le nom à afficher s'il existe.
+  /// Afficher `username` ici rendait toute modification du nom invisible.
+  String get greetingName =>
+      (displayName?.trim().isNotEmpty ?? false) ? displayName!.trim() : username;
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
     return UserDto(
       username: json['username'] ?? '',
+      displayName: json['displayName'] as String?,
       email: json['email'] ?? '',
       avatar: json['avatar'],
       lastLogin: json['lastLogin'] != null
@@ -39,6 +50,7 @@ class UserDto extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'username': username,
+      'displayName': displayName,
       'email': email,
       'avatar': avatar,
       'lastLogin': lastLogin?.toIso8601String(),

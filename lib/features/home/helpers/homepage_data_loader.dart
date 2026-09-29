@@ -80,6 +80,7 @@ class HomePageDataLoader {
       }
       return UserDto(
         username: userInfo.username,
+        displayName: userInfo.displayName,
         email: userInfo.email,
         avatar: null,
         lastLogin: null,

@@ -11,6 +11,8 @@ import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
+import 'package:mangatracker/features/home/bloc/homepage_event.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
 import 'package:mangatracker/features/profile/widgets/profile_body.dart';
@@ -138,7 +140,10 @@ class _ProfileState extends State<Profile> {
   Future<void> _onEditProfile() async {
     if (_userInfo == null) return;
     final updated = await context.push<bool>('/profile/edit', extra: _userInfo);
-    if (updated == true) _loadUserInformation();
+    if (updated != true) return;
+    _loadUserInformation();
+    // La salutation de l'accueil (BLoC singleton) reprend le nouveau nom.
+    getIt<HomePageBloc>().add(const LoadUserInfo());
   }
 
   Future<void> _onPickTheme() async {
@@ -227,7 +232,10 @@ class _ProfileState extends State<Profile> {
     final brightness = Theme.of(context).brightness;
     final isDark = brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.dsBgDark : AppColors.dsBgLight;
-    final username = _userInfo?.username ?? l10n.user;
+    // Nom à afficher (modifiable) en titre, identifiant en second : afficher
+    // `username` rendait toute modification du nom invisible.
+    final username = _userInfo?.effectiveDisplayName ?? l10n.user;
+    final handle = _userInfo?.username;
     final email = _userInfo?.email ?? '';
 
     return Scaffold(
@@ -248,6 +256,7 @@ class _ProfileState extends State<Profile> {
                         horizontal: horizontalPadding),
                     child: ProfileBody(
                       username: username,
+                      handle: handle,
                       email: email,
                       avatarUrl: _userInfo?.avatarUrl,
                       currentLocale: _currentLocale,
