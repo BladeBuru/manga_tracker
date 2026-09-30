@@ -17,11 +17,11 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// Page d'un auteur / dessinateur (`/authors/:authorId`) : mini bio et
 /// ensemble de ses œuvres. Ouverte depuis les noms cliquables de la fiche
 /// manga ; [initialName] s'affiche dans la barre avant la réponse.
-class AuthorPage extends StatelessWidget {
+class AuthorPage extends StatefulWidget {
   final int authorId;
   final String? initialName;
 
-  /// Injectable pour les tests.
+  /// Injectable pour les tests ; sinon créé ici et fermé avec la page.
   final AuthorCubit? cubit;
 
   const AuthorPage({
@@ -32,15 +32,32 @@ class AuthorPage extends StatelessWidget {
   });
 
   @override
+  State<AuthorPage> createState() => _AuthorPageState();
+}
+
+class _AuthorPageState extends State<AuthorPage> {
+  // Chargé UNE fois ici (et non dans `build`, qui peut être rejoué par le
+  // routeur) : sinon chaque reconstruction relançait une requête.
+  late final AuthorCubit _cubit =
+      widget.cubit ?? AuthorCubit(authorId: widget.authorId);
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit.load();
+  }
+
+  @override
+  void dispose() {
+    if (widget.cubit == null) _cubit.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final provided = cubit;
-    final child = _AuthorScaffold(initialName: initialName);
-    if (provided != null) {
-      return BlocProvider.value(value: provided..load(), child: child);
-    }
-    return BlocProvider(
-      create: (_) => AuthorCubit(authorId: authorId)..load(),
-      child: child,
+    return BlocProvider.value(
+      value: _cubit,
+      child: _AuthorScaffold(initialName: widget.initialName),
     );
   }
 }

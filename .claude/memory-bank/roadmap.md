@@ -104,6 +104,8 @@
 
 ### ✅ Récupération d'un manga spécifique
 
+- ✅ Page auteur / dessinateur : mini bio + toutes ses œuvres, noms cliquables sur la fiche *(2026-09-30)*
+
 - ✅ Traduire les champs (description)
 
 ### ✅ Affichage des tendances/nouveautés/populaires *(remplacé sur l'accueil par les sections catalogue ci-dessous — endpoints conservés côté API)*
@@ -120,7 +122,8 @@
 - ❌ Ajout
 - ❌ Suppression
 
-### ✅ Historique de recherche
+### ✅ Historique de recherche *(seules les recherches validées — 2026-09-30)*
+### ✅ Genres populaires de la recherche → vrai filtrage par genre *(2026-09-30)*
 
 ---
 
@@ -131,8 +134,11 @@
 
 - ✅ Affichage des notes MangaUpdates
 - ✅ Affichage des notes MangaTracker (agrégées — note Bayésienne sur la fiche détail)
+- ✅ Note globale MangaUpdates + Manga Tracker au prorata des votes, avec le total des votes *(2026-09-30)*
 
 ### ⏳ Interface de notation avancée
+
+### ✅ Recommandations de la communauté *(2026-09-30 — « si vous avez aimé A, lisez B », votes MU + Manga Tracker additionnés, « je recommande aussi », ajout par recherche)*
 
 ---
 
@@ -199,6 +205,9 @@
 
 ### ✅ Liens directs vers des sites légaux de lecture
 ### ✅ Lien personnalisé de l'utilisateur
+
+- ✅ Trouver le lien d'un titre via le site de la dernière lecture + « Ceci est le nouveau lien » dans le lecteur *(2026-09-30)*
+- ✅ Copier le lien d'une lecture à deux *(2026-09-30)*
 
 - ✅ Affichage de la page avec WebView (mobile)
 - ✅ Ouverture dans un nouvel onglet (web — `url_launcher`)

@@ -1,6 +1,6 @@
 # Progrès — Manga Tracker Flutter
 
-**Version actuelle** : `0.8.0+17` — **Dernière mise à jour** : Mai 2026
+**Version actuelle** : `0.16.1+31` — **Dernière mise à jour** : 2026-09-30
 
 ---
 
@@ -22,6 +22,56 @@
 ---
 
 ## ✅ Complété
+
+### 🗣️ Retours utilisateurs de septembre — 6 correctifs et 5 nouveautés (2026-09-30)
+
+Branche `claude/brave-pasteur-gszxre` (Flutter + API, **déployer l'API d'abord**).
+
+**Corrections**
+- **Bibliothèque qui clignote** (1re ouverture, frappe ou simple appui dans la
+  recherche, geste retour prédictif maintenu) : `FutureBuilder` recréé à chaque
+  rendu autour de toute la liste + un `FutureBuilder` par ligne. Filtrage
+  synchrone mémorisé (`LibraryGroupingCache`), `newChaptersCount` calculé une
+  fois par chargement, `ListView.builder` + clés `muId`, génération de
+  chargement (seul le plus récent émet), `RefreshLibrary(completer)`,
+  `LibraryInitial` → indicateur (affichait « Erreur »). `MyApp` ne se
+  reconstruit plus pendant l'animation du clavier. Fil de détente
+  `library_rendering_invariants_test.dart`.
+- **Nom d'utilisateur « jamais appliqué »** : le `displayName` était enregistré
+  mais l'app affichait partout `username`. En-tête du profil + salutation de
+  l'accueil sur le nom à afficher ; effacement possible (`null`) ; avatar
+  renvoyé seulement s'il change (413 au-delà de 100 ko côté API, limite
+  relevée à 300 ko).
+- **Historique de recherche** : plus d'enregistrement à chaque pause de frappe
+  (validation clavier, résultat ouvert, reprise d'un terme) ; débuts de frappe
+  nettoyés (`SearchHistoryService.merge`, pure).
+- **Genres populaires** : ouvrent `/home/section/genre:<G>` (vrai filtrage par
+  genre) au lieu de chercher le mot dans les titres ; 14 genres canoniques MU
+  traduits (7 langues).
+
+**Nouveautés**
+- **Note globale** MangaUpdates + Manga Tracker au prorata des votes, total
+  affiché, détail par source, rafraîchie après un vote (`GET /mangas/:muId/ratings`).
+- **Recommandations de la communauté** : feuille « Si vous avez aimé ce titre »
+  (votes MU + app, « je recommande aussi », ajout via recherche) —
+  `CommunityRecommendationsCubit`, `CommunityService`, `MangaPickerCubit`.
+- **Pages auteur** `/authors/:authorId` : mini bio, repères, genres, œuvres
+  (grille « Tout voir ») ; noms cliquables sur la fiche (`DetailPeopleValue`).
+- **Lien depuis le site de la dernière lecture** : suggestion dans « Ajouter un
+  lien » (`LastSiteLinkPolicy`, pure, bibliothèque en cache), lecteur en mode
+  « recherche de lien » **en lecture seule** + « Ceci est le nouveau lien »
+  (bandeau et menu ⋮). Invariant ajouté dans `CLAUDE.md`.
+- **Lecture à deux** : « Copier le lien de lecture » (vrai presse-papiers).
+
+**Chiffres** : Flutter 644 tests verts (581 avant), analyze 37 infos / 0
+avertissement ; API 671 verts (642 avant) dont 9 d'intégration PostgreSQL.
+
+**Non traité** : lien Discord expiré (hors code — voir known-issues).
+
+**À valider sur appareil** : fluidité de la bibliothèque (Pixel, geste retour
+maintenu) ; page auteur avec les vraies réponses MangaUpdates (hôte
+injoignable depuis l'environnement de dev) ; parcours « Chercher sur le site »
+→ « Ceci est le nouveau lien » sur un vrai site de lecture.
 
 ### 📥 Téléchargements fiabilisés + pubs en surimpression + sélection par intervalle (2026-09-27)
 
