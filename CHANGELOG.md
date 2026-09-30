@@ -5,6 +5,44 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — claude/brave-pasteur-gszxre (retours utilisateurs de septembre)
+
+### 🐛 Corrections
+
+- **La bibliothèque ne clignote plus.** À la première ouverture, en tapant dans sa barre de recherche, en touchant simplement le champ ou en amorçant le geste retour sans le terminer, la page se redessinait en rafale et les couvertures se rechargeaient. Elle reste désormais stable.
+- **Le nom que vous choisissez s'affiche enfin.** Modifier votre nom dans « Modifier le profil » semblait sans effet : c'est maintenant lui qui apparaît sur votre profil et dans le message d'accueil. Vous pouvez aussi l'effacer pour revenir à votre identifiant.
+- **L'historique de recherche ne garde plus les mots à moitié tapés.** Une pause au milieu de « My Hero » n'enregistre plus « My » : seules les recherches que vous validez ou dont vous ouvrez un résultat y figurent.
+- **Les genres populaires de la recherche montrent vraiment les œuvres du genre**, et non celles dont le titre contient le mot (« Shōnen » n'affiche plus « Daen shounen »).
+
+### ✨ Nouveautés
+
+- **Une note globale, avec le nombre total de votes.** La note d'une œuvre réunit désormais les votes de MangaUpdates et ceux des lecteurs de Manga Tracker ; votre propre note y est prise en compte dès que vous la donnez, et le détail de chaque source reste visible.
+- **Recommandez vos coups de cœur.** Depuis « Si vous avez aimé ce titre », voyez combien de lecteurs recommandent chaque œuvre, ajoutez votre voix d'un geste, ou proposez une œuvre qui n'y figure pas encore.
+- **Les auteurs et dessinateurs ont leur page.** Touchez leur nom sur la fiche d'une œuvre pour découvrir une courte biographie et l'ensemble de leurs œuvres.
+- **Trouvez plus vite le lien d'une œuvre.** Pour une œuvre sans lien de lecture, l'application vous propose le site de votre dernière lecture : copiez son lien, ou cherchez-y l'œuvre directement (son titre est copié pour vous), puis choisissez « Ceci est le nouveau lien ».
+- **Copiez le lien d'une lecture à deux** pour l'ouvrir ailleurs ou le partager.
+
+### Notes d'implémentation
+
+- **Bibliothèque** — cause racine : `_buildFutureList` créait un `Future` (filtrage + lecture disque des téléchargements) **pendant le rendu** ; toute reconstruction repassait le `FutureBuilder` en attente, qui remplaçait la liste par un indicateur puis recréait lignes et images (placeholder + fondu). Chaque ligne lisait aussi ses nouveaux chapitres dans les préférences via un `FutureBuilder`. Déclencheurs : chaque notification du contrôleur de recherche (sélection comprise), le `LayoutBuilder` à chaque image de l'animation du clavier, chaque état émis. Corrections : filtrage synchrone mémorisé (`LibraryGroupingCache`), compteur calculé une fois par chargement (`MangaQuickViewDto.newChaptersCount`), `ListView.builder` + clés `muId`, un seul chargement émet (numéro de génération), `RefreshLibrary(completer)`, `LibraryInitial` → indicateur (affichait « Erreur »). En prime : `MyApp` ne se reconstruit plus à chaque image du clavier (`MediaQuery.platformBrightnessOf`, `ScrollBehavior` unique) et les BLoCs singletons de la barre d'onglets passent en `BlocProvider.value`. Fil de détente : `library_rendering_invariants_test.dart`.
+- **Nom affiché** : le `displayName` était bien enregistré (`PATCH /user/profile`) mais l'en-tête du profil et la salutation affichaient `username` (non modifiable). L'avatar (data URL jusqu'à 200 ko) était renvoyé à chaque enregistrement et dépassait la limite de 100 ko d'Express (413) ; il n'est plus renvoyé que s'il change, et l'API accepte 300 ko.
+- **Genres** : les pastilles ouvrent `/home/section/genre:<G>` (catalogue local filtré par genre, note ≥ 7, défilement infini) ; noms canoniques MangaUpdates (`Adventure`, `Sci-fi`) traduits via `HomeSectionL10n`.
+- **Note globale** : `GET /mangas/:id` expose `mu_rating_votes` / `total_rating_votes` ; `GET /mangas/:muId/ratings` est relu après un vote (lecture en base, aucun appel MangaUpdates).
+- **Recommandations** : `CommunityRecommendationsCubit`, `CommunityService`, `MangaPickerCubit` ; l'ancienne liste (co-présence en bibliothèque) reste affichée sous « Les lecteurs de ce titre lisent aussi », sans doublon.
+- **Auteurs** : route `/authors/:authorId` (`AuthorPage`, `AuthorCubit`), dernière fiche gardée sur l'appareil pour le hors ligne.
+- **Lecteur, mode « recherche de lien »** (`ReaderWebExtras.linkDiscovery`) : **lecture seule** comme le mode téléchargement (`_readOnlyMode`), seule écriture = « Ceci est le nouveau lien » sur geste explicite. Invariants du lecteur inchangés en mode normal ; fils de détente étendus (`reader_invariants_test.dart`). Choix du site : `LastSiteLinkPolicy` (pure), bibliothèque en cache uniquement.
+- **Lecture à deux** : « Copier le lien de lecture » copie réellement ; « Utiliser le lien de {ami} » (ancien « Copier… ») vérifie désormais le retour de l'enregistrement.
+
+### Tests
+
+- `flutter test` : **644 tests verts** (581 avant). `flutter analyze --no-fatal-infos` : 37 informations, 0 avertissement, 0 erreur (identique à la base).
+
+### Dépendance
+
+- **Déployer l'API avant l'application** (colonne `manga.rating_votes`, table `user_manga_recommendation`, routes `/mangas/:muId/ratings`, `/mangas/:muId/community-recommendations`, `/authors/:authorId`). Une ancienne API ferait échouer ces écrans proprement (états d'erreur), sans casser le reste.
+
+---
+
 ## [Unreleased] — feat/reco-order-dismiss
 
 ### ⚡ Améliorations

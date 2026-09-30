@@ -1064,7 +1064,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "Invite a friend",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "Copy {friend}'s link",
+  "readingGroupActionsCopyFriendLink": "Use {friend}'s link",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1290,5 +1290,142 @@
   "resumeReadingDecline": "Open chapter {chapter}",
   "homeSectionLoadingMore": "Loading more titles",
   "libraryOwnedBadge": "Already in my library",
-  "dataSourceCredit": "Series data, catalogue and suggestions provided by MangaUpdates"
+  "dataSourceCredit": "Series data, catalogue and suggestions provided by MangaUpdates",
+  "genreShounen": "Shounen",
+  "genreSeinen": "Seinen",
+  "genreShoujo": "Shoujo",
+  "genreJosei": "Josei",
+  "genreSports": "Sports",
+  "genreTragedy": "Tragedy",
+  "searchGenreChipAccessibility": "Browse {genre} titles",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingGlobalLabel": "Overall rating",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "Average of MangaUpdates and Manga Tracker votes, every vote counts equally.",
+  "communityRecoTitle": "If you liked this title",
+  "communityRecoSubtitle": "Recommendations from MangaUpdates and Manga Tracker readers",
+  "communityRecoVotes": "{count, plural, =0{No recommendations} =1{1 recommendation} other{{count} recommendations}}",
+  "@communityRecoVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, =1{including 1 on Manga Tracker} other{including {count} on Manga Tracker}}",
+  "@communityRecoAppVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "Recommend a title",
+  "communityRecoToggleOn": "I recommend it too",
+  "communityRecoToggleOff": "Remove my recommendation",
+  "communityRecoAdded": "Thanks! Your recommendation has been saved",
+  "communityRecoRemoved": "Recommendation removed",
+  "communityRecoEmpty": "Nobody has recommended a title for this one yet. Be the first!",
+  "communityRecoLoadError": "Couldn't load the recommendations",
+  "communityRecoActionError": "Couldn't save the recommendation. Please try again later.",
+  "communityRecoThrottled": "You've recommended a lot of titles at once. Try again in a moment.",
+  "communityRecoPickerTitle": "Which title do you recommend?",
+  "communityRecoPickerHint": "Search for a title",
+  "communityRecoPickerEmpty": "No title found",
+  "communityRecoReadersAlsoRead": "Readers of this title also read",
+  "communityRecoSelf": "A title can't recommend itself",
+  "authorOpenAccessibility": "See {name}'s profile and works",
+  "@authorOpenAccessibility": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, =0{Works} =1{1 work} other{{count} works}}",
+  "@authorWorksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "Born: {date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "From: {place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "Also known as: {names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "Official website",
+  "authorBioMore": "Read more",
+  "authorBioLess": "Show less",
+  "authorNoBio": "No biography for this author yet.",
+  "authorNoWorks": "No works found for this author.",
+  "authorWorksIncomplete": "The full list of works couldn't be loaded.",
+  "authorLoadError": "Couldn't load this author's profile right now.",
+  "authorNotFound": "Author not found.",
+  "readerSetAsMangaLink": "This is the new link",
+  "readerLinkSaveFailed": "Couldn't save this link. Please try again.",
+  "linkDiscoveryHint": "Search for “{title}” on this site (the title is copied), open its page, then save it.",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "Search for the title on this site, open its page, then save it.",
+  "linkDiscoveryTitleCopied": "“{title}” copied: paste it into the site's search",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "Find this title on {host}",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "Site of your latest read: {title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "Copy the link",
+  "linkSuggestionSearch": "Search on the site",
+  "readingGroupActionsCopyLink": "Copy the reading link",
+  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it"
 }

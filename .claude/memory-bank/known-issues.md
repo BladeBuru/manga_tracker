@@ -4,6 +4,37 @@
 
 ---
 
+## ✅ Corrigés le 2026-09-30 — retours utilisateurs (`claude/brave-pasteur-gszxre`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Bibliothèque qui « clignote » (1re ouverture, frappe, appui dans la recherche, geste retour maintenu) | `FutureBuilder(future: _filterMangas(...))` créé **dans `build`** : chaque reconstruction repassait en attente → indicateur à la place de la liste → lignes et images recréées ; + un `FutureBuilder` par ligne (lecture des préférences) ; + `LayoutBuilder` reconstruit à chaque image du clavier ; + chargements concurrents entrelacés | Filtrage synchrone mémorisé, compteur par chargement, clés `muId`, génération de chargement. Fil de détente `library_rendering_invariants_test.dart` : **aucun `FutureBuilder` dans le rendu de la bibliothèque** |
+| « Le changement du nom d'utilisateur n'est jamais appliqué » | Le `displayName` était enregistré, mais l'en-tête du profil et la salutation affichaient `username` (immuable). Aussi : avatar data URL renvoyé à chaque sauvegarde → 413 (> 100 ko) | Nom à afficher affiché partout ; avatar renvoyé seulement s'il change ; API : corps JSON 300 ko |
+| Historique : « My » puis « My Hero » | `_runSearch` (déclenché par la temporisation de frappe) écrivait dans l'historique | Historique alimenté par les seules recherches validées |
+| Genres populaires → titres contenant le mot | La pastille tapait le genre dans la barre (recherche par titre) | Page du genre (`/home/section/genre:<G>`) |
+
+## 🐛 Ouvert — lien Discord expiré (hors code)
+
+Retour utilisateur : « le groupe Discord est expiré ou supprimé, aucun moyen
+d'envoyer des retours depuis l'appli ». Le lien d'invitation relève de la
+gestion du serveur Discord (nouvelle invitation permanente à créer) — non
+traité dans le code. L'invitation est écrite en dur à **deux** endroits :
+`lib/features/profile/views/profile.dart` (`_onOpenDiscord`) et
+`lib/features/manga/views/web_view_io.dart` (aide du lecteur) — les deux à
+remplacer par la nouvelle invitation. Piste : un formulaire de retour intégré (`POST
+/feedback`) ne dépendrait plus d'un lien externe.
+
+## ⚠️ À valider en production — fiches auteur MangaUpdates
+
+`GET /authors/:authorId` lit `/v1/authors/{id}` et `/v1/authors/{id}/series`.
+L'hôte `api.mangaupdates.com` était **injoignable depuis l'environnement de
+développement** (politique réseau) : le format a été codé d'après la
+documentation publique, avec un lecteur défensif (`mu-author.mapper.ts`, API).
+Si la liste des œuvres revient vide pour un auteur connu, vérifier la forme
+réelle de la réponse `series`.
+
+---
+
 ## ✅ Corrigé le 2026-09-09 — classement des recommandations déterministe
 
 **Découvert le 2026-09-09** (`feat/reco-order-dismiss`), **corrigé à la source**

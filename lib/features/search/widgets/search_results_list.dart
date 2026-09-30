@@ -16,7 +16,15 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 class SearchResultsList extends StatefulWidget {
   final SearchLoaded state;
 
-  const SearchResultsList({super.key, required this.state});
+  /// Ouverture d'un résultat : la recherche est alors considérée comme
+  /// menée à terme (historique).
+  final ValueChanged<String>? onResultOpened;
+
+  const SearchResultsList({
+    super.key,
+    required this.state,
+    this.onResultOpened,
+  });
 
   @override
   State<SearchResultsList> createState() => _SearchResultsListState();
@@ -108,8 +116,8 @@ class _SearchResultsListState extends State<SearchResultsList> {
             l10n?.searchResultsCount(state.totalHits) ??
                 '${state.totalHits} résultats',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
@@ -132,6 +140,10 @@ class _SearchResultsListState extends State<SearchResultsList> {
                 rating: manga.rating,
                 searchQuery: state.query,
                 associatedTitles: manga.associated,
+                onOpen:
+                    widget.onResultOpened == null
+                        ? null
+                        : () => widget.onResultOpened!(state.query),
               );
             },
           ),
@@ -161,9 +173,10 @@ class _LoadMoreFooter extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             TextButton(
-              onPressed: () => context
-                  .read<SearchBloc>()
-                  .add(const SearchNextPageRequested()),
+              onPressed:
+                  () => context.read<SearchBloc>().add(
+                    const SearchNextPageRequested(),
+                  ),
               child: Text(l10n?.retry ?? 'Réessayer'),
             ),
           ],

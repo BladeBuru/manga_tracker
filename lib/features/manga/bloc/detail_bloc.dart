@@ -9,6 +9,7 @@ import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
+import 'package:mangatracker/features/manga/services/community.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
@@ -22,6 +23,9 @@ import 'detail_state.dart';
 /// BLoC pour la gestion des détails de manga
 class DetailBloc extends Bloc<DetailEvent, DetailState> {
   final MangaService _mangaService = getIt<MangaService>();
+
+  /// Résolu à l'appel (non enregistré dans GetIt) : injectable en test.
+  final CommunityService _community;
   final LibraryService _libraryService = getIt<LibraryService>();
   final ChapterReportService _chapterReportService =
       getIt<ChapterReportService>();
@@ -38,7 +42,9 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   int? _currentMuId;
   Timer? _chapterCheckTimer; // Timer pour la vérification différée des chapitres
 
-  DetailBloc() : super(const DetailInitial()) {
+  DetailBloc({CommunityService? communityService})
+      : _community = communityService ?? const CommunityService(),
+        super(const DetailInitial()) {
     on<LoadMangaDetail>(_onLoadMangaDetail);
     on<RefreshMangaDetail>(_onRefreshMangaDetail);
     on<AddToLibrary>(_onAddToLibrary);
@@ -887,6 +893,28 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         mangaDetail:
             currentState.mangaDetail.copyWith(userRating: previousRating),
       ));
+      return;
+    }
+
+    // 4. Note globale et total des votes à jour : ils incluent désormais le
+    // vote de l'utilisateur (lecture en base côté API, aucun appel
+    // MangaUpdates). Échec silencieux : seule la note globale resterait
+    // celle d'avant le vote jusqu'au prochain chargement.
+    try {
+      final summary = await _community.getRatingSummary(event.muId);
+      final latest = state;
+      if (summary == null || latest is! DetailLoaded) return;
+      emit(latest.copyWith(
+        mangaDetail: latest.mangaDetail.withRatingSummary(
+          communityRating: summary.communityRating,
+          communityRatingCount: summary.communityRatingCount,
+          aggregatedRating: summary.aggregatedRating,
+          muRatingVotes: summary.muRatingVotes,
+          totalRatingVotes: summary.totalRatingVotes,
+        ),
+      ));
+    } catch (e) {
+      debugPrint('⚠️ UpdateUserRating: synthèse des notes indisponible ($e)');
     }
   }
 
@@ -944,6 +972,8 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       communityRating: original.communityRating,
       communityRatingCount: original.communityRatingCount,
       aggregatedRating: original.aggregatedRating,
+      muRatingVotes: original.muRatingVotes,
+      totalRatingVotes: original.totalRatingVotes,
     );
   }
 }

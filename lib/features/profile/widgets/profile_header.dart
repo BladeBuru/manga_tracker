@@ -16,6 +16,9 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 
 class ProfileHeader extends StatelessWidget {
   final String username;
+
+  /// Identifiant (`@…`), montré sous le nom quand il en diffère.
+  final String? handle;
   final String email;
   final String? avatarUrl;
   final VoidCallback? onAvatarTap;
@@ -23,6 +26,7 @@ class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
     super.key,
     required this.username,
+    this.handle,
     required this.email,
     this.avatarUrl,
     this.onAvatarTap,
@@ -65,6 +69,15 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
+          if (handle != null && handle != username)
+            Text(
+              '@$handle',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.dsText2(brightness),
+              ),
+            ),
           Text(
             email,
             style: TextStyle(

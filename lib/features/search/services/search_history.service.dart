@@ -20,35 +20,50 @@ class SearchHistoryService {
     try {
       final prefs = await SharedPreferences.getInstance();
       // Limiter à maxHistoryLength
-      final limitedHistory = history.length > _maxHistoryLength
-          ? history.sublist(0, _maxHistoryLength)
-          : history;
+      final limitedHistory =
+          history.length > _maxHistoryLength
+              ? history.sublist(0, _maxHistoryLength)
+              : history;
       await prefs.setStringList(_historyKey, limitedHistory);
     } catch (e) {
       // Ignorer les erreurs de sauvegarde
     }
   }
 
-  /// Ajoute une recherche à l'historique
+  /// Ajoute une recherche **validée** à l'historique.
+  ///
+  /// À n'appeler que lorsque l'utilisateur a réellement mené sa recherche
+  /// (validation au clavier, ouverture d'un résultat, reprise d'un terme de
+  /// l'historique) — jamais sur la recherche automatique déclenchée par une
+  /// pause de frappe, qui enregistrait « My » puis « My Hero ».
   Future<List<String>> addSearch(String query) async {
-    if (query.trim().isEmpty) {
-      return await loadHistory();
-    }
-
-    final trimmedQuery = query.trim();
     final history = await loadHistory();
-    
-    // Retirer la recherche si elle existe déjà
-    history.remove(trimmedQuery);
-    // Ajouter au début
-    history.insert(0, trimmedQuery);
-    // Limiter à maxHistoryLength
-    final limitedHistory = history.length > _maxHistoryLength
-        ? history.sublist(0, _maxHistoryLength)
-        : history;
-    
-    await saveHistory(limitedHistory);
-    return limitedHistory;
+    final merged = merge(history, query);
+    if (identical(merged, history)) return history;
+    await saveHistory(merged);
+    return merged;
+  }
+
+  /// Règle pure d'insertion (testable sans préférences) :
+  ///  - le terme passe en tête, sans doublon (casse ignorée) ;
+  ///  - les entrées qui n'en sont qu'un **début** (« My », « My He » pour
+  ///    « My Hero ») disparaissent — elles ne sont que des étapes de
+  ///    frappe, et nettoient au passage l'historique pollué par l'ancien
+  ///    comportement ;
+  ///  - [_maxHistoryLength] entrées au plus.
+  static List<String> merge(List<String> history, String query) {
+    final term = query.trim();
+    if (term.isEmpty) return history;
+    final lower = term.toLowerCase();
+    final kept = history.where((entry) {
+      final e = entry.trim().toLowerCase();
+      if (e == lower) return false;
+      return !(e.isNotEmpty && lower.startsWith(e));
+    });
+    final merged = [term, ...kept];
+    return merged.length > _maxHistoryLength
+        ? merged.sublist(0, _maxHistoryLength)
+        : merged;
   }
 
   /// Supprime une recherche de l'historique
@@ -69,4 +84,3 @@ class SearchHistoryService {
     }
   }
 }
-

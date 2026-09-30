@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/manga/dto/author.dto.dart';
+import 'package:mangatracker/features/manga/widgets/detail_people_value.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
@@ -29,8 +31,14 @@ class DetailInfoCard extends StatelessWidget {
   final String rating;
   final bool? isCompleted;
   final String year;
-  final List<String> authors;
-  final List<String> artists;
+  final List<AuthorDto> authors;
+  final List<AuthorDto> artists;
+
+  /// Total des votes derrière [rating] (MangaUpdates + Manga Tracker).
+  final int ratingVotes;
+
+  /// Ouvre la page d'un auteur / dessinateur (nom cliquable).
+  final ValueChanged<AuthorDto>? onPersonTap;
 
   const DetailInfoCard({
     super.key,
@@ -40,6 +48,8 @@ class DetailInfoCard extends StatelessWidget {
     required this.year,
     required this.authors,
     required this.artists,
+    this.ratingVotes = 0,
+    this.onPersonTap,
   });
 
   @override
@@ -48,11 +58,16 @@ class DetailInfoCard extends StatelessWidget {
     final isDark = brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
-    final authorsList = authors.where((a) => a.trim().isNotEmpty).toList();
-    final artistsList = artists.where((a) => a.trim().isNotEmpty).toList();
+    final authorsList =
+        authors.where((a) => a.name.trim().isNotEmpty).toList();
+    final artistsList =
+        artists.where((a) => a.name.trim().isNotEmpty).toList();
     final mergeAuthorArtist = authorsList.isNotEmpty &&
         artistsList.isNotEmpty &&
-        _namesEqual(authorsList, artistsList);
+        _namesEqual(
+          authorsList.map((a) => a.name).toList(),
+          artistsList.map((a) => a.name).toList(),
+        );
 
     final chaptersCount = totalChapters?.toInt() ?? 0;
     final hasChapters = chaptersCount > 0;
@@ -61,8 +76,6 @@ class DetailInfoCard extends StatelessWidget {
         rating.trim() != '0.0';
     final hasStatus = isCompleted != null;
     final hasYear = year.trim().isNotEmpty && year.trim() != '0';
-    final hasAuthor = authorsList.isNotEmpty;
-    final hasArtist = artistsList.isNotEmpty;
 
     final c1 = _Cell(
       icon: Icons.menu_book_outlined,
@@ -75,6 +88,9 @@ class DetailInfoCard extends StatelessWidget {
       label: l10n?.rating ?? 'Note',
       value: hasRating ? rating : '—',
       muted: !hasRating,
+      caption: hasRating && ratingVotes > 0
+          ? l10n?.votesCount(ratingVotes)
+          : null,
     );
     final c3 = _Cell(
       icon: Icons.info_outline_rounded,
@@ -101,7 +117,10 @@ class DetailInfoCard extends StatelessWidget {
         icon: Icons.person_outline_rounded,
         label:
             '${l10n?.author ?? 'Auteur'} · ${l10n?.artist ?? 'Artiste'}',
-        value: authorsList.join(', '),
+        valueWidget: DetailPeopleValue(
+          people: authorsList,
+          onPersonTap: onPersonTap,
+        ),
       );
     } else {
       row3 = _MatrixRow(
@@ -109,14 +128,20 @@ class DetailInfoCard extends StatelessWidget {
         left: _Cell(
           icon: Icons.person_outline_rounded,
           label: l10n?.author ?? 'Auteur',
-          value: hasAuthor ? authorsList.join(', ') : '—',
-          muted: !hasAuthor,
+          muted: authorsList.isEmpty,
+          valueWidget: DetailPeopleValue(
+            people: authorsList,
+            onPersonTap: onPersonTap,
+          ),
         ),
         right: _Cell(
           icon: Icons.palette_outlined,
           label: l10n?.artist ?? 'Artiste',
-          value: hasArtist ? artistsList.join(', ') : '—',
-          muted: !hasArtist,
+          muted: artistsList.isEmpty,
+          valueWidget: DetailPeopleValue(
+            people: artistsList,
+            onPersonTap: onPersonTap,
+          ),
         ),
       );
     }
@@ -223,12 +248,20 @@ class _Cell extends StatelessWidget {
   final bool muted;
   final bool valueAccent;
 
+  /// Ligne secondaire sous la valeur (ex. nombre de votes).
+  final String? caption;
+
+  /// Remplace le texte de [value] (ex. noms cliquables).
+  final Widget? valueWidget;
+
   const _Cell({
     required this.icon,
     required this.label,
-    required this.value,
+    this.value = '',
     this.muted = false,
     this.valueAccent = false,
+    this.caption,
+    this.valueWidget,
   });
 
   @override
@@ -269,18 +302,32 @@ class _Cell extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.15,
-              color: valueColor,
-              height: 1.2,
+          valueWidget ??
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.15,
+                  color: valueColor,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+          if (caption != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              caption!,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.dsText3(brightness),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          ],
         ],
       ),
     );

@@ -303,6 +303,12 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   le journal `[MT-READER]` (`adb logcat -s flutter`) et l'inspection DevTools
   (`adb forward tcp:9333 localabstract:webview_devtools_remote_<pid>`).
   Mesurer avant de théoriser.
+- 🔒 **Mode « recherche de lien » = lecture seule** (`linkDiscovery`, depuis
+  le 2026-09-30) : le lecteur s'ouvre sur le site d'une AUTRE lecture pour y
+  trouver un titre ; la page affichée n'est pas un chapitre de ce titre. Comme
+  le mode téléchargement (`_readOnlyMode`), il ne détecte, n'enregistre, ne
+  mesure et ne redirige rien. Seule écriture : « Ceci est le nouveau lien »,
+  sur geste explicite. Verrouillé par `reader_invariants_test.dart`.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.

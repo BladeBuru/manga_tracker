@@ -995,7 +995,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "친구 초대하기",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "{friend}의 링크 복사",
+  "readingGroupActionsCopyFriendLink": "{friend}의 링크 사용",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1284,5 +1284,142 @@
   "resumeReadingDecline": "{chapter}화 열기",
   "homeSectionLoadingMore": "다음 작품을 불러오는 중",
   "libraryOwnedBadge": "이미 내 서재에 있음",
-  "dataSourceCredit": "작품 정보, 카탈로그, 추천 제공: MangaUpdates"
+  "dataSourceCredit": "작품 정보, 카탈로그, 추천 제공: MangaUpdates",
+  "genreShounen": "소년",
+  "genreSeinen": "청년",
+  "genreShoujo": "소녀",
+  "genreJosei": "여성",
+  "genreSports": "스포츠",
+  "genreTragedy": "비극",
+  "searchGenreChipAccessibility": "{genre} 장르 작품 보기",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingGlobalLabel": "종합 평점",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "MangaUpdates와 Manga Tracker 투표의 평균이며, 모든 표는 같은 비중입니다.",
+  "communityRecoTitle": "이 작품이 마음에 들었다면",
+  "communityRecoSubtitle": "MangaUpdates와 Manga Tracker 독자들의 추천",
+  "communityRecoVotes": "{count, plural, other{추천 {count}개}}",
+  "@communityRecoVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, other{그중 Manga Tracker {count}개}}",
+  "@communityRecoAppVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "작품 추천하기",
+  "communityRecoToggleOn": "나도 추천해요",
+  "communityRecoToggleOff": "내 추천 취소",
+  "communityRecoAdded": "감사합니다! 추천이 저장되었습니다",
+  "communityRecoRemoved": "추천을 취소했습니다",
+  "communityRecoEmpty": "아직 이 작품에 대한 추천이 없습니다. 첫 번째로 추천해 보세요!",
+  "communityRecoLoadError": "추천을 불러오지 못했습니다",
+  "communityRecoActionError": "추천을 저장하지 못했습니다. 나중에 다시 시도해 주세요.",
+  "communityRecoThrottled": "한 번에 너무 많은 작품을 추천했습니다. 잠시 후 다시 시도해 주세요.",
+  "communityRecoPickerTitle": "어떤 작품을 추천하시나요?",
+  "communityRecoPickerHint": "작품 검색",
+  "communityRecoPickerEmpty": "작품을 찾을 수 없습니다",
+  "communityRecoReadersAlsoRead": "이 작품의 독자들이 함께 읽는 작품",
+  "communityRecoSelf": "작품 자신을 추천할 수는 없습니다",
+  "authorOpenAccessibility": "{name}의 프로필과 작품 보기",
+  "@authorOpenAccessibility": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, other{작품 {count}개}}",
+  "@authorWorksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "출생: {date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "출신: {place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "다른 이름: {names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "공식 사이트",
+  "authorBioMore": "더 보기",
+  "authorBioLess": "접기",
+  "authorNoBio": "아직 이 작가의 소개가 없습니다.",
+  "authorNoWorks": "이 작가의 작품을 찾지 못했습니다.",
+  "authorWorksIncomplete": "전체 작품 목록을 불러오지 못했습니다.",
+  "authorLoadError": "지금은 이 작가의 프로필을 불러올 수 없습니다.",
+  "authorNotFound": "작가를 찾을 수 없습니다.",
+  "readerSetAsMangaLink": "이 페이지를 새 링크로",
+  "readerLinkSaveFailed": "이 링크를 저장하지 못했습니다. 다시 시도해 주세요.",
+  "linkDiscoveryHint": "이 사이트에서 “{title}”을(를) 검색하고(제목이 복사됨) 작품 페이지를 연 뒤 저장하세요.",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "이 사이트에서 작품을 검색하고 페이지를 연 뒤 저장하세요.",
+  "linkDiscoveryTitleCopied": "“{title}” 복사됨: 사이트 검색창에 붙여 넣으세요",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "{host}에서 이 작품 찾기",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "최근에 읽은 작품의 사이트: {title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "링크 복사",
+  "linkSuggestionSearch": "사이트에서 찾기",
+  "readingGroupActionsCopyLink": "읽기 링크 복사",
+  "readingGroupActionsCopyLinkSubtitle": "다른 곳에서 열거나 공유하기"
 }

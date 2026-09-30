@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/router/app_router.dart' show AuthorPageExtras;
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +28,9 @@ class LateDetailView extends StatefulWidget {
   final String mangaTitle;
   final String? mangaDescription;
   final String rating;
+
+  /// Total des votes derrière [rating] (MangaUpdates + Manga Tracker).
+  final int ratingVotes;
   final num? mangaTotalChapters;
 
   /// Total OFFICIEL (MU) pour la validation du dialog de signalement (borne
@@ -61,6 +66,7 @@ class LateDetailView extends StatefulWidget {
     required this.mangaTitle,
     this.mangaDescription,
     required this.rating,
+    this.ratingVotes = 0,
     this.mangaTotalChapters,
     this.officialTotalChapters,
     this.isCompleted,
@@ -488,18 +494,14 @@ class _LateDetailViewState extends State<LateDetailView> {
   Widget build(BuildContext context) {
 
 
-    final authors =
-        widget.authors
+    final authors = widget.authors
             ?.where((a) => a.type.toLowerCase() == 'author')
-            .map((a) => a.name)
             .toList() ??
-            [];
-    final artists =
-        widget.authors
+        const <AuthorDto>[];
+    final artists = widget.authors
             ?.where((a) => a.type.toLowerCase() == 'artist')
-            .map((a) => a.name)
             .toList() ??
-            [];
+        const <AuthorDto>[];
 
     Future<void> handleLinkTap(String url) async {
       // Finding 4b : capturer l10n AVANT l'await (pas de BuildContext au travers
@@ -534,10 +536,15 @@ class _LateDetailViewState extends State<LateDetailView> {
             DetailInfoCard(
               totalChapters: widget.mangaTotalChapters,
               rating: widget.rating,
+              ratingVotes: widget.ratingVotes,
               isCompleted: widget.isCompleted,
               year: widget.year,
               authors: authors,
               artists: artists,
+              onPersonTap: (person) => context.push(
+                '/authors/${person.authorId}',
+                extra: AuthorPageExtras(name: person.name),
+              ),
             ),
 
             const SizedBox(height: AppSpacing.s),

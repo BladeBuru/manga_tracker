@@ -25,7 +25,16 @@ class MangaQuickViewDto {
   /// (cf. `MangaDetailDto.officialTotalChapters` côté détail).
   final num? userReportedTotalChapters;
   final List<String>? associated;
+
+  /// Lien de lecture personnel (bibliothèque uniquement). Sert à proposer
+  /// « le site de ma dernière lecture » pour un titre sans lien.
+  final String? customLink;
   final bool hasNewChapters;
+
+  /// Nombre de chapitres détectés localement au-delà du lu. Calculé par la
+  /// bibliothèque en une seule lecture des préférences (jamais par ligne au
+  /// moment du rendu) ; non sérialisé : c'est une donnée d'appareil.
+  final int newChaptersCount;
 
   /// Type d'oeuvre (`Manga`, `Manhwa`, `Manhua`…). Optionnel : renvoye par
   /// les sections de l'accueil (`/mangas/home/sections`), absent ailleurs.
@@ -54,7 +63,9 @@ class MangaQuickViewDto {
     this.totalChapters,
     this.userReportedTotalChapters,
     this.associated,
+    this.customLink,
     this.hasNewChapters = false,
+    this.newChaptersCount = 0,
     this.type,
     this.genres,
     this.currentChapter,
@@ -79,6 +90,7 @@ class MangaQuickViewDto {
     num? readChapters,
     num? totalChapters,
     bool? hasNewChapters,
+    int? newChaptersCount,
   }) {
     return MangaQuickViewDto(
       muId: muId,
@@ -92,7 +104,13 @@ class MangaQuickViewDto {
       totalChapters: totalChapters ?? this.totalChapters,
       userReportedTotalChapters: userReportedTotalChapters,
       associated: associated,
+      customLink: customLink,
       hasNewChapters: hasNewChapters ?? this.hasNewChapters,
+      newChaptersCount: newChaptersCount ?? this.newChaptersCount,
+      // `type` et `genres` étaient perdus à chaque copie (pastille de type
+      // absente après un enrichissement de la bibliothèque).
+      type: type,
+      genres: genres,
       currentChapter: currentChapter,
       currentPositionPercent: currentPositionPercent,
       currentPositionUpdatedAt: currentPositionUpdatedAt,
@@ -117,6 +135,7 @@ class MangaQuickViewDto {
         userReportedTotalChapters: json['userReportedTotalChapters'] ??
             json['user_reported_total_chapters'],
         associated: (json['associated'] as List?)?.map((e) => e is Map ? (e['title'] ?? e.values.first).toString() : e.toString()).cast<String>().toList(),
+        customLink: _optionalString(json['customLink'] ?? json['custom_link']),
         hasNewChapters: json['hasNewChapters'] as bool? ?? false,
         // Champs optionnels des sections d'accueil : tolerants a l'absence
         // ET a un type inattendu (une chaine vide vaut « inconnu »).
@@ -153,6 +172,7 @@ class MangaQuickViewDto {
       'totalChapters': totalChapters,
       'userReportedTotalChapters': userReportedTotalChapters,
       'associated': associated,
+      'customLink': customLink,
       'hasNewChapters': hasNewChapters,
       'type': type,
       'genres': genres,

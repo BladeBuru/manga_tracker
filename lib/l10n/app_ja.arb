@@ -995,7 +995,7 @@
   "@readingGroupActionsMarkProgressSubtitle": {},
   "readingGroupActionsInvite": "友達を招待",
   "@readingGroupActionsInvite": {},
-  "readingGroupActionsCopyFriendLink": "{friend}のリンクをコピー",
+  "readingGroupActionsCopyFriendLink": "{friend}のリンクを使う",
   "@readingGroupActionsCopyFriendLink": {
     "placeholders": {
       "friend": {
@@ -1284,5 +1284,142 @@
   "resumeReadingDecline": "第{chapter}話を開く",
   "homeSectionLoadingMore": "続きのタイトルを読み込み中",
   "libraryOwnedBadge": "すでにライブラリにあります",
-  "dataSourceCredit": "作品情報・カタログ・おすすめの提供元は MangaUpdates です"
+  "dataSourceCredit": "作品情報・カタログ・おすすめの提供元は MangaUpdates です",
+  "genreShounen": "少年",
+  "genreSeinen": "青年",
+  "genreShoujo": "少女",
+  "genreJosei": "女性",
+  "genreSports": "スポーツ",
+  "genreTragedy": "悲劇",
+  "searchGenreChipAccessibility": "{genre}ジャンルの作品を見る",
+  "@searchGenreChipAccessibility": {
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingGlobalLabel": "総合評価",
+  "ratingSourceMangaUpdates": "MangaUpdates",
+  "ratingSourceApp": "Manga Tracker",
+  "ratingGlobalExplanation": "MangaUpdatesとManga Trackerの投票の平均（1票の重みはすべて同じ）。",
+  "communityRecoTitle": "この作品が好きなら",
+  "communityRecoSubtitle": "MangaUpdatesとManga Trackerの読者によるおすすめ",
+  "communityRecoVotes": "{count, plural, other{おすすめ {count} 件}}",
+  "@communityRecoVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAppVotes": "{count, plural, other{うちManga Tracker {count} 件}}",
+  "@communityRecoAppVotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityRecoAdd": "作品をおすすめする",
+  "communityRecoToggleOn": "私もおすすめ",
+  "communityRecoToggleOff": "おすすめを取り消す",
+  "communityRecoAdded": "ありがとうございます！おすすめを登録しました",
+  "communityRecoRemoved": "おすすめを取り消しました",
+  "communityRecoEmpty": "この作品へのおすすめはまだありません。最初のおすすめをしてみましょう！",
+  "communityRecoLoadError": "おすすめを読み込めませんでした",
+  "communityRecoActionError": "おすすめを保存できませんでした。後でもう一度お試しください。",
+  "communityRecoThrottled": "短時間に多くの作品をおすすめしました。しばらくしてからお試しください。",
+  "communityRecoPickerTitle": "どの作品をおすすめしますか？",
+  "communityRecoPickerHint": "作品を検索",
+  "communityRecoPickerEmpty": "作品が見つかりません",
+  "communityRecoReadersAlsoRead": "この作品の読者はこちらも読んでいます",
+  "communityRecoSelf": "作品自身をおすすめすることはできません",
+  "authorOpenAccessibility": "{name}のプロフィールと作品を見る",
+  "@authorOpenAccessibility": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authorWorksTitle": "{count, plural, other{作品 {count} 件}}",
+  "@authorWorksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authorBirthday": "生年月日：{date}",
+  "@authorBirthday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "authorBirthplace": "出身：{place}",
+  "@authorBirthplace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOtherNames": "別名：{names}",
+  "@authorOtherNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "authorOfficialSite": "公式サイト",
+  "authorBioMore": "続きを読む",
+  "authorBioLess": "閉じる",
+  "authorNoBio": "この作者の紹介はまだありません。",
+  "authorNoWorks": "この作者の作品は見つかりませんでした。",
+  "authorWorksIncomplete": "作品の一覧をすべて読み込めませんでした。",
+  "authorLoadError": "現在この作者のプロフィールを読み込めません。",
+  "authorNotFound": "作者が見つかりません。",
+  "readerSetAsMangaLink": "これを新しいリンクにする",
+  "readerLinkSaveFailed": "このリンクを保存できませんでした。もう一度お試しください。",
+  "linkDiscoveryHint": "このサイトで「{title}」を検索し（タイトルはコピー済み）、作品ページを開いて保存してください。",
+  "@linkDiscoveryHint": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkDiscoveryHintNoTitle": "このサイトで作品を検索し、作品ページを開いて保存してください。",
+  "linkDiscoveryTitleCopied": "「{title}」をコピーしました：サイトの検索に貼り付けてください",
+  "@linkDiscoveryTitleCopied": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionTitle": "{host}でこの作品を探す",
+  "@linkSuggestionTitle": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionSource": "最近読んだ作品のサイト：{title}",
+  "@linkSuggestionSource": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "linkSuggestionCopy": "リンクをコピー",
+  "linkSuggestionSearch": "サイトで探す",
+  "readingGroupActionsCopyLink": "読書リンクをコピー",
+  "readingGroupActionsCopyLinkSubtitle": "他のアプリで開いたり共有したりできます"
 }

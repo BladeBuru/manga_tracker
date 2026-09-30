@@ -3511,7 +3511,7 @@ abstract class AppLocalizations {
   /// No description provided for @readingGroupActionsCopyFriendLink.
   ///
   /// In fr, this message translates to:
-  /// **'Copier le lien de {friend}'**
+  /// **'Utiliser le lien de {friend}'**
   String readingGroupActionsCopyFriendLink(String friend);
 
   /// No description provided for @readingGroupActionsCopyFriendLinkSubtitle.
@@ -4329,6 +4329,324 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Fiches, catalogue et suggestions fournis par MangaUpdates'**
   String get dataSourceCredit;
+
+  /// No description provided for @genreShounen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Shōnen'**
+  String get genreShounen;
+
+  /// No description provided for @genreSeinen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Seinen'**
+  String get genreSeinen;
+
+  /// No description provided for @genreShoujo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Shōjo'**
+  String get genreShoujo;
+
+  /// No description provided for @genreJosei.
+  ///
+  /// In fr, this message translates to:
+  /// **'Josei'**
+  String get genreJosei;
+
+  /// No description provided for @genreSports.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sport'**
+  String get genreSports;
+
+  /// No description provided for @genreTragedy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tragédie'**
+  String get genreTragedy;
+
+  /// Libellé d'accessibilité d'une pastille de genre populaire (page Recherche)
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir les œuvres du genre {genre}'**
+  String searchGenreChipAccessibility(String genre);
+
+  /// No description provided for @ratingGlobalLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Note globale'**
+  String get ratingGlobalLabel;
+
+  /// No description provided for @ratingSourceMangaUpdates.
+  ///
+  /// In fr, this message translates to:
+  /// **'MangaUpdates'**
+  String get ratingSourceMangaUpdates;
+
+  /// No description provided for @ratingSourceApp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Manga Tracker'**
+  String get ratingSourceApp;
+
+  /// No description provided for @ratingGlobalExplanation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyenne des votes MangaUpdates et Manga Tracker, chaque vote compte autant.'**
+  String get ratingGlobalExplanation;
+
+  /// No description provided for @communityRecoTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Si vous avez aimé ce titre'**
+  String get communityRecoTitle;
+
+  /// No description provided for @communityRecoSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandations des lecteurs de MangaUpdates et de Manga Tracker'**
+  String get communityRecoSubtitle;
+
+  /// Total des recommandations (MangaUpdates + Manga Tracker) d'une œuvre
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune recommandation} =1{1 recommandation} other{{count} recommandations}}'**
+  String communityRecoVotes(int count);
+
+  /// Part des recommandations venant des utilisateurs Manga Tracker
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{dont 1 sur Manga Tracker} other{dont {count} sur Manga Tracker}}'**
+  String communityRecoAppVotes(int count);
+
+  /// No description provided for @communityRecoAdd.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommander une œuvre'**
+  String get communityRecoAdd;
+
+  /// No description provided for @communityRecoToggleOn.
+  ///
+  /// In fr, this message translates to:
+  /// **'Je recommande aussi'**
+  String get communityRecoToggleOn;
+
+  /// No description provided for @communityRecoToggleOff.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer ma recommandation'**
+  String get communityRecoToggleOff;
+
+  /// No description provided for @communityRecoAdded.
+  ///
+  /// In fr, this message translates to:
+  /// **'Merci ! Votre recommandation est enregistrée'**
+  String get communityRecoAdded;
+
+  /// No description provided for @communityRecoRemoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandation retirée'**
+  String get communityRecoRemoved;
+
+  /// No description provided for @communityRecoEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Personne n\'a encore recommandé d\'œuvre pour ce titre. Soyez le premier !'**
+  String get communityRecoEmpty;
+
+  /// No description provided for @communityRecoLoadError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les recommandations'**
+  String get communityRecoLoadError;
+
+  /// No description provided for @communityRecoActionError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'enregistrer la recommandation. Réessayez plus tard.'**
+  String get communityRecoActionError;
+
+  /// No description provided for @communityRecoThrottled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez recommandé beaucoup d\'œuvres d\'un coup. Réessayez dans un moment.'**
+  String get communityRecoThrottled;
+
+  /// No description provided for @communityRecoPickerTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelle œuvre recommandez-vous ?'**
+  String get communityRecoPickerTitle;
+
+  /// No description provided for @communityRecoPickerHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher un titre'**
+  String get communityRecoPickerHint;
+
+  /// No description provided for @communityRecoPickerEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun titre trouvé'**
+  String get communityRecoPickerEmpty;
+
+  /// No description provided for @communityRecoReadersAlsoRead.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les lecteurs de ce titre lisent aussi'**
+  String get communityRecoReadersAlsoRead;
+
+  /// No description provided for @communityRecoSelf.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une œuvre ne peut pas se recommander elle-même'**
+  String get communityRecoSelf;
+
+  /// Libellé d'accessibilité d'un nom d'auteur cliquable sur la fiche manga
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir la fiche et les œuvres de {name}'**
+  String authorOpenAccessibility(String name);
+
+  /// Titre de la liste des œuvres d'un auteur
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Œuvres} =1{1 œuvre} other{{count} œuvres}}'**
+  String authorWorksTitle(int count);
+
+  /// No description provided for @authorBirthday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Naissance : {date}'**
+  String authorBirthday(String date);
+
+  /// No description provided for @authorBirthplace.
+  ///
+  /// In fr, this message translates to:
+  /// **'Origine : {place}'**
+  String authorBirthplace(String place);
+
+  /// No description provided for @authorOtherNames.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autres noms : {names}'**
+  String authorOtherNames(String names);
+
+  /// No description provided for @authorOfficialSite.
+  ///
+  /// In fr, this message translates to:
+  /// **'Site officiel'**
+  String get authorOfficialSite;
+
+  /// No description provided for @authorBioMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire la suite'**
+  String get authorBioMore;
+
+  /// No description provided for @authorBioLess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Réduire'**
+  String get authorBioLess;
+
+  /// No description provided for @authorNoBio.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de biographie pour cet auteur.'**
+  String get authorNoBio;
+
+  /// No description provided for @authorNoWorks.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune œuvre trouvée pour cet auteur.'**
+  String get authorNoWorks;
+
+  /// No description provided for @authorWorksIncomplete.
+  ///
+  /// In fr, this message translates to:
+  /// **'La liste complète des œuvres n\'a pas pu être chargée.'**
+  String get authorWorksIncomplete;
+
+  /// No description provided for @authorLoadError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger la fiche de cet auteur pour le moment.'**
+  String get authorLoadError;
+
+  /// No description provided for @authorNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Auteur introuvable.'**
+  String get authorNotFound;
+
+  /// No description provided for @readerSetAsMangaLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ceci est le nouveau lien'**
+  String get readerSetAsMangaLink;
+
+  /// No description provided for @readerLinkSaveFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'enregistrer ce lien. Réessayez.'**
+  String get readerLinkSaveFailed;
+
+  /// Consigne du lecteur en mode « recherche de lien »
+  ///
+  /// In fr, this message translates to:
+  /// **'Cherchez « {title} » sur ce site (le titre est copié), ouvrez sa page, puis enregistrez-la.'**
+  String linkDiscoveryHint(String title);
+
+  /// No description provided for @linkDiscoveryHintNoTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cherchez le titre sur ce site, ouvrez sa page, puis enregistrez-la.'**
+  String get linkDiscoveryHintNoTitle;
+
+  /// No description provided for @linkDiscoveryTitleCopied.
+  ///
+  /// In fr, this message translates to:
+  /// **'« {title} » copié : collez-le dans la recherche du site'**
+  String linkDiscoveryTitleCopied(String title);
+
+  /// Suggestion du site de la dernière lecture pour un titre sans lien
+  ///
+  /// In fr, this message translates to:
+  /// **'Trouver ce titre sur {host}'**
+  String linkSuggestionTitle(String host);
+
+  /// No description provided for @linkSuggestionSource.
+  ///
+  /// In fr, this message translates to:
+  /// **'Site de votre dernière lecture : {title}'**
+  String linkSuggestionSource(String title);
+
+  /// No description provided for @linkSuggestionCopy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien'**
+  String get linkSuggestionCopy;
+
+  /// No description provided for @linkSuggestionSearch.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chercher sur le site'**
+  String get linkSuggestionSearch;
+
+  /// No description provided for @readingGroupActionsCopyLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien de lecture'**
+  String get readingGroupActionsCopyLink;
+
+  /// No description provided for @readingGroupActionsCopyLinkSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour l\'ouvrir ailleurs ou le partager'**
+  String get readingGroupActionsCopyLinkSubtitle;
 }
 
 class _AppLocalizationsDelegate

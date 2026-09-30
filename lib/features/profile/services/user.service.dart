@@ -154,15 +154,16 @@ class UserService {
     String? gender,
     bool? isProfilePublic,
   }) async {
-    // L'API valide `@Length(1, N)` sur les champs string → on n'envoie PAS
-    // les chaînes vides (sinon 400 Bad Request "must be longer than 1
-    // character"). Pour "vider" un champ côté serveur, il faudrait un
-    // endpoint dédié — pas implémenté pour MVP.
+    // `displayName` vide → `null` : l'API efface alors le nom à afficher
+    // (l'identifiant reprend sa place). Une chaîne vide serait refusée par
+    // `@Length(1, 80)`, et l'ignorer (ancien comportement) laissait croire à
+    // un enregistrement réussi. La bio accepte la chaîne vide (= vidée).
     final body = <String, dynamic>{};
-    if (displayName != null && displayName.isNotEmpty) {
-      body['displayName'] = displayName;
+    if (displayName != null) {
+      final trimmed = displayName.trim();
+      body['displayName'] = trimmed.isEmpty ? null : trimmed;
     }
-    if (bio != null && bio.isNotEmpty) body['bio'] = bio;
+    if (bio != null) body['bio'] = bio;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       // **2026-05-18** : l'API accepte désormais data URLs ET URLs http(s)
       // (regex `update-profile.dto.ts` ligne 67). La colonne est `text`
@@ -184,9 +185,6 @@ class UserService {
     if (gender != null && gender.isNotEmpty) body['gender'] = gender;
     if (isProfilePublic != null) body['isProfilePublic'] = isProfilePublic;
 
-    // Debug : trace exacte de ce qui part vers l'API pour identifier les
-    // mismatches DTO (champs inconnus, formats, casing enum…).
-    debugPrint('[updateProfile] PATCH /user/profile body=${jsonEncode(body)}');
 
     final response = await httpService.patchWithAuthTokens(
       buildApiUri('/user/profile'),
@@ -197,9 +195,7 @@ class UserService {
     if (response.statusCode != HttpStatus.ok) {
       // Trace le response body pour voir les violations class-validator
       // (avec enableDebugMessages côté NestJS, on récupère le détail).
-      debugPrint(
-        '[updateProfile] FAILED ${response.statusCode} body=${response.body}',
-      );
+      debugPrint('[updateProfile] FAILED ${response.statusCode}');
       throw Exception(
         'Mise à jour du profil échouée : ${response.statusCode} ${response.body}',
       );

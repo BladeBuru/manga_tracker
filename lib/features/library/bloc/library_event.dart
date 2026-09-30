@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 
@@ -77,7 +79,13 @@ class DeleteCustomLink extends LibraryEvent {
   List<Object> get props => [muId];
 }
 
-/// Rafraîchir la bibliothèque
+/// Rafraîchir la bibliothèque.
+///
+/// [completer] (facultatif) est complété quand le rechargement est
+/// réellement terminé — succès, repli sur le cache ou erreur — pour que
+/// « tirer pour rafraîchir » s'arrête avec les données, hors ligne compris.
 class RefreshLibrary extends LibraryEvent {
-  const RefreshLibrary();
+  final Completer<void>? completer;
+
+  const RefreshLibrary({this.completer});
 }

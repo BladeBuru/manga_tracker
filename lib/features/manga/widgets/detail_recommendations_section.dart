@@ -20,10 +20,14 @@ class DetailRecommendationsSection extends StatelessWidget {
   final List<MangaRecommendationView>? recommendations;
   final bool isLoading;
 
+  /// Titre de la section (défaut : « Mangas recommandés »).
+  final String? title;
+
   const DetailRecommendationsSection({
     super.key,
     required this.recommendations,
     this.isLoading = false,
+    this.title,
   });
 
   @override
@@ -50,7 +54,7 @@ class DetailRecommendationsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 10),
             child: Text(
-              l10n.recommendedMangas.toUpperCase(),
+              (title ?? l10n.recommendedMangas).toUpperCase(),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

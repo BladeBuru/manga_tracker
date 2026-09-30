@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,7 +27,10 @@ import '../dto/manga_recommendation_view.dto.dart';
 import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
 import 'package:mangatracker/features/manga/widgets/detail_read_online_button.dart';
-import 'package:mangatracker/features/manga/widgets/detail_recommendations_section.dart';
+import 'package:mangatracker/features/manga/widgets/community_recommendations_sheet.dart';
+import 'package:mangatracker/features/manga/widgets/last_site_link_suggestion.dart';
+import 'package:mangatracker/features/reader/services/last_site_link.service.dart';
+import 'package:mangatracker/features/reader/services/last_site_link_policy.dart';
 // `DetailStatusSelector` et `DetailStatusButton` ne sont plus utilisés —
 // le statut est désormais une icône dans l'action bar (`_StatusIconButton`).
 // `DetailAddToLibraryButton` est encore utilisé (CTA "Ajouter à la
@@ -483,7 +487,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       // traduite (Accept-Language) — fallback sur l'original.
                       mangaDescription:
                           manga.translatedDescription ?? manga.description,
-                      rating: manga.rating,
+                      // Note globale (MangaUpdates + Manga Tracker) et total
+                      // des votes ; repli sur la note MangaUpdates.
+                      rating: manga.displayRating,
+                      ratingVotes: manga.totalRatingVotes,
                       mangaTotalChapters: manga.totalChapters,
                       officialTotalChapters: manga.officialTotalChapters,
                       isCompleted: manga.isCompleted,
@@ -517,6 +524,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                               userRating: manga.userRating,
                               communityRating: manga.communityRating,
                               communityRatingCount: manga.communityRatingCount,
+                              muRating: manga.muRating,
+                              muRatingVotes: manga.muRatingVotes,
+                              globalRating: manga.aggregatedRating,
+                              totalRatingVotes: manga.totalRatingVotes,
                             )
                           : null,
                     ),
@@ -706,51 +717,13 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     }
     if (!mounted) return;
 
-    final recos = _mangaRecommendationsCache ?? [];
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        final l10n = AppLocalizations.of(ctx);
-        return SafeArea(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.s),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.m,
-                        AppSpacing.s,
-                        AppSpacing.m,
-                        0,
-                      ),
-                      child: Text(
-                        l10n?.recommendedMangas ?? 'Mangas recommandés',
-                        style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ),
-                    DetailRecommendationsSection(
-                      recommendations: recos,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+    // « Si vous avez aimé ce titre » : votes MangaUpdates + Manga Tracker,
+    // l'utilisateur peut recommander à son tour. L'ancienne liste (titres
+    // souvent dans les mêmes bibliothèques) reste affichée en dessous.
+    await showCommunityRecommendationsSheet(
+      context,
+      muId: muId,
+      readersAlsoRead: _mangaRecommendationsCache ?? const [],
     );
   }
 
@@ -923,7 +896,17 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     );
   }
 
+  /// Réponse du dialogue « Ajouter un lien » quand l'utilisateur choisit de
+  /// chercher le titre sur le site de sa dernière lecture.
+  static const String _searchOnSiteResult = '\u0000search-on-site';
+
   Future<void> _addCustomLink() async {
+    // Titre sans lien : proposer le site de la dernière lecture qui en a un
+    // (bibliothèque en cache, aucun appel réseau).
+    final suggestion = customLink == null
+        ? await const LastSiteLinkService().suggestFor(widget.muId)
+        : null;
+    if (!mounted) return;
     final controller = TextEditingController(text: customLink);
     bool hasChapterFormat = false;
     bool isCheckingCustomPatterns = false;
@@ -1017,6 +1000,15 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       ),
                       onChanged: (_) => checkChapterFormat(),
                     ),
+                    if (suggestion != null) ...[
+                      const SizedBox(height: 12),
+                      LastSiteLinkSuggestion(
+                        suggestion: suggestion,
+                        onCopyLink: () => _copyLink(suggestion.link),
+                        onSearchOnSite: () =>
+                            Navigator.of(ctx).pop(_searchOnSiteResult),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     // Message d'aide
                     Container(
@@ -1185,8 +1177,52 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       },
     );
 
-    if (link != null && mounted) {
+    if (!mounted) return;
+    if (link == _searchOnSiteResult && suggestion != null) {
+      await _openLinkDiscovery(suggestion);
+    } else if (link != null) {
       await _saveCustomLink(link, context);
+    }
+  }
+
+  Future<void> _copyLink(String link) async {
+    await Clipboard.setData(ClipboardData(text: link));
+    if (!mounted) return;
+    widget.notifier.info(
+      AppLocalizations.of(context)?.urlCopied ??
+          'URL copiée dans le presse-papiers',
+    );
+  }
+
+  /// Ouvre le lecteur en mode « recherche de lien » sur le site de la
+  /// dernière lecture, titre copié pour la recherche du site. Rien n'est
+  /// enregistré tant que l'utilisateur n'a pas choisi « Ceci est le nouveau
+  /// lien » ; au retour, la fiche relit son lien.
+  Future<void> _openLinkDiscovery(LastSiteLink suggestion) async {
+    final state = context.read<DetailBloc>().state;
+    final title = state is DetailLoaded
+        ? state.mangaDetail.title
+        : (widget.mangaTitle ?? '');
+    final l10n = AppLocalizations.of(context);
+    if (title.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(text: title));
+      if (!mounted) return;
+      widget.notifier.info(
+        l10n?.linkDiscoveryTitleCopied(title) ?? title,
+      );
+    }
+    final saved = await context.push<bool>(
+      '/manga/${widget.muId}/read',
+      extra: ReaderWebExtras(
+        mangaTitle: title,
+        initialLastRead: lastReadChapters,
+        initialUrl: suggestion.siteRoot,
+        baseUserLink: suggestion.siteRoot,
+        linkDiscovery: true,
+      ),
+    );
+    if (saved == true && mounted) {
+      context.read<DetailBloc>().add(const RefreshMangaDetail());
     }
   }
 

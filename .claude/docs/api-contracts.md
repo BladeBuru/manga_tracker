@@ -43,7 +43,12 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 | `GET` | `/mangas/trending` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
 | `GET` | `/mangas/new` | JWT | `?page=1&limit=20` | `List<MangaQuickViewDto>` |
 | `POST` | `/mangas/search` | JWT | body JSON `{search_pattern, page?, limit?}` | `SearchResultsPageDto` (enveloppe `{results, totalHits, page, perPage, hasMore}`) — tri par pertinence MangaUpdates ; tableau nu `List<MangaQuickViewDto>` si `page` absent (rétrocompat ≤ 0.11.0) |
-| `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` |
+| `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` — dont `aggregated_rating` (note globale MU + Manga Tracker au prorata des votes), `mu_rating_votes`, `total_rating_votes` |
+| `GET` | `/mangas/:muId/ratings` | JWT | — | `RatingSummaryDto` `{mu_rating, mu_rating_votes, community_rating, community_rating_count, aggregated_rating, total_rating_votes}` — lu en base, relu après un vote |
+| `GET` | `/mangas/:muId/community-recommendations` | JWT | — | `{sourceMuId, items: CommunityRecommendationDto[]}` — `{muId, title, year, mediumCoverUrl, rating, type, muVotes, appVotes, totalVotes, recommendedByMe}`, tri par total |
+| `PUT` | `/mangas/:muId/community-recommendations/:targetMuId` | JWT | body `{title?}` (fiche minimale si cible inconnue) | `CommunityRecommendationDto` — idempotent ; **400** source = cible, **404** source inconnue, **429** > 60 votes/h |
+| `DELETE` | `/mangas/:muId/community-recommendations/:targetMuId` | JWT | — | `CommunityRecommendationDto` |
+| `GET` | `/authors/:authorId` | JWT | — | `AuthorDetailsDto` `{id, name, actualName, associatedNames, imageUrl, bio, birthday, birthplace, genres, officialSite, works[], worksComplete}` — **404** inconnu, **503** MangaUpdates indisponible |
 | `GET` | `/mangas/home/sections` | JWT | `?limit=20` (5..40, items par section) | `HomeSectionsDto` — `{generatedAt, sections: [{id, kind, params, items}]}` |
 | `GET` | `/mangas/home/sections/:id` | JWT | `?page=1&limit=40` grille « Tout voir », `?page=N&limit=20` carrousels de l'accueil (5..40) | `HomeSectionsPageDto` — `{id, kind, params, page, limit, total, items}` ; **404** si `id` inconnu → `HomeSectionNotFoundException` |
 
@@ -173,10 +178,11 @@ manga (la dernière), jamais une file d'actions à rejouer.
 
 | Méthode | Route | Auth | Corps | DTO Flutter |
 |---------|-------|------|-------|-------------|
-| `GET` | `/users/profile` | JWT | — | `UserInformationDto` |
-| `PATCH` | `/users/name` | JWT | `{ name }` | — |
-| `PATCH` | `/users/password` | JWT | `{ currentPassword, newPassword }` | — |
-| `DELETE` | `/users` | JWT | — | — |
+| `GET` | `/user/information` | JWT | — | `UserInformationDto` (`username` immuable côté app, `displayName` affiché) |
+| `PATCH` | `/user/profile` | JWT | `{ displayName?, bio?, avatarUrl?, dateOfBirth?, gender?, isProfilePublic? }` — `displayName: null` efface le nom à afficher ; corps ≤ 300 ko | `UserInformationDto` |
+| `PUT` | `/user/name` | JWT | `{ name }` (3-32 car., pas d'email) — **409** si pris | `UserInformationDto` (non utilisé par l'app) |
+| `PUT` | `/user/password` | JWT | `{ currentPassword, newPassword }` | — |
+| `DELETE` | `/user/delete` | JWT | — | — |
 
 ---
 

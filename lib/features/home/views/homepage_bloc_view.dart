@@ -111,7 +111,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
                   hPad, AppSpacing.l),
               sliver: SliverToBoxAdapter(
                 child: HomeHeaderBlock(
-                  username: user?.username,
+                  username: user?.greetingName,
                   emailVerified: user?.emailVerified ?? true,
                   // Le catalogue est la source principale : son verdict prime,
                   // celui des recommandations complete.

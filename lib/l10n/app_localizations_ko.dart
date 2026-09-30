@@ -1875,7 +1875,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String readingGroupActionsCopyFriendLink(String friend) {
-    return '$friend의 링크 복사';
+    return '$friend의 링크 사용';
   }
 
   @override
@@ -2349,4 +2349,204 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get dataSourceCredit => '작품 정보, 카탈로그, 추천 제공: MangaUpdates';
+
+  @override
+  String get genreShounen => '소년';
+
+  @override
+  String get genreSeinen => '청년';
+
+  @override
+  String get genreShoujo => '소녀';
+
+  @override
+  String get genreJosei => '여성';
+
+  @override
+  String get genreSports => '스포츠';
+
+  @override
+  String get genreTragedy => '비극';
+
+  @override
+  String searchGenreChipAccessibility(String genre) {
+    return '$genre 장르 작품 보기';
+  }
+
+  @override
+  String get ratingGlobalLabel => '종합 평점';
+
+  @override
+  String get ratingSourceMangaUpdates => 'MangaUpdates';
+
+  @override
+  String get ratingSourceApp => 'Manga Tracker';
+
+  @override
+  String get ratingGlobalExplanation =>
+      'MangaUpdates와 Manga Tracker 투표의 평균이며, 모든 표는 같은 비중입니다.';
+
+  @override
+  String get communityRecoTitle => '이 작품이 마음에 들었다면';
+
+  @override
+  String get communityRecoSubtitle => 'MangaUpdates와 Manga Tracker 독자들의 추천';
+
+  @override
+  String communityRecoVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '추천 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String communityRecoAppVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '그중 Manga Tracker $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityRecoAdd => '작품 추천하기';
+
+  @override
+  String get communityRecoToggleOn => '나도 추천해요';
+
+  @override
+  String get communityRecoToggleOff => '내 추천 취소';
+
+  @override
+  String get communityRecoAdded => '감사합니다! 추천이 저장되었습니다';
+
+  @override
+  String get communityRecoRemoved => '추천을 취소했습니다';
+
+  @override
+  String get communityRecoEmpty => '아직 이 작품에 대한 추천이 없습니다. 첫 번째로 추천해 보세요!';
+
+  @override
+  String get communityRecoLoadError => '추천을 불러오지 못했습니다';
+
+  @override
+  String get communityRecoActionError => '추천을 저장하지 못했습니다. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get communityRecoThrottled =>
+      '한 번에 너무 많은 작품을 추천했습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get communityRecoPickerTitle => '어떤 작품을 추천하시나요?';
+
+  @override
+  String get communityRecoPickerHint => '작품 검색';
+
+  @override
+  String get communityRecoPickerEmpty => '작품을 찾을 수 없습니다';
+
+  @override
+  String get communityRecoReadersAlsoRead => '이 작품의 독자들이 함께 읽는 작품';
+
+  @override
+  String get communityRecoSelf => '작품 자신을 추천할 수는 없습니다';
+
+  @override
+  String authorOpenAccessibility(String name) {
+    return '$name의 프로필과 작품 보기';
+  }
+
+  @override
+  String authorWorksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '작품 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String authorBirthday(String date) {
+    return '출생: $date';
+  }
+
+  @override
+  String authorBirthplace(String place) {
+    return '출신: $place';
+  }
+
+  @override
+  String authorOtherNames(String names) {
+    return '다른 이름: $names';
+  }
+
+  @override
+  String get authorOfficialSite => '공식 사이트';
+
+  @override
+  String get authorBioMore => '더 보기';
+
+  @override
+  String get authorBioLess => '접기';
+
+  @override
+  String get authorNoBio => '아직 이 작가의 소개가 없습니다.';
+
+  @override
+  String get authorNoWorks => '이 작가의 작품을 찾지 못했습니다.';
+
+  @override
+  String get authorWorksIncomplete => '전체 작품 목록을 불러오지 못했습니다.';
+
+  @override
+  String get authorLoadError => '지금은 이 작가의 프로필을 불러올 수 없습니다.';
+
+  @override
+  String get authorNotFound => '작가를 찾을 수 없습니다.';
+
+  @override
+  String get readerSetAsMangaLink => '이 페이지를 새 링크로';
+
+  @override
+  String get readerLinkSaveFailed => '이 링크를 저장하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String linkDiscoveryHint(String title) {
+    return '이 사이트에서 “$title”을(를) 검색하고(제목이 복사됨) 작품 페이지를 연 뒤 저장하세요.';
+  }
+
+  @override
+  String get linkDiscoveryHintNoTitle => '이 사이트에서 작품을 검색하고 페이지를 연 뒤 저장하세요.';
+
+  @override
+  String linkDiscoveryTitleCopied(String title) {
+    return '“$title” 복사됨: 사이트 검색창에 붙여 넣으세요';
+  }
+
+  @override
+  String linkSuggestionTitle(String host) {
+    return '$host에서 이 작품 찾기';
+  }
+
+  @override
+  String linkSuggestionSource(String title) {
+    return '최근에 읽은 작품의 사이트: $title';
+  }
+
+  @override
+  String get linkSuggestionCopy => '링크 복사';
+
+  @override
+  String get linkSuggestionSearch => '사이트에서 찾기';
+
+  @override
+  String get readingGroupActionsCopyLink => '읽기 링크 복사';
+
+  @override
+  String get readingGroupActionsCopyLinkSubtitle => '다른 곳에서 열거나 공유하기';
 }

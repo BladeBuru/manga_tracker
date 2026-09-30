@@ -60,6 +60,9 @@ import 'package:mangatracker/features/stats/views/stats_view.dart';
 import 'package:mangatracker/features/friends/views/friends_list_page.dart';
 import 'package:mangatracker/features/friends/views/friend_profile_view.dart';
 
+// Auteurs
+import 'package:mangatracker/features/authors/views/author_page.dart';
+
 // Inbox (Phase 8.1)
 import 'package:mangatracker/features/sharing/views/inbox_page.dart';
 
@@ -91,6 +94,13 @@ class HomeSectionExtras {
   });
 }
 
+/// Extras passés via `context.push('/authors/:authorId', extra: ...)` — le
+/// nom s'affiche dans la barre avant la réponse de l'API.
+class AuthorPageExtras {
+  final String name;
+  const AuthorPageExtras({required this.name});
+}
+
 /// Extras passés via `context.push('/friends/:userId', extra: ...)` —
 /// affichage immédiat du header (nom + avatar) pendant le fetch.
 class FriendProfileExtras {
@@ -114,6 +124,11 @@ class ReaderWebExtras {
   /// forcement plus fidele.
   final double? initialPositionPercent;
 
+  /// Mode « recherche de lien » : le lecteur s'ouvre sur le site d'une
+  /// autre lecture pour y trouver ce titre ; il n'enregistre rien tant que
+  /// l'utilisateur n'a pas choisi « Ceci est le nouveau lien ».
+  final bool linkDiscovery;
+
   const ReaderWebExtras({
     this.mangaTitle,
     required this.initialLastRead,
@@ -122,6 +137,7 @@ class ReaderWebExtras {
     this.autoDownload = false,
     this.onDownloadComplete,
     this.initialPositionPercent,
+    this.linkDiscovery = false,
   });
 }
 
@@ -216,6 +232,21 @@ GoRouter buildAppRouter() {
       ),
 
       // ──────────────────────────────────────────────────────────────
+      // Auteurs — mini bio + œuvres (noms cliquables de la fiche manga)
+      // ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/authors/:authorId',
+        name: 'author',
+        builder: (context, state) {
+          final extras = state.extra as AuthorPageExtras?;
+          return AuthorPage(
+            authorId: int.tryParse(state.pathParameters['authorId'] ?? '') ?? 0,
+            initialName: extras?.name,
+          );
+        },
+      ),
+
+      // ──────────────────────────────────────────────────────────────
       // Manga
       // ──────────────────────────────────────────────────────────────
       GoRoute(
@@ -252,6 +283,7 @@ GoRouter buildAppRouter() {
                 initialPositionPercent: extras.initialPositionPercent,
                 autoDownload: extras.autoDownload,
                 onDownloadComplete: extras.onDownloadComplete,
+                linkDiscovery: extras.linkDiscovery,
               );
             },
           ),

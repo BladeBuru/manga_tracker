@@ -40,59 +40,67 @@ class LibraryGridView extends StatelessWidget {
 
     // Responsive (audit 2026-06-12) : 3 colonnes était hardcodé → cards
     // gigantesques sur desktop. Colonnes standard AppBreakpoints (3/4/5/6).
-    return LayoutBuilder(builder: (context, constraints) {
-      final bp = AppBreakpoints.of(constraints.maxWidth);
-      return ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.m,
-          vertical: AppSpacing.s,
-        ),
-        children: grouped.entries.map((entry) {
-          final status = entry.key;
-          final items = entry.value;
-          final expanded = isExpanded[status] ?? true;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bp = AppBreakpoints.of(constraints.maxWidth);
+        final sections = grouped.entries.toList(growable: false);
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.m,
+            vertical: AppSpacing.s,
+          ),
+          itemCount: sections.length,
+          itemBuilder: (context, sectionIndex) {
+            final status = sections[sectionIndex].key;
+            final items = sections[sectionIndex].value;
+            final expanded = isExpanded[status] ?? true;
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: LibrarySection(
-              label: status.getLabel(context),
-              count: items.length,
-              isExpanded: expanded,
-              onExpansionChanged: (_) => onToggleSection(status),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.m),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: bp.gridColumns,
-                    crossAxisSpacing: 12.0,
-                    mainAxisSpacing: 8.0,
-                    childAspectRatio: 0.52,
+            return Padding(
+              key: ValueKey(status),
+              padding: const EdgeInsets.only(bottom: 14),
+              child: LibrarySection(
+                label: status.getLabel(context),
+                count: items.length,
+                isExpanded: expanded,
+                onExpansionChanged: (_) => onToggleSection(status),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.m),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: bp.gridColumns,
+                      crossAxisSpacing: 12.0,
+                      mainAxisSpacing: 8.0,
+                      childAspectRatio: 0.52,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final manga = items[index];
+                      return MangaCard(
+                        // Clé stable : filtrer ne réattribue pas la couverture
+                        // d'une carte à un autre titre (rechargement d'image).
+                        key: ValueKey(manga.muId),
+                        muId: manga.muId.toString(),
+                        mangaTitle: displayNameOf(manga),
+                        mangaAuthor: manga.year,
+                        mediumImgPath: manga.mediumCoverUrl,
+                        rating: manga.rating,
+                        lastChapter: manga.totalChapters,
+                        readChapter: manga.readChapters,
+                        showDownloadedOnly: showDownloadedOnly,
+                        // V1 mode compact : progression sur la cover en blanc,
+                        // pas d'année ni de rating (focus visuel = cover + titre)
+                        compactLibrary: true,
+                      );
+                    },
                   ),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final manga = items[index];
-                  return MangaCard(
-                    muId: manga.muId.toString(),
-                    mangaTitle: displayNameOf(manga),
-                    mangaAuthor: manga.year,
-                    mediumImgPath: manga.mediumCoverUrl,
-                    rating: manga.rating,
-                    lastChapter: manga.totalChapters,
-                    readChapter: manga.readChapters,
-                    showDownloadedOnly: showDownloadedOnly,
-                    // V1 mode compact : progression sur la cover en blanc,
-                    // pas d'année ni de rating (focus visuel = cover + titre)
-                    compactLibrary: true,
-                  );
-                  },
                 ),
               ),
-            ),
-          );
-        }).toList(),
-      );
-    });
+            );
+          },
+        );
+      },
+    );
   }
 }

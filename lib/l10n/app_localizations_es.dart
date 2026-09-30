@@ -1938,7 +1938,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String readingGroupActionsCopyFriendLink(String friend) {
-    return 'Copiar el enlace de $friend';
+    return 'Usar el enlace de $friend';
   }
 
   @override
@@ -2437,4 +2437,219 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get dataSourceCredit =>
       'Fichas, catálogo y sugerencias proporcionados por MangaUpdates';
+
+  @override
+  String get genreShounen => 'Shōnen';
+
+  @override
+  String get genreSeinen => 'Seinen';
+
+  @override
+  String get genreShoujo => 'Shōjo';
+
+  @override
+  String get genreJosei => 'Josei';
+
+  @override
+  String get genreSports => 'Deportes';
+
+  @override
+  String get genreTragedy => 'Tragedia';
+
+  @override
+  String searchGenreChipAccessibility(String genre) {
+    return 'Ver obras del género $genre';
+  }
+
+  @override
+  String get ratingGlobalLabel => 'Nota global';
+
+  @override
+  String get ratingSourceMangaUpdates => 'MangaUpdates';
+
+  @override
+  String get ratingSourceApp => 'Manga Tracker';
+
+  @override
+  String get ratingGlobalExplanation =>
+      'Media de los votos de MangaUpdates y Manga Tracker, cada voto cuenta lo mismo.';
+
+  @override
+  String get communityRecoTitle => 'Si te gustó este título';
+
+  @override
+  String get communityRecoSubtitle =>
+      'Recomendaciones de los lectores de MangaUpdates y Manga Tracker';
+
+  @override
+  String communityRecoVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recomendaciones',
+      one: '1 recomendación',
+      zero: 'Ninguna recomendación',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String communityRecoAppVotes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'incluidas $count en Manga Tracker',
+      one: 'incluida 1 en Manga Tracker',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityRecoAdd => 'Recomendar una obra';
+
+  @override
+  String get communityRecoToggleOn => 'Yo también lo recomiendo';
+
+  @override
+  String get communityRecoToggleOff => 'Quitar mi recomendación';
+
+  @override
+  String get communityRecoAdded => '¡Gracias! Tu recomendación se ha guardado';
+
+  @override
+  String get communityRecoRemoved => 'Recomendación retirada';
+
+  @override
+  String get communityRecoEmpty =>
+      'Nadie ha recomendado todavía una obra para este título. ¡Sé el primero!';
+
+  @override
+  String get communityRecoLoadError =>
+      'No se pudieron cargar las recomendaciones';
+
+  @override
+  String get communityRecoActionError =>
+      'No se pudo guardar la recomendación. Inténtalo más tarde.';
+
+  @override
+  String get communityRecoThrottled =>
+      'Has recomendado muchas obras de golpe. Vuelve a intentarlo en un momento.';
+
+  @override
+  String get communityRecoPickerTitle => '¿Qué obra recomiendas?';
+
+  @override
+  String get communityRecoPickerHint => 'Buscar un título';
+
+  @override
+  String get communityRecoPickerEmpty => 'No se encontró ningún título';
+
+  @override
+  String get communityRecoReadersAlsoRead =>
+      'Los lectores de este título también leen';
+
+  @override
+  String get communityRecoSelf => 'Una obra no puede recomendarse a sí misma';
+
+  @override
+  String authorOpenAccessibility(String name) {
+    return 'Ver el perfil y las obras de $name';
+  }
+
+  @override
+  String authorWorksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count obras',
+      one: '1 obra',
+      zero: 'Obras',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String authorBirthday(String date) {
+    return 'Nacimiento: $date';
+  }
+
+  @override
+  String authorBirthplace(String place) {
+    return 'Origen: $place';
+  }
+
+  @override
+  String authorOtherNames(String names) {
+    return 'Otros nombres: $names';
+  }
+
+  @override
+  String get authorOfficialSite => 'Sitio oficial';
+
+  @override
+  String get authorBioMore => 'Leer más';
+
+  @override
+  String get authorBioLess => 'Mostrar menos';
+
+  @override
+  String get authorNoBio => 'Todavía no hay biografía para este autor.';
+
+  @override
+  String get authorNoWorks => 'No se encontraron obras de este autor.';
+
+  @override
+  String get authorWorksIncomplete =>
+      'No se pudo cargar la lista completa de obras.';
+
+  @override
+  String get authorLoadError =>
+      'No se puede cargar el perfil de este autor en este momento.';
+
+  @override
+  String get authorNotFound => 'Autor no encontrado.';
+
+  @override
+  String get readerSetAsMangaLink => 'Este es el nuevo enlace';
+
+  @override
+  String get readerLinkSaveFailed =>
+      'No se pudo guardar este enlace. Inténtalo de nuevo.';
+
+  @override
+  String linkDiscoveryHint(String title) {
+    return 'Busca «$title» en este sitio (el título está copiado), abre su página y guárdala.';
+  }
+
+  @override
+  String get linkDiscoveryHintNoTitle =>
+      'Busca el título en este sitio, abre su página y guárdala.';
+
+  @override
+  String linkDiscoveryTitleCopied(String title) {
+    return '«$title» copiado: pégalo en el buscador del sitio';
+  }
+
+  @override
+  String linkSuggestionTitle(String host) {
+    return 'Encontrar este título en $host';
+  }
+
+  @override
+  String linkSuggestionSource(String title) {
+    return 'Sitio de tu última lectura: $title';
+  }
+
+  @override
+  String get linkSuggestionCopy => 'Copiar el enlace';
+
+  @override
+  String get linkSuggestionSearch => 'Buscar en el sitio';
+
+  @override
+  String get readingGroupActionsCopyLink => 'Copiar el enlace de lectura';
+
+  @override
+  String get readingGroupActionsCopyLinkSubtitle =>
+      'Para abrirlo en otro lugar o compartirlo';
 }

@@ -24,6 +24,13 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
 
+  /// Numéro du dernier chargement lancé. Les évènements étant traités en
+  /// parallèle, un chargement plus ancien (retour de fiche, changement
+  /// d'onglet, tirer pour rafraîchir) pouvait émettre APRÈS un plus récent :
+  /// la liste se redessinait plusieurs fois, parfois avec des données
+  /// périmées. Seul le chargement le plus récent émet.
+  int _loadGeneration = 0;
+
   LibraryBloc() : super(const LibraryInitial()) {
     on<LoadLibrary>(_onLoadLibrary);
     on<AddMangaToLibrary>(_onAddMangaToLibrary);
@@ -58,7 +65,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   /// Charge la bibliothèque
   Future<void> _onLoadLibrary(LoadLibrary event, Emitter<LibraryState> emit) async {
-    debugPrint('🔄 LibraryBloc: Début du chargement de la bibliothèque...');
+    final generation = ++_loadGeneration;
+    bool superseded() => generation != _loadGeneration || emit.isDone;
 
     final cachedMangas = await _cacheHelper.getCachedLibrary();
     final hasCachedData = cachedMangas != null && cachedMangas.isNotEmpty;
@@ -68,6 +76,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       final List<MangaQuickViewDto> cachedList = cachedMangas;
       // Enrichir les mangas avec les informations sur les nouveaux chapitres
       final enrichedCachedList = await _enrichWithNewChapters(cachedList);
+      if (superseded()) return;
       // Bandeau immédiat si l'appareil se sait déjà hors ligne, au lieu
       // d'attendre l'échec de la requête réseau.
       emit(LibraryLoaded(
@@ -76,12 +85,17 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         pendingActions: pendingCached,
         stale: true,
       ));
-    } else {
+    } else if (state is! LibraryLoaded || cachedMangas == null) {
+      // Cache vide (`[]`) : on ne remplace pas une liste déjà affichée par
+      // un indicateur de chargement — elle reste visible jusqu'à la réponse.
+      // Cache ABSENT (`null`) : purgé à la déconnexion ou au changement de
+      // compte. Le bloc (singleton) peut encore contenir la bibliothèque du
+      // compte précédent : elle ne doit pas rester à l'écran.
+      if (superseded()) return;
       emit(const LibraryLoading());
     }
-    
+
     try {
-      debugPrint('🔄 LibraryBloc: Tentative de chargement depuis le réseau...');
       final mangas = await _cacheHelper.loadLibraryData(
         networkCall: () => _libraryService.getUserSavedMangas(),
       );
@@ -90,9 +104,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       
       // Enrichir les mangas avec les informations sur les nouveaux chapitres
       final enrichedMangas = await _enrichWithNewChapters(mangas);
-      
-      // Si aucune erreur, on est online
-      debugPrint('✅ LibraryBloc: Données chargées depuis le réseau - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
+      if (superseded()) return;
+
       emit(LibraryLoaded(
         mangas: enrichedMangas,
         isOffline: false,
@@ -118,7 +131,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
           final pendingActions = await _getPendingActionsCount();
           // Enrichir les mangas avec les informations sur les nouveaux chapitres
           final enrichedMangas = await _enrichWithNewChapters(fallbackMangas);
-          debugPrint('✅ LibraryBloc: Données de la bibliothèque chargées depuis le cache (mode offline) - ${enrichedMangas.length} mangas, $pendingActions actions en attente');
+          if (superseded()) return;
           emit(LibraryLoaded(
             mangas: enrichedMangas,
             isOffline: showsOfflineIndicator(mode),
@@ -129,7 +142,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         } else {
           // Cache vide : état vide propre, pas un crash — et l'invitation à
           // se reconnecter reste visible si la session a été rejetée.
-          debugPrint('❌ LibraryBloc: Aucune donnée en cache disponible');
+          if (superseded()) return;
           emit(LibraryError(
             message: e.toString(),
             isOffline: showsOfflineIndicator(mode),
@@ -138,6 +151,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         }
       } catch (cacheError) {
         debugPrint('❌ LibraryBloc: Erreur lors de la récupération du cache: $cacheError');
+        if (superseded()) return;
         emit(LibraryError(
           message: e.toString(),
           isOffline: showsOfflineIndicator(mode),
@@ -375,9 +389,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     }
   }
 
-  /// Rafraîchit la bibliothèque
+  /// Rafraîchit la bibliothèque et signale la fin réelle du rechargement.
   Future<void> _onRefreshLibrary(RefreshLibrary event, Emitter<LibraryState> emit) async {
-    add(const LoadLibrary());
+    try {
+      await _onLoadLibrary(const LoadLibrary(), emit);
+    } finally {
+      final completer = event.completer;
+      if (completer != null && !completer.isCompleted) completer.complete();
+    }
   }
 
   /// Récupère le nombre d'actions en attente
