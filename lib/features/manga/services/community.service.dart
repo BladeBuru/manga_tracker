@@ -63,15 +63,12 @@ class CommunityService {
 
   /// « Qui a aimé [muId] aimera [targetMuId] ». Idempotent côté serveur.
   /// [title] sert si l'œuvre recommandée n'est pas encore connue de l'API.
-  Future<CommunityRecommendationDto> recommend(
-    num muId,
-    num targetMuId, {
-    String? title,
-  }) async {
+  ///
+  /// Sans corps : une œuvre pas encore connue du serveur y est créée d'après
+  /// sa fiche MangaUpdates (404 si elle n'y existe pas).
+  Future<CommunityRecommendationDto> recommend(num muId, num targetMuId) async {
     final response = await _http.putWithAuthTokens(
       buildApiUri('/mangas/$muId/community-recommendations/$targetMuId'),
-      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-      body: jsonEncode({if (title != null && title.isNotEmpty) 'title': title}),
     );
     _throwIfNotSuccess(response.statusCode);
     return CommunityRecommendationDto.fromJson(

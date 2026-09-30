@@ -18,6 +18,11 @@ class ReaderWebView extends StatelessWidget {
   final bool autoDownload;
   final Function(bool)? onDownloadComplete;
 
+  // Mêmes paramètres que la version mobile (`web_view_io.dart`) : le routeur
+  // les passe sur toutes les plateformes. Sans effet ici (lecture externe).
+  final double? initialPositionPercent;
+  final bool linkDiscovery;
+
   const ReaderWebView({
     super.key,
     required this.muId,
@@ -27,6 +32,8 @@ class ReaderWebView extends StatelessWidget {
     required this.baseUserLink,
     this.autoDownload = false,
     this.onDownloadComplete,
+    this.initialPositionPercent,
+    this.linkDiscovery = false,
   });
 
   @override

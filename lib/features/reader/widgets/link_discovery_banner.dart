@@ -7,7 +7,8 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// (il est déjà copié), ouvrir sa page, puis l'enregistrer comme lien.
 class LinkDiscoveryBanner extends StatelessWidget {
   final String? mangaTitle;
-  final VoidCallback onSaveLink;
+  /// `null` pendant l'enregistrement : le bouton est désactivé.
+  final VoidCallback? onSaveLink;
   final VoidCallback onDismiss;
 
   const LinkDiscoveryBanner({

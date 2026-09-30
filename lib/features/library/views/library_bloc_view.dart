@@ -111,12 +111,23 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
       setState(() => _showDownloadedOnly = false);
       return;
     }
+    await _reloadDownloadedIds(enableFilter: true);
+  }
+
+  Future<void> _reloadDownloadedIds({bool enableFilter = false}) async {
     final chapters = await _downloadManager.getAllDownloadedChapters();
     if (!mounted) return;
     setState(() {
       _downloadedMuIds = chapters.keys.toSet();
-      _showDownloadedOnly = true;
+      if (enableFilter) _showDownloadedOnly = true;
     });
+  }
+
+  /// Des téléchargements ont pu y être supprimés : le filtre « téléchargés »
+  /// actif ne doit pas continuer à montrer ces titres.
+  Future<void> _openDownloads() async {
+    await context.push('/downloads');
+    if (mounted && _showDownloadedOnly) await _reloadDownloadedIds();
   }
 
   /// Attend la fin réelle du rafraîchissement (au lieu d'un délai fixe) :
@@ -160,7 +171,7 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
               showDownloadedOnly: _showDownloadedOnly,
               isCardView: _isCardView,
               onToggleDownloadedFilter: _toggleDownloadedOnly,
-              onOpenDownloads: () => context.push('/downloads'),
+              onOpenDownloads: _openDownloads,
               onToggleView: () {
                 setState(() {
                   _isCardView = !_isCardView;

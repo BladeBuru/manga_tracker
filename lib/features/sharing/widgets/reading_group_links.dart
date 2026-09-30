@@ -61,8 +61,18 @@ class ReadingGroupLinks {
 
   /// Lien à copier : le sien d'abord, sinon celui de l'ami adapté (ou brut
   /// si le format n'est pas reconnu — mieux vaut la page de l'ami que rien).
-  Future<String?> linkToCopy() async =>
-      myLink() ?? await adaptedFriendLink() ?? friendWithLink()?.customLink;
+  Future<String?> linkToCopy() async => (await copyTarget())?.link;
+
+  /// [linkToCopy] et s'il a été adapté au prochain chapitre de l'utilisateur
+  /// (sinon le message ne doit pas annoncer « chapitre N »).
+  Future<({String link, bool adaptedToChapter})?> copyTarget() async {
+    final mine = myLink();
+    if (mine != null) return (link: mine, adaptedToChapter: false);
+    final adapted = await adaptedFriendLink();
+    if (adapted != null) return (link: adapted, adaptedToChapter: true);
+    final raw = friendWithLink()?.customLink;
+    return raw == null ? null : (link: raw, adaptedToChapter: false);
+  }
 }
 
 /// Copie le lien de lecture dans le presse-papiers.
@@ -72,15 +82,17 @@ Future<void> copyReadingGroupLink(
 ) async {
   final l10n = AppLocalizations.of(context)!;
   final messenger = ScaffoldMessenger.of(context);
-  final link = await links.linkToCopy();
-  if (link == null) return;
-  await Clipboard.setData(ClipboardData(text: link));
+  final target = await links.copyTarget();
+  if (target == null) return;
+  await Clipboard.setData(ClipboardData(text: target.link));
+  // « Chapitre N » seulement si le lien a vraiment été adapté : un lien brut
+  // pointe encore sur le chapitre de l'ami.
   messenger.showSnackBar(
     SnackBar(
       content: Text(
-        links.myLink() != null
-            ? l10n.urlCopied
-            : l10n.readingGroupCopyLinkSuccess(links.targetChapter()),
+        target.adaptedToChapter
+            ? l10n.readingGroupCopyLinkSuccess(links.targetChapter())
+            : l10n.urlCopied,
       ),
     ),
   );

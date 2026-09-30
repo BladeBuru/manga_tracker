@@ -83,6 +83,32 @@ void main() {
       expect(dto.totalRatingVotes, 0);
       expect(dto.copyWith(aggregatedRating: 8.0).displayRating, '8');
     });
+
+    test('retirer le seul vote efface la note globale (valeurs null)', () {
+      final voted = MangaDetailDto.fromJson({
+        'muId': 1,
+        'title': 't',
+        'year': '2000',
+        'rating': 0,
+        'community_rating': 6.0,
+        'community_rating_count': 1,
+        'aggregated_rating': 6.0,
+        'total_rating_votes': 1,
+      });
+      expect(voted.displayRating, '6');
+
+      final cleared = voted.withRatingSummary(
+        communityRating: null,
+        communityRatingCount: 0,
+        aggregatedRating: null,
+        muRatingVotes: null,
+        totalRatingVotes: 0,
+      );
+      expect(cleared.aggregatedRating, isNull);
+      expect(cleared.communityRating, isNull);
+      expect(cleared.totalRatingVotes, 0);
+      expect(cleared.displayRating, voted.rating);
+    });
   });
 
   group('DetailBloc — note globale après un vote', () {

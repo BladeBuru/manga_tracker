@@ -56,6 +56,22 @@ void main() {
     },
   );
 
+  test(
+    'lien de l\'ami non adaptable : copié brut, sans annoncer de chapitre',
+    () async {
+      final links = ReadingGroupLinks(
+        group: group([
+          member(1, read: 10),
+          member(2, read: 30, link: 'https://ami.example/lecteur'),
+        ]),
+        currentUserId: 1,
+      );
+      final target = await links.copyTarget();
+      expect(target?.link, 'https://ami.example/lecteur');
+      expect(target?.adaptedToChapter, isFalse);
+    },
+  );
+
   test('personne n\'a de lien : action masquée', () {
     final links = ReadingGroupLinks(
       group: group([member(1), member(2)]),

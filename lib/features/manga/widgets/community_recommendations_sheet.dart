@@ -36,7 +36,18 @@ Future<void> showCommunityRecommendationsSheet(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(ctx).size.height * 0.85,
               ),
-              child: _SheetBody(muId: muId, readersAlsoRead: readersAlsoRead),
+              // Messagerie propre à la feuille : sinon les messages de vote
+              // s'affichent sur la fiche, SOUS la feuille, donc invisibles.
+              child: ScaffoldMessenger(
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  resizeToAvoidBottomInset: false,
+                  body: _SheetBody(
+                    muId: muId,
+                    readersAlsoRead: readersAlsoRead,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -72,7 +83,7 @@ class _SheetBody extends StatelessWidget {
     if (picked == null || !context.mounted) return;
     await _vote(
       context,
-      () => cubit.recommend(picked.muId, title: picked.title),
+      () => cubit.recommend(picked.muId),
     );
   }
 

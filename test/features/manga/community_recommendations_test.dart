@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -104,9 +105,9 @@ void main() {
     });
 
     test(
-      'le titre accompagne la recommandation d\'une œuvre inconnue',
+      "recommander n'envoie aucun titre : le serveur le tient de MangaUpdates",
       () async {
-        String? sentBody;
+        Object? sentBody = 'non appelé';
         when(
           () => http.putWithAuthTokens(
             any(),
@@ -114,7 +115,7 @@ void main() {
             body: any(named: 'body'),
           ),
         ).thenAnswer((invocation) async {
-          sentBody = invocation.namedArguments[#body] as String;
+          sentBody = invocation.namedArguments[#body];
           return Response(
             jsonEncode({
               'muId': 9,
@@ -126,8 +127,9 @@ void main() {
             200,
           );
         });
-        await service.recommend(1, 9, title: 'Bleach');
-        expect(jsonDecode(sentBody!), {'title': 'Bleach'});
+        final item = await service.recommend(1, 9);
+        expect(sentBody, isNull);
+        expect(item.title, 'Bleach');
       },
     );
   });
@@ -136,6 +138,22 @@ void main() {
     late MockCommunityService service;
 
     setUp(() => service = MockCommunityService());
+
+    test('feuille fermée pendant le vote : le succès est quand même annoncé',
+        () async {
+      final pending = Completer<CommunityRecommendationDto>();
+      when(() => service.getRecommendations(1)).thenAnswer((_) async => []);
+      when(() => service.recommend(1, 9)).thenAnswer((_) => pending.future);
+      final cubit = CommunityRecommendationsCubit(
+        sourceMuId: 1,
+        service: service,
+      );
+      await cubit.load();
+      final vote = cubit.recommend(9);
+      await cubit.close();
+      pending.complete(reco(9, app: 1, mine: true));
+      expect(await vote, CommunityVoteResult.added);
+    });
 
     test('charge la liste', () async {
       when(
@@ -156,7 +174,7 @@ void main() {
         () => service.getRecommendations(1),
       ).thenAnswer((_) async => [reco(2, mu: 5), reco(3, mu: 5)]);
       when(
-        () => service.recommend(1, 3, title: any(named: 'title')),
+        () => service.recommend(1, 3),
       ).thenAnswer((_) async => reco(3, mu: 5, app: 1, mine: true));
       when(
         () => service.unrecommend(1, 3),
@@ -185,7 +203,7 @@ void main() {
     test('une nouvelle œuvre choisie apparaît dans la liste', () async {
       when(() => service.getRecommendations(1)).thenAnswer((_) async => []);
       when(
-        () => service.recommend(1, 9, title: 'Bleach'),
+        () => service.recommend(1, 9),
       ).thenAnswer((_) async => reco(9, app: 1, mine: true));
       final cubit = CommunityRecommendationsCubit(
         sourceMuId: 1,
@@ -194,7 +212,7 @@ void main() {
       addTearDown(cubit.close);
       await cubit.load();
       expect(
-        await cubit.recommend(9, title: 'Bleach'),
+        await cubit.recommend(9),
         CommunityVoteResult.added,
       );
       expect(cubit.state.items.single.muId, 9);
@@ -204,7 +222,7 @@ void main() {
       when(
         () => service.getRecommendations(1),
       ).thenAnswer((_) async => [reco(2, mu: 5)]);
-      when(() => service.recommend(1, 2, title: any(named: 'title'))).thenThrow(
+      when(() => service.recommend(1, 2)).thenThrow(
         const CommunityException(
           CommunityFailure.throttled,
           HttpStatus.tooManyRequests,

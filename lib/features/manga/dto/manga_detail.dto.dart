@@ -212,6 +212,7 @@ class MangaDetailDto {
     int? totalChapters,
     int? officialTotalChapters,
     String? translatedDescription,
+    bool replaceRatings = false,
   }) {
     return MangaDetailDto(
       muId: muId,
@@ -242,13 +243,38 @@ class MangaDetailDto {
       seasonChapters: seasonChapters,
       bonusChapters: bonusChapters,
       userRating: userRating ?? this.userRating,
-      communityRating: communityRating ?? this.communityRating,
+      communityRating: replaceRatings
+          ? communityRating
+          : communityRating ?? this.communityRating,
       communityRatingCount: communityRatingCount ?? this.communityRatingCount,
-      aggregatedRating: aggregatedRating ?? this.aggregatedRating,
-      muRatingVotes: muRatingVotes ?? this.muRatingVotes,
+      aggregatedRating: replaceRatings
+          ? aggregatedRating
+          : aggregatedRating ?? this.aggregatedRating,
+      muRatingVotes:
+          replaceRatings ? muRatingVotes : muRatingVotes ?? this.muRatingVotes,
       totalRatingVotes: totalRatingVotes ?? this.totalRatingVotes,
     );
   }
+
+  /// Remplace la synthèse des notes par celle du serveur, valeurs `null`
+  /// comprises : retirer le seul vote d'un titre sans note MangaUpdates doit
+  /// effacer la note globale, pas la laisser affichée (`copyWith` garde
+  /// l'ancienne valeur quand on lui passe `null`).
+  MangaDetailDto withRatingSummary({
+    required double? communityRating,
+    required int communityRatingCount,
+    required double? aggregatedRating,
+    required int? muRatingVotes,
+    required int totalRatingVotes,
+  }) =>
+      copyWith(
+        replaceRatings: true,
+        communityRating: communityRating,
+        communityRatingCount: communityRatingCount,
+        aggregatedRating: aggregatedRating,
+        muRatingVotes: muRatingVotes,
+        totalRatingVotes: totalRatingVotes,
+      );
   
   Map<String, dynamic> toJson() {
     return {

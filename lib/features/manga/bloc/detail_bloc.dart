@@ -905,7 +905,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       final latest = state;
       if (summary == null || latest is! DetailLoaded) return;
       emit(latest.copyWith(
-        mangaDetail: latest.mangaDetail.copyWith(
+        mangaDetail: latest.mangaDetail.withRatingSummary(
           communityRating: summary.communityRating,
           communityRatingCount: summary.communityRatingCount,
           aggregatedRating: summary.aggregatedRating,

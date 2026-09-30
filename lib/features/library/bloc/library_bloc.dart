@@ -85,9 +85,12 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         pendingActions: pendingCached,
         stale: true,
       ));
-    } else if (state is! LibraryLoaded) {
-      // Sans cache, on ne remplace pas une liste déjà affichée par un
-      // indicateur de chargement : elle reste visible jusqu'à la réponse.
+    } else if (state is! LibraryLoaded || cachedMangas == null) {
+      // Cache vide (`[]`) : on ne remplace pas une liste déjà affichée par
+      // un indicateur de chargement — elle reste visible jusqu'à la réponse.
+      // Cache ABSENT (`null`) : purgé à la déconnexion ou au changement de
+      // compte. Le bloc (singleton) peut encore contenir la bibliothèque du
+      // compte précédent : elle ne doit pas rester à l'écran.
       if (superseded()) return;
       emit(const LibraryLoading());
     }

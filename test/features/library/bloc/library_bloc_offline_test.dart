@@ -125,6 +125,49 @@ void main() {
       expect(loaded, hasLength(1));
       expect(loaded.single.mangas.single.title, 'Récent');
     });
+
+    test('cache purgé (changement de compte) : la bibliothèque du compte '
+        'précédent disparaît pendant le chargement', () async {
+      when(() => cacheHelper.getCachedLibrary())
+          .thenAnswer((_) async => [manga(1, 'Compte A')]);
+      when(() => libraryService.getUserSavedMangas())
+          .thenAnswer((_) async => [manga(1, 'Compte A')]);
+      final bloc = LibraryBloc();
+      addTearDown(bloc.close);
+      bloc.add(const LoadLibrary());
+      expect(await settle(bloc), isA<LibraryLoaded>());
+
+      // Déconnexion → cache purgé ; le compte B se connecte.
+      final pending = Completer<List<MangaQuickViewDto>>();
+      when(() => cacheHelper.getCachedLibrary()).thenAnswer((_) async => null);
+      when(() => libraryService.getUserSavedMangas())
+          .thenAnswer((_) => pending.future);
+      bloc.add(const LoadLibrary());
+
+      expect(await settle(bloc), isA<LibraryLoading>());
+      pending.complete([manga(2, 'Compte B')]);
+      final state = await settle(bloc);
+      expect((state as LibraryLoaded).mangas.single.title, 'Compte B');
+    });
+
+    test('cache vide mais présent : la liste affichée reste visible',
+        () async {
+      when(() => cacheHelper.getCachedLibrary())
+          .thenAnswer((_) async => <MangaQuickViewDto>[]);
+      when(() => libraryService.getUserSavedMangas())
+          .thenAnswer((_) async => [manga(1, 'Berserk')]);
+      final bloc = LibraryBloc();
+      addTearDown(bloc.close);
+      bloc.add(const LoadLibrary());
+      expect(await settle(bloc), isA<LibraryLoaded>());
+
+      final emitted = <LibraryState>[];
+      final sub = bloc.stream.listen(emitted.add);
+      addTearDown(sub.cancel);
+      bloc.add(const LoadLibrary());
+      await settle(bloc);
+      expect(emitted.whereType<LibraryLoading>(), isEmpty);
+    });
   });
 
   group('LibraryBloc — lecture hors ligne', () {

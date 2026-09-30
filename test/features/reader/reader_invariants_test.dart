@@ -540,5 +540,17 @@ void main() {
       expect(code, contains('case ReaderOverflowAction.setAsMangaLink:'));
       expect(code, contains('await _library.updateCustomLink(widget.muId, url!)'));
     });
+
+    // Un double appui faisait deux `pop(true)` : le second fermait la fiche.
+    test('enregistrer le lien : garde de réentrance, un seul retour', () {
+      final code = withoutComments(reader);
+      final start = code.indexOf('Future<void> _saveCurrentUrlAsLink(');
+      expect(start, isNot(-1));
+      expect(
+        code.substring(start, start + 120),
+        contains('if (_savingLink) return;'),
+      );
+      expect(code, contains('if (ModalRoute.of(context)?.isCurrent ?? false)'));
+    });
   });
 }

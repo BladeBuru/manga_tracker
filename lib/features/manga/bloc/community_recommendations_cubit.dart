@@ -48,13 +48,12 @@ class CommunityRecommendationsCubit
       _vote(target.muId, remove: target.recommendedByMe);
 
   /// Recommande une œuvre choisie par l'utilisateur (sélecteur).
-  Future<CommunityVoteResult> recommend(num targetMuId, {String? title}) =>
-      _vote(targetMuId, remove: false, title: title);
+  Future<CommunityVoteResult> recommend(num targetMuId) =>
+      _vote(targetMuId, remove: false);
 
   Future<CommunityVoteResult> _vote(
     num targetMuId, {
     required bool remove,
-    String? title,
   }) async {
     if (state.pending.contains(targetMuId)) return CommunityVoteResult.failed;
     emit(state.copyWith(pending: {...state.pending, targetMuId}));
@@ -62,15 +61,19 @@ class CommunityRecommendationsCubit
       final updated =
           remove
               ? await _service.unrecommend(sourceMuId, targetMuId)
-              : await _service.recommend(sourceMuId, targetMuId, title: title);
-      if (isClosed) return CommunityVoteResult.failed;
+              : await _service.recommend(sourceMuId, targetMuId);
+      final result =
+          remove ? CommunityVoteResult.removed : CommunityVoteResult.added;
+      // Feuille fermée pendant l'appel : le vote a bien abouti, on le dit
+      // (seul l'état n'a plus personne à mettre à jour).
+      if (isClosed) return result;
       emit(
         state.copyWith(
           items: _merge(state.items, updated),
           pending: {...state.pending}..remove(targetMuId),
         ),
       );
-      return remove ? CommunityVoteResult.removed : CommunityVoteResult.added;
+      return result;
     } catch (e) {
       if (!isClosed) {
         emit(state.copyWith(pending: {...state.pending}..remove(targetMuId)));

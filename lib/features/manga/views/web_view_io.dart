@@ -154,6 +154,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
   // réécrivait le lien de lecture d'un lecteur rendu au chapitre 95.
   bool get _downloadMode => widget.autoDownload;
 
+  /// Enregistrement « Ceci est le nouveau lien » en cours.
+  bool _savingLink = false;
+
   // Lecture seule : ni chapitre lu, ni lien réécrit, ni position. Le mode
   // « recherche de lien » y ajoute la seule écriture voulue par
   // l'utilisateur (« Ceci est le nouveau lien »). Invariant : la page
@@ -594,7 +597,20 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// « Ceci est le nouveau lien » : la page affichée devient le lien de
   /// lecture du titre, puis on revient à sa fiche. Seule écriture du mode
   /// « recherche de lien », et uniquement sur geste explicite.
+  ///
+  /// Garde de réentrance : un double appui (ou bannière puis menu) faisait
+  /// deux `pop(true)` — le second fermait aussi la fiche du titre.
   Future<void> _saveCurrentUrlAsLink() async {
+    if (_savingLink) return;
+    setState(() => _savingLink = true);
+    try {
+      await _saveCurrentUrlAsLinkOnce();
+    } finally {
+      if (mounted) setState(() => _savingLink = false);
+    }
+  }
+
+  Future<void> _saveCurrentUrlAsLinkOnce() async {
     final l10n = AppLocalizations.of(context);
     final url = (await _controller?.getUrl())?.toString();
     final uri = url == null ? null : Uri.tryParse(url);
@@ -613,8 +629,11 @@ class _ReaderWebViewState extends State<ReaderWebView>
       return;
     }
     _notifier.success(l10n?.linkSaved ?? 'Lien enregistré !');
-    // Sortie directe (PopScope ne concerne que les retours de l'utilisateur).
-    Navigator.of(context).pop(true);
+    // Sortie directe (PopScope ne concerne que les retours de l'utilisateur),
+    // seulement si le lecteur est encore la page au premier plan.
+    if (ModalRoute.of(context)?.isCurrent ?? false) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   Future<void> _copyCurrentUrl() async {
@@ -1755,7 +1774,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
                 bottom: 0,
                 child: LinkDiscoveryBanner(
                   mangaTitle: widget.mangaTitle,
-                  onSaveLink: _saveCurrentUrlAsLink,
+                  onSaveLink: _savingLink ? null : _saveCurrentUrlAsLink,
                   onDismiss: () =>
                       setState(() => _discoveryHintVisible = false),
                 ),
