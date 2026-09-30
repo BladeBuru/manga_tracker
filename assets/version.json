@@ -1,8 +1,25 @@
 {
-  "latestVersion": "0.16.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.16.1/MangaTracker.apk",
+  "latestVersion": "0.17.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.17.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.17.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Vous pouvez maintenant recommander un titre depuis la fiche d'un manga (« Si vous avez aimé ce titre… ») et voir combien de lecteurs le recommandent",
+        "- La note d'un manga réunit désormais les votes de MangaUpdates et ceux des lecteurs de Manga Tracker, avec le nombre total de votes",
+        "- Touchez le nom d'un auteur ou d'un dessinateur pour découvrir sa biographie et toutes ses œuvres",
+        "- Un titre sans lien de lecture ? Ouvrez le site de votre dernière lecture, cherchez-y le titre, puis enregistrez la page avec « Ceci est le nouveau lien »",
+        "- En lecture partagée, vous pouvez copier le lien de lecture",
+        "⚡ Améliorations",
+        "- La bibliothèque s'affiche sans clignoter, même pendant une recherche ou le geste de retour",
+        "- L'historique de recherche ne garde plus que les recherches validées et les titres ouverts",
+        "- Les genres populaires de la recherche affichent vraiment les titres de ce genre",
+        "🐛 Corrections",
+        "- Le changement de votre nom d'utilisateur ou de votre nom affiché est bien enregistré"
+      ]
+    },
     {
       "version": "0.16.1",
       "notes": [
