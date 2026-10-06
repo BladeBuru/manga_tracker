@@ -50,7 +50,10 @@ class BottomNavbarState extends State<BottomNavbar> {
     super.initState();
     // Retour au premier plan : les pastilles reflètent ce qui est arrivé
     // pendant l'absence, sans attendre la prochaine interrogation.
-    _lifecycle = AppLifecycleListener(onResume: _counts.refresh);
+    _lifecycle = AppLifecycleListener(
+      onResume: _counts.resume,
+      onPause: _counts.pause,
+    );
     // RGPD : vérifier après le premier frame si l'utilisateur doit
     // re-accepter les CGU/Privacy (versions courantes vs versions stockées).
     WidgetsBinding.instance.addPostFrameCallback((_) {

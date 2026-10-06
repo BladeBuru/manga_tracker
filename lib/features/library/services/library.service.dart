@@ -332,14 +332,17 @@ class LibraryService {
   /// l'invitation à se reconnecter. La mettre en file serait un faux succès :
   /// `SyncService` la rejouerait indéfiniment sans jamais pouvoir aboutir.
   ///
-  /// Seule une panne de **réseau** met en file : une autre erreur (bug,
+  /// Seule une panne de **réseau** (ou une session non vérifiable faute de
+  /// réseau) met en file : une autre erreur (bug,
   /// réponse illisible) ne réussirait pas mieux plus tard. Et une mise en
   /// file est un succès différé (`true`) : renvoyer `false` poussait les
   /// écrans à réessayer, et chaque essai ajoutait une copie à la file.
   Future<bool> _queueUnlessRejected(OfflineAction action, Object error) async {
     final mode = classifyFailure(error);
     if (requiresReauthPrompt(mode)) throw error;
-    if (mode != FailureMode.network) {
+    // `sessionExpired` n'arrive plus que hors ligne (en ligne sans session,
+    // c'est un refus) : la modification repartira une fois reconnecté.
+    if (mode != FailureMode.network && mode != FailureMode.sessionExpired) {
       debugPrint('⚠️ LibraryService: ${action.type} non appliqué ($error)');
       return false;
     }

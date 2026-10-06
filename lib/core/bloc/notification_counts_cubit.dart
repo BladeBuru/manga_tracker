@@ -43,6 +43,16 @@ class NotificationCountsCubit extends Cubit<NotificationCounts> {
   /// Retour au premier plan, onglet « Mon compte », action sur une demande.
   Future<void> refresh() async => _service?.refresh();
 
+  /// Application en arrière-plan : plus d'interrogation (batterie, et pas de
+  /// requêtes qui échangent la session pendant la mise en veille).
+  void pause() => _service?.stop();
+
+  /// Retour au premier plan : reprise, avec une mise à jour immédiate.
+  void resume() {
+    final service = _service;
+    if (service != null) unawaited(service.start());
+  }
+
   @override
   Future<void> close() async {
     await _subscription?.cancel();
