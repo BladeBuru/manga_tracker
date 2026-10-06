@@ -25,7 +25,7 @@ class OfflineBanner extends StatelessWidget {
     return StatusBanner(
       margin: margin,
       icon: Icons.cloud_off_outlined,
-      background: scheme.surfaceContainerHigh,
+      background: scheme.surfaceContainerHighest,
       foreground: scheme.onSurface,
       accent: scheme.error,
       title: l10n.offlineMode,
@@ -61,9 +61,10 @@ class PendingSyncBanner extends StatelessWidget {
       accent: scheme.onSecondaryContainer,
       title: l10n.pendingSyncTitle,
       subtitle: l10n.pendingActions(pendingActions),
-      action: onSync == null
-          ? null
-          : TextButton(onPressed: onSync, child: Text(l10n.syncNowAction)),
+      action:
+          onSync == null
+              ? null
+              : TextButton(onPressed: onSync, child: Text(l10n.syncNowAction)),
     );
   }
 }
@@ -109,41 +110,59 @@ class StatusBanner extends StatelessWidget {
           color: background,
           borderRadius: AppRadius.circularMd,
         ),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: accent),
-            const SizedBox(width: AppSpacing.s + 4),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.labelLarge?.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.bodySmall?.copyWith(
-                        color: foreground.withValues(alpha: 0.75),
+        // Écran étroit : l'action passe sous le texte au lieu de le tronquer.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = action != null && constraints.maxWidth < 300;
+            final content = Row(
+              children: [
+                Icon(icon, size: 20, color: accent),
+                const SizedBox(width: AppSpacing.s + 4),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.labelLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
+                      if (subtitle != null)
+                        Text(
+                          subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          // labelMedium (12) : bodySmall vaut 10 dans ce
+                          // thème, trop petit pour une information à lire.
+                          style: text.labelMedium?.copyWith(
+                            color: foreground.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (action != null && !stacked) ...[
+                  const SizedBox(width: AppSpacing.s),
+                  action!,
                 ],
-              ),
-            ),
-            if (action != null) ...[
-              const SizedBox(width: AppSpacing.s),
-              action!,
-            ],
-          ],
+              ],
+            );
+            if (!stacked) return content;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                content,
+                Align(alignment: AlignmentDirectional.centerEnd, child: action),
+              ],
+            );
+          },
         ),
       ),
     );

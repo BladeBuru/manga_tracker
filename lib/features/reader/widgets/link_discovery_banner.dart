@@ -37,36 +37,57 @@ class LinkDiscoveryBanner extends StatelessWidget {
               AppSpacing.m,
               AppSpacing.s,
               AppSpacing.xs,
-              AppSpacing.s,
+              AppSpacing.s + 4,
             ),
-            child: Row(
+            // Deux lignes : consigne (avec fermeture), puis l'action. Sur
+            // une seule ligne, le bouton écrasait la consigne lettre par
+            // lettre sur les petits écrans.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.travel_explore_rounded,
-                  color: scheme.onPrimaryContainer,
-                ),
-                const SizedBox(width: AppSpacing.s),
-                Expanded(
-                  child: Text(
-                    title == null || title.isEmpty
-                        ? l10n.linkDiscoveryHintNoTitle
-                        : l10n.linkDiscoveryHint(title),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onPrimaryContainer,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.xs),
+                      child: Icon(
+                        Icons.travel_explore_rounded,
+                        color: scheme.onPrimaryContainer,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.s),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.xs),
+                        child: Text(
+                          title == null || title.isEmpty
+                              ? l10n.linkDiscoveryHintNoTitle
+                              : l10n.linkDiscoveryHint(title),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l10n.close,
+                      onPressed: onDismiss,
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: onSaveLink,
-                  child: Text(l10n.readerSetAsMangaLink),
-                ),
-                IconButton(
-                  tooltip: l10n.close,
-                  onPressed: onDismiss,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: scheme.onPrimaryContainer,
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: FilledButton.icon(
+                    onPressed: onSaveLink,
+                    icon: const Icon(Icons.link_rounded, size: 18),
+                    label: Text(l10n.readerSetAsMangaLink),
                   ),
                 ),
               ],
