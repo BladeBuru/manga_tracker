@@ -4677,6 +4677,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Synchroniser'**
   String get syncNowAction;
+
+  /// Œuvre suggérée par MangaUpdates (calcul), pas encore recommandée par des lecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggéré par MangaUpdates'**
+  String get communityRecoMuSuggested;
 }
 
 class _AppLocalizationsDelegate

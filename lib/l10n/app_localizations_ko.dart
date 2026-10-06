@@ -2570,4 +2570,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get syncNowAction => '동기화';
+
+  @override
+  String get communityRecoMuSuggested => 'MangaUpdates 추천';
 }

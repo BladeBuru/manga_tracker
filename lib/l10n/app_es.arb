@@ -1447,5 +1447,6 @@
     }
   },
   "pendingSyncTitle": "Cambios pendientes de envío",
-  "syncNowAction": "Sincronizar"
+  "syncNowAction": "Sincronizar",
+  "communityRecoMuSuggested": "Sugerido por MangaUpdates"
 }

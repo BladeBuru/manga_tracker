@@ -2660,4 +2660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncNowAction => 'Sync';
+
+  @override
+  String get communityRecoMuSuggested => 'Suggested by MangaUpdates';
 }

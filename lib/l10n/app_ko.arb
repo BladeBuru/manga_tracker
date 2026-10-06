@@ -1447,5 +1447,6 @@
     }
   },
   "pendingSyncTitle": "전송 대기 중인 변경 사항",
-  "syncNowAction": "동기화"
+  "syncNowAction": "동기화",
+  "communityRecoMuSuggested": "MangaUpdates 추천"
 }

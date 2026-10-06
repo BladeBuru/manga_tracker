@@ -2691,4 +2691,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get syncNowAction => 'Sincronizar';
+
+  @override
+  String get communityRecoMuSuggested => 'Sugerido pelo MangaUpdates';
 }

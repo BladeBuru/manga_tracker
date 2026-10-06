@@ -95,15 +95,22 @@ class CommunityRecommendationsCubit
     List<CommunityRecommendationDto> items,
     CommunityRecommendationDto updated,
   ) {
+    // Ordre d'origine (celui de l'API) pour départager : les suggestions
+    // MangaUpdates gardent leur rang au lieu de sauter au hasard.
+    final rank = {for (var i = 0; i < items.length; i++) items[i].muId: i};
     final merged = [
       for (final item in items)
         if (item.muId != updated.muId) item,
-      if (updated.totalVotes > 0) updated,
+      // Une suggestion MU reste dans la liste même quand on retire son vote.
+      if (updated.totalVotes > 0 || updated.muSuggested) updated,
     ]..sort((a, b) {
       final byTotal = b.totalVotes.compareTo(a.totalVotes);
       if (byTotal != 0) return byTotal;
       final byApp = b.appVotes.compareTo(a.appVotes);
-      return byApp != 0 ? byApp : a.muId.compareTo(b.muId);
+      if (byApp != 0) return byApp;
+      return (rank[a.muId] ?? items.length).compareTo(
+        rank[b.muId] ?? items.length,
+      );
     });
     return merged;
   }

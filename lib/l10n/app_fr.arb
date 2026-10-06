@@ -2786,5 +2786,9 @@
   "syncNowAction": "Synchroniser",
   "@syncNowAction": {
     "description": "Bouton d'envoi immédiat des modifications en attente"
+  },
+  "communityRecoMuSuggested": "Suggéré par MangaUpdates",
+  "@communityRecoMuSuggested": {
+    "description": "Œuvre suggérée par MangaUpdates (calcul), pas encore recommandée par des lecteurs"
   }
 }

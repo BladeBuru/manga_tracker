@@ -2702,4 +2702,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get syncNowAction => 'Synchroniser';
+
+  @override
+  String get communityRecoMuSuggested => 'Suggéré par MangaUpdates';
 }

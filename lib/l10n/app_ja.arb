@@ -1447,5 +1447,6 @@
     }
   },
   "pendingSyncTitle": "送信待ちの変更があります",
-  "syncNowAction": "同期"
+  "syncNowAction": "同期",
+  "communityRecoMuSuggested": "MangaUpdatesのおすすめ"
 }

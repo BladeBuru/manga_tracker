@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/bloc/community_recommendations_cubit.dart';
 import 'package:mangatracker/features/manga/dto/manga_recommendation_view.dto.dart';
@@ -37,37 +40,47 @@ Future<void> showCommunityRecommendationsSheet(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(ctx).size.height * 0.85,
               ),
-              // Messagerie propre à la feuille : sinon les messages de vote
-              // s'affichent sur la fiche, SOUS la feuille, donc invisibles.
-              child: ScaffoldMessenger(
-                child: Scaffold(
-                  backgroundColor: Colors.transparent,
-                  resizeToAvoidBottomInset: false,
-                  body: _SheetBody(
-                    muId: muId,
-                    readersAlsoRead: readersAlsoRead,
-                  ),
-                ),
-              ),
+              // Hauteur = contenu (un Scaffold forçait 85 % de l'écran et
+              // laissait un grand vide sous la liste).
+              child: _SheetBody(muId: muId, readersAlsoRead: readersAlsoRead),
             ),
           ),
         ),
   );
 }
 
-class _SheetBody extends StatelessWidget {
+class _SheetBody extends StatefulWidget {
   final int muId;
   final List<MangaRecommendationView> readersAlsoRead;
 
   const _SheetBody({required this.muId, required this.readersAlsoRead});
+
+  @override
+  State<_SheetBody> createState() => _SheetBodyState();
+}
+
+class _SheetBodyState extends State<_SheetBody> {
+  int get muId => widget.muId;
+  List<MangaRecommendationView> get readersAlsoRead => widget.readersAlsoRead;
+
+  /// Retour du dernier vote, affiché DANS la feuille (une barre de message
+  /// s'affichait sous la feuille, donc invisible).
+  String? _feedback;
+  Timer? _feedbackTimer;
+
+  @override
+  void dispose() {
+    _feedbackTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> _vote(
     BuildContext context,
     Future<CommunityVoteResult> Function() action,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
     final result = await action();
+    if (!mounted) return;
     final message = switch (result) {
       CommunityVoteResult.added => l10n.communityRecoAdded,
       CommunityVoteResult.removed => l10n.communityRecoRemoved,
@@ -75,7 +88,11 @@ class _SheetBody extends StatelessWidget {
       CommunityVoteResult.offline => l10n.networkError,
       CommunityVoteResult.failed => l10n.communityRecoActionError,
     };
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    setState(() => _feedback = message);
+    _feedbackTimer?.cancel();
+    _feedbackTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _feedback = null);
+    });
   }
 
   Future<void> _pickAndRecommend(BuildContext context) async {
@@ -135,6 +152,7 @@ class _SheetBody extends StatelessWidget {
                       icon: const Icon(Icons.add_rounded),
                       label: Text(l10n.communityRecoAdd),
                     ),
+                    _VoteFeedback(message: _feedback),
                   ],
                 ),
               ),
@@ -206,5 +224,46 @@ class _SheetBody extends StatelessWidget {
         }, childCount: state.items.length),
       ),
     ];
+  }
+}
+
+/// Message du dernier vote, en pastille tonale sous le bouton.
+class _VoteFeedback extends StatelessWidget {
+  final String? message;
+
+  const _VoteFeedback({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = message;
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      child: text == null
+          ? const SizedBox(width: double.infinity)
+          : Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.s),
+              child: Semantics(
+                liveRegion: true,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.m,
+                    vertical: AppSpacing.s,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.secondaryContainer,
+                    borderRadius: AppRadius.circularMd,
+                  ),
+                  child: Text(
+                    text,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+    );
   }
 }

@@ -2567,4 +2567,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get syncNowAction => '同期';
+
+  @override
+  String get communityRecoMuSuggested => 'MangaUpdatesのおすすめ';
 }

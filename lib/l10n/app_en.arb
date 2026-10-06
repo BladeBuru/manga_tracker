@@ -1453,5 +1453,6 @@
     }
   },
   "pendingSyncTitle": "Changes waiting to be sent",
-  "syncNowAction": "Sync"
+  "syncNowAction": "Sync",
+  "communityRecoMuSuggested": "Suggested by MangaUpdates"
 }

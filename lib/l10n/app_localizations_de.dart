@@ -2696,4 +2696,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get syncNowAction => 'Synchronisieren';
+
+  @override
+  String get communityRecoMuSuggested => 'Von MangaUpdates vorgeschlagen';
 }
