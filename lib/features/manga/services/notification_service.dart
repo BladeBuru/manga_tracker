@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_router.dart';
+import 'package:mangatracker/features/manga/services/notification_payload.dart';
 import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/features/manga/services/notification_preferences_service.dart';
 
@@ -37,8 +40,12 @@ class NotificationService {
   static const int _idBaseSharesReceived = 2000000;
   static const int _idRange = 100000;
 
-  // Payloads pour le tap-handler.
-  static const String _payloadFriendRequest = 'friend_request';
+  // Payloads pour le tap-handler : voir [NotificationPayload].
+  static const String _payloadFriendRequest = NotificationPayload.friendRequest;
+
+  /// Écran à ouvrir quand l'application a été LANCÉE par le toucher d'une
+  /// notification (la navigation n'existe pas encore à ce moment-là).
+  String? _pendingLaunchRoute;
 
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
@@ -67,20 +74,36 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin>();
       await androidImpl?.requestNotificationsPermission();
       _isInitialized = true;
+      final launch = await _notifications.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp ?? false) {
+        _pendingLaunchRoute = NotificationPayload.routeFor(
+          launch!.notificationResponse?.payload,
+        );
+      }
       debugPrint('✅ NotificationService: Service initialisé');
     } catch (e) {
       debugPrint('❌ NotificationService: Erreur init: $e');
     }
   }
 
-  /// Gère le tap sur une notification (routing à câbler via navigatorKey).
+  /// Toucher d'une notification, application ouverte : on va à l'écran
+  /// concerné (demandes d'ami, recommandations reçues, fiche du titre).
   void _onNotificationTapped(NotificationResponse response) {
-    final payload = response.payload;
-    debugPrint('🔔 NotificationService: Notification tapée: $payload');
-    // TODO: routing selon le payload :
-    //  - payload == 'friend_request' → naviguer vers /friends
-    //  - payload est un id manga (muId) → naviguer vers le détail manga
-    // Utiliser navigatorKey global pour pousser la route.
+    final location = NotificationPayload.routeFor(response.payload);
+    if (location == null) return;
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) {
+      _pendingLaunchRoute = location;
+      return;
+    }
+    GoRouter.of(context).push(location);
+  }
+
+  /// Écran demandé au lancement par une notification (consommé une fois).
+  String? takePendingLaunchRoute() {
+    final location = _pendingLaunchRoute;
+    _pendingLaunchRoute = null;
+    return location;
   }
 
   /// Helper : construit un `NotificationDetails` cross-platform.
@@ -129,7 +152,7 @@ class NotificationService {
         'Nouveau chapitre disponible !',
         body,
         _details(_chanNewChapters, _chanNewChaptersLabel, _chanNewChaptersDesc),
-        payload: muId.toString(),
+        payload: NotificationPayload.chapter(muId.toString()),
       );
       debugPrint(
         '✅ NotificationService: Notif chapitre $mangaTitle - $chapterNumber',
@@ -230,7 +253,7 @@ class NotificationService {
         title,
         body,
         _details(_chanShares, _chanSharesLabel, _chanSharesDesc),
-        payload: muId,
+        payload: NotificationPayload.share(muId),
       );
       debugPrint(
         '✅ NotificationService: Notif partage $senderUsername → $mangaTitle',

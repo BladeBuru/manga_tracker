@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/app_avatar.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -302,26 +303,22 @@ class _SearchResultRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            FilledButton.tonal(
+            // Bouton icône : le libellé « Envoyer une demande » (~180 px)
+            // écrasait le nom sur petit écran. Le libellé est l'infobulle,
+            // que `IconButton` expose aussi aux lecteurs d'écran.
+            IconButton.filledTonal(
               onPressed: onTap,
-              style: FilledButton.styleFrom(
+              tooltip: l10n.friendsAddRequest,
+              style: IconButton.styleFrom(
                 backgroundColor: AppColors.dsRedSoft(brightness),
                 foregroundColor: scheme.primary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                minimumSize: const Size(0, 30),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
-              child: Text(l10n.friendsAddRequest),
+              constraints: const BoxConstraints.tightFor(
+                width: AppSpacing.xl + AppSpacing.s,
+                height: AppSpacing.xl + AppSpacing.s,
+              ),
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.person_add_outlined, size: 20),
             ),
           ],
         ),

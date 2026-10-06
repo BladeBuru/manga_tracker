@@ -4,6 +4,19 @@
 
 ---
 
+## ✅ Corrigés le 2026-10-06 — retours utilisateurs d'octobre
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Déconnexions en lisant sur téléphone + tablette | Verrou de refresh posé après une lecture asynchrone → deux échanges du même jeton ; l'API supprimait l'ancienne session → 401 au second → jetons effacés. Aussi : tout `catch` imprévu (coupure au réveil `ClientException`) = « rejet » ; gardes API en 403 sans refresh | `SessionRefresher` (vrai échange unique, refus = 401/403 JSON seulement) ; API : rotation tolérante (rejeu 2 min, verrou de ligne), gardes 401, tolérance d'horloge 30 s |
+| « Mode hors ligne » en ligne + « 112 Closure: (int) => String… » | Traduction à paramètre non appelée ; libellé écrasé (badge non flexible) ; file rejouée seulement sur transition réseau, sans fusion ni abandon ; écritures en file = échec → ré-essais → doublons | Bandeaux refaits ; `OfflineQueuePolicy` + `SyncService` (rejeux multiples) + `OfflineReplayService` ; en ligne sans session → invitation à se reconnecter |
+| Fenêtres empilées au double appui | Aucun garde | `app_modals.dart` + fil de détente |
+| Boutons cachés sous la barre à boutons | Android 15 bord à bord (targetSdk 35) | `SystemBarsInset` |
+| Pastille de notification absente / ne mène nulle part | Badge créé sans `setState` ; total sans détail | `NotificationCountsCubit`, pastilles par ligne, défilement vers la section |
+| « Si vous avez aimé » vide hors titres célèbres | Liste limitée aux `manual` (2,6 % des titres) | Suggestions `category` MU incluses (`muSuggested`) |
+| Bloc « rouge avec texte noir » | `ColorScheme.light/dark` sans conteneurs → `primaryContainer` = rouge plein | Conteneurs M3 calculés depuis la couleur de marque |
+| Huawei : déverrouillage impossible | `biometricOnly: true` (visage Huawei non exposé à Android) | Secours code / schéma de l'appareil |
+
 ## ✅ Corrigés le 2026-09-30 — retours utilisateurs (`claude/brave-pasteur-gszxre`)
 
 | Symptôme | Cause racine | Correction |

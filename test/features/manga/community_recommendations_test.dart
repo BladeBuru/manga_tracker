@@ -139,6 +139,48 @@ void main() {
 
     setUp(() => service = MockCommunityService());
 
+    test('retirer son vote garde une suggestion MangaUpdates dans la liste',
+        () async {
+      when(() => service.getRecommendations(1)).thenAnswer(
+        (_) async => [
+          const CommunityRecommendationDto(
+            muId: 7,
+            title: 'Suggestion',
+            appVotes: 1,
+            totalVotes: 1,
+            recommendedByMe: true,
+            muSuggested: true,
+          ),
+        ],
+      );
+      when(() => service.unrecommend(1, 7)).thenAnswer(
+        (_) async => const CommunityRecommendationDto(
+          muId: 7,
+          title: 'Suggestion',
+          muSuggested: true,
+        ),
+      );
+      final cubit = CommunityRecommendationsCubit(
+        sourceMuId: 1,
+        service: service,
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.toggle(cubit.state.items.single);
+      expect(cubit.state.items.single.muSuggested, isTrue);
+      expect(cubit.state.items.single.totalVotes, 0);
+    });
+
+    test('lit « suggéré par MangaUpdates » depuis l\'API', () {
+      final dto = CommunityRecommendationDto.fromJson({
+        'muId': 3,
+        'title': 'T',
+        'totalVotes': 0,
+        'muSuggested': true,
+      });
+      expect(dto.muSuggested, isTrue);
+    });
+
     test('feuille fermée pendant le vote : le succès est quand même annoncé',
         () async {
       final pending = Completer<CommunityRecommendationDto>();

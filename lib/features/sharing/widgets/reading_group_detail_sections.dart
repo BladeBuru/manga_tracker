@@ -14,6 +14,7 @@ import 'package:mangatracker/features/sharing/widgets/reading_group_action_row.d
 import 'package:mangatracker/features/sharing/widgets/reading_group_links.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_progress_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  Sections du détail « Lectures à deux » — extraites pour rester sous   ║
@@ -150,9 +151,10 @@ class ReadingGroupActionsSection extends StatelessWidget {
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final result = await showDialog<bool>(
+    final result = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(title),
         content: Text(body),
         actions: [

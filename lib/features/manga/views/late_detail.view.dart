@@ -112,14 +112,16 @@ class _LateDetailViewState extends State<LateDetailView> {
     final prefs = await SharedPreferences.getInstance();
     final key = 'manga_${widget.muId}_expanded_seasons';
     final jsonString = prefs.getString(key);
-    
+
     if (jsonString != null) {
       try {
         final Map<String, dynamic> data = jsonDecode(jsonString);
-        final expandedList = (data['expandedSeasons'] as List?)
-            ?.map((e) => e.toString())
-            .toList() ?? [];
-        
+        final expandedList =
+            (data['expandedSeasons'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+
         setState(() {
           // Initialiser toutes les sections comme fermées
           _expandedSections = {};
@@ -139,34 +141,36 @@ class _LateDetailViewState extends State<LateDetailView> {
       _initializeExpandedState();
     }
   }
-  
+
   void _initializeExpandedState() {
     final totalChapters = widget.mangaTotalChapters?.toInt() ?? 0;
     final readChapters = widget.readChapters.toInt();
-    
+
     // Calculer les sections
     final sections = ChapterSectionHelper.calculateSections(
       totalChapters: totalChapters,
       seasonChapters: widget.seasonChapters,
       bonusChapters: widget.bonusChapters,
     );
-    
+
     setState(() {
       _expandedSections = {};
-      
+
       if (sections.isNotEmpty) {
         // Trouver la section contenant le dernier chapitre lu
         final currentSection = ChapterSectionHelper.findSectionForChapter(
           readChapters > 0 ? readChapters : 1,
           sections,
         );
-        
+
         if (currentSection != null) {
           // Ouvrir la section actuelle
           _expandedSections[currentSection] = true;
-          
+
           // Fermer les sections précédentes (si on est dans une saison supérieure)
-          final currentIndex = sections.indexWhere((s) => s.title == currentSection);
+          final currentIndex = sections.indexWhere(
+            (s) => s.title == currentSection,
+          );
           if (currentIndex > 0) {
             // Fermer toutes les sections avant la section actuelle
             for (int i = 0; i < currentIndex; i++) {
@@ -175,32 +179,33 @@ class _LateDetailViewState extends State<LateDetailView> {
           }
         }
       }
-      
+
       _isStateLoaded = true;
     });
   }
-  
+
   Future<void> _saveExpandedState() async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'manga_${widget.muId}_expanded_seasons';
-    
-    final expandedList = _expandedSections.entries
-        .where((e) => e.value)
-        .map((e) => e.key)
-        .toList();
-    
+
+    final expandedList =
+        _expandedSections.entries
+            .where((e) => e.value)
+            .map((e) => e.key)
+            .toList();
+
     final data = {
       'expandedSeasons': expandedList,
       'associatedExpanded': _associatedExpanded,
     };
-    
+
     await prefs.setString(key, jsonEncode(data));
   }
-  
+
   void _handleSectionExpansion(String sectionTitle, bool isExpanded) {
     setState(() {
       _expandedSections[sectionTitle] = isExpanded;
-      
+
       // Si on ouvre une section, fermer les sections plus récentes (qui sont au-dessus dans l'affichage inversé)
       if (isExpanded) {
         final sections = ChapterSectionHelper.calculateSections(
@@ -209,8 +214,10 @@ class _LateDetailViewState extends State<LateDetailView> {
           bonusChapters: widget.bonusChapters,
         );
         final reversedSections = sections.reversed.toList();
-        
-        final currentIndex = reversedSections.indexWhere((s) => s.title == sectionTitle);
+
+        final currentIndex = reversedSections.indexWhere(
+          (s) => s.title == sectionTitle,
+        );
         if (currentIndex != -1 && currentIndex > 0) {
           // Fermer toutes les sections plus récentes (au-dessus dans l'affichage)
           for (int i = 0; i < currentIndex; i++) {
@@ -222,7 +229,7 @@ class _LateDetailViewState extends State<LateDetailView> {
     });
     _saveExpandedState();
   }
-  
+
   void _handleAssociatedExpansion(bool isExpanded) {
     setState(() {
       _associatedExpanded = isExpanded;
@@ -245,36 +252,48 @@ class _LateDetailViewState extends State<LateDetailView> {
 
   /// Header du bloc chapitres : titre + CTA « Signaler plus de chapitres »
   /// (chantier A — visible seulement si le manga est en bibliothèque).
-  Widget _buildChaptersHeader(BuildContext context, String headerTitle, int total) {
+  Widget _buildChaptersHeader(
+    BuildContext context,
+    String headerTitle,
+    int total,
+  ) {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            headerTitle,
-            style: GoogleFonts.poppins(
-              textStyle: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+    final title = Text(
+      headerTitle,
+      style: GoogleFonts.poppins(
+        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      ),
+    );
+    if (!widget.inLibrary) return title;
+    final report = TextButton.icon(
+      onPressed:
+          () => ReportChaptersDialog.show(
+            context,
+            muId: int.tryParse(widget.muId) ?? 0,
+            currentTotal: total,
+            officialTotal: widget.officialTotalChapters?.toInt(),
+            readChapters: _currentReadCount?.toInt() ?? 0,
           ),
-        ),
-        if (widget.inLibrary)
-          TextButton.icon(
-            onPressed: () => ReportChaptersDialog.show(
-              context,
-              muId: int.tryParse(widget.muId) ?? 0,
-              currentTotal: total,
-              officialTotal: widget.officialTotalChapters?.toInt(),
-              readChapters: _currentReadCount?.toInt() ?? 0,
-            ),
-            icon: const Icon(Icons.flag_outlined, size: 18),
-            label: Text(
-              l10n?.reportMoreChaptersCta ?? 'Signaler plus de chapitres',
-            ),
-          ),
-      ],
+      icon: const Icon(Icons.flag_outlined, size: 18),
+      label: Text(
+        l10n?.reportMoreChaptersCta ?? 'Signaler plus de chapitres',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+    // Petit écran : le bouton passe sous le titre (sur 320 dp il prenait
+    // toute la ligne et le titre n'avait plus de place).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 420) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [title, report],
+          );
+        }
+        return Row(children: [Expanded(child: title), report]);
+      },
     );
   }
 
@@ -311,14 +330,15 @@ class _LateDetailViewState extends State<LateDetailView> {
           _buildChaptersHeader(context, headerTitle, total),
           const SizedBox(height: AppSpacing.s),
           ...reversedSections.map((section) {
-            final isExpanded = _isStateLoaded
-                ? (_expandedSections[section.title] ?? false)
-                : false;
-            final chapterCount =
-                section.endChapter - section.startChapter + 1;
-            final readCount = section.chapterNumbers
-                .where((n) => n <= (_currentReadCount ?? 0))
-                .length;
+            final isExpanded =
+                _isStateLoaded
+                    ? (_expandedSections[section.title] ?? false)
+                    : false;
+            final chapterCount = section.endChapter - section.startChapter + 1;
+            final readCount =
+                section.chapterNumbers
+                    .where((n) => n <= (_currentReadCount ?? 0))
+                    .length;
 
             return DetailChapterSection(
               title: section.title,
@@ -328,10 +348,11 @@ class _LateDetailViewState extends State<LateDetailView> {
               isExpanded: isExpanded,
               currentReadCount: _currentReadCount ?? 0,
               isSaving: _isSaving,
-              onExpansionChanged: (expanded) =>
-                  _handleSectionExpansion(section.title, expanded),
-              onChapterTap: (chapNum) =>
-                  _handleSaveChapter(widget.muId, chapNum),
+              onExpansionChanged:
+                  (expanded) =>
+                      _handleSectionExpansion(section.title, expanded),
+              onChapterTap:
+                  (chapNum) => _handleSaveChapter(widget.muId, chapNum),
             );
           }),
         ],
@@ -362,15 +383,16 @@ class _LateDetailViewState extends State<LateDetailView> {
               color: AppColors.dsHairline(brightness),
               width: 1,
             ),
-            boxShadow: isDark
-                ? null
-                : const [
-                    BoxShadow(
-                      color: Color(0x0A140A0A), // rgba(20,10,10,0.04)
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
+            boxShadow:
+                isDark
+                    ? null
+                    : const [
+                      BoxShadow(
+                        color: Color(0x0A140A0A), // rgba(20,10,10,0.04)
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
@@ -402,7 +424,7 @@ class _LateDetailViewState extends State<LateDetailView> {
     // automatiquement l'ajout à la bibliothèque dans _onSaveChapterProgress
 
     int newCount;
-    
+
     // Calculer le nouveau compte de chapitres
     if (_currentReadCount! >= chapterNumber) {
       newCount = chapterNumber.toInt() - 1;
@@ -418,10 +440,10 @@ class _LateDetailViewState extends State<LateDetailView> {
         _pendingChapterUpdate = newCount;
         // _isSaving reste à true jusqu'à ce que didUpdateWidget détecte le changement
       });
-      
+
       // Appeler le callback pour déclencher la mise à jour via le BLoC
       widget.onReadCountChanged!(newCount);
-      
+
       // _isSaving sera remis à false dans didUpdateWidget quand le BLoC aura terminé
       return;
     }
@@ -430,9 +452,14 @@ class _LateDetailViewState extends State<LateDetailView> {
     bool success;
     if (_currentReadCount! >= chapterNumber) {
       if (newCount == 0) {
-        success = await _libraryService.removeMangaFromLibrary(int.parse(mangaId));
+        success = await _libraryService.removeMangaFromLibrary(
+          int.parse(mangaId),
+        );
       } else {
-        success = await _libraryService.saveChapterProgress(int.parse(mangaId), newCount);
+        success = await _libraryService.saveChapterProgress(
+          int.parse(mangaId),
+          newCount,
+        );
       }
     } else {
       // Progression en avant confirmée par un tap explicite : autoriser le
@@ -447,7 +474,10 @@ class _LateDetailViewState extends State<LateDetailView> {
     if (!success && mounted) {
       setState(() => _isSaving = false);
       final l10n = AppLocalizations.of(context);
-      _notifier.error(l10n?.errorUpdatingChapter ?? 'Erreur lors de la mise à jour du chapitre.');
+      _notifier.error(
+        l10n?.errorUpdatingChapter ??
+            'Erreur lors de la mise à jour du chapitre.',
+      );
       return;
     }
 
@@ -458,22 +488,23 @@ class _LateDetailViewState extends State<LateDetailView> {
       });
 
       final l10n = AppLocalizations.of(context);
-      final message = newCount == 0
-          ? (l10n?.mangaRemovedFromLibrary ?? 'Manga retiré de la bibliothèque')
-          : '${l10n?.chapter ?? "Chapitre"} $chapterNumber ${_currentReadCount! >= chapterNumber
-          ? (l10n?.chapterRead ?? 'lu')
-          : (l10n?.chapterUnread ?? 'non lu')}';
+      final message =
+          newCount == 0
+              ? (l10n?.mangaRemovedFromLibrary ??
+                  'Manga retiré de la bibliothèque')
+              : '${l10n?.chapter ?? "Chapitre"} $chapterNumber ${_currentReadCount! >= chapterNumber ? (l10n?.chapterRead ?? 'lu') : (l10n?.chapterUnread ?? 'non lu')}';
 
       _notifier.info(message);
     }
   }
-  
+
   @override
   void didUpdateWidget(LateDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Si les chapitres ont changé et correspondent à notre mise à jour en attente
     if (widget.readChapters != oldWidget.readChapters) {
-      if (_pendingChapterUpdate != null && widget.readChapters == _pendingChapterUpdate) {
+      if (_pendingChapterUpdate != null &&
+          widget.readChapters == _pendingChapterUpdate) {
         // La mise à jour est terminée, on peut réactiver les boutons
         setState(() {
           _currentReadCount = widget.readChapters;
@@ -489,16 +520,15 @@ class _LateDetailViewState extends State<LateDetailView> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-
-
-    final authors = widget.authors
+    final authors =
+        widget.authors
             ?.where((a) => a.type.toLowerCase() == 'author')
             .toList() ??
         const <AuthorDto>[];
-    final artists = widget.authors
+    final artists =
+        widget.authors
             ?.where((a) => a.type.toLowerCase() == 'artist')
             .toList() ??
         const <AuthorDto>[];
@@ -513,7 +543,9 @@ class _LateDetailViewState extends State<LateDetailView> {
       if (canLaunch) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        _notifier.error(l10n?.cannotOpenLink(url) ?? "Impossible d'ouvrir le lien : $url");
+        _notifier.error(
+          l10n?.cannotOpenLink(url) ?? "Impossible d'ouvrir le lien : $url",
+        );
       }
     }
 
@@ -541,10 +573,11 @@ class _LateDetailViewState extends State<LateDetailView> {
               year: widget.year,
               authors: authors,
               artists: artists,
-              onPersonTap: (person) => context.push(
-                '/authors/${person.authorId}',
-                extra: AuthorPageExtras(name: person.name),
-              ),
+              onPersonTap:
+                  (person) => context.push(
+                    '/authors/${person.authorId}',
+                    extra: AuthorPageExtras(name: person.name),
+                  ),
             ),
 
             const SizedBox(height: AppSpacing.s),
@@ -567,11 +600,16 @@ class _LateDetailViewState extends State<LateDetailView> {
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: AppRadius.circularXl,
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
@@ -602,10 +640,13 @@ class _LateDetailViewState extends State<LateDetailView> {
                         final l10n = AppLocalizations.of(context);
                         final count = widget.associated!.length;
                         return Text(
-                          l10n?.associatedNamesCount(count) ?? '$count ${count > 1 ? "noms" : "nom"}',
+                          l10n?.associatedNamesCount(count) ??
+                              '$count ${count > 1 ? "noms" : "nom"}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         );
                       },
@@ -619,39 +660,45 @@ class _LateDetailViewState extends State<LateDetailView> {
                           spacing: 10.0,
                           runSpacing: 10.0,
                           alignment: WrapAlignment.start,
-                          children: widget.associated!.map((name) {
-                            final theme = Theme.of(context);
-                            final chipColor = theme.colorScheme.primary;
-                            final textColor = theme.colorScheme.onPrimary;
+                          children:
+                              widget.associated!.map((name) {
+                                final theme = Theme.of(context);
+                                final chipColor = theme.colorScheme.primary;
+                                final textColor = theme.colorScheme.onPrimary;
 
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: chipColor,
-                                borderRadius: AppRadius.circularMd,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: chipColor.withValues(alpha: 0.25),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 3),
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: chipColor,
+                                    borderRadius: AppRadius.circularMd,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: chipColor.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                      color: chipColor.withValues(alpha: 0.8),
+                                      width: 1,
+                                    ),
                                   ),
-                                ],
-                                border: Border.all(
-                                  color: chipColor.withValues(alpha: 0.8),
-                                  width: 1,
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Text(
-                                name,
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: textColor,
-                                  letterSpacing: 0.1,
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor,
+                                      letterSpacing: 0.1,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                         ),
                       ),
                     ],
@@ -662,31 +709,38 @@ class _LateDetailViewState extends State<LateDetailView> {
             const SizedBox(height: 8),
 
             // SYNOPSIS avec Voir plus / Voir moins
-            if (widget.mangaDescription != null && widget.mangaDescription!.isNotEmpty)
-              ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context);
-                      return Text(
-                        l10n?.synopsis ?? 'Synopsis',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(fontSize: 18),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
+            if (widget.mangaDescription != null &&
+                widget.mangaDescription!.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Builder(
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
+                    return Text(
+                      l10n?.synopsis ?? 'Synopsis',
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(fontSize: 18),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: AnimatedContainer(
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                // Déplié : aucune limite (un plafond de 1000 px coupait en
+                // silence la fin des longs résumés en texte agrandi).
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: _isExpanded ? 1000 : 70.0,
+                      maxHeight: _isExpanded ? double.infinity : 70.0,
                     ),
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
 
                     // La traduction est désormais fournie par l'API
                     // (`translated_description`) — le parent passe déjà la
@@ -699,40 +753,40 @@ class _LateDetailViewState extends State<LateDetailView> {
                           if (href != null) handleLinkTap(href);
                         },
                         styleSheet: MarkdownStyleSheet(
-                          p: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
-                          strong: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          p: const TextStyle(fontSize: 13, color: Colors.grey),
+                          strong: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
                   ),
                 ),
-                // Le bouton "Voir plus / Voir moins" ne change pas
-                Padding(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: TextButton.icon(
-                    onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                    icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-                    label: Builder(
-                      builder: (context) {
-                        final l10n = AppLocalizations.of(context);
-                        return Text(_isExpanded 
-                          ? (l10n?.seeLess ?? 'Voir moins') 
-                          : (l10n?.seeMore ?? 'Voir plus'));
-                      },
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.zero,
-                      alignment: Alignment.centerLeft,
-                    ),
+              ),
+              // Le bouton "Voir plus / Voir moins" ne change pas
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: TextButton.icon(
+                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                  icon: Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  ),
+                  label: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context);
+                      return Text(
+                        _isExpanded
+                            ? (l10n?.seeLess ?? 'Voir moins')
+                            : (l10n?.seeMore ?? 'Voir plus'),
+                      );
+                    },
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
                   ),
                 ),
-              ],
+              ),
+            ],
             const SizedBox(height: 8),
 
             // Sections de chapitres V1 — cards collapsibles hairline alignées

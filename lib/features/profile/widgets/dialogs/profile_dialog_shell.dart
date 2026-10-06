@@ -66,6 +66,7 @@ class ProfileDialogShell extends StatelessWidget {
     final double borderWidth = danger ? 1.5 : 1;
 
     return AlertDialog(
+      scrollable: true,
       backgroundColor: isDark ? AppColors.dsSurfaceDark : Colors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 0,

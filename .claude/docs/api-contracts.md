@@ -23,7 +23,18 @@ Toutes les requêtes protégées utilisent `HttpService` qui gère le JWT automa
 Header : Authorization: Bearer <accessToken>
 ```
 
-En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POST /auth/refresh`.
+En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POST /auth/refresh`
+(`SessionRefresher` : un seul échange à la fois).
+
+**Sémantique (depuis 2026-10)** : l'API répond **401** (jamais 403) à un jeton
+absent, invalide ou expiré, sur les deux gardes. Seul un 401/403 **avec le
+corps JSON de l'API** (`{"statusCode": 401, …}`) est un refus de session ; une
+page HTML de pare-feu ou une coupure réseau ne le sont pas.
+
+**Rotation tolérante** : chaque refresh crée une nouvelle session et marque
+l'ancienne `rotated_at`. Un refresh token déjà échangé reste accepté **2 min**
+(rejeu d'une réponse perdue, deux appareils/onglets) et renvoie la session
+courante de la chaîne ; au-delà → 401. Tolérance d'horloge : 30 s.
 
 ### Endpoints Auth
 
@@ -31,7 +42,7 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 |---------|-------|------|-------|-----------------|
 | `POST` | `/auth/register` | Public | `{ email, password, name }` | `{ accessToken, refreshToken }` |
 | `POST` | `/auth/login` | Public | `{ email, password }` | `{ accessToken, refreshToken }` |
-| `POST` | `/auth/refresh` | RefreshToken | — | `{ accessToken }` |
+| `POST` | `/auth/refresh` | RefreshToken | — | `{ accessToken, refreshToken }` — **401** si session inconnue / rotation hors délai ; non limité par le throttler |
 
 ---
 
@@ -45,7 +56,7 @@ En cas d'expiration (401) → `HttpService` rafraîchit automatiquement via `POS
 | `POST` | `/mangas/search` | JWT | body JSON `{search_pattern, page?, limit?}` | `SearchResultsPageDto` (enveloppe `{results, totalHits, page, perPage, hasMore}`) — tri par pertinence MangaUpdates ; tableau nu `List<MangaQuickViewDto>` si `page` absent (rétrocompat ≤ 0.11.0) |
 | `GET` | `/mangas/:muId` | JWT | — | `MangaDetailsDto` — dont `aggregated_rating` (note globale MU + Manga Tracker au prorata des votes), `mu_rating_votes`, `total_rating_votes` |
 | `GET` | `/mangas/:muId/ratings` | JWT | — | `RatingSummaryDto` `{mu_rating, mu_rating_votes, community_rating, community_rating_count, aggregated_rating, total_rating_votes}` — lu en base, relu après un vote |
-| `GET` | `/mangas/:muId/community-recommendations` | JWT | — | `{sourceMuId, items: CommunityRecommendationDto[]}` — `{muId, title, year, mediumCoverUrl, rating, type, muVotes, appVotes, totalVotes, recommendedByMe}`, tri par total |
+| `GET` | `/mangas/:muId/community-recommendations` | JWT | — | `{sourceMuId, items: CommunityRecommendationDto[]}` — `{muId, title, year, mediumCoverUrl, rating, type, muVotes, appVotes, totalVotes, recommendedByMe, muSuggested}`, tri par total puis votes app puis poids de suggestion MU. `muSuggested` = suggestion calculée par MangaUpdates (lien `category`), affichée même sans vote |
 | `PUT` | `/mangas/:muId/community-recommendations/:targetMuId` | JWT | body `{title?}` (fiche minimale si cible inconnue) | `CommunityRecommendationDto` — idempotent ; **400** source = cible, **404** source inconnue, **429** > 60 votes/h |
 | `DELETE` | `/mangas/:muId/community-recommendations/:targetMuId` | JWT | — | `CommunityRecommendationDto` |
 | `GET` | `/authors/:authorId` | JWT | — | `AuthorDetailsDto` `{id, name, actualName, associatedNames, imageUrl, bio, birthday, birthplace, genres, officialSite, works[], worksComplete}` — **404** inconnu, **503** MangaUpdates indisponible |

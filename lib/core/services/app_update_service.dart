@@ -11,6 +11,7 @@ import 'package:mangatracker/main.dart';
 import 'package:dio/dio.dart';
 import '../notifier/notifier.dart';
 import '../service_locator/service_locator.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 
 class ChangelogInfo {
@@ -148,9 +149,10 @@ class AppUpdateService {
       if (currentPackageName.contains('.dev')) {
         final context = navigatorKey.currentContext;
         if (context != null) {
-          await showDialog(
+          await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
+              scrollable: true,
               title: const Text("Mise à jour non disponible"),
               content: const Text(
                 "Vous utilisez actuellement la version de développement. "
@@ -221,9 +223,10 @@ class AppUpdateService {
       if (!status.isGranted) {
         final context = navigatorKey.currentContext;
         if (context != null) {
-          await showDialog(
+          await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
+              scrollable: true,
               title: const Text("Autorisation requise"),
               content: const Text("Pour installer la mise à jour, vous devez autoriser l'installation d'applications depuis cette source dans l'écran suivant."),
               actions: [ TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text("Compris")) ],
@@ -250,9 +253,10 @@ class AppUpdateService {
               // Afficher un message explicatif sur le conflit
               final context = navigatorKey.currentContext;
               if (context != null) {
-                await showDialog(
+                await showAppDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
+                    scrollable: true,
                     title: const Text("Erreur d'installation"),
                     content: const Text(
                       "L'installation a échoué car l'application est déjà installée avec une signature différente. "

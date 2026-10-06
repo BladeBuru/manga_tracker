@@ -5,7 +5,12 @@ import 'package:mangatracker/features/reader/services/last_site_link_policy.dart
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Pour un titre sans lien : proposer le site de la dernière lecture —
-/// copier son lien, ou y chercher directement ce titre depuis l'app.
+/// y chercher directement ce titre depuis l'app (action principale), ou
+/// copier son lien.
+///
+/// Refonte 2026-10 (retour : « du rouge avec du texte noir ») : surface
+/// neutre, icône dans une pastille tonale, textes aux couleurs du thème et
+/// à taille lisible.
 class LastSiteLinkSuggestion extends StatelessWidget {
   final LastSiteLink suggestion;
   final VoidCallback onCopyLink;
@@ -26,38 +31,60 @@ class LastSiteLinkSuggestion extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.m),
       decoration: BoxDecoration(
-        color: scheme.primaryContainer.withValues(alpha: 0.45),
+        color: scheme.surfaceContainerHighest,
         borderRadius: AppRadius.circularXl,
-        border: Border.all(color: scheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.travel_explore_rounded, color: scheme.primary),
-              const SizedBox(width: AppSpacing.s),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.s),
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.travel_explore_rounded,
+                  size: 20,
+                  color: scheme.onPrimaryContainer,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.s + 4),
               Expanded(
-                child: Text(
-                  l10n.linkSuggestionTitle(suggestion.host),
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.linkSuggestionTitle(suggestion.host),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.linkSuggestionSource(suggestion.sourceTitle),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            l10n.linkSuggestionSource(suggestion.sourceTitle),
-            style: theme.textTheme.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.s),
+          const SizedBox(height: AppSpacing.s + 4),
           Wrap(
+            alignment: WrapAlignment.end,
             spacing: AppSpacing.s,
             runSpacing: AppSpacing.xs,
             children: [
-              OutlinedButton.icon(
+              TextButton.icon(
                 onPressed: onCopyLink,
                 icon: const Icon(Icons.content_copy_outlined, size: 18),
                 label: Text(l10n.linkSuggestionCopy),

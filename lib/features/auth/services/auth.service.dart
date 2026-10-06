@@ -21,7 +21,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
 import '../../../core/services/connectivity_service.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'biometric.service.dart';
+import 'session_refresher.dart';
+
+export 'session_refresher.dart' show RefreshResult;
 
 /// Résultat d'un appel à `refreshAccessToken()`.
 ///
@@ -36,7 +40,7 @@ import 'biometric.service.dart';
 ///   session est morte (purgée, JWT_REFRESH_SECRET changé, etc.). L'user
 ///   DOIT être renvoyé vers login, sinon il va naviguer dans le cache
 ///   avec l'illusion d'être connecté.
-enum RefreshResult { success, networkError, rejected }
+// `RefreshResult` vit dans session_refresher.dart (ré-exporté ici).
 
 /// Résultat d'une tentative de connexion Google.
 ///
@@ -56,9 +60,39 @@ class AuthService {
   StorageService storageService = getIt<StorageService>();
   BiometricService biometricService = getIt<BiometricService>();
 
-  // Verrou pour éviter les race conditions lors du refresh
-  bool _isRefreshing = false;
-  Completer<RefreshResult>? _refreshCompleter;
+  /// Échange du refresh token — un seul à la fois, refus explicites
+  /// seulement (cf. [SessionRefresher]).
+  late final SessionRefresher _refresher = SessionRefresher(
+    read: storageService.readSecureData,
+    write: storageService.writeSecureData,
+    post: (refreshToken) => http.post(
+      buildApiUri('/auth/refresh'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $refreshToken'},
+    ),
+    isConnected: _isConnected,
+    isExpired: isTokenExpired,
+    onAccessToken: _rememberAccessToken,
+  );
+
+  /// Heure de réception de l'access token courant (horloge de l'appareil).
+  String? _currentAccessToken;
+  DateTime? _currentAccessTokenReceivedAt;
+
+  /// Marge : on renouvelle un peu avant l'échéance plutôt qu'un peu après.
+  static const Duration _expiryMargin = Duration(seconds: 30);
+
+  void _rememberAccessToken(String token) {
+    _currentAccessToken = token;
+    _currentAccessTokenReceivedAt = DateTime.now();
+  }
+
+  bool _isConnected() {
+    try {
+      return getIt<ConnectivityService>().isConnected;
+    } catch (_) {
+      return true;
+    }
+  }
 
   Future<AuthService> init() async {
     return this;
@@ -169,96 +203,33 @@ class AuthService {
   ///    pas connecté mais je vois mes données").
   ///
   /// Compat : si tu as juste besoin d'un bool, utilise [refreshOk].
-  Future<RefreshResult> refreshAccessToken({String? token}) async {
-    // Si un refresh est déjà en cours, attendre son résultat
-    if (_isRefreshing && _refreshCompleter != null) {
-      debugPrint('🔄 AuthService: Refresh déjà en cours, attente du résultat...');
-      return await _refreshCompleter!.future;
-    }
+  Future<RefreshResult> refreshAccessToken({String? token}) =>
+      _refresher.refresh(token: token);
 
-    final refreshToken = token ?? await storageService.readSecureData('refreshToken');
-    if (refreshToken == null || isTokenExpired(refreshToken)) {
-      debugPrint('⚠️ AuthService: Refresh token est null ou expiré localement');
-      // Le token est cassé côté client (pas reçu, ou expiré localement) → c'est
-      // un "rejet" effectif : impossible de retenter, il faut se reconnecter.
-      return RefreshResult.rejected;
-    }
-
-    // Vérifier la connectivité avant de tenter le refresh
+  /// L'access token est-il à renouveler ?
+  ///
+  /// Mesuré sur sa **durée de vie** (`exp - iat`) à partir de sa réception
+  /// quand on la connaît : une horloge d'appareil fausse (tablette réglée à
+  /// la main) ne fait plus croire qu'un jeton tout neuf est périmé — ce qui
+  /// relançait un échange à chaque requête. Sinon, horloge murale avec une
+  /// marge de 30 s.
+  bool isAccessTokenExpired(String? token) {
+    if (token == null) return true;
     try {
-      final connectivityService = getIt<ConnectivityService>();
-      if (!connectivityService.isConnected) {
-        debugPrint('⚠️ AuthService: Pas de connexion réseau, refresh impossible');
-        return RefreshResult.networkError; // ≠ rejet : l'auth reste plausible
+      final payload = parseJwt(token, 1);
+      final exp = payload['exp'] as int;
+      final iat = payload['iat'];
+      final receivedAt = _currentAccessTokenReceivedAt;
+      if (token == _currentAccessToken && receivedAt != null && iat is int) {
+        final lifetime = Duration(seconds: exp - iat);
+        return DateTime.now().isAfter(
+          receivedAt.add(lifetime).subtract(_expiryMargin),
+        );
       }
-    } catch (e) {
-      debugPrint('⚠️ AuthService: Erreur lors de la vérification de connectivité: $e');
-      // Continuer même si on ne peut pas vérifier la connectivité
-    }
-
-    // Créer un completer pour partager le résultat avec les autres appels simultanés
-    _isRefreshing = true;
-    _refreshCompleter = Completer<RefreshResult>();
-
-    try {
-      final url = buildApiUri('/auth/refresh');
-      final res = await http.post(
-        url,
-        headers: {
-          HttpHeaders.authorizationHeader: 'Bearer $refreshToken',
-        },
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException('Refresh token timeout');
-        },
-      );
-
-      if (res.statusCode == HttpStatus.created) {
-        final data = jsonDecode(res.body);
-        await storageService.writeSecureData('accessToken', data['accessToken']);
-
-        // Si le backend renvoie un nouveau refreshToken (rotation), le sauvegarder
-        if (data.containsKey('refreshToken') && data['refreshToken'] != null) {
-          debugPrint('✅ AuthService: Nouveau refreshToken reçu, sauvegarde...');
-          await storageService.writeSecureData('refreshToken', data['refreshToken']);
-        }
-
-        debugPrint('✅ AuthService: Access token rafraîchi avec succès');
-        _refreshCompleter!.complete(RefreshResult.success);
-        return RefreshResult.success;
-      } else if (res.statusCode == HttpStatus.unauthorized ||
-          res.statusCode == HttpStatus.forbidden) {
-        // 401/403 = le serveur a explicitement rejeté le refresh token.
-        // Causes typiques : session purgée (DB reset en dev), JWT_REFRESH_SECRET
-        // changé côté serveur, ou refresh token signé par une autre instance API.
-        // → il FAUT renvoyer l'user vers login, pas le laisser dans le cache.
-        debugPrint('❌ AuthService: Refresh rejeté par le serveur (${res.statusCode}): ${res.body}');
-        _refreshCompleter!.complete(RefreshResult.rejected);
-        return RefreshResult.rejected;
-      } else {
-        // 5xx ou autre : on traite ça comme une erreur réseau temporaire,
-        // l'user pourra retenter au prochain boot ou à la reconnexion.
-        debugPrint('⚠️ AuthService: Échec du refresh (transitoire) - Status: ${res.statusCode}, Body: ${res.body}');
-        _refreshCompleter!.complete(RefreshResult.networkError);
-        return RefreshResult.networkError;
-      }
-    } on SocketException catch (e) {
-      debugPrint('⚠️ AuthService: Erreur réseau lors du refresh: $e');
-      _refreshCompleter!.complete(RefreshResult.networkError);
-      return RefreshResult.networkError;
-    } on TimeoutException catch (e) {
-      debugPrint('⚠️ AuthService: Timeout lors du refresh: $e');
-      _refreshCompleter!.complete(RefreshResult.networkError);
-      return RefreshResult.networkError;
-    } catch (e) {
-      debugPrint('❌ AuthService: Erreur inattendue lors du refresh: $e');
-      // Erreur inattendue : on prend l'option safe = rejet (force login).
-      _refreshCompleter!.complete(RefreshResult.rejected);
-      return RefreshResult.rejected;
-    } finally {
-      _isRefreshing = false;
-      _refreshCompleter = null;
+      final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+      return expiry.subtract(_expiryMargin).isBefore(DateTime.now().toUtc());
+    } catch (_) {
+      return true;
     }
   }
 
@@ -320,6 +291,18 @@ class AuthService {
   Future<void> logout() async {
     await clearSessionTokens();
     await _purgeCache();
+    _resetNotificationCounts();
+  }
+
+  /// Pastilles et anti-doublons des notifications : rien ne doit passer au
+  /// compte suivant.
+  void _resetNotificationCounts() {
+    try {
+      if (getIt.isRegistered<NotificationCountsService>() &&
+          getIt.isReadySync<NotificationCountsService>()) {
+        getIt<NotificationCountsService>().reset();
+      }
+    } catch (_) {}
   }
 
   /// Purge le cache local, si le service est disponible.

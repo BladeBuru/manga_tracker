@@ -70,7 +70,9 @@ class CommunityRecommendationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l10n.communityRecoVotes(item.totalVotes),
+                    item.totalVotes == 0 && item.muSuggested
+                        ? l10n.communityRecoMuSuggested
+                        : l10n.communityRecoVotes(item.totalVotes),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.primary,
                       fontWeight: FontWeight.w600,

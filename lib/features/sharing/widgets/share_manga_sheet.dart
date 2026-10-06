@@ -18,7 +18,7 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///
 /// Utilisation :
 /// ```dart
-/// showModalBottomSheet(
+/// showAppBottomSheet(
 ///   context: context,
 ///   isScrollControlled: true,
 ///   builder: (_) => ShareMangaSheet(muId: 42),

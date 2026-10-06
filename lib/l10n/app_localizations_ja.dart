@@ -2546,4 +2546,72 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get readingGroupActionsCopyLinkSubtitle => '他のアプリで開いたり共有したりできます';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    return '$count件の未確認があります';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    return '保留中の友達リクエスト$count件';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    return '新しいおすすめ$count件';
+  }
+
+  @override
+  String get pendingSyncTitle => '送信待ちの変更があります';
+
+  @override
+  String get syncNowAction => '同期';
+
+  @override
+  String get communityRecoMuSuggested => 'MangaUpdatesのおすすめ';
+
+  @override
+  String get biometricUnlockReason => 'Manga Trackerのロックを解除';
+
+  @override
+  String get biometricLockedOut => '試行回数が多すぎます。端末をパスコードでロック解除してから、もう一度お試しください。';
+
+  @override
+  String get biometricNotEnrolled =>
+      'この端末には画面ロックが設定されていません。設定でパスコード、指紋、または顔を追加してください。';
+
+  @override
+  String get biometricUnlockError =>
+      'ロックを解除できませんでした。もう一度お試しいただくか、パスワードでログインしてください。';
+
+  @override
+  String get homeGreeting => 'こんにちは、';
+
+  @override
+  String get downloadChaptersTitle => '章をダウンロード';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'ダウンロード中：$chapter章';
+  }
+
+  @override
+  String get downloadSelectAll => 'すべて選択';
+
+  @override
+  String get downloadDeselectAll => '選択をすべて解除';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return '未読を選択（$count）';
+  }
+
+  @override
+  String get downloadSelectPrompt => 'ダウンロードする章を選択してください：';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'ダウンロード（$count）';
+  }
 }

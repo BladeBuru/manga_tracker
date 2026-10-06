@@ -23,6 +23,16 @@
 
 ## ✅ Complété
 
+### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
+
+- Sessions multi-appareils fiabilisées (client `SessionRefresher` + API rotation tolérante, gardes 401).
+- File hors ligne : fusion, abandon des refus, rejeux multiples, bandeaux refaits (`OfflineBanner`, `PendingSyncBanner`).
+- Fenêtres uniques (`app_modals.dart`), `SystemBarsInset`, conteneurs M3 du thème.
+- Pastilles par source + défilement vers la section + routage des notifications.
+- « Si vous avez aimé » : suggestions MangaUpdates ; feuille à la taille du contenu.
+- Lecteur : barre auto-masquée (en ligne + hors ligne), portrait inversé ; biométrie avec secours code.
+- Passe petits écrans (320 dp, texte ×1,3, fr/de/ja) : audit de code + balayage de tous les tests de widgets. Grilles : cover = 3:4 de la colonne, bloc texte × taille de texte (`MangaCard.textBlockHeightFor`, `HomeLayoutMetrics.cardHeightFor`). Lignes : boutons sous le texte sous un seuil, icônes avec infobulle, `Wrap`, `AlertDialog(scrollable: true)`. Onglets : `SliverSafeArea`. Fiche : `DetailHeroLayout`. Lecteur : barre qui réserve sa place. Textes français codés en dur traduits (téléchargement de chapitres, « Bonjour, », « Terminé », « chapitres »). Tests : `small_screen_components_test`, `small_screen_cards_test`, `small_screen_rows_test`, `detail_actions_small_screen_test`, `detail_hero_layout_test`.
+
 ### 🗣️ Retours utilisateurs de septembre — 6 correctifs et 5 nouveautés (2026-09-30)
 
 Branche `claude/brave-pasteur-gszxre` (Flutter + API, **déployer l'API d'abord**).

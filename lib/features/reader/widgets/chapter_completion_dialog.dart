@@ -3,6 +3,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Modale de fin de lecture : « Avez-vous fini le chapitre N ? ».
 ///
@@ -24,7 +25,7 @@ class ChapterCompletionDialog extends StatelessWidget {
   /// Affiche la modale. `barrierDismissible: false` : la question doit
   /// recevoir une réponse explicite, pas être balayée par accident.
   static Future<bool?> show(BuildContext context, {required int chapter}) {
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => ChapterCompletionDialog(chapter: chapter),
@@ -37,6 +38,7 @@ class ChapterCompletionDialog extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(
         Icons.check_circle_outline,
         color: AppColors.success,

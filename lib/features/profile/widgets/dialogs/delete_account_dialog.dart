@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/features/profile/widgets/dialogs/profile_dialog_shell.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Dialog de confirmation de suppression de compte (Design V1).
 ///
 /// Le caller exécute la suppression si `true` est renvoyé.
 Future<bool> showDeleteAccountConfirmDialog(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
-  final result = await showDialog<bool>(
+  final result = await showAppDialog<bool>(
     context: context,
     builder: (context) => ProfileDialogShell(
       icon: Icons.delete_outline,

@@ -6,6 +6,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  Dialogs de la page « Mes données » (RGPD).                           ║
@@ -27,7 +28,7 @@ class MyDataDialogs {
     final brightness = Theme.of(context).brightness;
     final isDark = brightness == Brightness.dark;
     final scheme = Theme.of(context).colorScheme;
-    return showDialog<void>(
+    return showAppDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? AppColors.dsSurfaceDark : Colors.white,
@@ -86,7 +87,7 @@ class MyDataDialogs {
     final brightness = Theme.of(context).brightness;
     final isDark = brightness == Brightness.dark;
     final scheme = Theme.of(context).colorScheme;
-    return showDialog<void>(
+    return showAppDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? AppColors.dsSurfaceDark : Colors.white,

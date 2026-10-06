@@ -63,7 +63,9 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
       // ignore: unawaited_futures
       _service.markAllSeen().then((_) {
         try {
-          getIt<NotificationCountsService>().refresh();
+          getIt<NotificationCountsService>()
+            ..markSharesSeen()
+            ..refresh();
         } catch (_) {}
       }).onError((_, __) {});
     } catch (e) {

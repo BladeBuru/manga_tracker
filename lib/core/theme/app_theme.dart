@@ -3,6 +3,31 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  /// Couleurs « conteneur » (blocs tonals, pastilles, boutons tonals)
+  /// calculées par Material 3 à partir du rouge de la marque.
+  ///
+  /// Sans elles, `ColorScheme.light/dark` retombait sur la couleur pleine :
+  /// `primaryContainer` = rouge vif, `secondaryContainer` = rouge vif… Les
+  /// blocs « tonals » du design system devenaient rouges, souvent avec du
+  /// texte noir (retour utilisateur : « c'est du rouge avec du texte
+  /// noir »). Les surfaces, elles, restent celles de l'application.
+  static ColorScheme _withTonalContainers(ColorScheme base) {
+    final tones = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: base.brightness,
+    );
+    return base.copyWith(
+      primaryContainer: tones.primaryContainer,
+      onPrimaryContainer: tones.onPrimaryContainer,
+      secondaryContainer: tones.secondaryContainer,
+      onSecondaryContainer: tones.onSecondaryContainer,
+      tertiaryContainer: tones.tertiaryContainer,
+      onTertiaryContainer: tones.onTertiaryContainer,
+      errorContainer: tones.errorContainer,
+      onErrorContainer: tones.onErrorContainer,
+    );
+  }
+
   // Override de `FilledButton.tonal` retiré du theme global car ça
   // affecterait aussi `FilledButton` plain. Les call sites qui veulent
   // un tonal rouge utilisent directement
@@ -28,7 +53,7 @@ class AppTheme {
     );
     return ThemeData(
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: colorScheme,
+      colorScheme: _withTonalContainers(colorScheme),
       // NOTE : on n'utilise PAS l'override `_tonalRedOverride` ici car
       // ça affecterait aussi les `FilledButton` plain. À la place, on
       // demande explicitement aux call sites d'utiliser
@@ -76,7 +101,7 @@ class AppTheme {
     );
     return ThemeData(
       scaffoldBackgroundColor: const Color(0xFF121212),
-      colorScheme: colorScheme,
+      colorScheme: _withTonalContainers(colorScheme),
       textTheme:
           GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme).copyWith(
         titleSmall: const TextStyle(

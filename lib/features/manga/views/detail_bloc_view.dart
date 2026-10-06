@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/features/manga/helpers/detail_hero_layout.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/router/app_router.dart';
@@ -43,6 +44,7 @@ import 'chapter_download_dialog.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
 import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -159,7 +161,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 tooltip: AppLocalizations.of(context)?.readingGroupCreateTitle ??
                     'Lire à deux',
                 onPressed: () {
-                  showModalBottomSheet(
+                  showAppBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     showDragHandle: false,
@@ -182,7 +184,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 color: Colors.white, size: 26),
             tooltip: AppLocalizations.of(context)?.shareTitle ?? 'Partager',
             onPressed: () {
-              showModalBottomSheet(
+              showAppBottomSheet(
                 context: context,
                 isScrollControlled: true,
                 showDragHandle: false,
@@ -339,6 +341,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     // Le statut est récupéré depuis le DTO - null si pas dans la bibliothèque
     final ReadingStatus? status = manga.inLibrary ? (manga.readingStatus ?? ReadingStatus.readLater) : null;
 
+    // `context` est celui de la page, au-dessus du Scaffold : il voit le
+    // clavier (cf. DetailHeroLayout).
+    final hero = DetailHeroLayout.of(MediaQuery.of(context));
+
     return Column(
       children: [
         // Session rejetee : le detail en cache reste entierement consultable,
@@ -355,10 +361,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           child: Column(
             children: [
               // Header avec image et titre
+              if (hero.showChrome)
               GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
-                  showDialog(
+                  showAppDialog(
                     context: context,
                     // Barrier adapté au thème : 0.75 en light suffit pour
                     // isoler l'image, 0.85 en dark (audit design 2026-06-12).
@@ -425,7 +432,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 340,
+                      height: hero.height,
                       // Proxy (hotfix-v0-10-1 US-2) : CORS web.
                       child: RefreshableMangaImage(
                         muId: widget.muId.toString(),
@@ -436,11 +443,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     ),
                     Container(
                       width: double.infinity,
-                      height: 340,
+                      height: hero.height,
                       color: Colors.black.withValues(alpha: 0.4),
                     ),
                     Positioned(
-                      top: 70,
+                      top: hero.titleTop,
                       left: 16,
                       right: 16,
                       child: IgnorePointer(
@@ -539,7 +546,8 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               // d'icône 48px, pour libérer de la hauteur fixe. Cf. l'icône
               // `_StatusIconButton` dans `_buildBottomActionBar`.
               // L'action bar suit la même largeur max que le contenu.
-              AppContentWidth(child: _buildBottomActionBar(status)),
+              if (hero.showChrome)
+                AppContentWidth(child: _buildBottomActionBar(status)),
             ],
           ),
         ),
@@ -736,8 +744,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   void _showManageLibrarySheet(ReadingStatus status) {
     final muId = widget.muId;
     final detailBloc = context.read<DetailBloc>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
+      // Petit écran + texte agrandi : la feuille dépasse la hauteur par
+      // défaut (9/16 de l'écran) → elle prend la hauteur utile et défile.
+      isScrollControlled: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -748,7 +759,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         return BlocProvider.value(
           value: detailBloc,
           child: SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.m,
                 AppSpacing.m,
@@ -842,7 +853,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   }
 
   void _showCustomLinkMenu() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: false,
       builder: (ctx) {
@@ -912,7 +923,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     bool isCheckingCustomPatterns = false;
     final selectorsService = CustomSelectorsService();
     
-    final link = await showDialog<String?>(
+    final link = await showAppDialog<String?>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
@@ -1248,7 +1259,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       return;
     }
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => ChapterDownloadDialog(
         muId: widget.muId,

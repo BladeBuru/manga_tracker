@@ -1427,5 +1427,65 @@
   "linkSuggestionCopy": "Copy the link",
   "linkSuggestionSearch": "Search on the site",
   "readingGroupActionsCopyLink": "Copy the reading link",
-  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it"
+  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it",
+  "accountTabPendingBadge": "{count, plural, =1{1 item waiting for you} other{{count} items waiting for you}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 pending friend request} other{{count} pending friend requests}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 new recommendation} other{{count} new recommendations}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingSyncTitle": "Changes waiting to be sent",
+  "syncNowAction": "Sync",
+  "communityRecoMuSuggested": "Suggested by MangaUpdates",
+  "biometricUnlockReason": "Unlock Manga Tracker",
+  "biometricLockedOut": "Too many attempts: unlock your device with its code first, then try again.",
+  "biometricNotEnrolled": "No screen lock is set up on this device. Add a code, a fingerprint or a face in the settings.",
+  "biometricUnlockError": "Unlock failed. Try again or sign in with your password.",
+  "homeGreeting": "Hello,",
+  "downloadChaptersTitle": "Download chapters",
+  "downloadProgressChapter": "Downloading: chapter {chapter}",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Select all",
+  "downloadDeselectAll": "Deselect all",
+  "downloadSelectUnread": "Select unread ({count})",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Select the chapters to download:",
+  "downloadConfirmCount": "Download ({count})",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

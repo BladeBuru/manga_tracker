@@ -2621,4 +2621,91 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get readingGroupActionsCopyLinkSubtitle =>
       'To open it elsewhere or share it';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items waiting for you',
+      one: '1 item waiting for you',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending friend requests',
+      one: '1 pending friend request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new recommendations',
+      one: '1 new recommendation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pendingSyncTitle => 'Changes waiting to be sent';
+
+  @override
+  String get syncNowAction => 'Sync';
+
+  @override
+  String get communityRecoMuSuggested => 'Suggested by MangaUpdates';
+
+  @override
+  String get biometricUnlockReason => 'Unlock Manga Tracker';
+
+  @override
+  String get biometricLockedOut =>
+      'Too many attempts: unlock your device with its code first, then try again.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'No screen lock is set up on this device. Add a code, a fingerprint or a face in the settings.';
+
+  @override
+  String get biometricUnlockError =>
+      'Unlock failed. Try again or sign in with your password.';
+
+  @override
+  String get homeGreeting => 'Hello,';
+
+  @override
+  String get downloadChaptersTitle => 'Download chapters';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Downloading: chapter $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Select all';
+
+  @override
+  String get downloadDeselectAll => 'Deselect all';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Select unread ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt => 'Select the chapters to download:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Download ($count)';
+  }
 }

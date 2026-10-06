@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
@@ -50,6 +51,13 @@ class ProfileBody extends StatelessWidget {
   final VoidCallback onDownloads;
   final VoidCallback onCustomSelectors;
 
+  /// Pastilles « à traiter » des lignes sociales.
+  final NotificationCounts counts;
+  final bool highlightPending;
+
+  /// Clé de la section sociale : cible du défilement depuis l'onglet.
+  final Key? socialSectionKey;
+
   const ProfileBody({
     super.key,
     required this.username,
@@ -77,14 +85,19 @@ class ProfileBody extends StatelessWidget {
     required this.onOpenDiscord,
     required this.onDownloads,
     required this.onCustomSelectors,
+    this.counts = NotificationCounts.zero,
+    this.highlightPending = false,
+    this.socialSectionKey,
   });
 
   @override
   Widget build(BuildContext context) {
     final languageService = getIt<LanguageService>();
     final effectiveLocale = currentLocale ?? languageService.getCurrentLocale();
-    final languageName =
-        languageService.getLanguageName(effectiveLocale, context);
+    final languageName = languageService.getLanguageName(
+      effectiveLocale,
+      context,
+    );
     final themeService = getIt<ThemeService>();
     final effectiveThemeMode =
         currentThemeMode ?? themeService.getCurrentThemeMode();
@@ -92,13 +105,18 @@ class ProfileBody extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: ProfileHeader(
-            username: username,
-            handle: handle,
-            email: email,
-            avatarUrl: avatarUrl,
-            onAvatarTap: onAvatarTap,
+        // Onglet sans barre d'application : l'en-tête commence sous la barre
+        // d'état (et l'encoche), pas dessous.
+        SliverSafeArea(
+          bottom: false,
+          sliver: SliverToBoxAdapter(
+            child: ProfileHeader(
+              username: username,
+              handle: handle,
+              email: email,
+              avatarUrl: avatarUrl,
+              onAvatarTap: onAvatarTap,
+            ),
           ),
         ),
         const SliverPadding(
@@ -106,21 +124,33 @@ class ProfileBody extends StatelessWidget {
           sliver: SliverToBoxAdapter(child: ProfileHighlightCard()),
         ),
         SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+          sliver: SliverToBoxAdapter(
+            child: AccountSection(onChangePassword: onChangePassword),
+          ),
+        ),
+        // Bloc à part (et non élément d'une liste paresseuse) : toujours
+        // construit, donc atteignable par défilement depuis la pastille de
+        // l'onglet même hors écran.
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
+          sliver: SliverToBoxAdapter(
+            child: ProfileSocialSection(
+              key: socialSectionKey,
+              onEditProfile: onEditProfile,
+              onMyStats: onMyStats,
+              onMyFriends: onMyFriends,
+              onMyInbox: onMyInbox,
+              onReadingGroups: onReadingGroups,
+              counts: counts,
+              highlightPending: highlightPending,
+            ),
+          ),
+        ),
+        SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              AccountSection(
-                onChangePassword: onChangePassword,
-              ),
-              const SizedBox(height: 22),
-              ProfileSocialSection(
-                onEditProfile: onEditProfile,
-                onMyStats: onMyStats,
-                onMyFriends: onMyFriends,
-                onMyInbox: onMyInbox,
-                onReadingGroups: onReadingGroups,
-              ),
-              const SizedBox(height: 22),
               SettingsSection(
                 languageName: languageName,
                 themeName: themeName,

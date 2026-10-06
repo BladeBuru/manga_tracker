@@ -21,22 +21,21 @@ class SearchHistoryHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.m,
-        0,
-        AppSpacing.m,
-        12,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.m, 0, AppSpacing.m, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            l10n.searchHistoryTitle,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.15, // -0.01em * 15
-              color: scheme.onSurface,
+          Expanded(
+            child: Text(
+              l10n.searchHistoryTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.15, // -0.01em * 15
+                color: scheme.onSurface,
+              ),
             ),
           ),
           if (canClear)
@@ -44,10 +43,7 @@ class SearchHistoryHeader extends StatelessWidget {
               onTap: onClearAll,
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4,
-                  horizontal: 4,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                 child: Text(
                   l10n.clear,
                   style: TextStyle(
@@ -108,19 +104,17 @@ class SearchHistoryList extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.dsSurfaceDark : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.dsHairline(brightness),
-            width: 1,
-          ),
-          boxShadow: isDark
-              ? null
-              : const [
-                  BoxShadow(
-                    color: Color(0x0A140A0A),
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+          border: Border.all(color: AppColors.dsHairline(brightness), width: 1),
+          boxShadow:
+              isDark
+                  ? null
+                  : const [
+                    BoxShadow(
+                      color: Color(0x0A140A0A),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -171,11 +165,7 @@ class _HistoryRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            Icon(
-              Icons.refresh,
-              size: 17,
-              color: AppColors.dsText3(brightness),
-            ),
+            Icon(Icons.refresh, size: 17, color: AppColors.dsText3(brightness)),
             const SizedBox(width: 14),
             Expanded(
               child: Text(

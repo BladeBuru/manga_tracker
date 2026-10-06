@@ -37,7 +37,11 @@ class InboxFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    // `Wrap` : sur petit écran avec texte agrandi, la 3e pill passe à la
+    // ligne au lieu de déborder.
+    return Wrap(
+      spacing: AppSpacing.s,
+      runSpacing: AppSpacing.s,
       children: [
         _Pill(
           label: labelAll,
@@ -45,14 +49,12 @@ class InboxFilterChips extends StatelessWidget {
           active: selected == InboxFilter.all,
           onTap: () => onChanged(InboxFilter.all),
         ),
-        const SizedBox(width: AppSpacing.s),
         _Pill(
           label: labelUnread,
           count: unreadCount,
           active: selected == InboxFilter.unread,
           onTap: () => onChanged(InboxFilter.unread),
         ),
-        const SizedBox(width: AppSpacing.s),
         _Pill(
           label: labelRead,
           count: readCount,
@@ -103,13 +105,17 @@ class _Pill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                  color: fg,
-                  letterSpacing: -0.1,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                    color: fg,
+                    letterSpacing: -0.1,
+                  ),
                 ),
               ),
               const SizedBox(width: 6),

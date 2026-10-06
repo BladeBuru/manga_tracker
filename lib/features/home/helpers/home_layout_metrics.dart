@@ -1,5 +1,7 @@
+import 'package:flutter/painting.dart' show TextScaler;
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 
 /// Dimensions de l'accueil catalogue derivees de la largeur disponible.
 ///
@@ -7,9 +9,16 @@ import 'package:mangatracker/core/theme/app_spacing.dart';
 /// 3:4) et le padding de page : les carrousels, les squelettes et la page
 /// « Tout voir » lisent les memes valeurs, donc restent alignes.
 class HomeLayoutMetrics {
-  /// Hauteur du bloc texte sous la cover d'une [MangaCard] non compacte :
-  /// titre sur deux lignes + ligne annee / note.
-  static const double cardTextBlockHeight = 62;
+  /// Hauteur du bloc texte sous la cover d'une [MangaCard] non compacte
+  /// (titre sur deux lignes + ligne annee / note), a la taille de texte 1.
+  /// Pour la mise en page, passer par [cardTextBlockHeightFor] : le bloc
+  /// grandit avec la taille de texte de l'utilisateur.
+  static const double cardTextBlockHeight = MangaCard.textBlockHeight;
+
+  /// Bloc texte a la taille de texte de l'utilisateur
+  /// (`MediaQuery.textScalerOf(context)`).
+  static double cardTextBlockHeightFor(TextScaler textScaler) =>
+      MangaCard.textBlockHeightFor(textScaler);
 
   /// Ecart entre deux cartes d'un carrousel.
   static const double cardGap = AppSpacing.s + AppSpacing.xs;
@@ -42,28 +51,39 @@ class HomeLayoutMetrics {
   }
 
   /// Cover au ratio 3:4.
-  double get coverHeight => (cardWidth * 4 / 3).roundToDouble();
+  double get coverHeight => MangaCard.coverHeightFor(cardWidth);
 
-  /// Hauteur totale d'une carte (cover + bloc texte).
-  double get cardHeight => coverHeight + cardTextBlockHeight;
+  /// Hauteur totale d'une carte (cover + bloc texte a la taille de texte
+  /// de l'utilisateur).
+  double cardHeightFor(TextScaler textScaler) =>
+      coverHeight + cardTextBlockHeightFor(textScaler);
 
   /// Colonnes de la grille « Tout voir ».
   int get gridColumns => breakpoints.gridColumns;
 
   /// Ratio largeur/hauteur des cellules de la grille, calcule pour que la
-  /// cover garde son 3:4 quelle que soit la largeur de colonne.
-  double gridAspectRatio(double contentWidth, {double spacing = cardGap}) {
-    final columns = gridColumns;
-    final cellWidth = (contentWidth - spacing * (columns - 1)) / columns;
+  /// cover garde son 3:4 quelle que soit la largeur de colonne, et que le
+  /// bloc texte suive la taille de texte de l'utilisateur.
+  double gridAspectRatio(
+    double contentWidth, {
+    required TextScaler textScaler,
+    double spacing = cardGap,
+  }) {
+    final cellWidth = _gridCellWidth(contentWidth, spacing);
     if (cellWidth <= 0) return 0.62;
-    return cellWidth / (gridCoverHeight(contentWidth, spacing: spacing) +
-        cardTextBlockHeight);
+    return cellWidth /
+        (gridCoverHeight(contentWidth, spacing: spacing) +
+            cardTextBlockHeightFor(textScaler));
   }
 
   /// Hauteur de cover d'une cellule de grille (ratio 3:4).
-  double gridCoverHeight(double contentWidth, {double spacing = cardGap}) {
-    final columns = gridColumns;
-    final cellWidth = (contentWidth - spacing * (columns - 1)) / columns;
-    return (cellWidth * 4 / 3).roundToDouble();
-  }
+  double gridCoverHeight(double contentWidth, {double spacing = cardGap}) =>
+      MangaCard.coverHeightFor(_gridCellWidth(contentWidth, spacing));
+
+  double _gridCellWidth(double contentWidth, double spacing) =>
+      MangaCard.gridCellWidth(
+        contentWidth,
+        columns: gridColumns,
+        spacing: spacing,
+      );
 }

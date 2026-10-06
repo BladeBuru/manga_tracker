@@ -77,8 +77,11 @@ class HttpService {
           headers = await _addAuthHeaders(originalHeaders);
           res = await _performRequest(method, url, headers: headers, body: body);
           if (res.statusCode == HttpStatus.unauthorized) {
-            debugPrint('❌ HttpService: Toujours 401 après refresh - credentials invalides');
-            await _auth.clearSessionTokens();
+            // Jeton tout neuf refusé : anomalie serveur passagère plutôt que
+            // session morte (l'échange vient de réussir). On invite à se
+            // reconnecter SANS effacer la session : la prochaine requête
+            // retentera, au lieu d'une déconnexion définitive.
+            debugPrint('❌ HttpService: Toujours 401 après refresh');
             throw InvalidCredentialsException('Invalid credentials');
           }
           debugPrint('✅ HttpService: Requête réussie après refresh');
@@ -95,6 +98,14 @@ class HttpService {
     }
 
     return res;
+  }
+
+  bool _isConnected() {
+    try {
+      return getIt<ConnectivityService>().isConnected;
+    } catch (_) {
+      return true;
+    }
   }
 
   /// Ajoute la langue de l'app (header CORS-safelisted, pas de préflight web)
@@ -116,7 +127,7 @@ class HttpService {
     String? refreshToken = await _storage.readSecureData('refreshToken');
 
     // Cas 1 : l'access token est encore valide → on l'utilise directement
-    if (accessToken != null && !_auth.isTokenExpired(accessToken)) {
+    if (accessToken != null && !_auth.isAccessTokenExpired(accessToken)) {
       headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
       return headers;
     }
@@ -135,10 +146,15 @@ class HttpService {
           return headers;
         }
       } catch (_) {}
-      // Aucun verdict serveur ici : les tokens sont expirés d'après l'horloge
-      // locale, on n'a rien demandé à l'API. La session est peut-être morte,
-      // mais on ne le SAIT pas → lecture du cache autorisée (le BLoC bascule
-      // en mode consultation hors ligne), écritures toujours refusées.
+      // En ligne sans session utilisable (aucun jeton, ou refresh token
+      // périmé) : c'est une invitation à se reconnecter, pas « hors ligne ».
+      // Avant, ce cas affichait le bandeau hors ligne et mettait chaque
+      // modification en file — pour toujours. Le cache reste lisible.
+      if (_isConnected()) {
+        debugPrint('❌ HttpService: Aucune session utilisable');
+        throw InvalidCredentialsException('No usable session');
+      }
+      // Hors ligne : aucun verdict serveur possible → consultation du cache.
       debugPrint('❌ HttpService: Les deux tokens sont expirés localement');
       throw SessionExpiredException('Both tokens expired');
     }

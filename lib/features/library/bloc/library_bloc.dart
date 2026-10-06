@@ -5,6 +5,7 @@ import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
+import 'package:mangatracker/core/services/sync_service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -22,6 +23,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       ReadingStatusAutoUpdateService();
 
   StreamSubscription<bool>? _connectivitySubscription;
+  StreamSubscription<void>? _syncSubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
 
   /// Numéro du dernier chargement lancé. Les évènements étant traités en
@@ -43,10 +45,24 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     
     _initializeConnectivityListener();
     _checkInitialConnectivity();
+    _listenToSync();
+  }
+
+  /// Modifications hors ligne envoyées : la liste et le compteur « en
+  /// attente » se mettent à jour d'eux-mêmes.
+  void _listenToSync() {
+    if (!getIt.isRegistered<SyncService>()) return;
+    getIt.getAsync<SyncService>().then((sync) {
+      if (isClosed) return;
+      _syncSubscription = sync.synced.listen((_) {
+        if (!isClosed) add(const LoadLibrary());
+      });
+    }).catchError((Object _) {});
   }
 
   @override
   Future<void> close() {
+    _syncSubscription?.cancel();
     _connectivitySubscription?.cancel();
     _librarySubscription?.cancel();
     return super.close();
@@ -392,6 +408,14 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   /// Rafraîchit la bibliothèque et signale la fin réelle du rechargement.
   Future<void> _onRefreshLibrary(RefreshLibrary event, Emitter<LibraryState> emit) async {
     try {
+      // Tirer pour rafraîchir envoie aussi ce qui attend (sans bloquer).
+      if (getIt.isRegistered<SyncService>()) {
+        unawaited(
+          getIt.getAsync<SyncService>().then((s) => s.syncNow()).catchError(
+            (Object _) {},
+          ),
+        );
+      }
       await _onLoadLibrary(const LoadLibrary(), emit);
     } finally {
       final completer = event.completer;

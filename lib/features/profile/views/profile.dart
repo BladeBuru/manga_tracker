@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:mangatracker/core/bloc/notification_counts_cubit.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
@@ -33,7 +38,11 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 // ╚═══════════════════════════════════════════════════════════════════════╝
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  /// Signal « amener l'utilisateur à ce qui l'attend » : émis quand il
+  /// touche l'onglet « Mon compte » alors qu'une pastille y est affichée.
+  final Listenable? focusPendingRequests;
+
+  const Profile({super.key, this.focusPendingRequests});
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -50,13 +59,79 @@ class _ProfileState extends State<Profile> {
   bool? _biometricEnabled;
   ThemeMode? _currentThemeMode;
 
+  final GlobalKey _socialSectionKey = GlobalKey();
+  bool _focusRequested = false;
+  bool _highlightPending = false;
+  Timer? _highlightTimer;
+
   @override
   void initState() {
     super.initState();
+    widget.focusPendingRequests?.addListener(_onFocusRequested);
     _loadUserInformation();
     _loadLanguageService();
     _loadBiometricStatus();
     _loadThemeMode();
+  }
+
+  @override
+  void didUpdateWidget(covariant Profile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusPendingRequests != widget.focusPendingRequests) {
+      oldWidget.focusPendingRequests?.removeListener(_onFocusRequested);
+      widget.focusPendingRequests?.addListener(_onFocusRequested);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.focusPendingRequests?.removeListener(_onFocusRequested);
+    _highlightTimer?.cancel();
+    super.dispose();
+  }
+
+  // ─── Pastilles : amener à la section concernée ─────────────────────────
+
+  void _onFocusRequested() {
+    _focusRequested = true;
+    if (!_isLoading) _revealPendingSection();
+  }
+
+  /// Fait défiler jusqu'aux lignes « Mes amis » / « Recommandations reçues »
+  /// et les met brièvement en évidence.
+  void _revealPendingSection() {
+    if (!_focusRequested) return;
+    _focusRequested = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _socialSectionKey.currentContext;
+      if (!mounted || target == null) return;
+      Scrollable.ensureVisible(
+        target,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+        alignment: 0.05,
+      );
+      setState(() => _highlightPending = true);
+      _highlightTimer?.cancel();
+      _highlightTimer = Timer(const Duration(milliseconds: 2500), () {
+        if (mounted) setState(() => _highlightPending = false);
+      });
+    });
+  }
+
+  /// Compteurs fournis par la barre de navigation ; zéro hors de celle-ci.
+  Widget _withCounts(Widget Function(NotificationCounts counts) builder) {
+    NotificationCountsCubit? cubit;
+    try {
+      cubit = context.read<NotificationCountsCubit>();
+    } catch (_) {
+      cubit = null;
+    }
+    if (cubit == null) return builder(NotificationCounts.zero);
+    return BlocBuilder<NotificationCountsCubit, NotificationCounts>(
+      bloc: cubit,
+      builder: (_, counts) => builder(counts),
+    );
   }
 
   // ─── Loaders ───────────────────────────────────────────────────────────
@@ -89,9 +164,11 @@ class _ProfileState extends State<Profile> {
         _userInfo = userInfo;
         _isLoading = false;
       });
+      _revealPendingSection();
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      _revealPendingSection();
       final l10n = AppLocalizations.of(context);
       _notifier.error(l10n?.userInfoLoadError ??
           'Impossible de charger les informations utilisateur');
@@ -254,7 +331,10 @@ class _ProfileState extends State<Profile> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: horizontalPadding),
-                    child: ProfileBody(
+                    child: _withCounts((counts) => ProfileBody(
+                      counts: counts,
+                      highlightPending: _highlightPending,
+                      socialSectionKey: _socialSectionKey,
                       username: username,
                       handle: handle,
                       email: email,
@@ -268,7 +348,11 @@ class _ProfileState extends State<Profile> {
                       onChangePassword: _onChangePassword,
                       onEditProfile: _onEditProfile,
                       onMyStats: () => context.push('/stats'),
-                      onMyFriends: () => context.push('/friends'),
+                      onMyFriends: () => context.push(
+                        counts.pendingFriendRequests > 0
+                            ? '/friends?tab=pending'
+                            : '/friends',
+                      ),
                       onMyInbox: () => context.push('/inbox'),
                       onReadingGroups: () => context.push('/reading-groups'),
                       onPickLanguage: _onPickLanguage,
@@ -283,7 +367,7 @@ class _ProfileState extends State<Profile> {
                       onDownloads: () => context.push('/downloads'),
                       onCustomSelectors: () =>
                           context.push('/custom-selectors'),
-                    ),
+                    )),
                   ),
                 );
               },

@@ -8,6 +8,7 @@ import 'package:mangatracker/features/download/models/downloaded_chapter.model.d
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Page de gestion des téléchargements
 class DownloadsPage extends StatefulWidget {
@@ -75,9 +76,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _deleteChapter(int muId, int chapterNumber) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteChapterTitle ?? 'Supprimer le chapitre'),
         content: Text(l10n?.deleteChapterMessage(chapterNumber) ?? 'Voulez-vous vraiment supprimer le chapitre $chapterNumber ?'),
         actions: [
@@ -106,9 +108,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _deleteAllChapters(int muId) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteAllChaptersTitle ?? 'Supprimer tous les chapitres'),
         content: Text(l10n?.deleteAllChaptersMessage ?? 'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'),
         actions: [
@@ -137,9 +140,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _deleteAllDownloads() async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteAllDownloadsTitle ?? 'Supprimer tous les téléchargements'),
         content: Text(l10n?.deleteAllDownloadsMessage ?? 'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'),
         actions: [

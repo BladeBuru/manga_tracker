@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/features/profile/widgets/dialogs/profile_dialog_shell.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Dialog "biométrie nécessite une reconnexion" (Design V1).
 ///
 /// Retourne `true` si l'utilisateur a choisi de se déconnecter immédiatement.
 Future<bool> showBiometricReconnectInfoDialog(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
-  final result = await showDialog<bool>(
+  final result = await showAppDialog<bool>(
     context: context,
     builder: (context) => ProfileDialogShell(
       icon: Icons.fingerprint,

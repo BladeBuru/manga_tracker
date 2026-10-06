@@ -37,7 +37,8 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
   final ChapterDownloadService _downloadService = ChapterDownloadService();
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
-  String? _currentDownloadChapter;
+  /// Chapitre en cours de téléchargement (affiché sous la barre).
+  int? _currentDownloadChapter;
   final Map<int, bool> _downloadedChapters = {};
 
   @override
@@ -91,7 +92,7 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
     for (final chapterNumber in batch.chapters) {
       if (!mounted || batch.cancelled) break;
       setState(() {
-        _currentDownloadChapter = 'Chapitre $chapterNumber';
+        _currentDownloadChapter = chapterNumber;
       });
 
       final chapterUrl = await ChapterLinkResolver.buildUrlForChapter(
@@ -199,16 +200,17 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
     final l10n = AppLocalizations.of(context);
     
     return AlertDialog(
-      title: Text('Télécharger des chapitres'),
+      title: Text(l10n?.downloadChaptersTitle ?? 'Télécharger des chapitres'),
       content: SizedBox(
         width: double.maxFinite,
         child: _isDownloading
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_currentDownloadChapter != null)
+                  if (_currentDownloadChapter case final chapter?)
                     Text(
-                      'Téléchargement: $_currentDownloadChapter',
+                      l10n?.downloadProgressChapter(chapter) ??
+                          'Téléchargement : chapitre $chapter',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   const SizedBox(height: 16),
@@ -225,36 +227,39 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Boutons de sélection rapide
-                    Row(
+                    // Boutons de sélection rapide. `Wrap` : sur petit écran
+                    // (texte agrandi) le second passe à la ligne au lieu
+                    // d'être écrasé et cassé lettre par lettre.
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Icons.select_all, size: 18),
-                            label: const Text('Tout sélectionner'),
-                            onPressed: () {
-                              setState(() {
-                                _selectedChapters.clear();
-                                for (int i = 1; i <= widget.totalChapters; i++) {
-                                  if (!(_downloadedChapters[i] ?? false)) {
-                                    _selectedChapters.add(i);
-                                  }
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.select_all, size: 18),
+                          label: Text(
+                            l10n?.downloadSelectAll ?? 'Tout sélectionner',
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedChapters.clear();
+                              for (int i = 1; i <= widget.totalChapters; i++) {
+                                if (!(_downloadedChapters[i] ?? false)) {
+                                  _selectedChapters.add(i);
                                 }
-                              });
-                            },
-                          ),
+                              }
+                            });
+                          },
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Icons.deselect, size: 18),
-                            label: const Text('Tout désélectionner'),
-                            onPressed: () {
-                              setState(() {
-                                _selectedChapters.clear();
-                              });
-                            },
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.deselect, size: 18),
+                          label: Text(
+                            l10n?.downloadDeselectAll ?? 'Tout désélectionner',
                           ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedChapters.clear();
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -262,7 +267,12 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.download, size: 18),
-                        label: Text('Sélectionner les non lus (${widget.totalChapters - widget.readChapters!})'),
+                        label: Text(
+                          l10n?.downloadSelectUnread(
+                                widget.totalChapters - widget.readChapters!,
+                              ) ??
+                              'Sélectionner les non lus (${widget.totalChapters - widget.readChapters!})',
+                        ),
                         onPressed: () {
                           setState(() {
                             _selectedChapters.clear();
@@ -277,7 +287,8 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
                     ],
                     const SizedBox(height: 16),
                     Text(
-                      'Sélectionnez les chapitres à télécharger:',
+                      l10n?.downloadSelectPrompt ??
+                          'Sélectionnez les chapitres à télécharger :',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     if (_pendingInterval case final interval?) ...[
@@ -338,7 +349,10 @@ class _ChapterDownloadDialogState extends State<ChapterDownloadDialog> {
         if (!_isDownloading)
           FilledButton(
             onPressed: _selectedChapters.isEmpty ? null : _startDownload,
-            child: Text('Télécharger (${_selectedChapters.length})'),
+            child: Text(
+              l10n?.downloadConfirmCount(_selectedChapters.length) ??
+                  'Télécharger (${_selectedChapters.length})',
+            ),
           ),
       ],
     );

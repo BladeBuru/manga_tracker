@@ -3,6 +3,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/recommendations/dto/dismissal_reason.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Feuille modale « ne plus me recommander ce titre ».
 ///
@@ -15,7 +16,7 @@ Future<DismissalReason?> showDismissRecommendationSheet(
   BuildContext context, {
   required String mangaTitle,
 }) {
-  return showModalBottomSheet<DismissalReason>(
+  return showAppBottomSheet<DismissalReason>(
     context: context,
     // Sans ca, la feuille est plafonnee a 9/16 de la hauteur d'ecran : avec
     // une grande police, le bouton « Annuler » passait sous le pli.

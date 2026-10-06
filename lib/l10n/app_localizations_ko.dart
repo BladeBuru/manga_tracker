@@ -2549,4 +2549,72 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get readingGroupActionsCopyLinkSubtitle => '다른 곳에서 열거나 공유하기';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    return '확인할 항목 $count개';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    return '대기 중인 친구 요청 $count개';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    return '새 추천 $count개';
+  }
+
+  @override
+  String get pendingSyncTitle => '전송 대기 중인 변경 사항';
+
+  @override
+  String get syncNowAction => '동기화';
+
+  @override
+  String get communityRecoMuSuggested => 'MangaUpdates 추천';
+
+  @override
+  String get biometricUnlockReason => 'Manga Tracker 잠금 해제';
+
+  @override
+  String get biometricLockedOut =>
+      '시도 횟수가 너무 많습니다. 먼저 기기 암호로 잠금을 해제한 후 다시 시도하세요.';
+
+  @override
+  String get biometricNotEnrolled =>
+      '이 기기에 화면 잠금이 설정되어 있지 않습니다. 설정에서 암호, 지문 또는 얼굴을 추가하세요.';
+
+  @override
+  String get biometricUnlockError => '잠금 해제에 실패했습니다. 다시 시도하거나 비밀번호로 로그인하세요.';
+
+  @override
+  String get homeGreeting => '안녕하세요,';
+
+  @override
+  String get downloadChaptersTitle => '챕터 다운로드';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return '다운로드 중: 챕터 $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => '모두 선택';
+
+  @override
+  String get downloadDeselectAll => '모두 선택 해제';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return '읽지 않은 챕터 선택 ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt => '다운로드할 챕터를 선택하세요:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return '다운로드 ($count)';
+  }
 }

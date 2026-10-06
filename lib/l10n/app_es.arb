@@ -1421,5 +1421,65 @@
   "linkSuggestionCopy": "Copiar el enlace",
   "linkSuggestionSearch": "Buscar en el sitio",
   "readingGroupActionsCopyLink": "Copiar el enlace de lectura",
-  "readingGroupActionsCopyLinkSubtitle": "Para abrirlo en otro lugar o compartirlo"
+  "readingGroupActionsCopyLinkSubtitle": "Para abrirlo en otro lugar o compartirlo",
+  "accountTabPendingBadge": "{count, plural, =1{1 elemento pendiente} other{{count} elementos pendientes}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 solicitud de amistad pendiente} other{{count} solicitudes de amistad pendientes}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 nueva recomendación} other{{count} nuevas recomendaciones}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingSyncTitle": "Cambios pendientes de envío",
+  "syncNowAction": "Sincronizar",
+  "communityRecoMuSuggested": "Sugerido por MangaUpdates",
+  "biometricUnlockReason": "Desbloquea Manga Tracker",
+  "biometricLockedOut": "Demasiados intentos: desbloquea primero el dispositivo con su código y vuelve a intentarlo.",
+  "biometricNotEnrolled": "No hay ningún bloqueo de pantalla configurado en este dispositivo. Añade un código, una huella o un rostro en los ajustes.",
+  "biometricUnlockError": "No se pudo desbloquear. Inténtalo de nuevo o inicia sesión con tu contraseña.",
+  "homeGreeting": "Hola,",
+  "downloadChaptersTitle": "Descargar capítulos",
+  "downloadProgressChapter": "Descargando: capítulo {chapter}",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Seleccionar todo",
+  "downloadDeselectAll": "Deseleccionar todo",
+  "downloadSelectUnread": "Seleccionar no leídos ({count})",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Selecciona los capítulos que quieres descargar:",
+  "downloadConfirmCount": "Descargar ({count})",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

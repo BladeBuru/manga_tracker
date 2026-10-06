@@ -4647,6 +4647,114 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Pour l\'ouvrir ailleurs ou le partager'**
   String get readingGroupActionsCopyLinkSubtitle;
+
+  /// Lecteur d'écran : pastille de l'onglet Mon compte
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 élément à traiter} other{{count} éléments à traiter}}'**
+  String accountTabPendingBadge(int count);
+
+  /// Lecteur d'écran : pastille de la ligne Mes amis
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 demande d\'ami en attente} other{{count} demandes d\'ami en attente}}'**
+  String profileFriendRequestsBadge(int count);
+
+  /// Lecteur d'écran : pastille de la ligne Recommandations reçues
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 nouvelle recommandation} other{{count} nouvelles recommandations}}'**
+  String profileUnseenSharesBadge(int count);
+
+  /// Bandeau : modifications faites hors ligne pas encore envoyées, réseau disponible
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en attente d\'envoi'**
+  String get pendingSyncTitle;
+
+  /// Bouton d'envoi immédiat des modifications en attente
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNowAction;
+
+  /// Œuvre suggérée par MangaUpdates (calcul), pas encore recommandée par des lecteurs
+  ///
+  /// In fr, this message translates to:
+  /// **'Suggéré par MangaUpdates'**
+  String get communityRecoMuSuggested;
+
+  /// Raison affichée dans la fenêtre système de déverrouillage (empreinte, visage ou code)
+  ///
+  /// In fr, this message translates to:
+  /// **'Déverrouillez Manga Tracker'**
+  String get biometricUnlockReason;
+
+  /// Biométrie bloquée après trop d'échecs
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de tentatives : déverrouillez d\'abord votre appareil avec son code, puis réessayez.'**
+  String get biometricLockedOut;
+
+  /// Aucune méthode de verrouillage enregistrée
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun verrouillage n\'est configuré sur cet appareil. Ajoutez un code, une empreinte ou un visage dans les réglages.'**
+  String get biometricNotEnrolled;
+
+  /// Erreur générique de déverrouillage
+  ///
+  /// In fr, this message translates to:
+  /// **'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.'**
+  String get biometricUnlockError;
+
+  /// Accueil : salutation au-dessus du nom de l'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Bonjour,'**
+  String get homeGreeting;
+
+  /// Titre de la fenêtre de sélection des chapitres à télécharger
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger des chapitres'**
+  String get downloadChaptersTitle;
+
+  /// Fenêtre de téléchargement : chapitre en cours de téléchargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléchargement : chapitre {chapter}'**
+  String downloadProgressChapter(int chapter);
+
+  /// Fenêtre de téléchargement : coche tous les chapitres pas encore téléchargés
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout sélectionner'**
+  String get downloadSelectAll;
+
+  /// Fenêtre de téléchargement : décoche tous les chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout désélectionner'**
+  String get downloadDeselectAll;
+
+  /// Fenêtre de téléchargement : coche les chapitres après le dernier chapitre lu
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner les non lus ({count})'**
+  String downloadSelectUnread(int count);
+
+  /// Fenêtre de téléchargement : consigne au-dessus de la liste des chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez les chapitres à télécharger :'**
+  String get downloadSelectPrompt;
+
+  /// Fenêtre de téléchargement : bouton de lancement, avec le nombre de chapitres cochés
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger ({count})'**
+  String downloadConfirmCount(int count);
 }
 
 class _AppLocalizationsDelegate

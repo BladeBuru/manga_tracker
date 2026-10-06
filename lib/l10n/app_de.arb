@@ -1421,5 +1421,65 @@
   "linkSuggestionCopy": "Link kopieren",
   "linkSuggestionSearch": "Auf der Website suchen",
   "readingGroupActionsCopyLink": "Leselink kopieren",
-  "readingGroupActionsCopyLinkSubtitle": "Um ihn woanders zu öffnen oder zu teilen"
+  "readingGroupActionsCopyLinkSubtitle": "Um ihn woanders zu öffnen oder zu teilen",
+  "accountTabPendingBadge": "{count, plural, =1{1 offener Eintrag} other{{count} offene Einträge}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 offene Freundschaftsanfrage} other{{count} offene Freundschaftsanfragen}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 neue Empfehlung} other{{count} neue Empfehlungen}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingSyncTitle": "Änderungen warten auf Übertragung",
+  "syncNowAction": "Synchronisieren",
+  "communityRecoMuSuggested": "Von MangaUpdates vorgeschlagen",
+  "biometricUnlockReason": "Manga Tracker entsperren",
+  "biometricLockedOut": "Zu viele Versuche: Entsperren Sie zuerst Ihr Gerät mit dem Code und versuchen Sie es erneut.",
+  "biometricNotEnrolled": "Auf diesem Gerät ist keine Displaysperre eingerichtet. Fügen Sie in den Einstellungen einen Code, einen Fingerabdruck oder ein Gesicht hinzu.",
+  "biometricUnlockError": "Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an.",
+  "homeGreeting": "Hallo,",
+  "downloadChaptersTitle": "Kapitel herunterladen",
+  "downloadProgressChapter": "Wird heruntergeladen: Kapitel {chapter}",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Alle auswählen",
+  "downloadDeselectAll": "Auswahl aufheben",
+  "downloadSelectUnread": "Ungelesene auswählen ({count})",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Wählen Sie die herunterzuladenden Kapitel aus:",
+  "downloadConfirmCount": "Herunterladen ({count})",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

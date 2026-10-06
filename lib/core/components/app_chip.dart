@@ -80,12 +80,18 @@ class AppChip extends StatelessWidget {
               Icon(icon, size: 14, color: fg),
               const SizedBox(width: 4),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                color: fg,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            // Flexible : un libellé long se termine par « … » au lieu de
+            // déborder de la pastille (titres, genres sur 320 dp).
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: fg,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

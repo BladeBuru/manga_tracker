@@ -6,6 +6,7 @@ import '../services/app_update_service.dart';
 import '../services/translation_service.dart';
 import '../services/language_service.dart';
 import '../service_locator/service_locator.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Widget réutilisable pour afficher les changelogs avec traduction automatique
 class ChangelogDialog extends StatefulWidget {
@@ -27,7 +28,7 @@ class ChangelogDialog extends StatefulWidget {
     bool barrierDismissible = false,
     VoidCallback? onClose,
   }) {
-    return showDialog(
+    return showAppDialog(
       context: context,
       barrierDismissible: barrierDismissible,
       builder:

@@ -24,6 +24,7 @@ class ChapterDownloadDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Téléchargement non disponible'),
       content: const Text(
         'Le téléchargement de chapitres n\'est pas disponible sur le web. '

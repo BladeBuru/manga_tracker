@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Modale de reprise inter-appareils : « Reprendre votre lecture ? ».
 ///
@@ -35,7 +36,7 @@ class ResumeReadingDialog extends StatelessWidget {
     required int resumeChapter,
     required int declinedChapter,
   }) {
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       builder: (_) => ResumeReadingDialog(
         resumeChapter: resumeChapter,
@@ -50,6 +51,7 @@ class ResumeReadingDialog extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(
         Icons.bookmark_outline,
         color: AppColors.info,

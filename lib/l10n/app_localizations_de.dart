@@ -2657,4 +2657,92 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get readingGroupActionsCopyLinkSubtitle =>
       'Um ihn woanders zu öffnen oder zu teilen';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Einträge',
+      one: '1 offener Eintrag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Freundschaftsanfragen',
+      one: '1 offene Freundschaftsanfrage',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count neue Empfehlungen',
+      one: '1 neue Empfehlung',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pendingSyncTitle => 'Änderungen warten auf Übertragung';
+
+  @override
+  String get syncNowAction => 'Synchronisieren';
+
+  @override
+  String get communityRecoMuSuggested => 'Von MangaUpdates vorgeschlagen';
+
+  @override
+  String get biometricUnlockReason => 'Manga Tracker entsperren';
+
+  @override
+  String get biometricLockedOut =>
+      'Zu viele Versuche: Entsperren Sie zuerst Ihr Gerät mit dem Code und versuchen Sie es erneut.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'Auf diesem Gerät ist keine Displaysperre eingerichtet. Fügen Sie in den Einstellungen einen Code, einen Fingerabdruck oder ein Gesicht hinzu.';
+
+  @override
+  String get biometricUnlockError =>
+      'Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an.';
+
+  @override
+  String get homeGreeting => 'Hallo,';
+
+  @override
+  String get downloadChaptersTitle => 'Kapitel herunterladen';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Wird heruntergeladen: Kapitel $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Alle auswählen';
+
+  @override
+  String get downloadDeselectAll => 'Auswahl aufheben';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Ungelesene auswählen ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt =>
+      'Wählen Sie die herunterzuladenden Kapitel aus:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Herunterladen ($count)';
+  }
 }

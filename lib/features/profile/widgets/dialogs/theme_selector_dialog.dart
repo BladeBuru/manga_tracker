@@ -6,6 +6,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/profile/widgets/dialogs/profile_dialog_shell.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Sélecteur de thème — clair / sombre / système (Design V1).
 ///
@@ -16,7 +17,7 @@ Future<ThemeMode?> showThemeSelectorDialog({
   required ThemeMode currentMode,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  return showDialog<ThemeMode>(
+  return showAppDialog<ThemeMode>(
     context: context,
     builder: (context) => ProfileDialogShell(
       icon: Icons.brightness_6_outlined,

@@ -5,6 +5,7 @@ import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 class CustomSelectorsPage extends StatefulWidget {
   const CustomSelectorsPage({super.key});
@@ -42,7 +43,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
     SelectorType selectedType =
         SelectorType.urlPattern; // Par défaut : Pattern d'URL
 
-    final result = await showDialog<bool>(
+    final result = await showAppDialog<bool>(
       context: context,
       builder:
           (ctx) => StatefulBuilder(
@@ -712,10 +713,11 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
 
   Future<void> _deleteSelector(CustomSelector selector) async {
     final l10n = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
+    final confirm = await showAppDialog<bool>(
       context: context,
       builder:
           (ctx) => AlertDialog(
+            scrollable: true,
             title: Text(l10n?.deleteSelector ?? 'Supprimer le sélecteur'),
             content: Text(
               l10n?.deleteSelectorConfirm ??
@@ -758,10 +760,11 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
     final l10n = AppLocalizations.of(context);
     final jsonController = TextEditingController();
 
-    final result = await showDialog<bool>(
+    final result = await showAppDialog<bool>(
       context: context,
       builder:
           (ctx) => AlertDialog(
+            scrollable: true,
             title: Text(l10n?.importSelectors ?? 'Importer des sélecteurs'),
             content: TextField(
               controller: jsonController,
@@ -872,7 +875,14 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                 },
               )
               : ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                // Marge basse : le bouton flottant « Ajouter » ne recouvre pas
+                // la dernière carte (et son bouton de suppression).
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  0,
+                  horizontalPadding,
+                  88,
+                ),
                 itemCount: _selectors.length,
                 itemBuilder: (context, index) {
                   final selector = _selectors[index];

@@ -1,37 +1,23 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
+import 'package:mangatracker/l10n/app_localizations.dart';
 import '../../../core/notifier/notifier.dart';
 
 class BiometricService {
   final _auth = LocalAuthentication();
 
+  /// Déverrouillage possible sur cet appareil : biométrie **ou** code /
+  /// schéma de l'appareil (secours proposé par la fenêtre système).
+  ///
+  /// Couvre les appareils sans services Google et les Huawei dont la
+  /// reconnaissance faciale n'est pas exposée à Android : tant qu'un
+  /// verrouillage d'écran existe, le déverrouillage fonctionne.
   Future<bool> hasBiometricSupport() async {
     try {
-      final canCheck = await _auth.canCheckBiometrics;
-      debugPrint('🔐 Biométrie Debug - canCheckBiometrics: $canCheck');
-      
-      // Pour certains appareils (ex: Huawei), canCheckBiometrics peut retourner false
-      // mais getAvailableBiometrics peut quand même retourner des types disponibles
-      if (!canCheck) {
-        final available = await _auth.getAvailableBiometrics();
-        debugPrint('🔐 Biométrie Debug - canCheckBiometrics=false mais getAvailableBiometrics: $available');
-        
-        // Si la liste n'est pas vide, on a des biométries disponibles
-        if (available.isNotEmpty) {
-          return true;
-        }
-        
-        // Pour certains appareils Huawei, même si getAvailableBiometrics retourne [],
-        // authenticate() peut quand même fonctionner (API propriétaire Huawei)
-        // On retourne true pour permettre la tentative, authenticate() gérera l'erreur si nécessaire
-        debugPrint('🔐 Biométrie Debug - Liste vide mais retour true pour compatibilité Huawei (authenticate() gérera l\'erreur)');
-        return true;
-      }
-      
-      return canCheck;
+      if (await _auth.canCheckBiometrics) return true;
+      return await _auth.isDeviceSupported();
     } catch (e) {
       debugPrint('🔐 Biométrie Debug - Erreur dans hasBiometricSupport: $e');
       return false;
@@ -50,6 +36,8 @@ class BiometricService {
   }
 
   Future<bool> authenticateWithBiometrics(BuildContext context) async {
+    // Lu avant toute attente : le contexte peut ne plus être monté ensuite.
+    final l10n = AppLocalizations.of(context);
     try {
       debugPrint('🔐 Biométrie Debug - Début de l\'authentification biométrique');
       
@@ -66,55 +54,42 @@ class BiometricService {
       
       debugPrint('🔐 Biométrie Debug - Appel de authenticate()...');
       
+      // `biometricOnly: false` : si la biométrie n'est pas utilisable
+      // (reconnaissance faciale Huawei non exposée à Android, capteur
+      // absent, appareil sans services Google…), la fenêtre système propose
+      // le code / schéma de l'appareil. Avant, `biometricOnly: true` laissait
+      // ces appareils sans aucun moyen de déverrouiller.
       bool isAuthenticated = await _auth.authenticate(
-        localizedReason: 'Veuillez vous authentifier pour accéder à MangaTracker',
+        localizedReason:
+            l10n?.biometricUnlockReason ?? 'Déverrouillez Manga Tracker',
         options: const AuthenticationOptions(
-          biometricOnly: true,
+          biometricOnly: false,
           stickyAuth: true,
         ),
       );
-      
+
       debugPrint('🔐 Biométrie Debug - Résultat authentification: $isAuthenticated');
       return isAuthenticated;
     } on PlatformException catch (e) {
-      debugPrint('🔐 Biométrie Debug - PlatformException: code=${e.code}, message=${e.message}, details=${e.details}');
-      
-      // Gestion spécifique des blocages biométriques
-      if (e.code == 'PermanentlyLockedOut' || e.message?.contains('ERROR_LOCKOUT') == true) {
-        debugPrint('🔐 Biométrie Debug - Biométrie verrouillée de façon permanente');
-        Notifier().error(
-          'Trop de tentatives : veuillez déverrouiller votre téléphone avec votre code avant de réessayer.',
-        );
+      debugPrint('🔐 Biométrie Debug - PlatformException: code=${e.code}');
+      if (e.code == 'PermanentlyLockedOut' || e.code == 'LockedOut') {
+        Notifier().error(l10n?.biometricLockedOut ??
+            'Trop de tentatives : déverrouillez d\'abord votre appareil.');
+      } else if (e.code == 'NotEnrolled' || e.code == 'PasscodeNotSet') {
+        Notifier().info(l10n?.biometricNotEnrolled ??
+            'Aucun verrouillage n\'est configuré sur cet appareil.');
       } else if (e.code == 'NotAvailable') {
-        debugPrint('🔐 Biométrie Debug - Biométrie non disponible (code: NotAvailable, message: ${e.message})');
-        
-        // Message spécifique pour "Security credentials not available"
-        // Cela arrive souvent sur les appareils Huawei avec reconnaissance faciale propriétaire
-        if (e.message?.contains('Security credentials not available') == true) {
-          Notifier().info(
-            'La reconnaissance faciale de votre appareil n\'est pas compatible avec l\'API Android standard. Veuillez utiliser un autre moyen d\'authentification.',
-          );
-        } else {
-          Notifier().info(
-            'La biométrie n\'est pas disponible sur cet appareil.',
-          );
-        }
-      } else if (e.code == 'NotEnrolled') {
-        debugPrint('🔐 Biométrie Debug - Aucune biométrie enregistrée (code: NotEnrolled)');
-        Notifier().info(
-          'Aucune méthode biométrique n\'est enregistrée sur cet appareil. Veuillez enregistrer une empreinte digitale ou une reconnaissance faciale dans les paramètres.',
-        );
+        Notifier().info(l10n?.biometricAuthNotAvailable ??
+            'L\'authentification biométrique n\'est pas disponible sur cet appareil');
       } else {
-        debugPrint('🔐 Biométrie Debug - Autre erreur biométrique: ${e.message ?? 'inconnue'}');
-        Notifier().error(
-          'Erreur biométrique : ${e.message ?? 'inconnue'}',
-        );
+        Notifier().error(l10n?.biometricUnlockError ??
+            'Déverrouillage impossible.');
       }
       return false;
     } catch (e, stackTrace) {
       debugPrint('🔐 Biométrie Debug - Erreur inattendue: $e');
       debugPrint('🔐 Biométrie Debug - Stack trace: $stackTrace');
-      Notifier().error('Erreur inattendue : $e');
+      Notifier().error(l10n?.biometricUnlockError ?? 'Déverrouillage impossible.');
       return false;
     }
   }

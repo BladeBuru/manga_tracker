@@ -16,6 +16,9 @@ import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/features/reader/utils/offline_html_sanitizer.dart';
 import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
+import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
+import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
+import 'package:mangatracker/features/reader/widgets/reader_chapter_title.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
 
 /// Vue pour lire un chapitre téléchargé hors ligne
@@ -37,6 +40,10 @@ class OfflineReaderView extends StatefulWidget {
 
 class _OfflineReaderViewState extends State<OfflineReaderView>
     with WidgetsBindingObserver {
+  /// Barre du haut affichée (cf. [ReaderBarVisibility]).
+  final ReaderBarVisibility _barVisibility = ReaderBarVisibility();
+  bool _barVisible = true;
+
   final DownloadManagerService _downloadManager = DownloadManagerService();
   final LibraryService _libraryService = getIt<LibraryService>();
   final ChapterLogService _chapterLogService = getIt<ChapterLogService>();
@@ -310,9 +317,15 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
             unawaited(_handleExitRequest());
           },
           child: Scaffold(
+          // Plein écran : la barre se retire en descendant, revient en
+          // remontant (même comportement que le lecteur en ligne).
+          body: ReaderAutoHideBar(
+            visible: _barVisible,
             appBar: AppBar(
-              title: Text(
-                  '${widget.mangaTitle} - ${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} ${widget.chapterNumber}'),
+              title: ReaderChapterTitle(
+                mangaTitle: widget.mangaTitle,
+                chapterNumber: widget.chapterNumber,
+              ),
             actions: [
               if (previousChapter != null)
                 IconButton(
@@ -330,7 +343,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
                 ),
             ],
           ),
-          body: Builder(
+          child: Builder(
             builder: (context) {
               final originalHtml = htmlFile.readAsStringSync();
               final cleanedHtml = OfflineHtmlSanitizer.sanitize(originalHtml);
@@ -355,6 +368,12 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
                 ),
                 onWebViewCreated: (controller) async {
                   _webViewController = controller;
+                },
+                onScrollChanged: (controller, x, y) {
+                  final visible = _barVisibility.onScroll(y);
+                  if (visible != _barVisible && mounted) {
+                    setState(() => _barVisible = visible);
+                  }
                 },
                 onLoadStop: (controller, url) async {
                   // Attendre que le DOM soit prêt
@@ -416,6 +435,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
             },
           ),
           ),
+          ),
         );
       }
     }
@@ -424,9 +444,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
     if (_chapter!.imagePaths.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('${widget.mangaTitle} - '
-              '${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} '
-              '${widget.chapterNumber}'),
+          title: ReaderChapterTitle(
+            mangaTitle: widget.mangaTitle,
+            chapterNumber: widget.chapterNumber,
+          ),
         ),
         body: PageView.builder(
           itemCount: _chapter!.imagePaths.length,

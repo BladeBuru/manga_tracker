@@ -4,6 +4,7 @@ import 'package:mangatracker/core/theme/app_breakpoints.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
+import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -49,8 +50,10 @@ class _RecommendationsByGenreViewState
 
   void _load() {
     _dismissedMuIds.clear();
-    _byGenreFuture = getIt<RecommendationService>()
-        .getRecommendationsByGenre(topGenres: 5, perGenre: 10);
+    _byGenreFuture = getIt<RecommendationService>().getRecommendationsByGenre(
+      topGenres: 5,
+      perGenre: 10,
+    );
     // Pépites : sorties récentes bien notées (Bayésien) mais peu visibles —
     // section « découverte » en tête de l'explorer par genre.
     _sleepersFuture = getIt<RecommendationService>().getSleeperHits();
@@ -87,9 +90,10 @@ class _RecommendationsByGenreViewState
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bp = AppBreakpoints.of(constraints.maxWidth);
-          final hPad = bp.isWide
-              ? 32.0
-              : bp.isAtLeastTablet
+          final hPad =
+              bp.isWide
+                  ? 32.0
+                  : bp.isAtLeastTablet
                   ? 24.0
                   : 0.0;
           // **Fix 2026-05-19** : segmented toggle V1 en tête de page (au lieu
@@ -118,12 +122,13 @@ class _RecommendationsByGenreViewState
                           l10n?.recommendationsByGenreEmpty ??
                               'Pas encore de recommandations. Ajoutez des mangas à votre bibliothèque pour en obtenir.',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                         ),
                       ),
                     ],
@@ -159,9 +164,7 @@ class _RecommendationsByGenreViewState
           return AppContentWidth(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: hPad),
-              child: Column(
-                children: [toggle, Expanded(child: inner)],
-              ),
+              child: Column(children: [toggle, Expanded(child: inner)]),
             ),
           );
         },
@@ -234,9 +237,8 @@ class _GenreSection extends StatelessWidget {
     // Filtrage au rendu des titres ecartes : la liste source vient d'un
     // Future immuable et ne peut pas etre mutee. Une section qui se vide
     // entierement disparait plutot que d'afficher un genre sans titre.
-    final mangas = entry.value
-        .where((m) => !dismissedMuIds.contains(m.muId))
-        .toList();
+    final mangas =
+        entry.value.where((m) => !dismissedMuIds.contains(m.muId)).toList();
     if (mangas.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 18),
@@ -252,27 +254,33 @@ class _GenreSection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: 14,
-                    color: AppColors.dsText2(brightness),
-                  ),
+                  Icon(icon, size: 14, color: AppColors.dsText2(brightness)),
                   const SizedBox(width: 6),
                 ],
-                Text(
-                  entry.key.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.88,
-                    color: AppColors.dsText2(brightness),
+                // Flexible + ellipsis : un nom de genre long ne deborde pas
+                // sur un petit ecran avec texte agrandi.
+                Flexible(
+                  child: Text(
+                    entry.key.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.88,
+                      color: AppColors.dsText2(brightness),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          // Cover + bloc texte qui suit la taille de texte : une hauteur
+          // fixe de 220 faisait chevaucher titre et annee a 130 %.
           SizedBox(
-            height: 220,
+            height:
+                MangaCard.defaultCoverHeight +
+                MangaCard.textBlockHeightFor(MediaQuery.textScalerOf(context)),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: mangas.length,

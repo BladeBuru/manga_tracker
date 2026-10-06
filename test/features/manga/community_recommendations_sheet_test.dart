@@ -87,6 +87,10 @@ void main() {
             .hitTestable(),
         findsOneWidget,
       );
+      // La feuille prend la hauteur de son contenu : plus de grand vide.
+      final sheet = tester.getSize(find.byType(BottomSheet));
+      final screen = tester.getSize(find.byType(MaterialApp));
+      expect(sheet.height, lessThan(screen.height * 0.6));
     },
   );
 }

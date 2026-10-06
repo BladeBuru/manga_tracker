@@ -2663,4 +2663,92 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get readingGroupActionsCopyLinkSubtitle =>
       'Pour l\'ouvrir ailleurs ou le partager';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments à traiter',
+      one: '1 élément à traiter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count demandes d\'ami en attente',
+      one: '1 demande d\'ami en attente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nouvelles recommandations',
+      one: '1 nouvelle recommandation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pendingSyncTitle => 'Modifications en attente d\'envoi';
+
+  @override
+  String get syncNowAction => 'Synchroniser';
+
+  @override
+  String get communityRecoMuSuggested => 'Suggéré par MangaUpdates';
+
+  @override
+  String get biometricUnlockReason => 'Déverrouillez Manga Tracker';
+
+  @override
+  String get biometricLockedOut =>
+      'Trop de tentatives : déverrouillez d\'abord votre appareil avec son code, puis réessayez.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'Aucun verrouillage n\'est configuré sur cet appareil. Ajoutez un code, une empreinte ou un visage dans les réglages.';
+
+  @override
+  String get biometricUnlockError =>
+      'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.';
+
+  @override
+  String get homeGreeting => 'Bonjour,';
+
+  @override
+  String get downloadChaptersTitle => 'Télécharger des chapitres';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Téléchargement : chapitre $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Tout sélectionner';
+
+  @override
+  String get downloadDeselectAll => 'Tout désélectionner';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Sélectionner les non lus ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt =>
+      'Sélectionnez les chapitres à télécharger :';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Télécharger ($count)';
+  }
 }

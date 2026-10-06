@@ -14,6 +14,10 @@ class CommunityRecommendationDto {
   final int totalVotes;
   final bool recommendedByMe;
 
+  /// Suggestion calculée par MangaUpdates (sans votes) : listée pour que la
+  /// liste existe pour presque tous les titres, et recommandable.
+  final bool muSuggested;
+
   const CommunityRecommendationDto({
     required this.muId,
     required this.title,
@@ -25,6 +29,7 @@ class CommunityRecommendationDto {
     this.appVotes = 0,
     this.totalVotes = 0,
     this.recommendedByMe = false,
+    this.muSuggested = false,
   });
 
   factory CommunityRecommendationDto.fromJson(Map<String, dynamic> j) {
@@ -40,6 +45,7 @@ class CommunityRecommendationDto {
       appVotes: count(j['appVotes']),
       totalVotes: count(j['totalVotes']),
       recommendedByMe: j['recommendedByMe'] == true,
+      muSuggested: j['muSuggested'] == true,
     );
   }
 

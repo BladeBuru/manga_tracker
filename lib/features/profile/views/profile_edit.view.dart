@@ -15,6 +15,7 @@ import 'package:mangatracker/features/profile/widgets/profile_edit_rows.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_sections.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_widgets.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Page d'édition du profil — Design System V1 « Refined Classic ».
 ///
@@ -94,9 +95,10 @@ class _ProfileEditViewState extends State<ProfileEditView> {
     if (status.isGranted || status.isLimited) return true;
     if (status.isPermanentlyDenied) {
       if (!mounted) return false;
-      await showDialog<void>(
+      await showAppDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
+          scrollable: true,
           title:
               Text(AppLocalizations.of(ctx)!.profileEditPhotoPickFailed),
           content: const Text(
@@ -172,7 +174,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: _dateOfBirth ?? DateTime(2000),
       firstDate: DateTime(1900),
@@ -248,27 +250,39 @@ class _ProfileEditViewState extends State<ProfileEditView> {
           ),
         ),
         centerTitle: true,
-        leading: TextButton(
-          onPressed: () => context.pop(),
-          style: TextButton.styleFrom(
-            foregroundColor: scheme.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            minimumSize: const Size(64, 40),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.chevron_left, size: 22, color: scheme.primary),
-              Text(
-                l10n.profileEditBackLabel,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.primary,
+        // Largeur fixe (90) : le libellé est tronqué (« Prof… ») plutôt que
+        // de déborder (japonais, texte agrandi). Libellé complet en infobulle.
+        leading: Tooltip(
+          message: l10n.profileEditBackLabel,
+          // Le texte du bouton porte déjà le libellé complet (lecteur d'écran).
+          excludeFromSemantics: true,
+          child: TextButton(
+            onPressed: () => context.pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              minimumSize: const Size(64, 40),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.chevron_left, size: 22, color: scheme.primary),
+                Flexible(
+                  child: Text(
+                    l10n.profileEditBackLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: scheme.primary,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         leadingWidth: 90,

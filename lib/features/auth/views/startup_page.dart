@@ -9,6 +9,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -191,9 +192,10 @@ class _StartupPageState extends State<StartupPage> {
 
   /// Construit et affiche la boîte de dialogue de proposition de mise à jour.
   Future<void> _showUpdateDialog() {
-    return showDialog(
+    return showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: const Text('Mise à jour disponible'),
         content: const Text(
           "Une nouvelle version de l'application est disponible.",

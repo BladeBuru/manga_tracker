@@ -3,6 +3,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Widget réutilisable pour afficher un bouton de sélection de langue avec un drapeau
 class LanguageSelectorButton extends StatelessWidget {
@@ -73,8 +74,9 @@ class LanguageSelectorButton extends StatelessWidget {
     }
     final currentLocale = languageService.getCurrentLocale();
     final supportedLocales = languageService.getSupportedLocales();
+    if (!context.mounted) return;
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
@@ -93,86 +95,60 @@ class LanguageSelectorButton extends StatelessWidget {
               child: Container(
                 width: dialogWidth,
                 padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n?.selectLanguage ?? 'Sélectionner la langue',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...supportedLocales.map((locale) {
-                final isSelected = locale.languageCode == currentLocale.languageCode;
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
-                        : Colors.transparent,
-                    borderRadius: AppRadius.circularXl,
-                    border: Border.all(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.withValues(alpha: 0.2),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      await languageService.setLanguage(locale);
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
-                        onLanguageChanged?.call(locale);
-                      }
-                    },
-                    borderRadius: AppRadius.circularXl,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          _getFlagIcon(locale.languageCode),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              languageService.getLanguageName(locale, context),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                color: isSelected 
-                                    ? Theme.of(context).colorScheme.primary
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check_circle,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 20,
-                            ),
-                        ],
+                // Titre et « Annuler » fixes, la liste des 7 langues défile :
+                // sur petit écran avec texte agrandi, elle dépasse la hauteur.
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n?.selectLanguage ?? 'Sélectionner la langue',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  l10n?.cancel ?? 'Annuler',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final locale in supportedLocales)
+                              _LanguageOption(
+                                flag: _getFlagIcon(locale.languageCode),
+                                label: languageService.getLanguageName(
+                                  locale,
+                                  context,
+                                ),
+                                isSelected: locale.languageCode ==
+                                    currentLocale.languageCode,
+                                onTap: () async {
+                                  await languageService.setLanguage(locale);
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                    onLanguageChanged?.call(locale);
+                                  }
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        l10n?.cancel ?? 'Annuler',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
             );
           },
         ),
@@ -208,3 +184,61 @@ class LanguageSelectorButton extends StatelessWidget {
   }
 }
 
+/// Une langue du sélecteur : drapeau, nom, coche si c'est la langue active.
+class _LanguageOption extends StatelessWidget {
+  final Widget flag;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.flag,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? scheme.primary.withValues(alpha: 0.08)
+            : Colors.transparent,
+        borderRadius: AppRadius.circularXl,
+        border: Border.all(
+          color: isSelected ? scheme.primary : scheme.outlineVariant,
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.circularXl,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              flag,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected ? scheme.primary : null,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_circle, color: scheme.primary, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
