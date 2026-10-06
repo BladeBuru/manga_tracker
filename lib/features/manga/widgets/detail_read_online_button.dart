@@ -46,7 +46,7 @@ class DetailReadOnlineButton extends StatelessWidget {
         child: FilledButton.tonalIcon(
           onPressed: onAddLink,
           icon: const Icon(Icons.link_off, size: 18),
-          label: Text(l10n.addLink),
+          label: _FitLabel(l10n.addLink),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
             shape: shape,
@@ -84,7 +84,7 @@ class DetailReadOnlineButton extends StatelessWidget {
               icon: const Icon(Icons.open_in_new_rounded, size: 18),
               label: Padding(
                 padding: const EdgeInsets.only(right: 24),
-                child: Text(l10n.readOnline),
+                child: _FitLabel(l10n.readOnline),
               ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
@@ -114,4 +114,17 @@ class DetailReadOnlineButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Libellé d'un bouton de la barre d'actions : une seule ligne, réduit si la
+/// place manque (petit écran, texte agrandi) au lieu de passer sur 2-3 lignes.
+class _FitLabel extends StatelessWidget {
+  final String text;
+  const _FitLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Text(text, maxLines: 1, softWrap: false),
+  );
 }

@@ -875,7 +875,14 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
                 },
               )
               : ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                // Marge basse : le bouton flottant « Ajouter » ne recouvre pas
+                // la dernière carte (et son bouton de suppression).
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  0,
+                  horizontalPadding,
+                  88,
+                ),
                 itemCount: _selectors.length,
                 itemBuilder: (context, index) {
                   final selector = _selectors[index];

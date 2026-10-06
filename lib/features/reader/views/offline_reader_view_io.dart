@@ -18,6 +18,7 @@ import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
 import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
 import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
+import 'package:mangatracker/features/reader/widgets/reader_chapter_title.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
 
 /// Vue pour lire un chapitre téléchargé hors ligne
@@ -321,8 +322,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
           body: ReaderAutoHideBar(
             visible: _barVisible,
             appBar: AppBar(
-              title: Text(
-                  '${widget.mangaTitle} - ${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} ${widget.chapterNumber}'),
+              title: ReaderChapterTitle(
+                mangaTitle: widget.mangaTitle,
+                chapterNumber: widget.chapterNumber,
+              ),
             actions: [
               if (previousChapter != null)
                 IconButton(
@@ -441,9 +444,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
     if (_chapter!.imagePaths.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('${widget.mangaTitle} - '
-              '${AppLocalizations.of(context)?.chapter ?? 'Chapitre'} '
-              '${widget.chapterNumber}'),
+          title: ReaderChapterTitle(
+            mangaTitle: widget.mangaTitle,
+            chapterNumber: widget.chapterNumber,
+          ),
         ),
         body: PageView.builder(
           itemCount: _chapter!.imagePaths.length,

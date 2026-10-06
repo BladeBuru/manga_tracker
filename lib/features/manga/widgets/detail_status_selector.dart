@@ -114,13 +114,13 @@ class _StatusChip extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     final scheme = Theme.of(context).colorScheme;
     final isDark = brightness == Brightness.dark;
-    final bg = selected
-        ? AppColors.dsRedSoft(brightness)
-        : (isDark ? AppColors.dsSurfaceDark : Colors.white);
+    final bg =
+        selected
+            ? AppColors.dsRedSoft(brightness)
+            : (isDark ? AppColors.dsSurfaceDark : Colors.white);
     final borderColor =
         selected ? scheme.primary : AppColors.dsBorder(brightness);
-    final textColor =
-        selected ? scheme.primary : AppColors.dsText2(brightness);
+    final textColor = selected ? scheme.primary : AppColors.dsText2(brightness);
 
     return GestureDetector(
       onTap: onTap,
@@ -166,21 +166,16 @@ class DetailAddToLibraryButton extends StatelessWidget {
   final int muId;
   final VoidCallback? onAdded;
 
-  const DetailAddToLibraryButton({
-    super.key,
-    required this.muId,
-    this.onAdded,
-  });
+  const DetailAddToLibraryButton({super.key, required this.muId, this.onAdded});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    // Marge verticale seule : la barre d'actions qui l'accueille porte déjà
+    // la marge horizontale (elle était comptée deux fois).
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.m,
-        vertical: AppSpacing.s,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
@@ -199,7 +194,10 @@ class DetailAddToLibraryButton extends StatelessWidget {
             onAdded?.call();
           },
           icon: const Icon(Icons.bookmark_add_outlined, size: 18),
-          label: Text(l10n.addToLibrary),
+          label: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(l10n.addToLibrary, maxLines: 1, softWrap: false),
+          ),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
             shape: RoundedRectangleBorder(

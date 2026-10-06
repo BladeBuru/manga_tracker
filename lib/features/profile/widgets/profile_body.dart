@@ -94,8 +94,10 @@ class ProfileBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final languageService = getIt<LanguageService>();
     final effectiveLocale = currentLocale ?? languageService.getCurrentLocale();
-    final languageName =
-        languageService.getLanguageName(effectiveLocale, context);
+    final languageName = languageService.getLanguageName(
+      effectiveLocale,
+      context,
+    );
     final themeService = getIt<ThemeService>();
     final effectiveThemeMode =
         currentThemeMode ?? themeService.getCurrentThemeMode();
@@ -103,13 +105,18 @@ class ProfileBody extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: ProfileHeader(
-            username: username,
-            handle: handle,
-            email: email,
-            avatarUrl: avatarUrl,
-            onAvatarTap: onAvatarTap,
+        // Onglet sans barre d'application : l'en-tête commence sous la barre
+        // d'état (et l'encoche), pas dessous.
+        SliverSafeArea(
+          bottom: false,
+          sliver: SliverToBoxAdapter(
+            child: ProfileHeader(
+              username: username,
+              handle: handle,
+              email: email,
+              avatarUrl: avatarUrl,
+              onAvatarTap: onAvatarTap,
+            ),
           ),
         ),
         const SliverPadding(

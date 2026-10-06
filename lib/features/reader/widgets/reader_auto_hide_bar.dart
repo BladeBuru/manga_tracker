@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// Lecteur plein écran : la barre du haut glisse PAR-DESSUS la page et se
-/// retire quand on lit (cf. `ReaderBarVisibility`).
+/// Lecteur plein écran : la barre du haut se retire quand on lit (cf.
+/// `ReaderBarVisibility`) et revient quand on remonte.
 ///
-/// Superposée plutôt que redimensionnant la page : changer la hauteur de la
-/// page web à chaque bascule ferait sauter le contenu de toute la hauteur de
-/// la barre. Cachée, elle n'intercepte ni les touchers ni le lecteur
-/// d'écran.
+/// Visible, elle **réserve sa place** au-dessus de la page : superposée, elle
+/// masquait en permanence le haut de chaque chapitre (elle est forcée en haut
+/// de page) ainsi que le bandeau de vérification de sécurité. Cachée, la page
+/// récupère toute la hauteur, et la barre n'intercepte ni les touchers ni le
+/// lecteur d'écran.
 class ReaderAutoHideBar extends StatelessWidget {
   final bool visible;
   final PreferredSizeWidget appBar;
@@ -23,36 +24,37 @@ class ReaderAutoHideBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Sous la barre d'état, jamais dessous ; la page occupe le reste.
-        Positioned.fill(child: SafeArea(bottom: false, child: child)),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: IgnorePointer(
-            ignoring: !visible,
-            child: ExcludeSemantics(
-              excluding: !visible,
-              child: AnimatedSlide(
-                offset: visible ? Offset.zero : const Offset(0, -1),
-                duration: _duration,
-                curve: Curves.easeOutCubic,
-                child: AnimatedOpacity(
-                  opacity: visible ? 1 : 0,
-                  duration: _duration,
+    // Sous la barre d'état, jamais dessous.
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          ClipRect(
+            child: AnimatedAlign(
+              alignment: Alignment.bottomCenter,
+              heightFactor: visible ? 1 : 0,
+              duration: _duration,
+              curve: Curves.easeOutCubic,
+              child: IgnorePointer(
+                ignoring: !visible,
+                child: ExcludeSemantics(
+                  excluding: !visible,
                   child: Material(
                     elevation: 2,
                     color: Theme.of(context).colorScheme.surface,
-                    child: appBar,
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: appBar,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+          Expanded(child: child),
+        ],
+      ),
     );
   }
 }

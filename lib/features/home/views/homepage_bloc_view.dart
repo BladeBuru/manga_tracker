@@ -55,7 +55,10 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
     _homePageBloc.add(const RefreshHomePage());
     final next = _sectionsBloc.stream.first;
     _sectionsBloc.add(const RefreshHomeSections());
-    await next.timeout(const Duration(seconds: 8), onTimeout: () => _sectionsBloc.state);
+    await next.timeout(
+      const Duration(seconds: 8),
+      onTimeout: () => _sectionsBloc.state,
+    );
   }
 
   @override
@@ -66,14 +69,16 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
         builder: (context, sectionsState) {
           return BlocBuilder<HomePageBloc, HomePageState>(
             bloc: _homePageBloc,
-            builder: (context, homeState) => LayoutBuilder(
-              builder: (context, constraints) => _buildBody(
-                context,
-                metrics: HomeLayoutMetrics.of(constraints.maxWidth),
-                sectionsState: sectionsState,
-                homeState: homeState,
-              ),
-            ),
+            builder:
+                (context, homeState) => LayoutBuilder(
+                  builder:
+                      (context, constraints) => _buildBody(
+                        context,
+                        metrics: HomeLayoutMetrics.of(constraints.maxWidth),
+                        sectionsState: sectionsState,
+                        homeState: homeState,
+                      ),
+                ),
           );
         },
       ),
@@ -107,8 +112,15 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(hPad, AppSpacing.jumbo - AppSpacing.s,
-                  hPad, AppSpacing.l),
+              // Sous la barre d'état (encoche comprise), puis l'espacement
+              // habituel : un retrait fixe de 40 px passait sous les barres
+              // d'état hautes.
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                MediaQuery.paddingOf(context).top + AppSpacing.m,
+                hPad,
+                AppSpacing.l,
+              ),
               sliver: SliverToBoxAdapter(
                 child: HomeHeaderBlock(
                   username: user?.greetingName,
@@ -118,7 +130,9 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
                   isOffline: sectionsState.isOffline || homeOffline,
                   requiresReauth: sectionsState.requiresReauth || homeReauth,
                   pendingActions:
-                      homeState is HomePageLoaded ? homeState.pendingActions : 0,
+                      homeState is HomePageLoaded
+                          ? homeState.pendingActions
+                          : 0,
                   onReconnect: () => context.push('/login'),
                 ),
               ),
@@ -127,8 +141,8 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
               child: HomeRecommendationsSection(
                 state: homeState,
                 metrics: metrics,
-                onDismissed: (muId) =>
-                    _homePageBloc.add(DismissRecommendation(muId)),
+                onDismissed:
+                    (muId) => _homePageBloc.add(DismissRecommendation(muId)),
                 // Annulation depuis le SnackBar : le rejet a ete supprime cote
                 // serveur ET le cache invalide → on recharge pour que le titre
                 // retrouve sa place de score.
