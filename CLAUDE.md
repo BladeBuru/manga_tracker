@@ -316,7 +316,9 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   sur geste explicite. Verrouillé par `reader_invariants_test.dart`.
 - 🔒 **Barre du haut auto-masquée = purement visuelle** (`ReaderBarVisibility`,
   pure) : le défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
-  `reader_invariants_test.dart`.
+  `reader_invariants_test.dart`. Visible, elle **réserve sa place** au-dessus
+  de la page (`ReaderAutoHideBar`) : ❌ jamais en superposition — elle masquait
+  le haut de chaque chapitre et le bandeau de vérification.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.
@@ -337,6 +339,13 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   jetons depuis un `catch` générique.
 - ✅ Une traduction à paramètre s'**appelle** : `l10n.pendingActions(n)`
   (fil de détente `test/l10n/l10n_calls_invariant_test.dart`).
+- ✅ **Petits écrans** (cible : 320 dp, texte ×1,3, 7 langues) : dans une `Row`,
+  tout texte est `Expanded`/`Flexible` + `maxLines`/`ellipsis` ; un bouton
+  large passe **sous** le texte en dessous d'une largeur seuil
+  (`LayoutBuilder`) ; `AlertDialog(scrollable: true)` dès que le contenu
+  n'est pas une simple ligne ; hauteurs fixes de texte × `textScaler`.
+  Onglets sans `AppBar` : `SliverSafeArea` / `MediaQuery.paddingOf(context).top`.
+  Tests : `small_screen_components_test.dart` et voisins.
 
 ## 🌐 Cross-platform non-négociable (évolution iOS/Web)
 

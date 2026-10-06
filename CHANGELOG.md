@@ -12,7 +12,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 - **Vous n'êtes plus déconnecté en lisant sur deux appareils.** Le renouvellement de session ne se fait plus qu'une fois à la fois, une coupure réseau au réveil n'est plus prise pour un refus, et le serveur tolère un renouvellement interrompu.
 - **Le bandeau « Mode hors ligne » est lisible et juste.** Plus de texte technique ni de libellé coupé lettre par lettre ; vos modifications faites hors ligne sont envoyées d'elles-mêmes, et un bandeau « Synchroniser » apparaît si certaines attendent encore.
 - **Une seule fenêtre à la fois** : deux appuis rapides n'ouvrent plus deux fois la même fenêtre.
-- **Plus rien de caché sous les boutons du téléphone** (barre de navigation, encoche).
+- **Plus rien de caché sous les boutons du téléphone ni sous l'encoche**, et plus de texte qui déborde ou se coupe lettre par lettre sur les petits écrans (passe complète à 320 dp avec texte agrandi, dans les 7 langues).
+- **Le lecteur ne cache plus le haut des pages** : la barre du haut prend sa place au lieu de recouvrir la page ; le numéro de chapitre reste visible dans le lecteur hors ligne.
+- **Fiche manga avec le clavier ouvert** : l'image d'en-tête s'efface pour laisser voir le commentaire en cours de saisie.
 - **Les pastilles de notification** apparaissent sur « Mon compte » et sur la ligne concernée ; les toucher vous y amène.
 - **« Si vous avez aimé ce titre » s'affiche pour presque toutes les œuvres**, avec les suggestions de MangaUpdates.
 
@@ -28,6 +30,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 - **File hors ligne** — `OfflineQueuePolicy` (pure) : une action par titre et par nature, ajout/retrait annulés, abandon des refus définitifs / trop anciennes / trop ratées ; verrou d'écriture ; `SyncService` rejoue au démarrage, au retour au premier plan, à la reconnexion, toutes les 2 min et en tirant pour rafraîchir, via `OfflineReplayService` (jamais de remise en file). Seule une panne réseau met en file, et c'est un succès différé.
 - **Fenêtres** — `app_modals.dart` : `showAppDialog` / `showAppBottomSheet` / `showAppDatePicker` ; fil de détente contre les appels directs.
 - **Barres système** — `SystemBarsInset` dans `MaterialApp.builder` (Android 15 bord à bord).
+- **Petits écrans** — audit + balayage des tests à 320 dp / texte ×1,3 : `AlertDialog(scrollable: true)`, boutons sous le texte en dessous d'un seuil, libellés `Flexible`/`FittedBox`, hauteurs de texte × `textScaler`, `SliverSafeArea` sur les onglets sans `AppBar`, `DetailHeroLayout` (en-tête de fiche borné à 42 % de l'écran, masqué clavier ouvert). `ReaderAutoHideBar` réserve sa place ; `ReaderBarVisibility.settle` ignore le recul de page provoqué par la bascule.
 - **Thème** — couleurs « conteneur » M3 calculées depuis le rouge de la marque (elles retombaient sur le rouge plein).
 - **Pastilles** — `NotificationCountsCubit` (compteurs par source), `?tab=pending` sur `/friends`, routage des notifications (`NotificationPayload`).
 
