@@ -6,7 +6,7 @@ L'application fonctionne en **offline-first** :
 1. Tentative de chargement depuis l'API
 2. En cas d'échec **classé comme repli légitime** → cache (voir ci-dessous)
 3. Actions utilisateur mises en file d'attente si offline
-4. Sync automatique à la reconnexion
+4. File rejouée automatiquement (démarrage, premier plan, reconnexion, toutes les 2 min, tirer pour rafraîchir)
 
 ---
 
@@ -82,7 +82,8 @@ Toute mutation exige une session valide :
 
 | Situation | Comportement |
 |-----------|--------------|
-| Hors ligne / réseau KO | mise en **file d'attente** (`offline_queue`), rejouée par `SyncService` |
+| Hors ligne / réseau KO (`FailureMode.network`, `sessionExpired`) | mise en **file d'attente** (`offline_queue`), rejouée par `SyncService` ; le service renvoie `true` (succès différé) |
+| Autre échec (4xx métier, 5xx…) | **pas** de mise en file : l'erreur remonte |
 | Session **rejetée** (401/403) | **refusée**, l'exception remonte — *pas* de mise en file |
 | En ligne, session valide | appliquée normalement |
 
@@ -229,14 +230,36 @@ try {
 
 ---
 
+### `OfflineQueuePolicy` (pure, depuis 2026-10)
+
+Toutes les règles de la file, testées seules (`test/core/services/offline_queue_policy_test.dart`) :
+
+- **Fusion** : une seule action par titre et par nature (progression, statut,
+  lien, appartenance). La plus récente gagne et passe en fin de file.
+  Ajout puis retrait du même titre → les deux s'annulent ; un retrait efface
+  les autres actions du titre.
+- **Abandon** : ≥ 8 échecs, plus de 30 jours, ou action illisible.
+- **Verdict d'un rejeu** (`decide(status)`) : 2xx → fait ; 401/403 → arrêt,
+  reconnexion requise ; 408/429/5xx → réessayer plus tard ; autre 4xx → abandon
+  (refus définitif, le rejouer ne servirait à rien).
+
+Toute écriture de `offline_queue` passe par
+`OfflineCacheService.updateOfflineQueue(change)` (verrou : deux écritures
+simultanées ne s'écrasent plus).
+
 ### `SyncService`
 
-Sync automatique à la reconnexion.
+Rejoue la file via `OfflineReplayService` (appels HTTP directs, **jamais** de
+remise en file). Déclencheurs :
 
-- Écoute `ConnectivityBloc` pour détecter la reconnexion
-- Traite la queue d'actions offline une par une
-- En cas d'échec : action reste dans la queue (retry ultérieur)
-- Émet des événements pour mettre à jour les BLoCs
+- démarrage (après 8 s), retour au premier plan, reconnexion ;
+- toutes les 2 min tant que la file n'est pas vide ;
+- `syncNow()` : tirer pour rafraîchir la bibliothèque, bouton « Synchroniser »
+  du `PendingSyncBanner`, juste après une mise en file.
+
+Une seule passe à la fois ; 20 s maximum par action ; suppression **par id**
+(une action ajoutée pendant la passe est conservée). Émet `synced` →
+`LibraryBloc` se recharge.
 
 ---
 
@@ -245,7 +268,7 @@ Sync automatique à la reconnexion.
 Détection de la connectivité via `connectivity_plus`.
 
 **Usage** :
-- `SyncService`, pour déclencher la sync à la reconnexion ;
+- `SyncService`, pour déclencher la sync à la reconnexion (parmi d'autres déclencheurs) ;
 - pour afficher le bandeau **immédiatement** quand l'appareil se sait déjà
   déconnecté, avant même la première requête.
 

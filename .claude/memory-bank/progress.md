@@ -23,6 +23,15 @@
 
 ## ✅ Complété
 
+### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
+
+- Sessions multi-appareils fiabilisées (client `SessionRefresher` + API rotation tolérante, gardes 401).
+- File hors ligne : fusion, abandon des refus, rejeux multiples, bandeaux refaits (`OfflineBanner`, `PendingSyncBanner`).
+- Fenêtres uniques (`app_modals.dart`), `SystemBarsInset`, conteneurs M3 du thème.
+- Pastilles par source + défilement vers la section + routage des notifications.
+- « Si vous avez aimé » : suggestions MangaUpdates ; feuille à la taille du contenu.
+- Lecteur : barre auto-masquée (en ligne + hors ligne), portrait inversé ; biométrie avec secours code.
+
 ### 🗣️ Retours utilisateurs de septembre — 6 correctifs et 5 nouveautés (2026-09-30)
 
 Branche `claude/brave-pasteur-gszxre` (Flutter + API, **déployer l'API d'abord**).

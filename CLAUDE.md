@@ -221,7 +221,12 @@ borderRadius: BorderRadius.circular(12)
   `HttpService`, refresh rejeté au boot) appelle `clearSessionTokens()`, qui
   **conserve** le cache — y purger annulerait toute la règle ci-dessus.
 - Fallback API → cache via `OfflineCacheService` / `CacheHelperService`
-- Queue actions offline → sync automatique à la reconnexion via `SyncService`
+- Queue actions offline → rejouée par `SyncService` au démarrage, au retour au
+  premier plan, à la reconnexion, toutes les 2 min tant qu'elle n'est pas vide,
+  et en tirant pour rafraîchir. Règles dans `OfflineQueuePolicy` (**pure**) :
+  une action par titre et par nature, refus définitifs abandonnés. Seule une
+  panne **réseau** met en file, et c'est un succès différé (`true`). ❌ Jamais
+  d'écriture directe de `offline_queue` : `OfflineCacheService.updateOfflineQueue`.
 - État BLoC : toujours inclure `isOffline` (et `pendingActions` si applicable).
   `isOffline` = « ces données viennent du cache ». Le **ré-évaluer** à chaque
   échec, ne jamais l'hériter de l'état précédent. Les vues doivent le lire aussi
@@ -309,11 +314,29 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   le mode téléchargement (`_readOnlyMode`), il ne détecte, n'enregistre, ne
   mesure et ne redirige rien. Seule écriture : « Ceci est le nouveau lien »,
   sur geste explicite. Verrouillé par `reader_invariants_test.dart`.
+- 🔒 **Barre du haut auto-masquée = purement visuelle** (`ReaderBarVisibility`,
+  pure) : le défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
+  `reader_invariants_test.dart`.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.
 
 ---
+
+## 🪟 Fenêtres, barres système, session (depuis 2026-10)
+
+- ✅ Toute fenêtre passe par `core/router/app_modals.dart` (`showAppDialog`,
+  `showAppBottomSheet`, `showAppDatePicker`) : un double appui n'empile pas
+  deux fenêtres. ❌ Jamais `showDialog` / `showModalBottomSheet` en direct
+  (fil de détente `test/core/router/app_modals_test.dart`).
+- ✅ `SystemBarsInset` (dans `MaterialApp.builder`) garde tout au-dessus de la
+  barre de navigation du système (Android 15 bord à bord) : ne pas ajouter de
+  marge basse « système » à la main.
+- 🔒 Session : un seul échange de refresh token à la fois (`SessionRefresher`),
+  et seul un 401/403 **JSON de l'API** est un refus. ❌ Jamais d'effacement des
+  jetons depuis un `catch` générique.
+- ✅ Une traduction à paramètre s'**appelle** : `l10n.pendingActions(n)`
+  (fil de détente `test/l10n/l10n_calls_invariant_test.dart`).
 
 ## 🌐 Cross-platform non-négociable (évolution iOS/Web)
 

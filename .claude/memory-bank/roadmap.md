@@ -155,6 +155,8 @@
   - ⏳ Regrouper les chapitres par tome ou arc
 - ✅ Téléchargement de chapitre (Android/iOS uniquement)
 - ✅ Bloqueur de pub dans le webview
+- ✅ Barre du haut auto-masquée au défilement *(2026-10, en ligne + hors ligne)*
+- ✅ Portrait inversé autorisé (lecture en charge) *(2026-10)*
 
 ### Statistiques
 
@@ -323,6 +325,8 @@
 - ✅ Pagination scroll infini *(livré v0.12.0)*
 
 ### ✅ i18n complète 7 langues (fr, en, de, ja, ko, pt, es)
+### ✅ Petits écrans : rien sous la barre de navigation système (`SystemBarsInset`), fenêtres uniques (`app_modals.dart`) *(2026-10)*
+### ✅ Pastilles de notification par section + défilement vers la section *(2026-10)*
 
 ---
 

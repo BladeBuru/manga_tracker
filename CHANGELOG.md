@@ -5,6 +5,34 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — retours utilisateurs d'octobre
+
+### 🐛 Corrections
+
+- **Vous n'êtes plus déconnecté en lisant sur deux appareils.** Le renouvellement de session ne se fait plus qu'une fois à la fois, une coupure réseau au réveil n'est plus prise pour un refus, et le serveur tolère un renouvellement interrompu.
+- **Le bandeau « Mode hors ligne » est lisible et juste.** Plus de texte technique ni de libellé coupé lettre par lettre ; vos modifications faites hors ligne sont envoyées d'elles-mêmes, et un bandeau « Synchroniser » apparaît si certaines attendent encore.
+- **Une seule fenêtre à la fois** : deux appuis rapides n'ouvrent plus deux fois la même fenêtre.
+- **Plus rien de caché sous les boutons du téléphone** (barre de navigation, encoche).
+- **Les pastilles de notification** apparaissent sur « Mon compte » et sur la ligne concernée ; les toucher vous y amène.
+- **« Si vous avez aimé ce titre » s'affiche pour presque toutes les œuvres**, avec les suggestions de MangaUpdates.
+
+### ✨ Nouveautés
+
+- **Lecture plein écran** : la barre du haut se retire quand vous descendez et revient quand vous remontez.
+- **Lecture appareil retourné** : le portrait inversé est possible (selon l'appareil).
+- **Déverrouillage avec le code de l'appareil** quand l'empreinte ou le visage ne sont pas disponibles (notamment sur les appareils sans services Google).
+
+### Notes d'implémentation
+
+- **Sessions** — `SessionRefresher` : échange mémorisé synchroniquement (le verrou était posé après une lecture asynchrone → deux échanges du même jeton, le second effaçait la session) ; seul un 401/403 JSON de l'API est un refus ; refresh token écrit avant l'access token ; expiration jugée sur la durée de vie depuis la réception. API : rotation tolérante (rejeu 2 min, verrou de ligne), gardes en 401. En ligne sans session : invitation à se reconnecter (et non « hors ligne »).
+- **File hors ligne** — `OfflineQueuePolicy` (pure) : une action par titre et par nature, ajout/retrait annulés, abandon des refus définitifs / trop anciennes / trop ratées ; verrou d'écriture ; `SyncService` rejoue au démarrage, au retour au premier plan, à la reconnexion, toutes les 2 min et en tirant pour rafraîchir, via `OfflineReplayService` (jamais de remise en file). Seule une panne réseau met en file, et c'est un succès différé.
+- **Fenêtres** — `app_modals.dart` : `showAppDialog` / `showAppBottomSheet` / `showAppDatePicker` ; fil de détente contre les appels directs.
+- **Barres système** — `SystemBarsInset` dans `MaterialApp.builder` (Android 15 bord à bord).
+- **Thème** — couleurs « conteneur » M3 calculées depuis le rouge de la marque (elles retombaient sur le rouge plein).
+- **Pastilles** — `NotificationCountsCubit` (compteurs par source), `?tab=pending` sur `/friends`, routage des notifications (`NotificationPayload`).
+
+---
+
 ## [Unreleased] — claude/brave-pasteur-gszxre (retours utilisateurs de septembre)
 
 ### 🐛 Corrections
