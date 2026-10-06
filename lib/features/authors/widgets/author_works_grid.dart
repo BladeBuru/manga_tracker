@@ -38,7 +38,10 @@ class AuthorWorksGrid extends StatelessWidget {
                 crossAxisCount: metrics.gridColumns,
                 crossAxisSpacing: HomeLayoutMetrics.cardGap,
                 mainAxisSpacing: AppSpacing.m,
-                childAspectRatio: metrics.gridAspectRatio(contentWidth),
+                childAspectRatio: metrics.gridAspectRatio(
+                  contentWidth,
+                  textScaler: MediaQuery.textScalerOf(context),
+                ),
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
                 final manga = works[index];

@@ -17,6 +17,15 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// - Si [recommendations] est `null` ou vide → empty state minimaliste.
 /// - Sinon → ListView horizontale de [MangaCard].
 class DetailRecommendationsSection extends StatelessWidget {
+  /// Largeur d'une carte du carrousel (cover [MangaCard.defaultCoverHeight]).
+  static const double _cardWidth = 120;
+
+  /// Hauteur du carrousel : cover + bloc texte qui suit la taille de texte
+  /// (une hauteur fixe de 220 faisait chevaucher titre et annee a 130 %).
+  static double carouselHeight(BuildContext context) =>
+      MangaCard.defaultCoverHeight +
+      MangaCard.textBlockHeightFor(MediaQuery.textScalerOf(context));
+
   final List<MangaRecommendationView>? recommendations;
   final bool isLoading;
 
@@ -35,11 +44,10 @@ class DetailRecommendationsSection extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     final l10n = AppLocalizations.of(context)!;
 
-    final hasItems = !isLoading &&
-        recommendations != null &&
-        recommendations!.isNotEmpty;
-    final isEmpty = !isLoading &&
-        (recommendations == null || recommendations!.isEmpty);
+    final hasItems =
+        !isLoading && recommendations != null && recommendations!.isNotEmpty;
+    final isEmpty =
+        !isLoading && (recommendations == null || recommendations!.isEmpty);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -69,7 +77,7 @@ class DetailRecommendationsSection extends StatelessWidget {
             _EmptyState(message: l10n.noRecommendationsAvailable)
           else if (hasItems)
             SizedBox(
-              height: 220,
+              height: carouselHeight(context),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: recommendations!.length,
@@ -77,7 +85,7 @@ class DetailRecommendationsSection extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final manga = recommendations![index];
                   return SizedBox(
-                    width: 120,
+                    width: _cardWidth,
                     child: MangaCard(
                       muId: manga.muId.toString(),
                       mangaTitle: manga.title,
@@ -104,27 +112,19 @@ class _EmptyState extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 18,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: brightness == Brightness.dark
-            ? AppColors.dsSurfaceDark
-            : Colors.white,
+        color:
+            brightness == Brightness.dark
+                ? AppColors.dsSurfaceDark
+                : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dsHairline(brightness),
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.dsHairline(brightness), width: 1),
       ),
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 13,
-          color: AppColors.dsText2(brightness),
-        ),
+        style: TextStyle(fontSize: 13, color: AppColors.dsText2(brightness)),
       ),
     );
   }
@@ -137,14 +137,14 @@ class _RecommendationsSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     return SizedBox(
-      height: 220,
+      height: DetailRecommendationsSection.carouselHeight(context),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: 4,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (_, __) {
           return Container(
-            width: 120,
+            width: DetailRecommendationsSection._cardWidth,
             decoration: BoxDecoration(
               color: AppColors.dsBgInset(brightness),
               borderRadius: BorderRadius.circular(12),

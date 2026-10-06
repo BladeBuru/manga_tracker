@@ -38,14 +38,16 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   @override
   void initState() {
     super.initState();
-    _libraryFuture =
-        getIt<FriendsService>().getFriendLibrary(widget.friendUserId);
+    _libraryFuture = getIt<FriendsService>().getFriendLibrary(
+      widget.friendUserId,
+    );
   }
 
   void _retry() {
     setState(() {
-      _libraryFuture =
-          getIt<FriendsService>().getFriendLibrary(widget.friendUserId);
+      _libraryFuture = getIt<FriendsService>().getFriendLibrary(
+        widget.friendUserId,
+      );
     });
   }
 
@@ -63,7 +65,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
             }
             if (snapshot.hasError) {
               return AppErrorState(
-                message: l10n?.friendLibraryError ??
+                message:
+                    l10n?.friendLibraryError ??
                     'Impossible de charger la bibliothèque de cet ami.',
                 onRetry: _retry,
               );
@@ -98,89 +101,122 @@ class _FriendLibraryContent extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final bp = AppBreakpoints.of(constraints.maxWidth);
-      return CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Row(
-                children: [
-                  AppAvatar(
-                    url: avatarUrl,
-                    fallback: friendName,
-                    size: AppAvatarSize.large,
-                  ),
-                  const SizedBox(width: AppSpacing.m),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          friendName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          l10n?.friendLibraryCount(library.length) ??
-                              '${library.length} mangas dans sa bibliothèque',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: scheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                        ),
-                      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bp = AppBreakpoints.of(constraints.maxWidth);
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.m),
+                child: Row(
+                  children: [
+                    AppAvatar(
+                      url: avatarUrl,
+                      fallback: friendName,
+                      size: AppAvatarSize.large,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: AppSpacing.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            friendName,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            l10n?.friendLibraryCount(library.length) ??
+                                '${library.length} mangas dans sa bibliothèque',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            if (library.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppEmptyState(
+                  icon: Icons.collections_bookmark_outlined,
+                  title:
+                      l10n?.friendLibraryEmpty ??
+                      "Sa bibliothèque est vide pour l'instant.",
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(AppSpacing.m),
+                sliver: _FriendLibraryGrid(
+                  library: library,
+                  columns: bp.gridColumns,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Grille de la bibliotheque de l'ami : cover 3:4 derivee de la largeur de
+/// colonne et cellule calee sur la carte (bloc texte qui suit la taille de
+/// texte). L'ancien ratio fixe (0.62) donnait, sur un ecran de 320, une
+/// cellule plus courte que la cover de 160 : titres sur la rangee suivante.
+class _FriendLibraryGrid extends StatelessWidget {
+  static const double _crossSpacing = 10;
+
+  final List<MangaQuickViewDto> library;
+  final int columns;
+
+  const _FriendLibraryGrid({required this.library, required this.columns});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        final coverHeight = MangaCard.coverHeightFor(
+          MangaCard.gridCellWidth(
+            constraints.crossAxisExtent,
+            columns: columns,
+            spacing: _crossSpacing,
           ),
-          if (library.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: AppEmptyState(
-                icon: Icons.collections_bookmark_outlined,
-                title: l10n?.friendLibraryEmpty ??
-                    "Sa bibliothèque est vide pour l'instant.",
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: bp.gridColumns,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 0.62,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final manga = library[index];
-                    return MangaCard(
-                      muId: manga.muId.toString(),
-                      mangaTitle: manga.title,
-                      mangaAuthor: manga.year,
-                      mediumImgPath: manga.mediumCoverUrl,
-                      rating: manga.rating != 'N/A' && manga.rating.isNotEmpty
-                          ? manga.rating
-                          : null,
-                    );
-                  },
-                  childCount: library.length,
-                ),
-              ),
-            ),
-        ],
-      );
-    });
+        );
+        return SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: _crossSpacing,
+            mainAxisSpacing: 14,
+            mainAxisExtent:
+                coverHeight +
+                MangaCard.textBlockHeightFor(MediaQuery.textScalerOf(context)),
+          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final manga = library[index];
+            return MangaCard(
+              muId: manga.muId.toString(),
+              mangaTitle: manga.title,
+              mangaAuthor: manga.year,
+              mediumImgPath: manga.mediumCoverUrl,
+              rating:
+                  manga.rating != 'N/A' && manga.rating.isNotEmpty
+                      ? manga.rating
+                      : null,
+              coverHeight: coverHeight,
+            );
+          }, childCount: library.length),
+        );
+      },
+    );
   }
 }

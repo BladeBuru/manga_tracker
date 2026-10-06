@@ -6,6 +6,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/recommendation.service.dart';
+import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismiss_recommendation_tip.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
@@ -65,10 +66,10 @@ class _PaginatedRecommendationsViewState
     setState(() => _loading = true);
     final page = await getIt<RecommendationService>()
         .getPersonalizedRecommendations(
-      limit: _pageSize,
-      offset: _offset,
-      forceRefresh: forceRefresh,
-    );
+          limit: _pageSize,
+          offset: _offset,
+          forceRefresh: forceRefresh,
+        );
     if (!mounted) return;
     setState(() {
       _items.addAll(page);
@@ -160,11 +161,10 @@ class _PaginatedRecommendationsViewState
                     'Pas encore de recommandations pour vous.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ),
         ],
@@ -195,28 +195,41 @@ class _PaginatedRecommendationsViewState
     );
   }
 
-  SliverGridDelegate _gridDelegate(int cols) =>
-      SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: cols,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 14,
-        // 3 cols mobile : aspectRatio 0.62 = card équilibrée (cover ~0.7 +
-        // titre 2 lignes + meta row). Avant 0.55 sur 2 cols → cards trop
-        // hautes / larges au scroll.
-        childAspectRatio: 0.62,
-      );
+  static const double _gridCrossSpacing = 10;
 
+  /// Cellule calee sur la carte : cover 3:4 derivee de la largeur de
+  /// colonne + bloc texte qui suit la taille de texte. L'ancien ratio fixe
+  /// (0.62) donnait, sur un ecran de 320, une cellule plus courte que la
+  /// cover de 160 : les titres debordaient sur la rangee suivante.
   Widget _buildGridSliver(int cols) {
-    return SliverGrid(
-      gridDelegate: _gridDelegate(cols),
-      delegate: SliverChildBuilderDelegate(
-        _buildGridItem,
-        childCount: _items.length + (_hasMore ? 1 : 0),
-      ),
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        final coverHeight = MangaCard.coverHeightFor(
+          MangaCard.gridCellWidth(
+            constraints.crossAxisExtent,
+            columns: cols,
+            spacing: _gridCrossSpacing,
+          ),
+        );
+        return SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: _gridCrossSpacing,
+            mainAxisSpacing: 14,
+            mainAxisExtent:
+                coverHeight +
+                MangaCard.textBlockHeightFor(MediaQuery.textScalerOf(context)),
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => _buildGridItem(context, index, coverHeight),
+            childCount: _items.length + (_hasMore ? 1 : 0),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildGridItem(BuildContext context, int index) {
+  Widget _buildGridItem(BuildContext context, int index, double coverHeight) {
     if (index >= _items.length) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
@@ -229,6 +242,7 @@ class _PaginatedRecommendationsViewState
       // Point d'entree explicite : seule cette page l'affiche (l'accueil et
       // la page par genre gardent leurs cartes nues).
       showDismissAction: true,
+      coverHeight: coverHeight,
       onDismissed: _removeDismissed,
       // Annulation depuis le SnackBar : on recharge depuis le serveur plutot
       // que de reinserer a l'aveugle — le titre doit retrouver sa position
@@ -271,8 +285,11 @@ class _ColdStartBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.auto_awesome_outlined,
-              size: 28, color: scheme.onPrimaryContainer),
+          Icon(
+            Icons.auto_awesome_outlined,
+            size: 28,
+            color: scheme.onPrimaryContainer,
+          ),
           const SizedBox(width: AppSpacing.m),
           Expanded(
             child: Column(
@@ -282,9 +299,9 @@ class _ColdStartBanner extends StatelessWidget {
                   l10n?.recommendationsColdStartTitle ??
                       'Découvre les mangas populaires',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onPrimaryContainer,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onPrimaryContainer,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -292,9 +309,8 @@ class _ColdStartBanner extends StatelessWidget {
                       'Ajoute tes premières lectures pour recevoir des '
                           'recommandations personnalisées',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onPrimaryContainer
-                            .withValues(alpha: 0.85),
-                      ),
+                    color: scheme.onPrimaryContainer.withValues(alpha: 0.85),
+                  ),
                 ),
               ],
             ),

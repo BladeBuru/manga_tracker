@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart';
@@ -45,10 +47,51 @@ class MangaCard extends StatelessWidget {
   /// + annonce d'accessibilite traduite (`libraryOwnedBadge`).
   final bool inLibrary;
 
-  /// Hauteur de la cover. 160 par defaut (valeur historique, carte de 120 de
-  /// large) ; l'accueil catalogue la derive de la largeur de carte pour
-  /// garder un ratio 3:4 sur tablette et desktop.
+  /// Hauteur de la cover. [defaultCoverHeight] par defaut (carte de 120 de
+  /// large) ; les grilles la derivent de la largeur de colonne
+  /// ([coverHeightFor]) pour garder le ratio 3:4 quelle que soit la largeur.
   final double coverHeight;
+
+  /// Hauteur de cover historique : carte de 120 de large au ratio 3:4.
+  static const double defaultCoverHeight = 160;
+
+  /// Bloc texte sous la cover a la taille de texte 1 : titre sur deux
+  /// lignes + ligne annee / note.
+  static const double textBlockHeight = 62;
+
+  /// Bloc texte en mode [compactLibrary] a la taille de texte 1 : barre de
+  /// progression + titre sur deux lignes, sans annee ni note.
+  static const double compactTextBlockHeight = 42;
+
+  /// Plus petite police du bloc texte (ligne annee / note).
+  static const double _smallestFontSize = 10;
+
+  /// Cover au ratio 3:4 pour une carte de largeur [width].
+  static double coverHeightFor(double width) =>
+      (math.max(0.0, width) * 4 / 3).roundToDouble();
+
+  /// Largeur d'une colonne d'une grille de [columns] colonnes.
+  static double gridCellWidth(
+    double contentWidth, {
+    required int columns,
+    required double spacing,
+  }) => math.max(0.0, (contentWidth - spacing * (columns - 1)) / columns);
+
+  /// Bloc texte sous la cover, agrandi avec la taille de texte choisie par
+  /// l'utilisateur : sans ca, a 130 % la deuxieme ligne du titre recouvre la
+  /// ligne annee / note, ou deborde sur la rangee suivante d'une grille.
+  ///
+  /// Le facteur est mesure sur la plus petite police du bloc et non sur sa
+  /// hauteur totale : la mise a l'echelle non lineaire (Android 14+)
+  /// agrandit davantage les petites polices, `scale(62)` sous-estimerait.
+  static double textBlockHeightFor(
+    TextScaler textScaler, {
+    bool compactLibrary = false,
+  }) {
+    final base = compactLibrary ? compactTextBlockHeight : textBlockHeight;
+    final factor = textScaler.scale(_smallestFontSize) / _smallestFontSize;
+    return (base * factor).ceilToDouble();
+  }
 
   const MangaCard({
     super.key,
@@ -64,7 +107,7 @@ class MangaCard extends StatelessWidget {
     this.onLongPress,
     this.badgeLabel,
     this.inLibrary = false,
-    this.coverHeight = 160,
+    this.coverHeight = defaultCoverHeight,
   });
 
   /// `true` si on a une vraie année (≠ "0" ni "0.0" ni vide) à afficher.
@@ -83,6 +126,11 @@ class MangaCard extends StatelessWidget {
   /// Au moins une des 2 infos doit exister pour rendre la row meta.
   bool _hasYearOrRating() => _hasValidYear() || _hasValidRating();
 
+  /// « 140 chapitres », traduit et accordé (était codé en dur en français).
+  static String _chapters(BuildContext context, num count) =>
+      AppLocalizations.of(context)?.chaptersCount(count) ??
+      '$count chapitres';
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -91,48 +139,61 @@ class MangaCard extends StatelessWidget {
         // Vérifier s'il y a des chapitres téléchargés ET si le filtre est activé
         if (showDownloadedOnly) {
           final downloadManager = DownloadManagerService();
-          final downloadedChapters = await downloadManager.getDownloadedChapters(int.parse(muId));
-          
+          final downloadedChapters = await downloadManager
+              .getDownloadedChapters(int.parse(muId));
+
           if (downloadedChapters.isNotEmpty && context.mounted) {
             // Trier les chapitres téléchargés par numéro
-            final sortedChapters = downloadedChapters.toList()..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
-            
+            final sortedChapters =
+                downloadedChapters.toList()
+                  ..sort((a, b) => a.chapterNumber.compareTo(b.chapterNumber));
+
             // Déterminer le chapitre à ouvrir : priorité au prochain chapitre non lu ou reprise de lecture
             int targetChapterNumber;
             if (readChapter != null && readChapter! > 0) {
               final lastReadChapterNum = readChapter!.toInt();
-              
+
               // Vérifier d'abord si le dernier chapitre lu est téléchargé et a une position de scroll sauvegardée
-              final lastReadChapter = sortedChapters.where(
-                (ch) => ch.chapterNumber == lastReadChapterNum && ch.scrollPosition != null && ch.scrollPosition! > 0,
-              ).firstOrNull;
-              
+              final lastReadChapter =
+                  sortedChapters
+                      .where(
+                        (ch) =>
+                            ch.chapterNumber == lastReadChapterNum &&
+                            ch.scrollPosition != null &&
+                            ch.scrollPosition! > 0,
+                      )
+                      .firstOrNull;
+
               if (lastReadChapter != null) {
                 // Reprendre la lecture du dernier chapitre lu là où on s'est arrêté
                 targetChapterNumber = lastReadChapterNum;
               } else {
                 // Chercher le prochain chapitre non lu (dernier lu + 1)
                 final nextChapter = lastReadChapterNum + 1;
-                final nextChapterDownloaded = sortedChapters.where(
-                  (ch) => ch.chapterNumber == nextChapter,
-                ).firstOrNull;
-                
+                final nextChapterDownloaded =
+                    sortedChapters
+                        .where((ch) => ch.chapterNumber == nextChapter)
+                        .firstOrNull;
+
                 if (nextChapterDownloaded != null) {
                   // Le prochain chapitre est téléchargé, l'utiliser
                   targetChapterNumber = nextChapter;
                 } else {
                   // Sinon, chercher le chapitre téléchargé le plus proche après le dernier lu
-                  final nextAvailable = sortedChapters.where(
-                    (ch) => ch.chapterNumber > lastReadChapterNum,
-                  ).firstOrNull;
-                  targetChapterNumber = nextAvailable?.chapterNumber ?? sortedChapters.first.chapterNumber;
+                  final nextAvailable =
+                      sortedChapters
+                          .where((ch) => ch.chapterNumber > lastReadChapterNum)
+                          .firstOrNull;
+                  targetChapterNumber =
+                      nextAvailable?.chapterNumber ??
+                      sortedChapters.first.chapterNumber;
                 }
               }
             } else {
               // Aucun chapitre lu, ouvrir le premier téléchargé
               targetChapterNumber = sortedChapters.first.chapterNumber;
             }
-            
+
             // En mode téléchargé uniquement, utiliser directement le titre fourni
             // pour éviter toute requête réseau qui pourrait ralentir ou échouer
             if (context.mounted) {
@@ -207,14 +268,9 @@ class MangaCard extends StatelessWidget {
             // **Fix 2026-05-19** : barre de progression V1 sous la cover en mode
             // compactLibrary (en plus de l'overlay texte sur la cover). Visuel
             // satisfaisant pour voir la progression d'un coup d'œil.
-            if (compactLibrary &&
-                lastChapter != null &&
-                lastChapter! > 0) ...[
+            if (compactLibrary && lastChapter != null && lastChapter! > 0) ...[
               const SizedBox(height: 4),
-              MangaCardProgressBar(
-                read: readChapter ?? 0,
-                total: lastChapter!,
-              ),
+              MangaCardProgressBar(read: readChapter ?? 0, total: lastChapter!),
             ],
             // **Fix 2026-05-19** : titre rapproché de la cover en mode compact
             // (gap 3 au lieu de 5-6) puisqu'on a viré l'année + rating.
@@ -251,20 +307,21 @@ class MangaCard extends StatelessWidget {
                         Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
                     child: Text(
                       readChapter != null
-                          ? '$readChapter / ${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}'
-                          : '${lastChapter ?? 0} ${lastChapter! > 1 ? "chapitres" : "chapitre"}',
+                          ? '$readChapter / ${_chapters(context, lastChapter ?? 0)}'
+                          : _chapters(context, lastChapter ?? 0),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style:
-                          Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 9,
-                              ),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                      ),
                     ),
                   ),
                 ),
@@ -285,10 +342,11 @@ class MangaCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           mangaAuthor,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: lastChapter != null ? 9 : 10,
-                                  ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            fontSize: lastChapter != null ? 9 : 10,
+                          ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),

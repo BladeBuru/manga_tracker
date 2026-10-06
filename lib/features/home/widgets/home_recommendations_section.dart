@@ -66,32 +66,35 @@ class HomeRecommendationsSection extends StatelessWidget {
               child: Text(
                 l10n.recommendedForYouEmpty,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             )
           else
             SizedBox(
-              height: metrics.cardHeight,
+              height: metrics.cardHeightFor(MediaQuery.textScalerOf(context)),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: recos.length,
                 padding: EdgeInsets.symmetric(horizontal: hPad),
-                itemBuilder: (context, index) => Padding(
-                  padding: EdgeInsets.only(
-                    right: index == recos.length - 1
-                        ? 0
-                        : HomeLayoutMetrics.cardGap,
-                  ),
-                  child: SizedBox(
-                    width: metrics.cardWidth,
-                    child: DismissibleRecommendationCard(
-                      manga: recos[index],
-                      onDismissed: onDismissed,
-                      onRestored: onRestored,
+                itemBuilder:
+                    (context, index) => Padding(
+                      padding: EdgeInsets.only(
+                        right:
+                            index == recos.length - 1
+                                ? 0
+                                : HomeLayoutMetrics.cardGap,
+                      ),
+                      child: SizedBox(
+                        width: metrics.cardWidth,
+                        child: DismissibleRecommendationCard(
+                          manga: recos[index],
+                          coverHeight: metrics.coverHeight,
+                          onDismissed: onDismissed,
+                          onRestored: onRestored,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
               ),
             ),
         ],

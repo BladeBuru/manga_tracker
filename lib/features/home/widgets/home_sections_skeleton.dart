@@ -61,16 +61,19 @@ class _SectionSkeleton extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s + AppSpacing.xs),
           SizedBox(
-            height: metrics.cardHeight,
+            height: metrics.cardHeightFor(MediaQuery.textScalerOf(context)),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: hPad),
               itemCount: 6,
-              itemBuilder: (_, index) => Padding(
-                padding: const EdgeInsets.only(right: HomeLayoutMetrics.cardGap),
-                child: _CardSkeleton(metrics: metrics),
-              ),
+              itemBuilder:
+                  (_, index) => Padding(
+                    padding: const EdgeInsets.only(
+                      right: HomeLayoutMetrics.cardGap,
+                    ),
+                    child: _CardSkeleton(metrics: metrics),
+                  ),
             ),
           ),
         ],
@@ -97,9 +100,15 @@ class _CardSkeleton extends StatelessWidget {
             borderRadius: AppRadius.circularXl,
           ),
           const SizedBox(height: AppSpacing.s),
-          AppSkeletonBox(width: metrics.cardWidth * 0.85, height: AppSpacing.m - 4),
+          AppSkeletonBox(
+            width: metrics.cardWidth * 0.85,
+            height: AppSpacing.m - 4,
+          ),
           const SizedBox(height: AppSpacing.xs + 2),
-          AppSkeletonBox(width: metrics.cardWidth * 0.5, height: AppSpacing.s + 2),
+          AppSkeletonBox(
+            width: metrics.cardWidth * 0.5,
+            height: AppSpacing.s + 2,
+          ),
         ],
       ),
     );

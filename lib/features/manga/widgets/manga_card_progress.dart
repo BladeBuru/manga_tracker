@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 // Extraits de `manga_card.dart` (2026-09-09) : le fichier depassait la
 // limite de 400 lignes du projet. Rien d'autre n'a change — memes visuels,
@@ -39,30 +40,43 @@ class MangaCardProgressOverlay extends StatelessWidget {
             ],
           ),
         ),
+        // Compteur réduit plutôt que débordant : « 1024 / 1100 » ne tenait
+        // pas dans une colonne de 320 dp avec un texte agrandi.
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isFinished) ...[
               const Icon(Icons.check_circle, color: Colors.white, size: 11),
               const SizedBox(width: 4),
-              const Text(
-                'Terminé',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: [FontFeature.tabularFigures()],
+              Flexible(
+                child: Text(
+                  AppLocalizations.of(context)?.completed ?? 'Terminé',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ] else
-              Text(
-                '$read / $lastChapter',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
-                  fontFeatures: [FontFeature.tabularFigures()],
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    '$read / $lastChapter',
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
                 ),
               ),
           ],

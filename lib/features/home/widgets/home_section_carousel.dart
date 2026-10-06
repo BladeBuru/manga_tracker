@@ -49,7 +49,8 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
   /// Le BLoC n'est PAS pris dans GetIt : la factory enregistree la-bas sert
   /// la page « Tout voir » (limite 40). Le carrousel doit paginer a la taille
   /// de l'apercu, et la registration existante n'est pas touchee.
-  late final HomeSectionPageBloc _bloc = widget.bloc ??
+  late final HomeSectionPageBloc _bloc =
+      widget.bloc ??
       HomeSectionPageBloc(
         sectionId: widget.section.id,
         limit: HomeSectionsService.defaultLimit,
@@ -68,18 +69,21 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
     // Comparaison par identite de liste : les pages ajoutees localement
     // vivent dans le BLoC, jamais dans `widget.section`, donc elles ne
     // peuvent pas declencher une re-amorce en boucle.
-    final changed = !identical(oldWidget.section.items, widget.section.items) ||
+    final changed =
+        !identical(oldWidget.section.items, widget.section.items) ||
         oldWidget.isOffline != widget.isOffline;
     if (changed) _seed();
   }
 
   void _seed() {
-    _bloc.add(SeedSectionPage(
-      kind: widget.section.kind,
-      params: widget.section.params,
-      items: widget.section.items,
-      isOffline: widget.isOffline,
-    ));
+    _bloc.add(
+      SeedSectionPage(
+        kind: widget.section.kind,
+        params: widget.section.params,
+        items: widget.section.items,
+        isOffline: widget.isOffline,
+      ),
+    );
   }
 
   @override
@@ -105,17 +109,20 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
         // Avant que l'amorce ne soit traitee, on affiche deja l'apercu.
         final items = loaded?.items ?? widget.section.items;
         return SizedBox(
-          height: widget.metrics.cardHeight,
+          height: widget.metrics.cardHeightFor(
+            MediaQuery.textScalerOf(context),
+          ),
           child: NotificationListener<ScrollNotification>(
             onNotification: _onScroll,
             child: LibraryOwnedIdsBuilder(
-              builder: (context, ownedMuIds) => _CarouselList(
-                items: items,
-                metrics: widget.metrics,
-                ownedMuIds: ownedMuIds,
-                footer: HomeSectionCarouselFooter.of(loaded),
-                onRetry: () => _bloc.add(const LoadMoreSectionPage()),
-              ),
+              builder:
+                  (context, ownedMuIds) => _CarouselList(
+                    items: items,
+                    metrics: widget.metrics,
+                    ownedMuIds: ownedMuIds,
+                    footer: HomeSectionCarouselFooter.of(loaded),
+                    onRetry: () => _bloc.add(const LoadMoreSectionPage()),
+                  ),
             ),
           ),
         );

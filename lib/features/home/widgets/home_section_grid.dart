@@ -17,13 +17,21 @@ double _gridContentWidth(HomeLayoutMetrics metrics, double availableWidth) =>
     math.min(availableWidth, AppBreakpoints.contentMaxWidth) -
     2 * metrics.horizontalPadding;
 
-SliverGridDelegate _gridDelegate(HomeLayoutMetrics metrics, double contentWidth) =>
-    SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: metrics.gridColumns,
-      crossAxisSpacing: HomeLayoutMetrics.cardGap,
-      mainAxisSpacing: AppSpacing.m,
-      childAspectRatio: metrics.gridAspectRatio(contentWidth),
-    );
+/// Le bloc texte des cellules suit la taille de texte de l'utilisateur :
+/// a 130 %, une cellule calibree a la taille 1 rogne le titre.
+SliverGridDelegate _gridDelegate(
+  BuildContext context,
+  HomeLayoutMetrics metrics,
+  double contentWidth,
+) => SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: metrics.gridColumns,
+  crossAxisSpacing: HomeLayoutMetrics.cardGap,
+  mainAxisSpacing: AppSpacing.m,
+  childAspectRatio: metrics.gridAspectRatio(
+    contentWidth,
+    textScaler: MediaQuery.textScalerOf(context),
+  ),
+);
 
 /// Grille paginee de la page « Tout voir » + pied de liste (chargement de
 /// la page suivante, reessai, ou fin de liste). Slivers, a inserer dans le
@@ -53,21 +61,19 @@ class HomeSectionGrid extends StatelessWidget {
           // `LibraryOwnedIdsBuilder` est un widget de composition : il est
           // transparent dans l'arbre, donc il peut envelopper un sliver.
           sliver: LibraryOwnedIdsBuilder(
-            builder: (context, ownedMuIds) => SliverGrid(
-              gridDelegate: _gridDelegate(metrics, contentWidth),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final manga = state.items[index];
-                  return HomeSectionCard(
-                    key: ValueKey('section-card-${manga.muId}'),
-                    manga: manga,
-                    coverHeight: coverHeight,
-                    inLibrary: ownedMuIds.contains(manga.muId.toInt()),
-                  );
-                },
-                childCount: state.items.length,
-              ),
-            ),
+            builder:
+                (context, ownedMuIds) => SliverGrid(
+                  gridDelegate: _gridDelegate(context, metrics, contentWidth),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final manga = state.items[index];
+                    return HomeSectionCard(
+                      key: ValueKey('section-card-${manga.muId}'),
+                      manga: manga,
+                      coverHeight: coverHeight,
+                      inLibrary: ownedMuIds.contains(manga.muId.toInt()),
+                    );
+                  }, childCount: state.items.length),
+                ),
           ),
         ),
         SliverToBoxAdapter(
@@ -115,9 +121,9 @@ class _GridFooter extends StatelessWidget {
       child = Text(
         l10n.homeSectionEndOfList,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
       );
     } else {
       return const SizedBox(height: AppSpacing.l);
@@ -144,7 +150,7 @@ class HomeSectionGridSkeleton extends StatelessWidget {
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding),
       sliver: SliverGrid(
-        gridDelegate: _gridDelegate(metrics, contentWidth),
+        gridDelegate: _gridDelegate(context, metrics, contentWidth),
         delegate: SliverChildBuilderDelegate(
           (context, index) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +161,10 @@ class HomeSectionGridSkeleton extends StatelessWidget {
                 borderRadius: AppRadius.circularXl,
               ),
               const SizedBox(height: AppSpacing.s),
-              const AppSkeletonBox(width: double.infinity, height: AppSpacing.m - 4),
+              const AppSkeletonBox(
+                width: double.infinity,
+                height: AppSpacing.m - 4,
+              ),
             ],
           ),
           childCount: metrics.gridColumns * 3,

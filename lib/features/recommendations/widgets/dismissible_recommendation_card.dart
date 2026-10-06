@@ -39,12 +39,17 @@ class DismissibleRecommendationCard extends StatelessWidget {
   /// Faux par défaut : seule la page « Tout voir » l'active.
   final bool showDismissAction;
 
+  /// Hauteur de la cover, transmise a [MangaCard]. Les grilles la derivent
+  /// de la largeur de colonne pour que la carte tienne dans sa cellule.
+  final double coverHeight;
+
   const DismissibleRecommendationCard({
     super.key,
     required this.manga,
     required this.onDismissed,
     this.onRestored,
     this.showDismissAction = false,
+    this.coverHeight = MangaCard.defaultCoverHeight,
   });
 
   @override
@@ -59,28 +64,31 @@ class DismissibleRecommendationCard extends StatelessWidget {
       mediumImgPath: manga.mediumCoverUrl,
       rating: rating != 'N/A' && rating.isNotEmpty ? rating : null,
       onLongPress: () => _dismiss(context),
+      coverHeight: coverHeight,
     );
 
     return Semantics(
       hint:
           l10n?.dismissRecommendationAccessibility ??
           'Appui long pour ne plus recommander ce titre',
-      child: showDismissAction
-          ? Stack(
-              children: [
-                card,
-                PositionedDirectional(
-                  top: 6,
-                  end: 6,
-                  child: _DismissActionButton(
-                    label: l10n?.dismissRecommendationAction ??
-                        'Ne plus me recommander ce titre',
-                    onPressed: () => _dismiss(context),
+      child:
+          showDismissAction
+              ? Stack(
+                children: [
+                  card,
+                  PositionedDirectional(
+                    top: 6,
+                    end: 6,
+                    child: _DismissActionButton(
+                      label:
+                          l10n?.dismissRecommendationAction ??
+                          'Ne plus me recommander ce titre',
+                      onPressed: () => _dismiss(context),
+                    ),
                   ),
-                ),
-              ],
-            )
-          : card,
+                ],
+              )
+              : card,
     );
   }
 
