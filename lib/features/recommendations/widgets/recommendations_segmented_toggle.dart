@@ -88,9 +88,10 @@ class _SegChip extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     final scheme = Theme.of(context).colorScheme;
     final isDark = brightness == Brightness.dark;
-    final bg = selected
-        ? AppColors.dsRedSoft(brightness)
-        : (isDark ? AppColors.dsSurfaceDark : Colors.white);
+    final bg =
+        selected
+            ? AppColors.dsRedSoft(brightness)
+            : (isDark ? AppColors.dsSurfaceDark : Colors.white);
     final borderColor =
         selected ? scheme.primary : AppColors.dsBorder(brightness);
     final fg = selected ? scheme.primary : AppColors.dsText2(brightness);
@@ -103,8 +104,9 @@ class _SegChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          // Hauteur minimale (et non fixe) : grandit avec la taille du texte.
+          constraints: const BoxConstraints(minHeight: 38),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(999),
@@ -119,13 +121,16 @@ class _SegChip extends StatelessWidget {
                 Icon(Icons.check, size: 15, color: scheme.primary),
                 const SizedBox(width: 6),
               ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight:
-                      selected ? FontWeight.w600 : FontWeight.w500,
-                  color: fg,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    color: fg,
+                  ),
                 ),
               ),
             ],

@@ -38,6 +38,7 @@ class ChapterCompletionDialog extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(
         Icons.check_circle_outline,
         color: AppColors.success,

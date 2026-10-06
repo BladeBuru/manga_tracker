@@ -68,6 +68,7 @@ class ChallengeEscapeDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(Icons.shield_outlined, color: Colors.orange, size: 48),
       title: Text(l10n?.challengeLoopTitle ?? 'Vérification bloquée'),
       content: Column(

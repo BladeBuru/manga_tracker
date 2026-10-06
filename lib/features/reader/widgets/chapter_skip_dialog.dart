@@ -46,6 +46,7 @@ class ChapterSkipDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(
         Icons.skip_next,
         color: AppColors.warning,

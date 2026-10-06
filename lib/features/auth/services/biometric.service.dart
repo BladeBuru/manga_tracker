@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -37,6 +36,8 @@ class BiometricService {
   }
 
   Future<bool> authenticateWithBiometrics(BuildContext context) async {
+    // Lu avant toute attente : le contexte peut ne plus être monté ensuite.
+    final l10n = AppLocalizations.of(context);
     try {
       debugPrint('🔐 Biométrie Debug - Début de l\'authentification biométrique');
       
@@ -53,7 +54,6 @@ class BiometricService {
       
       debugPrint('🔐 Biométrie Debug - Appel de authenticate()...');
       
-      final l10n = AppLocalizations.of(context);
       // `biometricOnly: false` : si la biométrie n'est pas utilisable
       // (reconnaissance faciale Huawei non exposée à Android, capteur
       // absent, appareil sans services Google…), la fenêtre système propose
@@ -72,7 +72,6 @@ class BiometricService {
       return isAuthenticated;
     } on PlatformException catch (e) {
       debugPrint('🔐 Biométrie Debug - PlatformException: code=${e.code}');
-      final l10n = context.mounted ? AppLocalizations.of(context) : null;
       if (e.code == 'PermanentlyLockedOut' || e.code == 'LockedOut') {
         Notifier().error(l10n?.biometricLockedOut ??
             'Trop de tentatives : déverrouillez d\'abord votre appareil.');
@@ -90,7 +89,6 @@ class BiometricService {
     } catch (e, stackTrace) {
       debugPrint('🔐 Biométrie Debug - Erreur inattendue: $e');
       debugPrint('🔐 Biométrie Debug - Stack trace: $stackTrace');
-      final l10n = context.mounted ? AppLocalizations.of(context) : null;
       Notifier().error(l10n?.biometricUnlockError ?? 'Déverrouillage impossible.');
       return false;
     }

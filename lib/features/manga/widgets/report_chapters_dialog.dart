@@ -162,6 +162,7 @@ class _ReportChaptersDialogState extends State<ReportChaptersDialog> {
     final offline = _isOffline;
 
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.reportMoreChaptersDialogTitle),
       content: Form(
         key: _formKey,

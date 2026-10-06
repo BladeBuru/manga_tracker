@@ -195,6 +195,7 @@ class _StartupPageState extends State<StartupPage> {
     return showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: const Text('Mise à jour disponible'),
         content: const Text(
           "Une nouvelle version de l'application est disponible.",

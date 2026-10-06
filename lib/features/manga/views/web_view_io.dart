@@ -1056,6 +1056,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         icon: const Icon(
           Icons.block,
           color: AppColors.error,

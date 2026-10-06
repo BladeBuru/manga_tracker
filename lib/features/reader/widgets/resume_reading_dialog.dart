@@ -51,6 +51,7 @@ class ResumeReadingDialog extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AlertDialog(
+      scrollable: true,
       icon: const Icon(
         Icons.bookmark_outline,
         color: AppColors.info,

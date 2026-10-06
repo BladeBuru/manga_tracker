@@ -152,6 +152,7 @@ class AppUpdateService {
           await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
+              scrollable: true,
               title: const Text("Mise à jour non disponible"),
               content: const Text(
                 "Vous utilisez actuellement la version de développement. "
@@ -225,6 +226,7 @@ class AppUpdateService {
           await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
+              scrollable: true,
               title: const Text("Autorisation requise"),
               content: const Text("Pour installer la mise à jour, vous devez autoriser l'installation d'applications depuis cette source dans l'écran suivant."),
               actions: [ TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text("Compris")) ],
@@ -254,6 +256,7 @@ class AppUpdateService {
                 await showAppDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
+                    scrollable: true,
                     title: const Text("Erreur d'installation"),
                     content: const Text(
                       "L'installation a échoué car l'application est déjà installée avec une signature différente. "

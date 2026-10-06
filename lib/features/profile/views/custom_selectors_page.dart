@@ -717,6 +717,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
       context: context,
       builder:
           (ctx) => AlertDialog(
+            scrollable: true,
             title: Text(l10n?.deleteSelector ?? 'Supprimer le sélecteur'),
             content: Text(
               l10n?.deleteSelectorConfirm ??
@@ -763,6 +764,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
       context: context,
       builder:
           (ctx) => AlertDialog(
+            scrollable: true,
             title: Text(l10n?.importSelectors ?? 'Importer des sélecteurs'),
             content: TextField(
               controller: jsonController,

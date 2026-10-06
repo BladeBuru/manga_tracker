@@ -98,6 +98,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
       await showAppDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
+          scrollable: true,
           title:
               Text(AppLocalizations.of(ctx)!.profileEditPhotoPickFailed),
           content: const Text(

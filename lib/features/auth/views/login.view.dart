@@ -82,6 +82,7 @@ class _LoginViewState extends State<LoginView> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(
           l10n?.biometricAuthFirstTimeTitle ??
               "Activer l'authentification biométrique ?",

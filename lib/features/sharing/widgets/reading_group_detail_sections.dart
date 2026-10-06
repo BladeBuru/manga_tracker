@@ -154,6 +154,7 @@ class ReadingGroupActionsSection extends StatelessWidget {
     final result = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(title),
         content: Text(body),
         actions: [

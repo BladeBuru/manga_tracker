@@ -24,11 +24,7 @@ class SessionRejectedBanner extends StatelessWidget {
 
   final EdgeInsetsGeometry? margin;
 
-  const SessionRejectedBanner({
-    super.key,
-    this.onReconnect,
-    this.margin,
-  });
+  const SessionRejectedBanner({super.key, this.onReconnect, this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -49,46 +45,66 @@ class SessionRejectedBanner extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.lock_clock_outlined,
-            size: 18,
-            color: scheme.onSecondaryContainer,
-          ),
-          const SizedBox(width: AppSpacing.s),
-          Expanded(
-            child: Text(
-              l10n?.sessionRejectedBanner ??
-                  'Session expirée — voici vos données enregistrées',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+      // Écran étroit / texte agrandi : le bouton passe sous le message au
+      // lieu de déborder (320 dp en allemand débordait de 31 px).
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final action =
+              onReconnect == null
+                  ? null
+                  : TextButton(
+                    onPressed: onReconnect,
+                    style: TextButton.styleFrom(
+                      foregroundColor: scheme.onSecondaryContainer,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.s,
+                      ),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n?.sessionRejectedAction ?? 'Se reconnecter',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  );
+          final stacked = action != null && constraints.maxWidth < 340;
+          final message = Row(
+            children: [
+              Icon(
+                Icons.lock_clock_outlined,
+                size: 18,
+                color: scheme.onSecondaryContainer,
+              ),
+              const SizedBox(width: AppSpacing.s),
+              Expanded(
+                child: Text(
+                  l10n?.sessionRejectedBanner ??
+                      'Session expirée — voici vos données enregistrées',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: scheme.onSecondaryContainer,
                     fontWeight: FontWeight.w600,
                   ),
-            ),
-          ),
-          if (onReconnect != null) ...[
-            const SizedBox(width: AppSpacing.s),
-            TextButton(
-              onPressed: onReconnect,
-              style: TextButton.styleFrom(
-                foregroundColor: scheme.onSecondaryContainer,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.s,
-                ),
-                minimumSize: const Size(0, 32),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                l10n?.sessionRejectedAction ?? 'Se reconnecter',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          ],
-        ],
+              if (action != null && !stacked) ...[
+                const SizedBox(width: AppSpacing.s),
+                action,
+              ],
+            ],
+          );
+          if (!stacked) return message;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              message,
+              Align(alignment: AlignmentDirectional.centerEnd, child: action),
+            ],
+          );
+        },
       ),
     );
   }

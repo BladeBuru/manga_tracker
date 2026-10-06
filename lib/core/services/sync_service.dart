@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';

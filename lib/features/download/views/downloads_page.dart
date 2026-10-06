@@ -79,6 +79,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteChapterTitle ?? 'Supprimer le chapitre'),
         content: Text(l10n?.deleteChapterMessage(chapterNumber) ?? 'Voulez-vous vraiment supprimer le chapitre $chapterNumber ?'),
         actions: [
@@ -110,6 +111,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteAllChaptersTitle ?? 'Supprimer tous les chapitres'),
         content: Text(l10n?.deleteAllChaptersMessage ?? 'Voulez-vous vraiment supprimer tous les chapitres téléchargés pour ce manga ?'),
         actions: [
@@ -141,6 +143,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final confirmed = await showAppDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n?.deleteAllDownloadsTitle ?? 'Supprimer tous les téléchargements'),
         content: Text(l10n?.deleteAllDownloadsMessage ?? 'Voulez-vous vraiment supprimer TOUS les téléchargements ? Cette action est irréversible.'),
         actions: [

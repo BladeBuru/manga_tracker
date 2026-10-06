@@ -31,29 +31,52 @@ class ChallengeHandoffBanner extends StatelessWidget {
             AppSpacing.s,
             AppSpacing.s,
           ),
-          child: Row(
-            children: [
-              Icon(Icons.verified_user_outlined, color: onContainer),
-              const SizedBox(width: AppSpacing.s),
-              Expanded(
-                child: Text(
-                  l10n?.readerChallengeHandoffInfo ??
-                      'Vérification de sécurité du site : suivez ses '
-                          'instructions, la lecture reprendra automatiquement.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: onContainer),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              TextButton(
+          // Écran étroit : le bouton passe sous le texte (il débordait de
+          // 219 px sur 320 dp avec un texte agrandi).
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final button = TextButton(
                 onPressed: onOpenInBrowser,
                 child: Text(
                   l10n?.challengeLoopOpenBrowser ?? 'Ouvrir dans le navigateur',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              );
+              final stacked = constraints.maxWidth < 420;
+              final message = Row(
+                children: [
+                  Icon(Icons.verified_user_outlined, color: onContainer),
+                  const SizedBox(width: AppSpacing.s),
+                  Expanded(
+                    child: Text(
+                      l10n?.readerChallengeHandoffInfo ??
+                          'Vérification de sécurité du site : suivez ses '
+                              'instructions, la lecture reprendra automatiquement.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelMedium?.copyWith(color: onContainer),
+                    ),
+                  ),
+                  if (!stacked) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    button,
+                  ],
+                ],
+              );
+              if (!stacked) return message;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  message,
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: button,
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
