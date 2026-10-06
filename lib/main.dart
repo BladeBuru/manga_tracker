@@ -65,6 +65,12 @@ Future<void> main() async {
   // tablettes l'acceptent — et le verrou de rotation de l'utilisateur est
   // respecté. Posé une fois ici (et non à chaque reconstruction).
   await SystemChrome.setPreferredOrientations(appOrientations);
+  // Bord à bord partout (mode imposé par Android 15, explicite pour les
+  // versions antérieures) : `SystemBarsInset` réserve la place des barres
+  // du système, et les lecteurs rétablissent ce mode en les quittant.
+  if (!kIsWeb) {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
   runApp(const MyApp());
 }
 
@@ -223,9 +229,17 @@ class _MyAppState extends State<MyApp> {
       ],
       routerConfig: _router,
       // Rien sous la barre de navigation du système (Android 15 bord à
-      // bord, barre à boutons, indicateur d'accueil iOS).
-      builder: (context, child) =>
-          SystemBarsInset(child: child ?? const SizedBox.shrink()),
+      // bord, barre à boutons, indicateur d'accueil iOS) — sauf dans les
+      // lecteurs, où la page occupe tout l'écran.
+      builder: (context, child) => ListenableBuilder(
+        listenable: _router.routerDelegate,
+        builder: (context, _) => SystemBarsInset(
+          enabled: !isFullscreenReaderRoute(
+            _router.routerDelegate.currentConfiguration.lastOrNull?.route,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
+      ),
       scrollBehavior: _scrollBehavior,
     );
   }

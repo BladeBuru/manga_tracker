@@ -16,13 +16,20 @@ import 'package:flutter/material.dart';
 ///
 /// Le clavier : sa hauteur est mesurée depuis le bas de l'écran ; on en
 /// retire la bande déjà réservée, sinon les champs remonteraient de trop.
+///
+/// [enabled] à `false` : page plein écran (lecteurs). Ni bande ni marge — la
+/// page web occupe tout l'écran et gère elle-même ses rares éléments du bas
+/// (`SafeArea`). Retour utilisateur v0.18.0 : la bande ajoutée sous le
+/// lecteur volait de la place à la lecture sans rien protéger.
 class SystemBarsInset extends StatelessWidget {
   final Widget child;
+  final bool enabled;
 
-  const SystemBarsInset({super.key, required this.child});
+  const SystemBarsInset({super.key, required this.child, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
+    if (!enabled) return child;
     final media = MediaQuery.of(context);
     final bottom = media.viewPadding.bottom;
     if (bottom <= 0) return child;

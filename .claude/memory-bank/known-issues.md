@@ -4,6 +4,12 @@
 
 ---
 
+## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Barre du haut cachée : « 2 cm de blanc » en haut ; bande ajoutée en bas | Protection des pages à boutons appliquée au lecteur : `SafeArea` autour de la page + `SystemBarsInset` global | `SystemBarsInset` coupé sur les routes de lecture ; mode immersif quand la barre est cachée |
+
 ## ✅ Corrigés le 2026-10-06 — retours utilisateurs d'octobre
 
 | Symptôme | Cause racine | Correction |

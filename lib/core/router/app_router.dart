@@ -75,6 +75,18 @@ import 'package:mangatracker/features/sharing/views/reading_group_detail_page.da
 /// SystemChrome (overlay style).
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Pages de lecture : plein écran, rien n'y est réservé aux barres système
+/// (cf. `SystemBarsInset.enabled`, `ReaderAutoHideBar`).
+const Set<String> fullscreenReaderRouteNames = {
+  'manga-read',
+  'manga-read-offline',
+};
+
+/// La page affichée ([route] = `currentConfiguration.lastOrNull?.route`,
+/// pages ouvertes par `push` comprises) est-elle un lecteur plein écran ?
+bool isFullscreenReaderRoute(RouteBase? route) =>
+    route is GoRoute && fullscreenReaderRouteNames.contains(route.name);
+
 /// Extras passés via `context.push('/manga/:muId', extra: ...)` — purement
 /// pour pré-remplir l'UI avant que le BLoC charge les vraies données.
 class MangaDetailExtras {
