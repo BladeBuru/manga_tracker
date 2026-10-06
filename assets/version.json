@@ -1,8 +1,30 @@
 {
-  "latestVersion": "0.17.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.17.0/MangaTracker.apk",
+  "latestVersion": "0.18.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.18.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.18.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- La barre du haut du lecteur se retire quand vous descendez dans un chapitre et revient dès que vous remontez.",
+        "- Vous pouvez lire avec l'appareil retourné (pratique pendant la charge), si votre appareil le permet.",
+        "- Une pastille sur « Mon compte » signale les demandes d'ami et les partages reçus ; en la touchant, vous arrivez directement sur la bonne section.",
+        "- « Si vous avez aimé ce titre » s'affiche maintenant pour presque toutes les œuvres, avec les suggestions de MangaUpdates.",
+        "⚡ Améliorations",
+        "- Vous pouvez déverrouiller l'application avec le code ou le schéma de votre appareil quand l'empreinte ou le visage ne sont pas disponibles, y compris sur les appareils sans services Google.",
+        "- La suggestion de lien pour un titre sans lien a été redessinée : plus lisible, avec des boutons clairs.",
+        "- La fenêtre « Si vous avez aimé » prend la taille de son contenu, sans espace vide.",
+        "- Les modifications faites hors ligne sont envoyées d'elles-mêmes dès que possible, et un bouton « Synchroniser » apparaît si certaines attendent encore.",
+        "🐛 Corrections",
+        "- Vous n'êtes plus déconnecté quand vous lisez sur plusieurs appareils.",
+        "- Le bandeau « Mode hors ligne » n'affiche plus de texte incompréhensible et n'apparaît plus à tort quand vous êtes connecté.",
+        "- Deux appuis rapides n'ouvrent plus deux fois la même fenêtre.",
+        "- Plus aucun bouton caché sous les boutons de navigation du téléphone ou sous l'encoche, et les textes ne débordent plus sur les petits écrans.",
+        "- Dans le lecteur, la barre du haut ne cache plus le haut des pages, et le numéro de chapitre reste visible en lecture hors ligne.",
+        "- Sur la fiche d'un manga, le commentaire que vous écrivez reste visible quand le clavier est ouvert."
+      ]
+    },
     {
       "version": "0.17.0",
       "notes": [
