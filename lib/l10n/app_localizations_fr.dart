@@ -2720,4 +2720,35 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get biometricUnlockError =>
       'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.';
+
+  @override
+  String get homeGreeting => 'Bonjour,';
+
+  @override
+  String get downloadChaptersTitle => 'Télécharger des chapitres';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Téléchargement : chapitre $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Tout sélectionner';
+
+  @override
+  String get downloadDeselectAll => 'Tout désélectionner';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Sélectionner les non lus ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt =>
+      'Sélectionnez les chapitres à télécharger :';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Télécharger ($count)';
+  }
 }

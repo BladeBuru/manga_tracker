@@ -2709,4 +2709,34 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get biometricUnlockError =>
       'Não foi possível desbloquear. Tente novamente ou entre com sua senha.';
+
+  @override
+  String get homeGreeting => 'Olá,';
+
+  @override
+  String get downloadChaptersTitle => 'Baixar capítulos';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Baixando: capítulo $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Selecionar tudo';
+
+  @override
+  String get downloadDeselectAll => 'Desmarcar tudo';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Selecionar não lidos ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt => 'Selecione os capítulos para baixar:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Baixar ($count)';
+  }
 }

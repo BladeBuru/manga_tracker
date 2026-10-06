@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/app_avatar.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
@@ -12,8 +13,8 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///
 /// Variantes :
 ///  - default (accepté)        → trailing = bouton `more_horiz` qui ouvre menu
-///  - `showAcceptReject: true` → trailing = "Accepter" (filled rouge) +
-///    "Refuser" (text rouge)
+///  - `showAcceptReject: true` → trailing = croix « Refuser » (icône) +
+///    coche « Accepter » (icône pleine rouge), libellés en infobulle
 class FriendListTile extends StatelessWidget {
   final FriendshipDto friendship;
   final bool showAcceptReject;
@@ -91,10 +92,21 @@ class FriendListTile extends StatelessWidget {
   }
 }
 
+/// Refuser / Accepter en boutons icône (croix / coche) : les libellés texte
+/// prenaient ~190 px sur 200 et écrasaient le nom sur petit écran. Le
+/// libellé est l'infobulle, que `IconButton` expose aussi comme nom
+/// accessible (TalkBack / VoiceOver) — un `Semantics(label:)` en plus
+/// créerait un second nœud lu deux fois.
 class _PendingActions extends StatelessWidget {
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
   const _PendingActions({this.onAccept, this.onReject});
+
+  /// Zone d'appui de 40 × 40 dp.
+  static const _buttonConstraints = BoxConstraints.tightFor(
+    width: AppSpacing.xl + AppSpacing.s,
+    height: AppSpacing.xl + AppSpacing.s,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -103,38 +115,25 @@ class _PendingActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TextButton(
+        IconButton(
           onPressed: onReject,
-          style: TextButton.styleFrom(
-            foregroundColor: scheme.onSurfaceVariant,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            minimumSize: const Size(0, 32),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          child: Text(l10n.friendsReject),
+          tooltip: l10n.friendsReject,
+          color: scheme.onSurfaceVariant,
+          constraints: _buttonConstraints,
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.close, size: 20),
         ),
-        const SizedBox(width: 4),
-        FilledButton(
+        const SizedBox(width: AppSpacing.xs),
+        IconButton.filled(
           onPressed: onAccept,
-          style: FilledButton.styleFrom(
+          tooltip: l10n.friendsAccept,
+          style: IconButton.styleFrom(
             backgroundColor: scheme.primary,
             foregroundColor: scheme.onPrimary,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            minimumSize: const Size(0, 32),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(999),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
           ),
-          child: Text(l10n.friendsAccept),
+          constraints: _buttonConstraints,
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.check, size: 20),
         ),
       ],
     );

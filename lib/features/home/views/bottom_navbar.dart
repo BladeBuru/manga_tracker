@@ -169,7 +169,7 @@ class BottomNavbarState extends State<BottomNavbar> {
         type: BottomNavigationBarType.fixed,
         currentIndex: currntIndex,
         onTap: _onTabTapped,
-        selectedFontSize: 15,
+        selectedFontSize: 13,
         selectedIconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary, size: 30),
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedIconTheme: IconThemeData(color: unselectedColor),

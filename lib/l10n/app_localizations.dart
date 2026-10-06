@@ -4707,6 +4707,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.'**
   String get biometricUnlockError;
+
+  /// Accueil : salutation au-dessus du nom de l'utilisateur
+  ///
+  /// In fr, this message translates to:
+  /// **'Bonjour,'**
+  String get homeGreeting;
+
+  /// Titre de la fenêtre de sélection des chapitres à télécharger
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger des chapitres'**
+  String get downloadChaptersTitle;
+
+  /// Fenêtre de téléchargement : chapitre en cours de téléchargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Téléchargement : chapitre {chapter}'**
+  String downloadProgressChapter(int chapter);
+
+  /// Fenêtre de téléchargement : coche tous les chapitres pas encore téléchargés
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout sélectionner'**
+  String get downloadSelectAll;
+
+  /// Fenêtre de téléchargement : décoche tous les chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout désélectionner'**
+  String get downloadDeselectAll;
+
+  /// Fenêtre de téléchargement : coche les chapitres après le dernier chapitre lu
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner les non lus ({count})'**
+  String downloadSelectUnread(int count);
+
+  /// Fenêtre de téléchargement : consigne au-dessus de la liste des chapitres
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez les chapitres à télécharger :'**
+  String get downloadSelectPrompt;
+
+  /// Fenêtre de téléchargement : bouton de lancement, avec le nombre de chapitres cochés
+  ///
+  /// In fr, this message translates to:
+  /// **'Télécharger ({count})'**
+  String downloadConfirmCount(int count);
 }
 
 class _AppLocalizationsDelegate

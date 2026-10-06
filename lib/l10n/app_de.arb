@@ -1452,5 +1452,34 @@
   "biometricUnlockReason": "Manga Tracker entsperren",
   "biometricLockedOut": "Zu viele Versuche: Entsperren Sie zuerst Ihr Gerät mit dem Code und versuchen Sie es erneut.",
   "biometricNotEnrolled": "Auf diesem Gerät ist keine Displaysperre eingerichtet. Fügen Sie in den Einstellungen einen Code, einen Fingerabdruck oder ein Gesicht hinzu.",
-  "biometricUnlockError": "Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an."
+  "biometricUnlockError": "Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an.",
+  "homeGreeting": "Hallo,",
+  "downloadChaptersTitle": "Kapitel herunterladen",
+  "downloadProgressChapter": "Wird heruntergeladen: Kapitel {chapter}",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Alle auswählen",
+  "downloadDeselectAll": "Auswahl aufheben",
+  "downloadSelectUnread": "Ungelesene auswählen ({count})",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Wählen Sie die herunterzuladenden Kapitel aus:",
+  "downloadConfirmCount": "Herunterladen ({count})",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

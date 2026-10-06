@@ -422,13 +422,20 @@ class _ActionRow extends StatelessWidget {
         AppSpacing.m,
         AppSpacing.m,
       ),
-      child: Row(
+      // `OverflowBar` : Annuler à gauche, Créer à droite ; si les deux ne
+      // tiennent pas sur une ligne (petit écran, texte agrandi, allemand),
+      // ils s'empilent, Créer au-dessus, au lieu de déborder.
+      child: OverflowBar(
+        alignment: MainAxisAlignment.spaceBetween,
+        spacing: AppSpacing.s,
+        overflowAlignment: OverflowBarAlignment.end,
+        overflowDirection: VerticalDirection.up,
+        overflowSpacing: AppSpacing.xs,
         children: [
           TextButton(
             onPressed: creating ? null : onCancel,
             child: Text(l10n.shareCancel),
           ),
-          const Spacer(),
           FilledButton.icon(
             onPressed: (creating || !canSubmit) ? null : onSubmit,
             icon: creating
@@ -442,6 +449,7 @@ class _ActionRow extends StatelessWidget {
               selectedCount > 0
                   ? '${l10n.readingGroupCreateConfirm} ($selectedCount)'
                   : l10n.readingGroupCreateConfirm,
+              textAlign: TextAlign.center,
             ),
           ),
         ],

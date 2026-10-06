@@ -18,6 +18,21 @@ class StatsActivitySection extends StatelessWidget {
 
   const StatsActivitySection({super.key, required this.chaptersPerWeek});
 
+  /// Hauteur maximale d'une barre (hors libellés).
+  static const double _barMaxHeight = 80;
+  static const double _countFontSize = 10;
+  static const double _dateFontSize = 9;
+
+  /// Hauteur du graphe : barre + libellés au facteur de texte courant
+  /// (×1,3 sur petit écran : les 120 px fixes ne laissaient aucune marge).
+  static double _chartHeight(TextScaler scaler) {
+    const lineHeight = 1.4;
+    final labels = (scaler.scale(_countFontSize) +
+            scaler.scale(_dateFontSize)) *
+        lineHeight;
+    return _barMaxHeight + labels + 2 + 4 + 8;
+  }
+
   /// Les 8 dernières semaines, semaines vides comprises (barres à 0) —
   /// sinon le graphe « saute » les trous et fausse la lecture temporelle.
   List<MapEntry<DateTime, int>> _lastEightWeeks() {
@@ -59,7 +74,7 @@ class StatsActivitySection extends StatelessWidget {
                   ),
                 )
               : SizedBox(
-                  height: 120,
+                  height: _chartHeight(MediaQuery.textScalerOf(context)),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -100,22 +115,29 @@ class _WeekBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    // 12px réservés au label compteur + 16px au label date → 80px de barre.
-    final barMaxHeight = 80.0;
+    // Libellés au-dessus et au-dessous : la hauteur du graphe les compte
+    // déjà (`_chartHeight`) → 80px de barre au maximum.
+    const barMaxHeight = StatsActivitySection._barMaxHeight;
     final height =
         maxCount == 0 ? 0.0 : (count / maxCount) * barMaxHeight;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        // FittedBox : colonnes de ~27 px sur 320 dp — le libellé rétrécit
+        // au lieu de se casser lettre par lettre.
         if (count > 0)
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: AppColors.dsText2(brightness),
-              fontFeatures: const [FontFeature.tabularFigures()],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$count',
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: StatsActivitySection._countFontSize,
+                fontWeight: FontWeight.w700,
+                color: AppColors.dsText2(brightness),
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
         const SizedBox(height: 2),
@@ -130,12 +152,16 @@ class _WeekBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          '${monday.day}/${monday.month}',
-          style: TextStyle(
-            fontSize: 9,
-            color: AppColors.dsText3(brightness),
-            fontFeatures: const [FontFeature.tabularFigures()],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            '${monday.day}/${monday.month}',
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: StatsActivitySection._dateFontSize,
+              color: AppColors.dsText3(brightness),
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ],

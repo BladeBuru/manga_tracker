@@ -1452,5 +1452,34 @@
   "biometricUnlockReason": "Desbloquea Manga Tracker",
   "biometricLockedOut": "Demasiados intentos: desbloquea primero el dispositivo con su código y vuelve a intentarlo.",
   "biometricNotEnrolled": "No hay ningún bloqueo de pantalla configurado en este dispositivo. Añade un código, una huella o un rostro en los ajustes.",
-  "biometricUnlockError": "No se pudo desbloquear. Inténtalo de nuevo o inicia sesión con tu contraseña."
+  "biometricUnlockError": "No se pudo desbloquear. Inténtalo de nuevo o inicia sesión con tu contraseña.",
+  "homeGreeting": "Hola,",
+  "downloadChaptersTitle": "Descargar capítulos",
+  "downloadProgressChapter": "Descargando: capítulo {chapter}",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Seleccionar todo",
+  "downloadDeselectAll": "Deseleccionar todo",
+  "downloadSelectUnread": "Seleccionar no leídos ({count})",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Selecciona los capítulos que quieres descargar:",
+  "downloadConfirmCount": "Descargar ({count})",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

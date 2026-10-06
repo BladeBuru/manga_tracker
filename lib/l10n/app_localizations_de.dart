@@ -2714,4 +2714,35 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get biometricUnlockError =>
       'Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an.';
+
+  @override
+  String get homeGreeting => 'Hallo,';
+
+  @override
+  String get downloadChaptersTitle => 'Kapitel herunterladen';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Wird heruntergeladen: Kapitel $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Alle auswählen';
+
+  @override
+  String get downloadDeselectAll => 'Auswahl aufheben';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Ungelesene auswählen ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt =>
+      'Wählen Sie die herunterzuladenden Kapitel aus:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Herunterladen ($count)';
+  }
 }

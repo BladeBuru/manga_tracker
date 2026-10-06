@@ -2806,5 +2806,52 @@
   "biometricUnlockError": "Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.",
   "@biometricUnlockError": {
     "description": "Erreur générique de déverrouillage"
+  },
+  "homeGreeting": "Bonjour,",
+  "@homeGreeting": {
+    "description": "Accueil : salutation au-dessus du nom de l'utilisateur"
+  },
+  "downloadChaptersTitle": "Télécharger des chapitres",
+  "@downloadChaptersTitle": {
+    "description": "Titre de la fenêtre de sélection des chapitres à télécharger"
+  },
+  "downloadProgressChapter": "Téléchargement : chapitre {chapter}",
+  "@downloadProgressChapter": {
+    "description": "Fenêtre de téléchargement : chapitre en cours de téléchargement",
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "Tout sélectionner",
+  "@downloadSelectAll": {
+    "description": "Fenêtre de téléchargement : coche tous les chapitres pas encore téléchargés"
+  },
+  "downloadDeselectAll": "Tout désélectionner",
+  "@downloadDeselectAll": {
+    "description": "Fenêtre de téléchargement : décoche tous les chapitres"
+  },
+  "downloadSelectUnread": "Sélectionner les non lus ({count})",
+  "@downloadSelectUnread": {
+    "description": "Fenêtre de téléchargement : coche les chapitres après le dernier chapitre lu",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "Sélectionnez les chapitres à télécharger :",
+  "@downloadSelectPrompt": {
+    "description": "Fenêtre de téléchargement : consigne au-dessus de la liste des chapitres"
+  },
+  "downloadConfirmCount": "Télécharger ({count})",
+  "@downloadConfirmCount": {
+    "description": "Fenêtre de téléchargement : bouton de lancement, avec le nombre de chapitres cochés",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

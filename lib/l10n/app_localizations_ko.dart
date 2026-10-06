@@ -2587,4 +2587,34 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get biometricUnlockError => '잠금 해제에 실패했습니다. 다시 시도하거나 비밀번호로 로그인하세요.';
+
+  @override
+  String get homeGreeting => '안녕하세요,';
+
+  @override
+  String get downloadChaptersTitle => '챕터 다운로드';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return '다운로드 중: 챕터 $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => '모두 선택';
+
+  @override
+  String get downloadDeselectAll => '모두 선택 해제';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return '읽지 않은 챕터 선택 ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt => '다운로드할 챕터를 선택하세요:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return '다운로드 ($count)';
+  }
 }

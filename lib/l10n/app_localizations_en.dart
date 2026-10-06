@@ -2678,4 +2678,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get biometricUnlockError =>
       'Unlock failed. Try again or sign in with your password.';
+
+  @override
+  String get homeGreeting => 'Hello,';
+
+  @override
+  String get downloadChaptersTitle => 'Download chapters';
+
+  @override
+  String downloadProgressChapter(int chapter) {
+    return 'Downloading: chapter $chapter';
+  }
+
+  @override
+  String get downloadSelectAll => 'Select all';
+
+  @override
+  String get downloadDeselectAll => 'Deselect all';
+
+  @override
+  String downloadSelectUnread(int count) {
+    return 'Select unread ($count)';
+  }
+
+  @override
+  String get downloadSelectPrompt => 'Select the chapters to download:';
+
+  @override
+  String downloadConfirmCount(int count) {
+    return 'Download ($count)';
+  }
 }

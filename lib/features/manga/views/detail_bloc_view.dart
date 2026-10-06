@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:html/parser.dart';
+import 'package:mangatracker/features/manga/helpers/detail_hero_layout.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/router/app_router.dart';
@@ -340,6 +341,10 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     // Le statut est récupéré depuis le DTO - null si pas dans la bibliothèque
     final ReadingStatus? status = manga.inLibrary ? (manga.readingStatus ?? ReadingStatus.readLater) : null;
 
+    // `context` est celui de la page, au-dessus du Scaffold : il voit le
+    // clavier (cf. DetailHeroLayout).
+    final hero = DetailHeroLayout.of(MediaQuery.of(context));
+
     return Column(
       children: [
         // Session rejetee : le detail en cache reste entierement consultable,
@@ -356,6 +361,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
           child: Column(
             children: [
               // Header avec image et titre
+              if (hero.showChrome)
               GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
@@ -426,7 +432,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 340,
+                      height: hero.height,
                       // Proxy (hotfix-v0-10-1 US-2) : CORS web.
                       child: RefreshableMangaImage(
                         muId: widget.muId.toString(),
@@ -437,11 +443,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                     ),
                     Container(
                       width: double.infinity,
-                      height: 340,
+                      height: hero.height,
                       color: Colors.black.withValues(alpha: 0.4),
                     ),
                     Positioned(
-                      top: 70,
+                      top: hero.titleTop,
                       left: 16,
                       right: 16,
                       child: IgnorePointer(
@@ -540,7 +546,8 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               // d'icône 48px, pour libérer de la hauteur fixe. Cf. l'icône
               // `_StatusIconButton` dans `_buildBottomActionBar`.
               // L'action bar suit la même largeur max que le contenu.
-              AppContentWidth(child: _buildBottomActionBar(status)),
+              if (hero.showChrome)
+                AppContentWidth(child: _buildBottomActionBar(status)),
             ],
           ),
         ),
@@ -739,6 +746,9 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     final detailBloc = context.read<DetailBloc>();
     showAppBottomSheet(
       context: context,
+      // Petit écran + texte agrandi : la feuille dépasse la hauteur par
+      // défaut (9/16 de l'écran) → elle prend la hauteur utile et défile.
+      isScrollControlled: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -749,7 +759,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
         return BlocProvider.value(
           value: detailBloc,
           child: SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.m,
                 AppSpacing.m,

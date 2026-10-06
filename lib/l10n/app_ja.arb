@@ -1452,5 +1452,34 @@
   "biometricUnlockReason": "Manga Trackerのロックを解除",
   "biometricLockedOut": "試行回数が多すぎます。端末をパスコードでロック解除してから、もう一度お試しください。",
   "biometricNotEnrolled": "この端末には画面ロックが設定されていません。設定でパスコード、指紋、または顔を追加してください。",
-  "biometricUnlockError": "ロックを解除できませんでした。もう一度お試しいただくか、パスワードでログインしてください。"
+  "biometricUnlockError": "ロックを解除できませんでした。もう一度お試しいただくか、パスワードでログインしてください。",
+  "homeGreeting": "こんにちは、",
+  "downloadChaptersTitle": "章をダウンロード",
+  "downloadProgressChapter": "ダウンロード中：{chapter}章",
+  "@downloadProgressChapter": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectAll": "すべて選択",
+  "downloadDeselectAll": "選択をすべて解除",
+  "downloadSelectUnread": "未読を選択（{count}）",
+  "@downloadSelectUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadSelectPrompt": "ダウンロードする章を選択してください：",
+  "downloadConfirmCount": "ダウンロード（{count}）",
+  "@downloadConfirmCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

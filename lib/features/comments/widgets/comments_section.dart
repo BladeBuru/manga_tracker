@@ -54,7 +54,13 @@ class _CommentsContentState extends State<_CommentsContent> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Header(state: state),
+            CommentsHeader(
+              count: state is CommentsLoaded ? state.items.length : 0,
+              sort: state is CommentsLoaded ? state.sort : CommentSort.recent,
+              onSortChanged: (sort) => context
+                  .read<CommentsBloc>()
+                  .add(ChangeCommentSort(sort)),
+            ),
             const SizedBox(height: 8),
             CommentInput(
               onSubmit: (content, rating) {
@@ -98,32 +104,45 @@ class _CommentsContentState extends State<_CommentsContent> {
   }
 }
 
-class _Header extends StatelessWidget {
-  final CommentsState state;
-  const _Header({required this.state});
+/// En-tête « Commentaires (n) » + tri (Récents / Populaires).
+///
+/// `Wrap` : titre à gauche et tri à droite quand ils tiennent sur une ligne ;
+/// sinon (petit écran, texte agrandi, allemand) le tri passe dessous au lieu
+/// d'écraser le titre, qui se cassait au milieu des mots.
+class CommentsHeader extends StatelessWidget {
+  final int count;
+  final CommentSort sort;
+  final ValueChanged<CommentSort> onSortChanged;
+
+  const CommentsHeader({
+    super.key,
+    required this.count,
+    required this.sort,
+    required this.onSortChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final sort = state is CommentsLoaded
-        ? (state as CommentsLoaded).sort
-        : CommentSort.recent;
-    final count =
-        state is CommentsLoaded ? (state as CommentsLoaded).items.length : 0;
-    return Row(
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: AppSpacing.s,
+      runSpacing: AppSpacing.s,
       children: [
-        Expanded(
-          child: Text(
-            '${l10n.commentsTitle} ($count)',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
+        Text(
+          '${l10n.commentsTitle} ($count)',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
         ),
         // Sort toggle — 2 AppChip cliquables (cohérent avec le reste du
         // design system). Plus de SegmentedButton qui rendait orange.
-        Row(
-          mainAxisSize: MainAxisSize.min,
+        Wrap(
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
           children: [
             sort == CommentSort.recent
                 ? AppChip.primary(
@@ -133,11 +152,8 @@ class _Header extends StatelessWidget {
                 : AppChip(
                     label: l10n.commentsSortRecent,
                     icon: Icons.schedule,
-                    onTap: () => context
-                        .read<CommentsBloc>()
-                        .add(const ChangeCommentSort(CommentSort.recent)),
+                    onTap: () => onSortChanged(CommentSort.recent),
                   ),
-            const SizedBox(width: AppSpacing.xs),
             sort == CommentSort.top
                 ? AppChip.primary(
                     label: l10n.commentsSortTop,
@@ -146,9 +162,7 @@ class _Header extends StatelessWidget {
                 : AppChip(
                     label: l10n.commentsSortTop,
                     icon: Icons.trending_up,
-                    onTap: () => context
-                        .read<CommentsBloc>()
-                        .add(const ChangeCommentSort(CommentSort.top)),
+                    onTap: () => onSortChanged(CommentSort.top),
                   ),
           ],
         ),
