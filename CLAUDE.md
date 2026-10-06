@@ -318,7 +318,10 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   pure) : le défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
   `reader_invariants_test.dart`. Visible, elle **réserve sa place** au-dessus
   de la page (`ReaderAutoHideBar`) : ❌ jamais en superposition — elle masquait
-  le haut de chaque chapitre et le bandeau de vérification.
+  le haut de chaque chapitre et le bandeau de vérification. **Cachée, la page
+  occupe TOUT l'écran** : barres du système masquées (mode immersif), aucune
+  bande réservée en haut ni en bas ; elles reviennent avec la barre et en
+  quittant le lecteur. ❌ Jamais de `SafeArea` autour de la page du lecteur.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.
@@ -333,7 +336,9 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   (fil de détente `test/core/router/app_modals_test.dart`).
 - ✅ `SystemBarsInset` (dans `MaterialApp.builder`) garde tout au-dessus de la
   barre de navigation du système (Android 15 bord à bord) : ne pas ajouter de
-  marge basse « système » à la main.
+  marge basse « système » à la main. **Sauf les lecteurs** (plein écran,
+  `fullscreenReaderRouteNames` dans `app_router.dart`) : la bande n'y protège
+  aucun bouton et vole de la place à la lecture (retour v0.18.0).
 - 🔒 Session : un seul échange de refresh token à la fois (`SessionRefresher`),
   et seul un 401/403 **JSON de l'API** est un refus. ❌ Jamais d'effacement des
   jetons depuis un `catch` générique.

@@ -8,55 +8,60 @@ void main() {
     home: home,
   );
 
-  testWidgets('un bouton en bas de page reste au-dessus de la barre à boutons',
-      (tester) async {
-    tester.view.physicalSize = const Size(360, 640);
-    tester.view.devicePixelRatio = 1;
-    tester.view.padding = const FakeViewPadding(bottom: 48);
-    tester.view.viewPadding = const FakeViewPadding(bottom: 48);
-    addTearDown(tester.view.reset);
+  testWidgets(
+    'un bouton en bas de page reste au-dessus de la barre à boutons',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(bottom: 48);
+      tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+      addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(
-      app(
-        Scaffold(
-          body: Column(
-            children: [
-              const Spacer(),
-              FilledButton(onPressed: () {}, child: const Text('Valider')),
-            ],
+      await tester.pumpWidget(
+        app(
+          Scaffold(
+            body: Column(
+              children: [
+                const Spacer(),
+                FilledButton(onPressed: () {}, child: const Text('Valider')),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    final buttonBottom = tester.getBottomLeft(find.byType(FilledButton)).dy;
-    expect(buttonBottom, lessThanOrEqualTo(640 - 48));
-  });
+      final buttonBottom = tester.getBottomLeft(find.byType(FilledButton)).dy;
+      expect(buttonBottom, lessThanOrEqualTo(640 - 48));
+    },
+  );
 
-  testWidgets('pas de double marge : la barre du bas ne se décale pas deux fois',
-      (tester) async {
-    tester.view.physicalSize = const Size(360, 640);
-    tester.view.devicePixelRatio = 1;
-    tester.view.padding = const FakeViewPadding(bottom: 48);
-    tester.view.viewPadding = const FakeViewPadding(bottom: 48);
-    addTearDown(tester.view.reset);
+  testWidgets(
+    'pas de double marge : la barre du bas ne se décale pas deux fois',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(bottom: 48);
+      tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+      addTearDown(tester.view.reset);
 
-    late EdgeInsets inner;
-    await tester.pumpWidget(
-      app(
-        Builder(
-          builder: (context) {
-            inner = MediaQuery.paddingOf(context);
-            return const SizedBox();
-          },
+      late EdgeInsets inner;
+      await tester.pumpWidget(
+        app(
+          Builder(
+            builder: (context) {
+              inner = MediaQuery.paddingOf(context);
+              return const SizedBox();
+            },
+          ),
         ),
-      ),
-    );
-    expect(inner.bottom, 0);
-  });
+      );
+      expect(inner.bottom, 0);
+    },
+  );
 
-  testWidgets('clavier : la bande déjà réservée n\'est pas comptée deux fois',
-      (tester) async {
+  testWidgets('clavier : la bande déjà réservée n\'est pas comptée deux fois', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     tester.view.viewPadding = const FakeViewPadding(bottom: 48);
@@ -78,7 +83,28 @@ void main() {
   });
 
   testWidgets('sans barre système : rien ne change', (tester) async {
-    await tester.pumpWidget(app(const Text('x', textDirection: TextDirection.ltr)));
+    await tester.pumpWidget(
+      app(const Text('x', textDirection: TextDirection.ltr)),
+    );
     expect(find.byType(ColoredBox), findsNothing);
+  });
+
+  testWidgets('désactivé (lecteurs) : ni bande ni marge, la page va au bord', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(bottom: 48);
+    tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        builder:
+            (context, child) => SystemBarsInset(enabled: false, child: child!),
+        home: const Scaffold(body: SizedBox.expand(key: Key('page'))),
+      ),
+    );
+    expect(tester.getRect(find.byKey(const Key('page'))).bottom, 640);
   });
 }

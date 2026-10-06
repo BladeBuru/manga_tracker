@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
 import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
@@ -97,6 +98,85 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.refresh));
       expect(taps, 1);
+    });
+
+    testWidgets(
+      "cachée : la page occupe tout l'écran, sans bande vide en haut",
+      (tester) async {
+        // Barre d'état de 24 px : avant, la page restait sous une bande
+        // blanche de cette hauteur une fois la barre cachée (retour v0.18.0).
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
+        tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 24);
+        addTearDown(tester.view.reset);
+
+        Widget page(bool visible) => MaterialApp(
+          home: Scaffold(
+            body: ReaderAutoHideBar(
+              visible: visible,
+              appBar: AppBar(title: const Text('Lire en ligne')),
+              child: const SizedBox.expand(key: Key('page')),
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(page(false));
+        await tester.pumpAndSettle();
+        final rect = tester.getRect(find.byKey(const Key('page')));
+        expect(rect.top, 0);
+        expect(rect.height, 640, reason: 'aucune bande en bas non plus');
+
+        await tester.pumpWidget(page(true));
+        await tester.pumpAndSettle();
+        final bar = tester.getRect(find.byType(AppBar));
+        expect(bar.top, 0, reason: "la barre couvre la barre d'état");
+        expect(
+          tester.getRect(find.byKey(const Key('page'))).top,
+          greaterThanOrEqualTo(bar.bottom),
+        );
+      },
+    );
+
+    testWidgets('barres du système : masquées avec la barre, rétablies en '
+        'quittant le lecteur', (tester) async {
+      final modes = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'SystemChrome.setEnabledSystemUIMode') {
+            modes.add(call.arguments);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+
+      Widget page(bool visible) => MaterialApp(
+        home: Scaffold(
+          body: ReaderAutoHideBar(
+            visible: visible,
+            appBar: AppBar(title: const Text('Lire en ligne')),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(page(true));
+      await tester.pumpWidget(page(false));
+      await tester.pumpWidget(page(true));
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+      expect(modes, [
+        'SystemUiMode.edgeToEdge',
+        'SystemUiMode.immersiveSticky',
+        'SystemUiMode.edgeToEdge',
+        'SystemUiMode.edgeToEdge',
+      ]);
     });
 
     testWidgets('visible, elle ne recouvre pas la page (place réservée)', (

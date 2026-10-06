@@ -5,7 +5,19 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
-## [Unreleased] — retours utilisateurs d'octobre
+## [Unreleased] — lecteur vraiment plein écran
+
+### 🐛 Corrections
+
+- **Lecture en plein écran** : quand la barre du haut se retire, la page occupe tout l'écran (heure, batterie et boutons du téléphone se retirent aussi) ; ils reviennent quand vous remontez. Fini la bande blanche en haut et la bande ajoutée en bas du lecteur.
+
+### Notes d'implémentation
+
+- v0.18.0 appliquait au lecteur la protection prévue pour les pages à boutons : `SystemBarsInset` (bande en bas) et un `SafeArea` autour de la page (place de la barre d'état laissée vide). `SystemBarsInset(enabled:)` est désormais coupé sur les routes `manga-read` / `manga-read-offline` (`isFullscreenReaderRoute`, écoute de `routerDelegate`) ; `ReaderAutoHideBar` passe en `SystemUiMode.immersiveSticky` quand la barre est cachée et rétablit `edgeToEdge` quand elle revient et en quittant le lecteur (posé aussi au démarrage). L'AppBar couvre elle-même la barre d'état.
+
+---
+
+## [0.18.0] — retours utilisateurs d'octobre
 
 ### 🐛 Corrections
 
