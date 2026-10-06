@@ -2685,4 +2685,10 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get pendingSyncTitle => 'Alterações aguardando envio';
+
+  @override
+  String get syncNowAction => 'Sincronizar';
 }

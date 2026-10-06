@@ -4665,6 +4665,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{count, plural, =1{1 nouvelle recommandation} other{{count} nouvelles recommandations}}'**
   String profileUnseenSharesBadge(int count);
+
+  /// Bandeau : modifications faites hors ligne pas encore envoyées, réseau disponible
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en attente d\'envoi'**
+  String get pendingSyncTitle;
+
+  /// Bouton d'envoi immédiat des modifications en attente
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNowAction;
 }
 
 class _AppLocalizationsDelegate

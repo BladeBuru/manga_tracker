@@ -2564,4 +2564,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String profileUnseenSharesBadge(int count) {
     return '새 추천 $count개';
   }
+
+  @override
+  String get pendingSyncTitle => '전송 대기 중인 변경 사항';
+
+  @override
+  String get syncNowAction => '동기화';
 }

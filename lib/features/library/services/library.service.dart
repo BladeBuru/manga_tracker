@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/library_index_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
+import 'package:mangatracker/core/services/sync_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
@@ -329,10 +331,32 @@ class LibraryService {
   /// morte est **refusée** et l'exception remonte au BLoC, qui affichera
   /// l'invitation à se reconnecter. La mettre en file serait un faux succès :
   /// `SyncService` la rejouerait indéfiniment sans jamais pouvoir aboutir.
+  ///
+  /// Seule une panne de **réseau** met en file : une autre erreur (bug,
+  /// réponse illisible) ne réussirait pas mieux plus tard. Et une mise en
+  /// file est un succès différé (`true`) : renvoyer `false` poussait les
+  /// écrans à réessayer, et chaque essai ajoutait une copie à la file.
   Future<bool> _queueUnlessRejected(OfflineAction action, Object error) async {
-    if (requiresReauthPrompt(classifyFailure(error))) throw error;
+    final mode = classifyFailure(error);
+    if (requiresReauthPrompt(mode)) throw error;
+    if (mode != FailureMode.network) {
+      debugPrint('⚠️ LibraryService: ${action.type} non appliqué ($error)');
+      return false;
+    }
     await _cacheService.queueOfflineAction(action);
-    return false;
+    unawaited(_syncSoon());
+    return true;
+  }
+
+  /// La file sera rejouée par `SyncService` (reconnexion, retour au premier
+  /// plan, minuterie) ; ce rappel couvre le cas où le réseau revient vite.
+  Future<void> _syncSoon() async {
+    if (!getIt.isRegistered<SyncService>()) return;
+    try {
+      final sync = await getIt.getAsync<SyncService>();
+      await Future<void>.delayed(const Duration(seconds: 30));
+      await sync.syncNow();
+    } catch (_) {}
   }
 
   // ─────────── UTILS & HELPERS ───────────

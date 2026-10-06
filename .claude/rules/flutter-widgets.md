@@ -250,26 +250,22 @@ AppListTile(
 
 ## Indicateur offline (obligatoire si `state.isOffline`)
 
+Utiliser les composants du design system — jamais un bandeau ad hoc :
+
 ```dart
 if (state.isOffline)
-  Container(
-    color: Colors.orange,
-    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-    child: Row(
-      children: [
-        const Icon(Icons.cloud_off, size: 16, color: Colors.white),
-        const SizedBox(width: 8),
-        Text(
-          context.l10n.offlineMode,
-          style: const TextStyle(color: Colors.white),
-        ),
-        if (state.pendingActions > 0)
-          Text(' · ${state.pendingActions} ${context.l10n.pendingActions}',
-            style: const TextStyle(color: Colors.white)),
-      ],
-    ),
+  OfflineBanner(pendingActions: state.pendingActions)
+else if (state.pendingActions > 0)
+  PendingSyncBanner(
+    pendingActions: state.pendingActions,
+    onSync: () => bloc.add(const RefreshLibrary()),
   ),
 ```
+
+⚠️ Une traduction à paramètre s'**appelle** : `l10n.pendingActions(count)`
+(la chaîne contient déjà le nombre). `'${l10n.pendingActions}'` affiche
+« Closure: (int) => String… » — bug réel de la v0.17. Verrouillé par
+`test/l10n/l10n_calls_invariant_test.dart`.
 
 ## États de chargement — Skeleton screens
 

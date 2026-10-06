@@ -2654,4 +2654,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get pendingSyncTitle => 'Changes waiting to be sent';
+
+  @override
+  String get syncNowAction => 'Sync';
 }

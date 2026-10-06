@@ -1132,10 +1132,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
   Future<void> _updateNextLinkFrom(String currentUrl, {int? currentChapter}) async {
     final next = await ChapterLinkResolver.buildNextUrl(currentUrl, currentChapter: currentChapter)
         ?? await ChapterLinkResolver.buildNextUrl(widget.baseUserLink, currentChapter: currentChapter);
-    if (next != null) {
-      await _library.updateCustomLink(widget.muId, next);
+    // Seulement si le lien change : il était renvoyé une à deux fois par
+    // chapitre, et chaque envoi raté s'ajoutait à la file hors ligne.
+    if (next != null && next != _lastSavedNextLink) {
+      _lastSavedNextLink = next;
+      final ok = await _library.updateCustomLink(widget.muId, next);
+      if (!ok && _lastSavedNextLink == next) _lastSavedNextLink = null;
     }
   }
+
+  /// Dernier lien « chapitre suivant » enregistré pendant cette lecture.
+  String? _lastSavedNextLink;
 
   /// Point d'entrée unique des détections d'URL — **sérialisé et idempotent**.
   ///

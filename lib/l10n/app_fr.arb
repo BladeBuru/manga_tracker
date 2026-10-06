@@ -2778,5 +2778,13 @@
         "type": "int"
       }
     }
+  },
+  "pendingSyncTitle": "Modifications en attente d'envoi",
+  "@pendingSyncTitle": {
+    "description": "Bandeau : modifications faites hors ligne pas encore envoyées, réseau disponible"
+  },
+  "syncNowAction": "Synchroniser",
+  "@syncNowAction": {
+    "description": "Bouton d'envoi immédiat des modifications en attente"
   }
 }

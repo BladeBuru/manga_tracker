@@ -274,6 +274,16 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: OfflineBanner(pendingActions: state.pendingActions),
+          )
+        else if (state.pendingActions > 0 && !state.requiresReauth)
+          // En ligne, mais des modifications faites hors ligne attendent :
+          // on le dit (avant : rien) et on propose de les envoyer.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: PendingSyncBanner(
+              pendingActions: state.pendingActions,
+              onSync: _refresh,
+            ),
           ),
         if (state.requiresReauth) _reauthBanner(),
         Expanded(child: _buildList(state.mangas)),

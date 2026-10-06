@@ -2561,4 +2561,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String profileUnseenSharesBadge(int count) {
     return '新しいおすすめ$count件';
   }
+
+  @override
+  String get pendingSyncTitle => '送信待ちの変更があります';
+
+  @override
+  String get syncNowAction => '同期';
 }

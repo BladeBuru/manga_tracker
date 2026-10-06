@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/offline_queue_policy.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
@@ -37,9 +38,11 @@ class OfflineAction {
   factory OfflineAction.fromJson(Map<String, dynamic> json) => OfflineAction(
     type: json['type'],
     muId: json['muId'],
-    status: json['status'] != null ? ReadingStatus.values.firstWhere(
-      (e) => e.name == json['status']
-    ) : null,
+    // Statut inconnu (version future, donnée abîmée) : ignoré plutôt que
+    // de faire échouer la lecture de toute la file.
+    status: ReadingStatus.values
+        .where((e) => e.name == json['status'])
+        .firstOrNull,
     customLink: json['customLink'],
     readChapters: json['readChapters'],
     timestamp: DateTime.parse(json['timestamp']),
@@ -331,15 +334,37 @@ class OfflineCacheService {
     return null;
   }
   
-  /// Ajoute une action à la queue hors ligne
-  Future<void> queueOfflineAction(OfflineAction action) async {
-    try {
-      final existing = await getOfflineQueue();
-      existing.add(action.toJson());
-      await _storage.writeSecureData(_offlineQueueKey, jsonEncode(existing));
-    } catch (e) {
-      debugPrint('Erreur lors de l\'ajout à la queue hors ligne: $e');
-    }
+  /// Verrou des lectures-modifications-écritures de la file : deux ajouts
+  /// simultanés (lecteur + validation d'un chapitre) se perdaient l'un
+  /// l'autre, et une synchronisation écrasait ce qui arrivait pendant.
+  static Future<void> _queueLock = Future<void>.value();
+
+  /// Applique [change] à la file, sous verrou. Toute écriture de la file
+  /// passe par ici.
+  Future<void> updateOfflineQueue(
+    List<Map<String, dynamic>> Function(List<Map<String, dynamic>> queue)
+    change,
+  ) {
+    final run = _queueLock.then((_) async {
+      final next = change(await getOfflineQueue());
+      if (next.isEmpty) {
+        await _storage.deleteSecureData(_offlineQueueKey);
+      } else {
+        await _storage.writeSecureData(_offlineQueueKey, jsonEncode(next));
+      }
+    });
+    _queueLock = run.catchError((Object e) {
+      debugPrint('Erreur lors de la mise à jour de la queue hors ligne: $e');
+    });
+    return _queueLock;
+  }
+
+  /// Ajoute une action à la queue hors ligne. Une action de même nature déjà
+  /// en attente pour ce titre est remplacée (cf. [OfflineQueuePolicy]).
+  Future<void> queueOfflineAction(OfflineAction action) {
+    return updateOfflineQueue(
+      (queue) => OfflineQueuePolicy.enqueue(queue, action.toJson()),
+    );
   }
   
   /// Récupère la queue des actions hors ligne

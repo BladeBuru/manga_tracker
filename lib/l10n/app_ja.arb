@@ -1445,5 +1445,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pendingSyncTitle": "送信待ちの変更があります",
+  "syncNowAction": "同期"
 }

@@ -2690,4 +2690,10 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get pendingSyncTitle => 'Änderungen warten auf Übertragung';
+
+  @override
+  String get syncNowAction => 'Synchronisieren';
 }

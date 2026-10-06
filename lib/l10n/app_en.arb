@@ -1451,5 +1451,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pendingSyncTitle": "Changes waiting to be sent",
+  "syncNowAction": "Sync"
 }

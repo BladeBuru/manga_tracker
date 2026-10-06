@@ -1445,5 +1445,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pendingSyncTitle": "Cambios pendientes de envío",
+  "syncNowAction": "Sincronizar"
 }
