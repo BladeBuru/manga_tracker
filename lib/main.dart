@@ -22,6 +22,12 @@ import 'core/theme/app_theme.dart';
 /// `navigatorKey.currentContext` (notifier, app_update_service) continuent
 /// de fonctionner.
 GlobalKey<NavigatorState> get navigatorKey => rootNavigatorKey;
+/// Orientations autorisées dans toute l'application.
+const List<DeviceOrientation> appOrientations = [
+  DeviceOrientation.portraitUp,
+  DeviceOrientation.portraitDown,
+];
+
 Future<void> main() async {
   // S'assure que les plugins de plateforme sont initialisés avant toute opération async
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +58,12 @@ Future<void> main() async {
     debugPrint('⚠️ Erreur lors de l\'initialisation du service de vérification en arrière-plan: $e');
   }
 
+  // Portrait dans les deux sens : lire en chargeant, appareil retourné.
+  // (Avant : portrait « à l'endroit » seulement.) Le système garde le
+  // dernier mot — beaucoup de téléphones refusent le portrait inversé, les
+  // tablettes l'acceptent — et le verrou de rotation de l'utilisateur est
+  // respecté. Posé une fois ici (et non à chaque reconstruction).
+  await SystemChrome.setPreferredOrientations(appOrientations);
   runApp(const MyApp());
 }
 
@@ -179,8 +191,6 @@ class _MyAppState extends State<MyApp> {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
     ));
-
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     return MaterialApp.router(
       title: 'MangaTracker',

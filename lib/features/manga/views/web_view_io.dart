@@ -44,6 +44,8 @@ import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'dart:async';
+import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
+import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
 
 class ReaderWebView extends StatefulWidget {
@@ -157,6 +159,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
   /// Enregistrement « Ceci est le nouveau lien » en cours.
   bool _savingLink = false;
+
+  /// Barre du haut affichée (cf. [ReaderBarVisibility]).
+  final ReaderBarVisibility _barVisibility = ReaderBarVisibility();
+  bool _barVisible = true;
 
   // Lecture seule : ni chapitre lu, ni lien réécrit, ni position. Le mode
   // « recherche de lien » y ajoute la seule écriture voulue par
@@ -1457,20 +1463,24 @@ class _ReaderWebViewState extends State<ReaderWebView>
       canPop: false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
-          actions: [
-            ReaderActionBar(
-              adBlockerEnabled: _adBlockerEnabled,
-              interactiveAdBlockMode: _interactiveAdBlockMode,
-              onRefresh: _refreshPage,
-              onToggleAdBlocker: _toggleAdBlocker,
-              onOverflowAction: _handleOverflowAction,
-              linkDiscovery: widget.linkDiscovery,
-            ),
-          ],
-        ),
-        body: Stack(
+        // Lecture plein écran : la barre se retire quand on descend dans la
+        // page et revient dès qu'on remonte (ReaderBarVisibility, pure).
+        body: ReaderAutoHideBar(
+          visible: _barVisible,
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
+            actions: [
+              ReaderActionBar(
+                adBlockerEnabled: _adBlockerEnabled,
+                interactiveAdBlockMode: _interactiveAdBlockMode,
+                onRefresh: _refreshPage,
+                onToggleAdBlocker: _toggleAdBlocker,
+                onOverflowAction: _handleOverflowAction,
+                linkDiscovery: widget.linkDiscovery,
+              ),
+            ],
+          ),
+          child: Stack(
           children: [
             InAppWebView(
           initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
@@ -1532,8 +1542,20 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return NavigationActionPolicy.ALLOW;
           },
 
+          // Barre du haut : cachée en descendant, de retour en remontant.
+          // Aucun effet sur la lecture (ni mesure, ni enregistrement).
+          onScrollChanged: (controller, x, y) {
+            final visible = _barVisibility.onScroll(y);
+            if (visible != _barVisible && mounted) {
+              setState(() => _barVisible = visible);
+            }
+          },
+
           // 2) Début de chargement - Vérification supplémentaire et détection précoce de captcha
           onLoadStart: (controller, url) async {
+            // Nouvelle page : la barre réapparaît.
+            _barVisibility.reset();
+            if (!_barVisible && mounted) setState(() => _barVisible = true);
             ReaderDiagnostics.log('load.start', {
               'url': url,
               'allowedHost': url == null ? null : _isAllowedDomain(url.host),
@@ -1788,6 +1810,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
                 ),
               ),
           ],
+        ),
         ),
       ),
     );

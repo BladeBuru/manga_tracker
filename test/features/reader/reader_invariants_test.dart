@@ -553,4 +553,19 @@ void main() {
       expect(code, contains('if (ModalRoute.of(context)?.isCurrent ?? false)'));
     });
   });
+
+  // Barre du haut qui se retire (2026-10) : purement visuelle. Le défilement
+  // ne doit jamais mesurer, enregistrer ni valider quoi que ce soit.
+  group('barre du haut auto-masquée — purement visuelle', () {
+    test('le défilement ne fait que basculer la barre', () {
+      final code = withoutComments(reader);
+      final start = code.indexOf('onScrollChanged:');
+      expect(start, isNot(-1));
+      final handler = code.substring(start, code.indexOf('},', start));
+      expect(handler, contains('_barVisibility.onScroll(y)'));
+      for (final forbidden in ['_library', '_save', '_commit', '_handleDetected']) {
+        expect(handler, isNot(contains(forbidden)), reason: forbidden);
+      }
+    });
+  });
 }
