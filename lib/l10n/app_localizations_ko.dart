@@ -2573,4 +2573,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'MangaUpdates 추천';
+
+  @override
+  String get biometricUnlockReason => 'Manga Tracker 잠금 해제';
+
+  @override
+  String get biometricLockedOut =>
+      '시도 횟수가 너무 많습니다. 먼저 기기 암호로 잠금을 해제한 후 다시 시도하세요.';
+
+  @override
+  String get biometricNotEnrolled =>
+      '이 기기에 화면 잠금이 설정되어 있지 않습니다. 설정에서 암호, 지문 또는 얼굴을 추가하세요.';
+
+  @override
+  String get biometricUnlockError => '잠금 해제에 실패했습니다. 다시 시도하거나 비밀번호로 로그인하세요.';
 }

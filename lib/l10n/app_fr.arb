@@ -2790,5 +2790,21 @@
   "communityRecoMuSuggested": "Suggéré par MangaUpdates",
   "@communityRecoMuSuggested": {
     "description": "Œuvre suggérée par MangaUpdates (calcul), pas encore recommandée par des lecteurs"
+  },
+  "biometricUnlockReason": "Déverrouillez Manga Tracker",
+  "@biometricUnlockReason": {
+    "description": "Raison affichée dans la fenêtre système de déverrouillage (empreinte, visage ou code)"
+  },
+  "biometricLockedOut": "Trop de tentatives : déverrouillez d'abord votre appareil avec son code, puis réessayez.",
+  "@biometricLockedOut": {
+    "description": "Biométrie bloquée après trop d'échecs"
+  },
+  "biometricNotEnrolled": "Aucun verrouillage n'est configuré sur cet appareil. Ajoutez un code, une empreinte ou un visage dans les réglages.",
+  "@biometricNotEnrolled": {
+    "description": "Aucune méthode de verrouillage enregistrée"
+  },
+  "biometricUnlockError": "Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.",
+  "@biometricUnlockError": {
+    "description": "Erreur générique de déverrouillage"
   }
 }

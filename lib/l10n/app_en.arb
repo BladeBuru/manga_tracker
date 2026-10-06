@@ -1454,5 +1454,9 @@
   },
   "pendingSyncTitle": "Changes waiting to be sent",
   "syncNowAction": "Sync",
-  "communityRecoMuSuggested": "Suggested by MangaUpdates"
+  "communityRecoMuSuggested": "Suggested by MangaUpdates",
+  "biometricUnlockReason": "Unlock Manga Tracker",
+  "biometricLockedOut": "Too many attempts: unlock your device with its code first, then try again.",
+  "biometricNotEnrolled": "No screen lock is set up on this device. Add a code, a fingerprint or a face in the settings.",
+  "biometricUnlockError": "Unlock failed. Try again or sign in with your password."
 }

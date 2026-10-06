@@ -4683,6 +4683,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Suggéré par MangaUpdates'**
   String get communityRecoMuSuggested;
+
+  /// Raison affichée dans la fenêtre système de déverrouillage (empreinte, visage ou code)
+  ///
+  /// In fr, this message translates to:
+  /// **'Déverrouillez Manga Tracker'**
+  String get biometricUnlockReason;
+
+  /// Biométrie bloquée après trop d'échecs
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de tentatives : déverrouillez d\'abord votre appareil avec son code, puis réessayez.'**
+  String get biometricLockedOut;
+
+  /// Aucune méthode de verrouillage enregistrée
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun verrouillage n\'est configuré sur cet appareil. Ajoutez un code, une empreinte ou un visage dans les réglages.'**
+  String get biometricNotEnrolled;
+
+  /// Erreur générique de déverrouillage
+  ///
+  /// In fr, this message translates to:
+  /// **'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.'**
+  String get biometricUnlockError;
 }
 
 class _AppLocalizationsDelegate

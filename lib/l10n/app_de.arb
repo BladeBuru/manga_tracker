@@ -1448,5 +1448,9 @@
   },
   "pendingSyncTitle": "Änderungen warten auf Übertragung",
   "syncNowAction": "Synchronisieren",
-  "communityRecoMuSuggested": "Von MangaUpdates vorgeschlagen"
+  "communityRecoMuSuggested": "Von MangaUpdates vorgeschlagen",
+  "biometricUnlockReason": "Manga Tracker entsperren",
+  "biometricLockedOut": "Zu viele Versuche: Entsperren Sie zuerst Ihr Gerät mit dem Code und versuchen Sie es erneut.",
+  "biometricNotEnrolled": "Auf diesem Gerät ist keine Displaysperre eingerichtet. Fügen Sie in den Einstellungen einen Code, einen Fingerabdruck oder ein Gesicht hinzu.",
+  "biometricUnlockError": "Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an."
 }

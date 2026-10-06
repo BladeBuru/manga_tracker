@@ -2699,4 +2699,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'Von MangaUpdates vorgeschlagen';
+
+  @override
+  String get biometricUnlockReason => 'Manga Tracker entsperren';
+
+  @override
+  String get biometricLockedOut =>
+      'Zu viele Versuche: Entsperren Sie zuerst Ihr Gerät mit dem Code und versuchen Sie es erneut.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'Auf diesem Gerät ist keine Displaysperre eingerichtet. Fügen Sie in den Einstellungen einen Code, einen Fingerabdruck oder ein Gesicht hinzu.';
+
+  @override
+  String get biometricUnlockError =>
+      'Entsperren fehlgeschlagen. Versuchen Sie es erneut oder melden Sie sich mit Ihrem Passwort an.';
 }

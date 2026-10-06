@@ -2570,4 +2570,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'MangaUpdatesのおすすめ';
+
+  @override
+  String get biometricUnlockReason => 'Manga Trackerのロックを解除';
+
+  @override
+  String get biometricLockedOut => '試行回数が多すぎます。端末をパスコードでロック解除してから、もう一度お試しください。';
+
+  @override
+  String get biometricNotEnrolled =>
+      'この端末には画面ロックが設定されていません。設定でパスコード、指紋、または顔を追加してください。';
+
+  @override
+  String get biometricUnlockError =>
+      'ロックを解除できませんでした。もう一度お試しいただくか、パスワードでログインしてください。';
 }

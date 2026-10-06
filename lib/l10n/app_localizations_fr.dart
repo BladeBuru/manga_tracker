@@ -2705,4 +2705,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'Suggéré par MangaUpdates';
+
+  @override
+  String get biometricUnlockReason => 'Déverrouillez Manga Tracker';
+
+  @override
+  String get biometricLockedOut =>
+      'Trop de tentatives : déverrouillez d\'abord votre appareil avec son code, puis réessayez.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'Aucun verrouillage n\'est configuré sur cet appareil. Ajoutez un code, une empreinte ou un visage dans les réglages.';
+
+  @override
+  String get biometricUnlockError =>
+      'Déverrouillage impossible. Réessayez ou connectez-vous avec votre mot de passe.';
 }

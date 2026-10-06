@@ -15,6 +15,7 @@ import 'package:mangatracker/features/manga/services/chapter_check_background_se
 import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
+import 'package:mangatracker/core/components/system_bars_inset.dart';
 import 'core/theme/app_theme.dart';
 
 /// Re-export pour rétrocompatibilité — pointe vers le navigatorKey racine
@@ -190,6 +191,12 @@ class _MyAppState extends State<MyApp> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      // Barre de navigation transparente sur la bande peinte par
+      // SystemBarsInset : boutons lisibles dans les deux thèmes.
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness:
+          isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
     ));
 
     return MaterialApp.router(
@@ -215,6 +222,10 @@ class _MyAppState extends State<MyApp> {
         Locale('es', ''),
       ],
       routerConfig: _router,
+      // Rien sous la barre de navigation du système (Android 15 bord à
+      // bord, barre à boutons, indicateur d'accueil iOS).
+      builder: (context, child) =>
+          SystemBarsInset(child: child ?? const SizedBox.shrink()),
       scrollBehavior: _scrollBehavior,
     );
   }

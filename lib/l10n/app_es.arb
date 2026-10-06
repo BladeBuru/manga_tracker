@@ -1448,5 +1448,9 @@
   },
   "pendingSyncTitle": "Cambios pendientes de envío",
   "syncNowAction": "Sincronizar",
-  "communityRecoMuSuggested": "Sugerido por MangaUpdates"
+  "communityRecoMuSuggested": "Sugerido por MangaUpdates",
+  "biometricUnlockReason": "Desbloquea Manga Tracker",
+  "biometricLockedOut": "Demasiados intentos: desbloquea primero el dispositivo con su código y vuelve a intentarlo.",
+  "biometricNotEnrolled": "No hay ningún bloqueo de pantalla configurado en este dispositivo. Añade un código, una huella o un rostro en los ajustes.",
+  "biometricUnlockError": "No se pudo desbloquear. Inténtalo de nuevo o inicia sesión con tu contraseña."
 }

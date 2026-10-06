@@ -2663,4 +2663,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'Suggested by MangaUpdates';
+
+  @override
+  String get biometricUnlockReason => 'Unlock Manga Tracker';
+
+  @override
+  String get biometricLockedOut =>
+      'Too many attempts: unlock your device with its code first, then try again.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'No screen lock is set up on this device. Add a code, a fingerprint or a face in the settings.';
+
+  @override
+  String get biometricUnlockError =>
+      'Unlock failed. Try again or sign in with your password.';
 }

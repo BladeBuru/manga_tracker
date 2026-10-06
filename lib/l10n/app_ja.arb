@@ -1448,5 +1448,9 @@
   },
   "pendingSyncTitle": "送信待ちの変更があります",
   "syncNowAction": "同期",
-  "communityRecoMuSuggested": "MangaUpdatesのおすすめ"
+  "communityRecoMuSuggested": "MangaUpdatesのおすすめ",
+  "biometricUnlockReason": "Manga Trackerのロックを解除",
+  "biometricLockedOut": "試行回数が多すぎます。端末をパスコードでロック解除してから、もう一度お試しください。",
+  "biometricNotEnrolled": "この端末には画面ロックが設定されていません。設定でパスコード、指紋、または顔を追加してください。",
+  "biometricUnlockError": "ロックを解除できませんでした。もう一度お試しいただくか、パスワードでログインしてください。"
 }

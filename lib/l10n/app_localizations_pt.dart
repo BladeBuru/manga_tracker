@@ -2694,4 +2694,19 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get communityRecoMuSuggested => 'Sugerido pelo MangaUpdates';
+
+  @override
+  String get biometricUnlockReason => 'Desbloqueie o Manga Tracker';
+
+  @override
+  String get biometricLockedOut =>
+      'Tentativas demais: desbloqueie o aparelho com o código primeiro e tente novamente.';
+
+  @override
+  String get biometricNotEnrolled =>
+      'Nenhum bloqueio de tela está configurado neste aparelho. Adicione um código, uma digital ou um rosto nas configurações.';
+
+  @override
+  String get biometricUnlockError =>
+      'Não foi possível desbloquear. Tente novamente ou entre com sua senha.';
 }
