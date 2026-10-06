@@ -2549,4 +2549,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get readingGroupActionsCopyLinkSubtitle => '다른 곳에서 열거나 공유하기';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    return '확인할 항목 $count개';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    return '대기 중인 친구 요청 $count개';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    return '새 추천 $count개';
+  }
 }

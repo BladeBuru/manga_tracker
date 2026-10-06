@@ -1421,5 +1421,29 @@
   "linkSuggestionCopy": "Copiar el enlace",
   "linkSuggestionSearch": "Buscar en el sitio",
   "readingGroupActionsCopyLink": "Copiar el enlace de lectura",
-  "readingGroupActionsCopyLinkSubtitle": "Para abrirlo en otro lugar o compartirlo"
+  "readingGroupActionsCopyLinkSubtitle": "Para abrirlo en otro lugar o compartirlo",
+  "accountTabPendingBadge": "{count, plural, =1{1 elemento pendiente} other{{count} elementos pendientes}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 solicitud de amistad pendiente} other{{count} solicitudes de amistad pendientes}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 nueva recomendación} other{{count} nuevas recomendaciones}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

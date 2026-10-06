@@ -58,6 +58,7 @@ import 'package:mangatracker/features/stats/views/stats_view.dart';
 
 // Friends (Phase 6.1)
 import 'package:mangatracker/features/friends/views/friends_list_page.dart';
+import 'package:mangatracker/features/friends/widgets/friends_tab_segmented.dart';
 import 'package:mangatracker/features/friends/views/friend_profile_view.dart';
 
 // Auteurs
@@ -385,7 +386,12 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: '/friends',
         name: 'friends',
-        builder: (context, state) => const FriendsListPage(),
+        // `?tab=pending` : arrivée depuis une pastille / une notification.
+        builder: (context, state) => FriendsListPage(
+          initialTab: state.uri.queryParameters['tab'] == 'pending'
+              ? FriendsTab.pending
+              : FriendsTab.accepted,
+        ),
       ),
 
       // Profil d'un ami : sa bibliothèque (amitié acceptée requise côté API).

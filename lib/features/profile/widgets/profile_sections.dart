@@ -4,6 +4,7 @@ import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/features/auth/services/biometric.service.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_sections.dart';
 import 'package:mangatracker/features/profile/widgets/profile_menu_row.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
@@ -46,6 +47,13 @@ class ProfileSocialSection extends StatelessWidget {
   final VoidCallback onMyInbox;
   final VoidCallback onReadingGroups;
 
+  /// Demandes d'ami reçues et recommandations non vues : pastille sur la
+  /// ligne qui y mène (la pastille de l'onglet seule ne disait pas où aller).
+  final NotificationCounts counts;
+
+  /// Mise en évidence des lignes concernées (arrivée depuis l'onglet).
+  final bool highlightPending;
+
   const ProfileSocialSection({
     super.key,
     required this.onEditProfile,
@@ -53,11 +61,15 @@ class ProfileSocialSection extends StatelessWidget {
     required this.onMyFriends,
     required this.onMyInbox,
     required this.onReadingGroups,
+    this.counts = NotificationCounts.zero,
+    this.highlightPending = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final friends = counts.pendingFriendRequests;
+    final shares = counts.unseenShares;
     return ProfileEditSection(label: l10n.profile, children: [
       ProfileMenuRow(
         leading: const PastelTile(
@@ -77,12 +89,18 @@ class ProfileSocialSection extends StatelessWidget {
             icon: Icons.people_outline, color: PastelTileColor.purple),
         title: l10n.profileMyFriends,
         onTap: onMyFriends,
+        badgeCount: friends,
+        badgeSemanticsLabel: l10n.profileFriendRequestsBadge(friends),
+        highlighted: highlightPending && friends > 0,
       ),
       ProfileMenuRow(
         leading: const PastelTile(
             icon: Icons.inbox_outlined, color: PastelTileColor.pink),
         title: l10n.profileMyInbox,
         onTap: onMyInbox,
+        badgeCount: shares,
+        badgeSemanticsLabel: l10n.profileUnseenSharesBadge(shares),
+        highlighted: highlightPending && shares > 0,
       ),
       ProfileMenuRow(
         leading: const PastelTile(

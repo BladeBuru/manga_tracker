@@ -22,6 +22,7 @@ import 'package:mangatracker/features/auth/widgets/auth_top_bar.dart';
 import 'package:mangatracker/features/auth/widgets/biometric_login_button.dart';
 import 'package:mangatracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Page de connexion — design V1 « Refined Classic ».
 ///
@@ -77,7 +78,7 @@ class _LoginViewState extends State<LoginView> {
 
   Future<bool?> _showBiometricActivationDialog(AppLocalizations? l10n) async {
     if (!mounted) return false;
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(

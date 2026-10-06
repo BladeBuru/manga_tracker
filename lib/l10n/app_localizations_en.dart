@@ -2621,4 +2621,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get readingGroupActionsCopyLinkSubtitle =>
       'To open it elsewhere or share it';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items waiting for you',
+      one: '1 item waiting for you',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending friend requests',
+      one: '1 pending friend request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new recommendations',
+      one: '1 new recommendation',
+    );
+    return '$_temp0';
+  }
 }

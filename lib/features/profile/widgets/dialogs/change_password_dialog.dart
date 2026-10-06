@@ -6,6 +6,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
 import 'package:mangatracker/features/profile/widgets/dialogs/profile_dialog_shell.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Dialog de changement de mot de passe (Design V1).
 ///
@@ -16,7 +17,7 @@ Future<String?> showChangePasswordDialog(BuildContext context) async {
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
 
-  final result = await showDialog<String>(
+  final result = await showAppDialog<String>(
     context: context,
     builder: (context) => _ChangePasswordDialog(
       formKey: formKey,

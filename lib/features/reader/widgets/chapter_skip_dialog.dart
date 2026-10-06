@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Modale de saut de chapitres : « Vous passez du chapitre {prev} au {next}.
 /// Marquer {prev} comme lu ? ».
@@ -30,7 +31,7 @@ class ChapterSkipDialog extends StatelessWidget {
     required int previousChapter,
     required int nextChapter,
   }) {
-    return showDialog<bool>(
+    return showAppDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => ChapterSkipDialog(

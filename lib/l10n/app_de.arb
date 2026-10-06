@@ -1421,5 +1421,29 @@
   "linkSuggestionCopy": "Link kopieren",
   "linkSuggestionSearch": "Auf der Website suchen",
   "readingGroupActionsCopyLink": "Leselink kopieren",
-  "readingGroupActionsCopyLinkSubtitle": "Um ihn woanders zu öffnen oder zu teilen"
+  "readingGroupActionsCopyLinkSubtitle": "Um ihn woanders zu öffnen oder zu teilen",
+  "accountTabPendingBadge": "{count, plural, =1{1 offener Eintrag} other{{count} offene Einträge}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 offene Freundschaftsanfrage} other{{count} offene Freundschaftsanfragen}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 neue Empfehlung} other{{count} neue Empfehlungen}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

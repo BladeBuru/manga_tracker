@@ -11,8 +11,11 @@ import 'package:mangatracker/features/library/views/library_bloc_view.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
+import 'package:mangatracker/core/bloc/notification_counts_cubit.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
+import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 class BottomNavbar extends StatefulWidget {
   const BottomNavbar({super.key});
@@ -30,35 +33,53 @@ class BottomNavbarState extends State<BottomNavbar> {
   Color get unselectedColor =>
       AppColors.dsText3(Theme.of(context).brightness);
 
-  /// Phase 6.2 + 8.2 : service de polling pour le badge notifs (demandes
-  /// d'amis pending + shares non-vues). Récupéré dans initState pour
-  /// démarrer le polling au mount du shell principal.
-  NotificationCountsService? _notifService;
+  static const int _accountTab = 3;
+
+  /// Pastilles « à traiter » (demandes d'ami + recommandations reçues).
+  /// Créé avec la barre : le badge existe dès le premier rendu (avant, il
+  /// n'apparaissait qu'après un geste qui reconstruisait la barre).
+  final NotificationCountsCubit _counts = NotificationCountsCubit();
+
+  /// Demande au profil d'amener l'utilisateur à ce qui l'attend.
+  final ValueNotifier<int> _profileFocusRequests = ValueNotifier<int>(0);
+
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
     super.initState();
+    // Retour au premier plan : les pastilles reflètent ce qui est arrivé
+    // pendant l'absence, sans attendre la prochaine interrogation.
+    _lifecycle = AppLifecycleListener(onResume: _counts.refresh);
     // RGPD : vérifier après le premier frame si l'utilisateur doit
     // re-accepter les CGU/Privacy (versions courantes vs versions stockées).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkConsentRefresh();
-      _startNotificationsPolling();
+      _openNotificationLaunchRoute();
     });
   }
 
-  Future<void> _startNotificationsPolling() async {
-    try {
-      _notifService = await getIt.getAsync<NotificationCountsService>();
-      await _notifService!.start();
-    } catch (e) {
-      // Si l'instance n'est pas encore prête (race au boot), on laisse
-      // tomber silencieusement : le badge reste à 0 jusqu'au prochain mount.
+  /// Application ouverte en touchant une notification : on va à l'écran
+  /// concerné une fois l'accueil affiché.
+  void _openNotificationLaunchRoute() {
+    final location = NotificationService().takePendingLaunchRoute();
+    if (location != null && mounted) context.push(location);
+  }
+
+  void _onTabTapped(int index) {
+    setState(() => currntIndex = index);
+    pageCont.jumpToPage(index);
+    if (index == _accountTab) {
+      if (_counts.state.total > 0) _profileFocusRequests.value++;
+      _counts.refresh();
     }
   }
 
   @override
   void dispose() {
-    _notifService?.stop();
+    _lifecycle.dispose();
+    _counts.close();
+    _profileFocusRequests.dispose();
     pageCont.dispose();
     super.dispose();
   }
@@ -72,7 +93,7 @@ class BottomNavbarState extends State<BottomNavbar> {
     // Modal blocking — l'utilisateur ne peut pas fermer sans accepter ou
     // se déconnecter (article 7 RGPD : consentement libre, donc on doit
     // proposer une issue alternative à l'acceptation).
-    final accepted = await showDialog<bool>(
+    final accepted = await showAppDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => _ConsentRefreshDialog(status: status),
@@ -110,7 +131,9 @@ class BottomNavbarState extends State<BottomNavbar> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     
-    return Scaffold(
+    return BlocProvider<NotificationCountsCubit>.value(
+      value: _counts,
+      child: Scaffold(
       // **Fix 2026-05-19** : passé de `false` à `true` (défaut Scaffold).
       // Avec `false`, le PageView gardait sa taille pleine quand le clavier
       // s'ouvre → l'inner Scaffold (Library) avait un espace blanc inutile
@@ -136,18 +159,13 @@ class BottomNavbarState extends State<BottomNavbar> {
             child: const LibraryBlocView(),
           ),
           const Search(),
-          const Profile(),
+          Profile(focusPendingRequests: _profileFocusRequests),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: currntIndex,
-        onTap: (index) {
-          setState(() {
-            currntIndex = index;
-          });
-          pageCont.jumpToPage(currntIndex);
-        },
+        onTap: _onTabTapped,
         selectedFontSize: 15,
         selectedIconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary, size: 30),
         selectedItemColor: Theme.of(context).colorScheme.primary,
@@ -178,14 +196,14 @@ class BottomNavbarState extends State<BottomNavbar> {
           BottomNavigationBarItem(
             icon: _NotifBadgedIcon(
               icon: Icons.person,
-              color: currntIndex == 3
+              color: currntIndex == _accountTab
                   ? Theme.of(context).colorScheme.primary
                   : unselectedColor,
-              service: _notifService,
             ),
             label: l10n?.myAccount ?? 'Mon compte',
           ),
         ],
+      ),
       ),
     );
   }
@@ -290,38 +308,25 @@ class _ConsentRefreshDialogState extends State<_ConsentRefreshDialog> {
   }
 }
 
-/// Icône avec badge rouge pour le nombre de notifications non lues (Phase
-/// 6.2 + 8.2). S'abonne au `Stream<int>` du `NotificationCountsService`
-/// pour auto-rafraîchir sans rebuild manuel du parent.
-///
-/// Le badge utilise `Material 3 Badge`, qui se positionne automatiquement
-/// en haut à droite de l'icône.
+/// Icône de l'onglet « Mon compte » avec la pastille du total « à traiter »
+/// (Material 3 `Badge`), lue dans [NotificationCountsCubit].
 class _NotifBadgedIcon extends StatelessWidget {
   final IconData icon;
   final Color color;
-  final NotificationCountsService? service;
 
-  const _NotifBadgedIcon({
-    required this.icon,
-    required this.color,
-    required this.service,
-  });
+  const _NotifBadgedIcon({required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    if (service == null) {
-      return Icon(icon, color: color);
-    }
-    return StreamBuilder<int>(
-      stream: service!.countStream,
-      initialData: service!.lastValue,
-      builder: (context, snapshot) {
-        final count = snapshot.data ?? 0;
+    final l10n = AppLocalizations.of(context);
+    return BlocSelector<NotificationCountsCubit, NotificationCounts, int>(
+      selector: (counts) => counts.total,
+      builder: (context, total) {
         final iconWidget = Icon(icon, color: color);
-        if (count <= 0) return iconWidget;
-        return Badge.count(
-          count: count,
-          child: iconWidget,
+        if (total <= 0) return iconWidget;
+        return Semantics(
+          label: l10n?.accountTabPendingBadge(total),
+          child: Badge.count(count: total, child: iconWidget),
         );
       },
     );

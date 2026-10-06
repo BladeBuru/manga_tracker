@@ -1,12 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:get_it/get_it.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
 import 'package:mangatracker/features/friends/services/friends.service.dart';
 import 'package:mangatracker/features/manga/services/notification_service.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
 part 'friends_event.dart';
 part 'friends_state.dart';
@@ -139,6 +142,17 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
     }
   }
 
+  /// Textes des notifications dans la langue choisie (pas de contexte ici).
+  static AppLocalizations _localizations() {
+    try {
+      return lookupAppLocalizations(
+        GetIt.instance<LanguageService>().getCurrentLocale(),
+      );
+    } catch (_) {
+      return lookupAppLocalizations(const Locale('fr'));
+    }
+  }
+
   /// Refresh non-bloquant du badge de notifs. Catch silencieux : si le
   /// service n'est pas (encore) enregistré, on laisse tomber.
   void _refreshNotificationsBadge() {
@@ -165,10 +179,11 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
     for (final req in received) {
       if (_notifiedPendingIds.contains(req.id)) continue;
       _notifiedPendingIds.add(req.id);
+      final l10n = _localizations();
       _notifications.showFriendRequestNotification(
         senderUsername: req.displayName,
-        title: 'Nouvelle demande d\'ami',
-        body: '${req.displayName} veut vous ajouter en ami',
+        title: l10n.pushNotifFriendRequestTitle,
+        body: l10n.pushNotifFriendRequestBody(req.displayName),
       );
     }
     _lastPendingCount = received.length;
@@ -188,6 +203,8 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
         pending:
             current.pending.where((f) => f.id != event.friendshipId).toList(),
       ));
+      // Refuser une demande la retire aussi des pastilles.
+      _refreshNotificationsBadge();
     } catch (e) {
       emit(current.copyWith(lastActionError: e.toString()));
     }

@@ -10,6 +10,7 @@ import 'package:mangatracker/features/manga/widgets/community_recommendation_til
 import 'package:mangatracker/features/manga/widgets/detail_recommendations_section.dart';
 import 'package:mangatracker/features/manga/widgets/manga_picker_sheet.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Feuille « Si vous avez aimé ce titre » de la fiche : recommandations
 /// MangaUpdates + Manga Tracker (avec leur total), vote de l'utilisateur,
@@ -20,7 +21,7 @@ Future<void> showCommunityRecommendationsSheet(
   required int muId,
   List<MangaRecommendationView> readersAlsoRead = const [],
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,

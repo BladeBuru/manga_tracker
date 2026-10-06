@@ -43,6 +43,7 @@ import 'chapter_download_dialog.dart';
 import 'package:mangatracker/features/download/services/download_manager_service.dart';
 import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
 import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -159,7 +160,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 tooltip: AppLocalizations.of(context)?.readingGroupCreateTitle ??
                     'Lire à deux',
                 onPressed: () {
-                  showModalBottomSheet(
+                  showAppBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     showDragHandle: false,
@@ -182,7 +183,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                 color: Colors.white, size: 26),
             tooltip: AppLocalizations.of(context)?.shareTitle ?? 'Partager',
             onPressed: () {
-              showModalBottomSheet(
+              showAppBottomSheet(
                 context: context,
                 isScrollControlled: true,
                 showDragHandle: false,
@@ -358,7 +359,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
               GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
-                  showDialog(
+                  showAppDialog(
                     context: context,
                     // Barrier adapté au thème : 0.75 en light suffit pour
                     // isoler l'image, 0.85 en dark (audit design 2026-06-12).
@@ -736,7 +737,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   void _showManageLibrarySheet(ReadingStatus status) {
     final muId = widget.muId;
     final detailBloc = context.read<DetailBloc>();
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
@@ -842,7 +843,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
   }
 
   void _showCustomLinkMenu() {
-    showModalBottomSheet(
+    showAppBottomSheet(
       context: context,
       isScrollControlled: false,
       builder: (ctx) {
@@ -912,7 +913,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
     bool isCheckingCustomPatterns = false;
     final selectorsService = CustomSelectorsService();
     
-    final link = await showDialog<String?>(
+    final link = await showAppDialog<String?>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
@@ -1248,7 +1249,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       return;
     }
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => ChapterDownloadDialog(
         muId: widget.muId,

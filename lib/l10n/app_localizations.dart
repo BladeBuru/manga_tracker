@@ -4647,6 +4647,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Pour l\'ouvrir ailleurs ou le partager'**
   String get readingGroupActionsCopyLinkSubtitle;
+
+  /// Lecteur d'écran : pastille de l'onglet Mon compte
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 élément à traiter} other{{count} éléments à traiter}}'**
+  String accountTabPendingBadge(int count);
+
+  /// Lecteur d'écran : pastille de la ligne Mes amis
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 demande d\'ami en attente} other{{count} demandes d\'ami en attente}}'**
+  String profileFriendRequestsBadge(int count);
+
+  /// Lecteur d'écran : pastille de la ligne Recommandations reçues
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 nouvelle recommandation} other{{count} nouvelles recommandations}}'**
+  String profileUnseenSharesBadge(int count);
 }
 
 class _AppLocalizationsDelegate

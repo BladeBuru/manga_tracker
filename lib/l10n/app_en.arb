@@ -1427,5 +1427,29 @@
   "linkSuggestionCopy": "Copy the link",
   "linkSuggestionSearch": "Search on the site",
   "readingGroupActionsCopyLink": "Copy the reading link",
-  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it"
+  "readingGroupActionsCopyLinkSubtitle": "To open it elsewhere or share it",
+  "accountTabPendingBadge": "{count, plural, =1{1 item waiting for you} other{{count} items waiting for you}}",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 pending friend request} other{{count} pending friend requests}}",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 new recommendation} other{{count} new recommendations}}",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

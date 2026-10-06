@@ -1421,5 +1421,29 @@
   "linkSuggestionCopy": "リンクをコピー",
   "linkSuggestionSearch": "サイトで探す",
   "readingGroupActionsCopyLink": "読書リンクをコピー",
-  "readingGroupActionsCopyLinkSubtitle": "他のアプリで開いたり共有したりできます"
+  "readingGroupActionsCopyLinkSubtitle": "他のアプリで開いたり共有したりできます",
+  "accountTabPendingBadge": "{count}件の未確認があります",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "保留中の友達リクエスト{count}件",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "新しいおすすめ{count}件",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -3,6 +3,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Widget réutilisable pour afficher un bouton de sélection de langue avec un drapeau
 class LanguageSelectorButton extends StatelessWidget {
@@ -74,7 +75,7 @@ class LanguageSelectorButton extends StatelessWidget {
     final currentLocale = languageService.getCurrentLocale();
     final supportedLocales = languageService.getSupportedLocales();
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(

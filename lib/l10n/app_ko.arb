@@ -1421,5 +1421,29 @@
   "linkSuggestionCopy": "링크 복사",
   "linkSuggestionSearch": "사이트에서 찾기",
   "readingGroupActionsCopyLink": "읽기 링크 복사",
-  "readingGroupActionsCopyLinkSubtitle": "다른 곳에서 열거나 공유하기"
+  "readingGroupActionsCopyLinkSubtitle": "다른 곳에서 열거나 공유하기",
+  "accountTabPendingBadge": "확인할 항목 {count}개",
+  "@accountTabPendingBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "대기 중인 친구 요청 {count}개",
+  "@profileFriendRequestsBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "새 추천 {count}개",
+  "@profileUnseenSharesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

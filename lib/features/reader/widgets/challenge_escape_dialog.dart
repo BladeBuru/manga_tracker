@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Ce que l'utilisateur a choisi face à une vérification qui boucle.
 enum ChallengeEscapeAction {
@@ -33,7 +34,7 @@ class ChallengeEscapeDialog extends StatelessWidget {
     required BuildContext context,
     required String url,
   }) async {
-    final action = await showDialog<ChallengeEscapeAction>(
+    final action = await showAppDialog<ChallengeEscapeAction>(
       context: context,
       barrierDismissible: false,
       builder: (_) => ChallengeEscapeDialog(url: url),

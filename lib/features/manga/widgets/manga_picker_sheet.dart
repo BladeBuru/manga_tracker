@@ -6,6 +6,7 @@ import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/manga/bloc/manga_picker_cubit.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Ouvre la recherche d'une œuvre à recommander ; renvoie l'œuvre choisie
 /// (ou `null`). [excludeMuId] : l'œuvre source, qui ne peut pas se
@@ -14,7 +15,7 @@ Future<MangaQuickViewDto?> showMangaPickerSheet(
   BuildContext context, {
   num? excludeMuId,
 }) {
-  return showModalBottomSheet<MangaQuickViewDto>(
+  return showAppBottomSheet<MangaQuickViewDto>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).scaffoldBackgroundColor,

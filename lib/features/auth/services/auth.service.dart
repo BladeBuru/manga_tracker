@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/services/storage.service.dart';
 import '../../../core/services/connectivity_service.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'biometric.service.dart';
 
 /// Résultat d'un appel à `refreshAccessToken()`.
@@ -320,6 +321,18 @@ class AuthService {
   Future<void> logout() async {
     await clearSessionTokens();
     await _purgeCache();
+    _resetNotificationCounts();
+  }
+
+  /// Pastilles et anti-doublons des notifications : rien ne doit passer au
+  /// compte suivant.
+  void _resetNotificationCounts() {
+    try {
+      if (getIt.isRegistered<NotificationCountsService>() &&
+          getIt.isReadySync<NotificationCountsService>()) {
+        getIt<NotificationCountsService>().reset();
+      }
+    } catch (_) {}
   }
 
   /// Purge le cache local, si le service est disponible.

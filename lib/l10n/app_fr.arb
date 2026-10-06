@@ -2751,5 +2751,32 @@
   "linkSuggestionCopy": "Copier le lien",
   "linkSuggestionSearch": "Chercher sur le site",
   "readingGroupActionsCopyLink": "Copier le lien de lecture",
-  "readingGroupActionsCopyLinkSubtitle": "Pour l'ouvrir ailleurs ou le partager"
+  "readingGroupActionsCopyLinkSubtitle": "Pour l'ouvrir ailleurs ou le partager",
+  "accountTabPendingBadge": "{count, plural, =1{1 élément à traiter} other{{count} éléments à traiter}}",
+  "@accountTabPendingBadge": {
+    "description": "Lecteur d'écran : pastille de l'onglet Mon compte",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileFriendRequestsBadge": "{count, plural, =1{1 demande d'ami en attente} other{{count} demandes d'ami en attente}}",
+  "@profileFriendRequestsBadge": {
+    "description": "Lecteur d'écran : pastille de la ligne Mes amis",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileUnseenSharesBadge": "{count, plural, =1{1 nouvelle recommandation} other{{count} nouvelles recommandations}}",
+  "@profileUnseenSharesBadge": {
+    "description": "Lecteur d'écran : pastille de la ligne Recommandations reçues",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

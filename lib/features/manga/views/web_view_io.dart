@@ -44,6 +44,7 @@ import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'dart:async';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 class ReaderWebView extends StatefulWidget {
   final int muId;
@@ -1046,7 +1047,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
 
   Future<void> _showAdBlockerInfo() async {
     final l10n = AppLocalizations.of(context);
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         icon: const Icon(

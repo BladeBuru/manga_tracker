@@ -2546,4 +2546,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get readingGroupActionsCopyLinkSubtitle => '他のアプリで開いたり共有したりできます';
+
+  @override
+  String accountTabPendingBadge(int count) {
+    return '$count件の未確認があります';
+  }
+
+  @override
+  String profileFriendRequestsBadge(int count) {
+    return '保留中の友達リクエスト$count件';
+  }
+
+  @override
+  String profileUnseenSharesBadge(int count) {
+    return '新しいおすすめ$count件';
+  }
 }

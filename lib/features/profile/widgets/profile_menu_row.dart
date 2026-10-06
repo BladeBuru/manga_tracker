@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:mangatracker/core/components/app_count_badge.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 
@@ -32,6 +33,16 @@ class ProfileMenuRow extends StatelessWidget {
   /// Si vrai, le titre s'affiche en rouge (action destructive).
   final bool danger;
 
+  /// Nombre d'éléments à traiter derrière cette ligne (pastille avant le
+  /// chevron). 0 = pas de pastille.
+  final int badgeCount;
+
+  /// Libellé lu par les lecteurs d'écran pour la pastille.
+  final String? badgeSemanticsLabel;
+
+  /// Mise en évidence passagère (arrivée depuis la pastille de l'onglet).
+  final bool highlighted;
+
   const ProfileMenuRow({
     super.key,
     required this.leading,
@@ -40,6 +51,9 @@ class ProfileMenuRow extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.danger = false,
+    this.badgeCount = 0,
+    this.badgeSemanticsLabel,
+    this.highlighted = false,
   });
 
   @override
@@ -48,7 +62,12 @@ class ProfileMenuRow extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final titleColor = danger ? AppColors.primary : scheme.onSurface;
 
-    return InkWell(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      color: highlighted
+          ? scheme.primaryContainer.withValues(alpha: 0.55)
+          : Colors.transparent,
+      child: InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -86,6 +105,18 @@ class ProfileMenuRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
+            if (badgeCount > 0) ...[
+              Semantics(
+                label: badgeSemanticsLabel,
+                excludeSemantics: badgeSemanticsLabel != null,
+                child: AppCountBadge(
+                  count: badgeCount,
+                  backgroundColor: scheme.primary,
+                  foregroundColor: scheme.onPrimary,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
             trailing ??
                 Icon(
                   Icons.chevron_right,
@@ -94,6 +125,7 @@ class ProfileMenuRow extends StatelessWidget {
                 ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -11,6 +11,7 @@ import 'package:mangatracker/main.dart';
 import 'package:dio/dio.dart';
 import '../notifier/notifier.dart';
 import '../service_locator/service_locator.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 
 class ChangelogInfo {
@@ -148,7 +149,7 @@ class AppUpdateService {
       if (currentPackageName.contains('.dev')) {
         final context = navigatorKey.currentContext;
         if (context != null) {
-          await showDialog(
+          await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
               title: const Text("Mise à jour non disponible"),
@@ -221,7 +222,7 @@ class AppUpdateService {
       if (!status.isGranted) {
         final context = navigatorKey.currentContext;
         if (context != null) {
-          await showDialog(
+          await showAppDialog(
             context: context,
             builder: (ctx) => AlertDialog(
               title: const Text("Autorisation requise"),
@@ -250,7 +251,7 @@ class AppUpdateService {
               // Afficher un message explicatif sur le conflit
               final context = navigatorKey.currentContext;
               if (context != null) {
-                await showDialog(
+                await showAppDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: const Text("Erreur d'installation"),

@@ -8,6 +8,7 @@ import 'package:mangatracker/features/library/services/chapter_report.service.da
 import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Dialog « Signaler plus de chapitres » (chantier A).
 ///
@@ -50,7 +51,7 @@ class ReportChaptersDialog extends StatefulWidget {
     required int readChapters,
   }) {
     final bloc = context.read<DetailBloc>();
-    return showDialog<void>(
+    return showAppDialog<void>(
       context: context,
       builder: (_) => ReportChaptersDialog(
         bloc: bloc,

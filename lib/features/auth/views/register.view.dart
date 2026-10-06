@@ -23,6 +23,7 @@ import 'package:mangatracker/features/auth/widgets/consent_checkbox.dart';
 import 'package:mangatracker/features/auth/widgets/social_login_buttons.dart';
 import 'package:mangatracker/features/profile/services/gdpr.service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Page d'inscription — design V1 « Refined Classic ».
 ///
@@ -103,7 +104,7 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   void _showLegalDoc(String kind, AppLocalizations? l10n) {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(

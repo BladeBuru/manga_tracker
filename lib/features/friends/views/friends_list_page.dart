@@ -26,19 +26,24 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///
 /// Le BLoC, les events et la logique métier sont inchangés (UI-only).
 class FriendsListPage extends StatelessWidget {
-  const FriendsListPage({super.key});
+  /// Onglet d'arrivée : « Demandes » quand on vient d'une pastille.
+  final FriendsTab initialTab;
+
+  const FriendsListPage({super.key, this.initialTab = FriendsTab.accepted});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<FriendsBloc>(
       create: (_) => FriendsBloc()..add(const LoadFriends()),
-      child: const _FriendsScaffold(),
+      child: _FriendsScaffold(initialTab: initialTab),
     );
   }
 }
 
 class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
-  const _FriendsScaffold();
+  final FriendsTab initialTab;
+
+  const _FriendsScaffold({required this.initialTab});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +94,7 @@ class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
             );
           }
           if (state is FriendsLoaded) {
-            return _FriendsContent(state: state);
+            return _FriendsContent(state: state, initialTab: initialTab);
           }
           return const SizedBox.shrink();
         },
@@ -119,7 +124,8 @@ class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
 
 class _FriendsContent extends StatefulWidget {
   final FriendsLoaded state;
-  const _FriendsContent({required this.state});
+  final FriendsTab initialTab;
+  const _FriendsContent({required this.state, required this.initialTab});
 
   @override
   State<_FriendsContent> createState() => _FriendsContentState();
@@ -127,7 +133,7 @@ class _FriendsContent extends StatefulWidget {
 
 class _FriendsContentState extends State<_FriendsContent>
     with ResponsiveLayoutMixin {
-  FriendsTab _tab = FriendsTab.accepted;
+  late FriendsTab _tab = widget.initialTab;
 
   @override
   Widget build(BuildContext context) {

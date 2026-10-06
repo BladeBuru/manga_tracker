@@ -15,6 +15,7 @@ import 'package:mangatracker/features/profile/widgets/profile_edit_rows.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_sections.dart';
 import 'package:mangatracker/features/profile/widgets/profile_edit_widgets.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 
 /// Page d'édition du profil — Design System V1 « Refined Classic ».
 ///
@@ -94,7 +95,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
     if (status.isGranted || status.isLimited) return true;
     if (status.isPermanentlyDenied) {
       if (!mounted) return false;
-      await showDialog<void>(
+      await showAppDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
           title:
@@ -172,7 +173,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppDatePicker(
       context: context,
       initialDate: _dateOfBirth ?? DateTime(2000),
       firstDate: DateTime(1900),
