@@ -1,8 +1,15 @@
 {
-  "latestVersion": "0.18.0",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.18.0/MangaTracker.apk",
+  "latestVersion": "0.18.1",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.18.1/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.18.1",
+      "notes": [
+        "🐛 Corrections",
+        "- Lecture en plein écran : quand la barre du haut se retire, la page occupe tout l'écran (l'heure, la batterie et les boutons du téléphone se retirent aussi). Ils reviennent dès que vous remontez. Fini la bande blanche en haut et la bande en bas du lecteur."
+      ]
+    },
     {
       "version": "0.18.0",
       "notes": [
