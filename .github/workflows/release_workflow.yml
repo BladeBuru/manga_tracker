@@ -222,6 +222,10 @@ jobs:
           fi
           ESCAPED=$(echo "$CONTENT" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
           echo "log=$ESCAPED" >> $GITHUB_OUTPUT
+          # Notes de la Release GitHub : le texte brut, vrais retours à la ligne.
+          # (`log` est échappé pour version.json : en `body:` il affichait des
+          # « \n » littéraux.)
+          printf '%s\n' "$CONTENT" > "$RUNNER_TEMP/release_notes.md"
           # Print pour debug (sans secrets dedans)
           echo "─── Changelog ───"
           echo "$CONTENT"
@@ -252,5 +256,5 @@ jobs:
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          body: ${{ steps.changelog.outputs.log }}
+          body_path: ${{ runner.temp }}/release_notes.md
           files: build/app/outputs/flutter-apk/MangaTracker.apk
