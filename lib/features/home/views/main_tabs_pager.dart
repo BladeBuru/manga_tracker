@@ -83,3 +83,28 @@ class _MainTabsPagerState extends State<MainTabsPager> {
     );
   }
 }
+
+/// Retour Android (geste ou bouton) sur un autre onglet que l'accueil :
+/// retour à l'onglet accueil, puis sortie de l'app au retour suivant.
+/// Avant, l'app se fermait depuis n'importe quel onglet.
+class MainTabsBackScope extends StatelessWidget {
+  final int currentIndex;
+  final VoidCallback onBackToHome;
+  final Widget child;
+
+  const MainTabsBackScope({
+    super.key,
+    required this.currentIndex,
+    required this.onBackToHome,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+        canPop: currentIndex == 0,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) onBackToHome();
+        },
+        child: child,
+      );
+}

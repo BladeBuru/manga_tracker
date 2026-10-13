@@ -12,6 +12,7 @@ import 'package:mangatracker/features/home/bloc/home_sections_event.dart';
 import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
 import 'package:mangatracker/features/home/bloc/homepage_event.dart';
 import 'package:mangatracker/features/home/views/main_tab.dart';
+import 'package:mangatracker/features/home/views/main_tabs_pager.dart';
 import 'package:mangatracker/features/home/widgets/consent_refresh_dialog.dart';
 import 'package:mangatracker/features/library/bloc/library_bloc.dart';
 import 'package:mangatracker/features/library/bloc/library_event.dart';
@@ -156,11 +157,9 @@ class BottomNavbarState extends State<BottomNavbar> {
       value: _counts,
       child: MainShellScope(
         profileFocusRequests: _profileFocusRequests,
-        child: PopScope(
-          canPop: _currentIndex == MainTab.home.index,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) _goTab(MainTab.home.index);
-          },
+        child: MainTabsBackScope(
+          currentIndex: _currentIndex,
+          onBackToHome: () => _goTab(MainTab.home.index),
           child: Scaffold(
             // Le contenu se redimensionne avec le clavier : la barre du bas
             // remonte au-dessus et la liste garde tout l'espace (2026-05-19).
