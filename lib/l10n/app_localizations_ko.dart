@@ -1945,6 +1945,103 @@ class AppLocalizationsKo extends AppLocalizations {
       '그룹에서 친구를 초대하는 기능이 곧 추가됩니다. 지금은 만화 페이지에서 새 그룹을 만들어 주세요.';
 
   @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return '마지막으로 다 읽은 화: $chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty => '마지막으로 다 읽은 화를 입력하세요';
+
+  @override
+  String get readingGroupProgressSaving => '저장 중…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle => '화 목록, 온라인 읽기, 작품 정보';
+
+  @override
+  String get readingGroupProgressDialogTitle => '내 진행 상황';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      '마지막으로 다 읽은 화를 입력하세요. 그룹 멤버에게 진행 상황이 표시됩니다.';
+
+  @override
+  String get readingGroupProgressFieldLabel => '마지막으로 다 읽은 화';
+
+  @override
+  String get readingGroupProgressInvalid => '0 이상의 정수를 입력하세요.';
+
+  @override
+  String get readingGroupProgressDecrease => '1화 줄이기';
+
+  @override
+  String get readingGroupProgressIncrease => '1화 늘리기';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return '$name에 맞추기 ($chapter화)';
+  }
+
+  @override
+  String get readingGroupProgressUnknown => '진행 상황을 찾을 수 없습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed => '이 기기에서 링크를 복사할 수 없습니다.';
+
+  @override
+  String get readingGroupCopyLinkManualTitle => '복사 실패 — 링크는 다음과 같습니다';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return '진행 상황 저장됨: $chapter화';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return '진행 상황 저장됨: $chapter화. 작품의 화 수가 업데이트되었습니다.';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return '$chapter화는 작품의 알려진 화 수를 넘습니다. 만화 페이지에서 새 화를 신고하세요.';
+  }
+
+  @override
+  String get chapterProgressThrottled => '연속 변경이 너무 많습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return '오프라인: $chapter화는 네트워크가 연결되면 저장됩니다.';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      '세션이 만료되었습니다. 진행 상황을 저장하려면 다시 로그인하세요.';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      '이 작품은 서재에 없습니다. 진행 상황을 기록하려면 작품 페이지에서 추가하세요.';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return '진행 상황을 저장하지 못했습니다(오류 $code). 다시 시도하세요.';
+  }
+
+  @override
+  String get chapterProgressFailed => '진행 상황을 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return '오프라인으로 저장한 진행 상황($chapter화)이 서버에서 거부되었습니다.';
+  }
+
+  @override
+  String get ratingSaveFailed => '평점을 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get ratingSaveOffline => '오프라인: 평점이 저장되지 않았습니다.';
+
+  @override
   String get libraryToggleListView => '목록 보기';
 
   @override

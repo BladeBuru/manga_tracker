@@ -4,6 +4,7 @@ import 'package:mangatracker/features/auth/services/auth.service.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
 import 'package:mangatracker/features/library/services/chapter_log.service.dart';
+import 'package:mangatracker/features/library/services/chapter_progress.service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -146,6 +147,11 @@ void setupServiceLocator() {
   getIt.registerSingletonWithDependencies<ChapterReportService>(
       () => ChapterReportService(),
       dependsOn: [HttpService]);
+
+  // Progression avec issue typée (lecture partagée, fiche manga). Lazy SANS
+  // `dependsOn` : ses dépendances sont résolues à l'appel.
+  getIt.registerLazySingleton<ChapterProgressService>(
+      () => ChapterProgressService());
 
   // Journal additif des chapitres (Stats v2) — extrait de LibraryService.
   getIt.registerSingletonWithDependencies<ChapterLogService>(

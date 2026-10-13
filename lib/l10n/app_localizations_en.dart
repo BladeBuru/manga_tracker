@@ -1990,6 +1990,109 @@ class AppLocalizationsEn extends AppLocalizations {
       'Inviting from inside a group is coming soon. For now, create a new group from the manga page.';
 
   @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return 'Last chapter finished: $chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty =>
+      'Enter the last chapter you finished';
+
+  @override
+  String get readingGroupProgressSaving => 'Saving…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle =>
+      'Chapters, online reading and title details';
+
+  @override
+  String get readingGroupProgressDialogTitle => 'My progress';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      'Enter the last chapter you finished. Group members will see your progress.';
+
+  @override
+  String get readingGroupProgressFieldLabel => 'Last chapter finished';
+
+  @override
+  String get readingGroupProgressInvalid => 'Enter a whole number, 0 or more.';
+
+  @override
+  String get readingGroupProgressDecrease => 'One chapter less';
+
+  @override
+  String get readingGroupProgressIncrease => 'One chapter more';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return 'Catch up with $name (ch. $chapter)';
+  }
+
+  @override
+  String get readingGroupProgressUnknown =>
+      'Your progress couldn\'t be found. Try again in a moment.';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed =>
+      'The link couldn\'t be copied on this device.';
+
+  @override
+  String get readingGroupCopyLinkManualTitle =>
+      'Copy failed — here is the link';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return 'Progress saved: chapter $chapter';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return 'Progress saved: chapter $chapter. The title\'s chapter count has been updated.';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return 'Chapter $chapter is beyond the title\'s known chapter count. Report the new chapters from the manga page.';
+  }
+
+  @override
+  String get chapterProgressThrottled =>
+      'Too many changes in a row. Try again in a few moments.';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return 'Offline: chapter $chapter will be saved when you\'re back online.';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      'Your session has expired: sign in again to save your progress.';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      'This title isn\'t in your library: add it from its page to track your progress.';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return 'Progress couldn\'t be saved (error $code). Try again.';
+  }
+
+  @override
+  String get chapterProgressFailed => 'Progress couldn\'t be saved. Try again.';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return 'Progress saved offline (chapter $chapter) was rejected by the server.';
+  }
+
+  @override
+  String get ratingSaveFailed => 'Your rating couldn\'t be saved. Try again.';
+
+  @override
+  String get ratingSaveOffline => 'Offline: your rating wasn\'t saved.';
+
+  @override
   String get libraryToggleListView => 'List view';
 
   @override
