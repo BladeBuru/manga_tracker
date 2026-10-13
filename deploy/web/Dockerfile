@@ -19,8 +19,17 @@ COPY . .
 # Le fichier .env.production est injecté par le CI dans assets/env/.env.production
 # avant le build Docker (cf. workflow web-deploy.yml).
 
-# Build web release (CanvasKit par défaut pour le rendu)
-RUN flutter build web --release --base-href "/"
+# Build web release (CanvasKit par défaut pour le rendu).
+# - `--pwa-strategy=none` : plus de service worker « hors ligne d'abord »
+#   (il servait une version périmée de l'app depuis son cache).
+# - `MT_WEB_BUILD` : version compilée, comparée à /version.json pour
+#   proposer « Recharger » après un déploiement (WebVersionWatcher).
+# - L'interrupteur d'arrêt remplace le service worker vide généré : les
+#   navigateurs qui ont encore l'ancien s'en débarrassent seuls.
+RUN APP_VERSION="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | tr -d '\r')" \
+ && flutter build web --release --base-href "/" --pwa-strategy=none \
+      --dart-define=MT_WEB_BUILD="$APP_VERSION" \
+ && cp deploy/web/flutter_service_worker.js build/web/flutter_service_worker.js
 
 # ─────────────────────────────────────────────────────────────
 # Stage 2 : Nginx static server

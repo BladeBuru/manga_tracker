@@ -21,6 +21,7 @@ import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 import 'package:mangatracker/core/components/system_bars_inset.dart';
+import 'package:mangatracker/core/components/web_update_banner.dart';
 import 'core/theme/app_theme.dart';
 
 /// Re-export pour rétrocompatibilité — pointe vers le navigatorKey racine
@@ -264,15 +265,19 @@ class _MyAppState extends State<MyApp> {
       // Rien sous la barre de navigation du système (Android 15 bord à
       // bord, barre à boutons, indicateur d'accueil iOS) — sauf dans les
       // lecteurs, où la page occupe tout l'écran.
-      builder: (context, child) => ListenableBuilder(
-        listenable: _router.routerDelegate,
-        builder: (context, _) => SystemBarsInset(
-          enabled: !isFullscreenReaderRoute(
-            _router.routerDelegate.currentConfiguration.lastOrNull?.route,
+      builder: (context, child) {
+        final app = ListenableBuilder(
+          listenable: _router.routerDelegate,
+          builder: (context, _) => SystemBarsInset(
+            enabled: !isFullscreenReaderRoute(
+              _router.routerDelegate.currentConfiguration.lastOrNull?.route,
+            ),
+            child: child ?? const SizedBox.shrink(),
           ),
-          child: child ?? const SizedBox.shrink(),
-        ),
-      ),
+        );
+        // Web : « Une nouvelle version est disponible — Recharger ».
+        return kIsWeb ? WebUpdateBanner(child: app) : app;
+      },
       scrollBehavior: _scrollBehavior,
     );
   }

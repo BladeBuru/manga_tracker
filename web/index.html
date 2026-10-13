@@ -54,6 +54,54 @@
       return w !== null && typeof w !== 'undefined';
     };
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Démarrage de l'application, après nettoyage des anciennes versions.
+    // Le service worker « hors ligne d'abord » des versions web <= 0.18
+    // servait une application périmée depuis son cache, jusqu'à
+    // l'effacement manuel des données du site : on le désinscrit et on vide
+    // ses caches ; si la page venait encore de lui, on la recharge UNE fois
+    // depuis le réseau. Plus aucun service worker n'est inscrit ensuite
+    // (cf. flutter_bootstrap.js et deploy/web/README.md).
+    (function () {
+      var started = false;
+      function start() {
+        if (started) return;
+        started = true;
+        var script = document.createElement('script');
+        script.src = 'flutter_bootstrap.js';
+        script.async = true;
+        document.body.appendChild(script);
+      }
+      function reloadOnce() {
+        try {
+          if (sessionStorage.getItem('mt-sw-cleanup')) return false;
+          sessionStorage.setItem('mt-sw-cleanup', '1');
+        } catch (_) {
+          return false;
+        }
+        location.reload();
+        return true;
+      }
+      if (!('serviceWorker' in navigator)) {
+        start();
+        return;
+      }
+      var controlled = !!navigator.serviceWorker.controller;
+      // Jamais bloqué par un navigateur qui ne répond pas.
+      setTimeout(start, 3000);
+      navigator.serviceWorker.getRegistrations()
+        .then(function (registrations) {
+          return Promise.all(registrations.map(function (r) { return r.unregister(); }));
+        })
+        .then(function () { return window.caches ? caches.keys() : []; })
+        .then(function (keys) {
+          return Promise.all(keys.map(function (key) { return caches.delete(key); }));
+        })
+        .then(function () {
+          if (controlled && reloadOnce()) return;
+          start();
+        }, start);
+    })();
+  </script>
 </body>
 </html>
