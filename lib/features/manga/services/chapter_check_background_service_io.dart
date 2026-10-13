@@ -101,8 +101,9 @@ class ChapterCheckBackgroundService {
           final readChapters = manga.readChapters?.toInt() ?? 0;
           if (readChapters <= 0) continue;
 
-          // Récupérer le customLink depuis le service
-          final customLink = await _libraryService.getCustomLink(muId);
+          // Le lien vient de l'entrée de bibliothèque déjà chargée : plus
+          // une requête par titre (avant : la fiche complète, à chaque fois).
+          final customLink = manga.customLink;
           if (customLink == null || customLink.isEmpty) {
             continue; // Pas de customLink, skip
           }

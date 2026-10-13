@@ -212,6 +212,7 @@
 
 - ✅ Trouver le lien d'un titre via le site de la dernière lecture + « Ceci est le nouveau lien » dans le lecteur *(2026-09-30)*
 - ✅ Copier le lien d'une lecture à deux *(2026-09-30)*
+- ✅ Mettre à jour sa progression depuis une lecture à deux *(2026-10-13)*
 
 - ✅ Affichage de la page avec WebView (mobile)
 - ✅ Ouverture dans un nouvel onglet (web — `url_launcher`)

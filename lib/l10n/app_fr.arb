@@ -2065,6 +2065,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "L'invitation depuis le groupe arrive très bientôt. Pour l'instant, recrée un groupe depuis la fiche d'un manga.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Dernier chapitre terminé : {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Indique le dernier chapitre que tu as terminé",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "Enregistrement…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Chapitres, lecture en ligne et détails du titre",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "Ma progression",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Indique le dernier chapitre que tu as terminé. Les membres du groupe verront ta progression.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Dernier chapitre terminé",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Saisis un nombre entier, 0 ou plus.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "Un chapitre de moins",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "Un chapitre de plus",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Me caler sur {name} (ch. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Ta progression n'a pas pu être retrouvée. Réessaie dans un instant.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "Impossible de copier le lien sur cet appareil.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Copie impossible — voici le lien",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Progression enregistrée : chapitre {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Progression enregistrée : chapitre {chapter}. Le nombre de chapitres du titre a été mis à jour.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "Le chapitre {chapter} dépasse le nombre de chapitres connu du titre. Signale les nouveaux chapitres depuis la fiche du manga.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Trop de modifications d'affilée. Réessaie dans quelques instants.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Hors ligne : le chapitre {chapter} sera enregistré au retour du réseau.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "Ta session a expiré : reconnecte-toi pour enregistrer ta progression.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "Ce titre n'est pas dans ta bibliothèque : ajoute-le depuis sa fiche pour suivre ta progression.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "La progression n'a pas pu être enregistrée (erreur {code}). Réessaie.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "La progression n'a pas pu être enregistrée. Réessaie.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Une progression enregistrée hors ligne (chapitre {chapter}) a été refusée par le serveur.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Ta note n'a pas pu être enregistrée. Réessaie.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Hors ligne : ta note n'a pas été enregistrée.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "Vue liste",
   "@libraryToggleListView": {
     "description": "Tooltip du bouton qui passe en vue liste dans la bibliothèque"

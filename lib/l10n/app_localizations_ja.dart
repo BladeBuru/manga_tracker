@@ -1943,6 +1943,104 @@ class AppLocalizationsJa extends AppLocalizations {
       'グループからの招待機能はもうすぐ登場します。現時点ではマンガページから新しいグループを作成してください。';
 
   @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return '最後に読み終えた話：$chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty => '最後に読み終えた話を入力してください';
+
+  @override
+  String get readingGroupProgressSaving => '保存中…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle => '話一覧、オンライン閲覧、作品の詳細';
+
+  @override
+  String get readingGroupProgressDialogTitle => '自分の進捗';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      '最後に読み終えた話を入力してください。グループのメンバーにあなたの進捗が表示されます。';
+
+  @override
+  String get readingGroupProgressFieldLabel => '最後に読み終えた話';
+
+  @override
+  String get readingGroupProgressInvalid => '0以上の整数を入力してください。';
+
+  @override
+  String get readingGroupProgressDecrease => '1話戻す';
+
+  @override
+  String get readingGroupProgressIncrease => '1話進める';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return '$nameに合わせる（第$chapter話）';
+  }
+
+  @override
+  String get readingGroupProgressUnknown =>
+      'あなたの進捗を取得できませんでした。少し待ってからもう一度お試しください。';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed => 'この端末ではリンクをコピーできませんでした。';
+
+  @override
+  String get readingGroupCopyLinkManualTitle => 'コピーできませんでした — リンクはこちら';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return '進捗を保存しました：第$chapter話';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return '進捗を保存しました：第$chapter話。作品の話数を更新しました。';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return '第$chapter話は作品の既知の話数を超えています。マンガページから新しい話を報告してください。';
+  }
+
+  @override
+  String get chapterProgressThrottled => '短時間に変更が多すぎます。しばらくしてからもう一度お試しください。';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return 'オフライン：第$chapter話はオンラインに戻ったときに保存されます。';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      'セッションの有効期限が切れました。進捗を保存するには再ログインしてください。';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      'この作品はライブラリにありません。進捗を記録するには作品ページから追加してください。';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return '進捗を保存できませんでした（エラー $code）。もう一度お試しください。';
+  }
+
+  @override
+  String get chapterProgressFailed => '進捗を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return 'オフラインで保存した進捗（第$chapter話）がサーバーに拒否されました。';
+  }
+
+  @override
+  String get ratingSaveFailed => '評価を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get ratingSaveOffline => 'オフライン：評価は保存されませんでした。';
+
+  @override
   String get libraryToggleListView => 'リスト表示';
 
   @override

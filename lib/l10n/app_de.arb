@@ -1065,6 +1065,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Einladungen direkt aus der Gruppe heraus folgen bald. Erstelle bis dahin eine neue Gruppe von der Manga-Seite aus.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Zuletzt beendetes Kapitel: {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Gib das letzte Kapitel an, das du beendet hast",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "Wird gespeichert…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Kapitel, Online-Lesen und Details zum Titel",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "Mein Fortschritt",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Gib das letzte Kapitel an, das du beendet hast. Die Gruppenmitglieder sehen deinen Fortschritt.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Zuletzt beendetes Kapitel",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Gib eine ganze Zahl ab 0 ein.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "Ein Kapitel weniger",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "Ein Kapitel mehr",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Zu {name} aufschließen (Kap. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Dein Fortschritt konnte nicht ermittelt werden. Versuche es gleich noch einmal.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "Der Link konnte auf diesem Gerät nicht kopiert werden.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Kopieren fehlgeschlagen — hier ist der Link",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Fortschritt gespeichert: Kapitel {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Fortschritt gespeichert: Kapitel {chapter}. Die Kapitelanzahl des Titels wurde aktualisiert.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "Kapitel {chapter} liegt über der bekannten Kapitelanzahl des Titels. Melde die neuen Kapitel auf der Manga-Seite.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Zu viele Änderungen hintereinander. Versuche es in einigen Augenblicken erneut.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Offline: Kapitel {chapter} wird gespeichert, sobald du wieder online bist.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "Deine Sitzung ist abgelaufen: Melde dich erneut an, um deinen Fortschritt zu speichern.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "Dieser Titel ist nicht in deiner Bibliothek: Füge ihn über seine Seite hinzu, um deinen Fortschritt zu verfolgen.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "Der Fortschritt konnte nicht gespeichert werden (Fehler {code}). Versuche es erneut.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "Der Fortschritt konnte nicht gespeichert werden. Versuche es erneut.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Ein offline gespeicherter Fortschritt (Kapitel {chapter}) wurde vom Server abgelehnt.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Deine Bewertung konnte nicht gespeichert werden. Versuche es erneut.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Offline: Deine Bewertung wurde nicht gespeichert.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "Listenansicht",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Kartenansicht",

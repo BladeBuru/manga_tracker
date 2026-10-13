@@ -3628,6 +3628,162 @@ abstract class AppLocalizations {
   /// **'L\'invitation depuis le groupe arrive très bientôt. Pour l\'instant, recrée un groupe depuis la fiche d\'un manga.'**
   String get readingGroupInviteSoonMessage;
 
+  /// No description provided for @readingGroupMyProgressSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernier chapitre terminé : {chapter}'**
+  String readingGroupMyProgressSubtitle(int chapter);
+
+  /// No description provided for @readingGroupMyProgressEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indique le dernier chapitre que tu as terminé'**
+  String get readingGroupMyProgressEmpty;
+
+  /// No description provided for @readingGroupProgressSaving.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrement…'**
+  String get readingGroupProgressSaving;
+
+  /// No description provided for @readingGroupOpenMangaSubtitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chapitres, lecture en ligne et détails du titre'**
+  String get readingGroupOpenMangaSubtitle;
+
+  /// No description provided for @readingGroupProgressDialogTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ma progression'**
+  String get readingGroupProgressDialogTitle;
+
+  /// No description provided for @readingGroupProgressDialogExplainer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Indique le dernier chapitre que tu as terminé. Les membres du groupe verront ta progression.'**
+  String get readingGroupProgressDialogExplainer;
+
+  /// No description provided for @readingGroupProgressFieldLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernier chapitre terminé'**
+  String get readingGroupProgressFieldLabel;
+
+  /// No description provided for @readingGroupProgressInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisis un nombre entier, 0 ou plus.'**
+  String get readingGroupProgressInvalid;
+
+  /// No description provided for @readingGroupProgressDecrease.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un chapitre de moins'**
+  String get readingGroupProgressDecrease;
+
+  /// No description provided for @readingGroupProgressIncrease.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un chapitre de plus'**
+  String get readingGroupProgressIncrease;
+
+  /// No description provided for @readingGroupProgressAlignWith.
+  ///
+  /// In fr, this message translates to:
+  /// **'Me caler sur {name} (ch. {chapter})'**
+  String readingGroupProgressAlignWith(String name, int chapter);
+
+  /// No description provided for @readingGroupProgressUnknown.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ta progression n\'a pas pu être retrouvée. Réessaie dans un instant.'**
+  String get readingGroupProgressUnknown;
+
+  /// No description provided for @readingGroupCopyLinkClipboardFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de copier le lien sur cet appareil.'**
+  String get readingGroupCopyLinkClipboardFailed;
+
+  /// No description provided for @readingGroupCopyLinkManualTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Copie impossible — voici le lien'**
+  String get readingGroupCopyLinkManualTitle;
+
+  /// No description provided for @chapterProgressSavedAt.
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression enregistrée : chapitre {chapter}'**
+  String chapterProgressSavedAt(int chapter);
+
+  /// No description provided for @chapterProgressSavedReported.
+  ///
+  /// In fr, this message translates to:
+  /// **'Progression enregistrée : chapitre {chapter}. Le nombre de chapitres du titre a été mis à jour.'**
+  String chapterProgressSavedReported(int chapter);
+
+  /// No description provided for @chapterProgressAboveTotal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le chapitre {chapter} dépasse le nombre de chapitres connu du titre. Signale les nouveaux chapitres depuis la fiche du manga.'**
+  String chapterProgressAboveTotal(int chapter);
+
+  /// No description provided for @chapterProgressThrottled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de modifications d\'affilée. Réessaie dans quelques instants.'**
+  String get chapterProgressThrottled;
+
+  /// No description provided for @chapterProgressQueued.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : le chapitre {chapter} sera enregistré au retour du réseau.'**
+  String chapterProgressQueued(int chapter);
+
+  /// No description provided for @chapterProgressSessionRejected.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ta session a expiré : reconnecte-toi pour enregistrer ta progression.'**
+  String get chapterProgressSessionRejected;
+
+  /// No description provided for @chapterProgressNotInLibrary.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce titre n\'est pas dans ta bibliothèque : ajoute-le depuis sa fiche pour suivre ta progression.'**
+  String get chapterProgressNotInLibrary;
+
+  /// No description provided for @chapterProgressFailedCode.
+  ///
+  /// In fr, this message translates to:
+  /// **'La progression n\'a pas pu être enregistrée (erreur {code}). Réessaie.'**
+  String chapterProgressFailedCode(int code);
+
+  /// No description provided for @chapterProgressFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'La progression n\'a pas pu être enregistrée. Réessaie.'**
+  String get chapterProgressFailed;
+
+  /// No description provided for @offlineProgressRefused.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une progression enregistrée hors ligne (chapitre {chapter}) a été refusée par le serveur.'**
+  String offlineProgressRefused(int chapter);
+
+  /// No description provided for @ratingSaveFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ta note n\'a pas pu être enregistrée. Réessaie.'**
+  String get ratingSaveFailed;
+
+  /// No description provided for @ratingSaveOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors ligne : ta note n\'a pas été enregistrée.'**
+  String get ratingSaveOffline;
+
   /// Tooltip du bouton qui passe en vue liste dans la bibliothèque
   ///
   /// In fr, this message translates to:

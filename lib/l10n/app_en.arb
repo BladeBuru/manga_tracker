@@ -1134,6 +1134,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Inviting from inside a group is coming soon. For now, create a new group from the manga page.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Last chapter finished: {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Enter the last chapter you finished",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "Saving…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Chapters, online reading and title details",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "My progress",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Enter the last chapter you finished. Group members will see your progress.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Last chapter finished",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Enter a whole number, 0 or more.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "One chapter less",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "One chapter more",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Catch up with {name} (ch. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Your progress couldn't be found. Try again in a moment.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "The link couldn't be copied on this device.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Copy failed — here is the link",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Progress saved: chapter {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Progress saved: chapter {chapter}. The title's chapter count has been updated.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "Chapter {chapter} is beyond the title's known chapter count. Report the new chapters from the manga page.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Too many changes in a row. Try again in a few moments.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Offline: chapter {chapter} will be saved when you're back online.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "Your session has expired: sign in again to save your progress.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "This title isn't in your library: add it from its page to track your progress.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "Progress couldn't be saved (error {code}). Try again.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "Progress couldn't be saved. Try again.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Progress saved offline (chapter {chapter}) was rejected by the server.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Your rating couldn't be saved. Try again.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Offline: your rating wasn't saved.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "List view",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Card view",

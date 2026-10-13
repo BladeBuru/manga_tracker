@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:mangatracker/features/library/services/chapter_progress_result.dart';
 import 'package:mangatracker/features/manga/dto/manga_detail.dto.dart';
 
 /// États pour DetailBloc
@@ -60,6 +61,59 @@ class DetailLoaded extends DetailState {
       requiresReauth: requiresReauth ?? this.requiresReauth,
     );
   }
+}
+
+/// Échec d'une action de la fiche qui ne remplace PAS la page : le contenu
+/// chargé reste affiché, la vue montre la raison (et propose de réessayer).
+///
+/// Avant, un enregistrement de progression refusé émettait [DetailError] :
+/// toute la fiche laissait place à un écran d'erreur (texte français codé en
+/// dur) dont « Réessayer » rechargeait la page au lieu de réessayer.
+sealed class DetailFailureNotice extends Equatable {
+  const DetailFailureNotice();
+}
+
+/// La progression [readChapters] n'a pas été enregistrée, pour [reason].
+final class ProgressSaveFailed extends DetailFailureNotice {
+  final int readChapters;
+  final ChapterProgressResult reason;
+
+  const ProgressSaveFailed({required this.readChapters, required this.reason});
+
+  @override
+  List<Object?> get props => [readChapters, reason];
+}
+
+/// La note [rating] n'a pas été enregistrée ([offline] : faute de réseau).
+final class RatingSaveFailed extends DetailFailureNotice {
+  final int rating;
+  final bool offline;
+
+  const RatingSaveFailed({required this.rating, required this.offline});
+
+  @override
+  List<Object?> get props => [rating, offline];
+}
+
+/// [DetailLoaded] porteur d'un échec à signaler ([notice]) — effet ponctuel :
+/// l'état suivant est un [DetailLoaded] ordinaire. [attempt] rend chaque
+/// échec distinct (deux refus identiques s'affichent tous les deux).
+class DetailActionFailed extends DetailLoaded {
+  final DetailFailureNotice notice;
+  final int attempt;
+
+  const DetailActionFailed({
+    required super.mangaDetail,
+    super.isOffline,
+    super.pendingActions,
+    super.requiresReauth,
+    super.stale,
+    required this.notice,
+    required this.attempt,
+  });
+
+  @override
+  List<Object> get props => [...super.props, notice, attempt];
 }
 
 /// Erreur lors du chargement

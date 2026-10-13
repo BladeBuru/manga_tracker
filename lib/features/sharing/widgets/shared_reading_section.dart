@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_avatar.dart';
 import 'package:mangatracker/core/components/app_card.dart';
 import 'package:mangatracker/core/components/app_chip.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
+import 'package:mangatracker/core/router/route_visibility_listener.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
@@ -16,15 +17,20 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///
 /// Comportement :
 ///  - Au mount : fetch `findGroupForManga(muId)` (silencieux si erreur)
+///  - Rechargée quand la fiche repasse au premier plan (retour depuis le
+///    groupe) : avant, chargée une seule fois, elle montrait encore
+///    l'ancienne progression. La carte affichée reste en place pendant la
+///    relecture (pas de clignotement).
 ///  - Si pas de groupe → widget invisible (`SizedBox.shrink`)
 ///  - Si groupe → carte tonale avec :
 ///       * Titre "Lecture partagée"
 ///       * Pastille membres count
 ///       * Liste compacte des autres membres + progression
-///       * Tap → ouvre la page détail du groupe
+///       * Tap → ouvre la page détail du groupe — ou y revient si elle est
+///         juste en dessous (`pushOrPop`) : les allers-retours n'empilent
+///         plus de pages.
 ///
-/// Léger : un seul appel réseau, pas de polling (l'utilisateur peut
-/// rafraîchir via pull-to-refresh de la page manga).
+/// Léger : un appel réseau par affichage, pas de polling.
 class SharedReadingSection extends StatefulWidget {
   final int muId;
   const SharedReadingSection({super.key, required this.muId});
@@ -34,40 +40,55 @@ class SharedReadingSection extends StatefulWidget {
 }
 
 class _SharedReadingSectionState extends State<SharedReadingSection> {
-  late Future<_SectionData?> _future;
+  _SectionData? _data;
+
+  /// Numéro du dernier chargement : seul le plus récent s'affiche.
+  int _generation = 0;
 
   @override
   void initState() {
     super.initState();
-    _future = _load();
+    _reload();
   }
 
-  Future<_SectionData?> _load() async {
+  Future<void> _reload() async {
+    final generation = ++_generation;
+    final (:loaded, :data) = await _load();
+    if (!mounted || generation != _generation) return;
+    // Échec de relecture : la carte déjà affichée reste. « Aucun groupe »
+    // (groupe quitté entre-temps), lui, la retire.
+    if (!loaded) return;
+    setState(() => _data = data);
+  }
+
+  /// [loaded] : le serveur a répondu (avec ou sans groupe pour ce titre).
+  Future<({bool loaded, _SectionData? data})> _load() async {
     try {
       final group =
           await getIt<ReadingGroupsService>().findGroupForManga(widget.muId);
-      if (group == null) return null;
+      if (group == null) return (loaded: true, data: null);
       int? currentUserId;
       try {
         final info = await getIt<UserService>().getUserInformation();
         currentUserId = info.id;
       } catch (_) {}
-      return _SectionData(group: group, currentUserId: currentUserId);
+      return (
+        loaded: true,
+        data: _SectionData(group: group, currentUserId: currentUserId),
+      );
     } catch (_) {
-      return null;
+      return (loaded: false, data: null);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<_SectionData?>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data == null) {
-          return const SizedBox.shrink();
-        }
-        return _SharedReadingCard(data: snapshot.data!);
-      },
+    final data = _data;
+    return RouteVisibilityListener(
+      onVisible: _reload,
+      child: data == null
+          ? const SizedBox.shrink()
+          : _SharedReadingCard(data: data),
     );
   }
 }
@@ -99,7 +120,7 @@ class _SharedReadingCard extends StatelessWidget {
         AppSpacing.s,
       ),
       child: AppCard(
-        onTap: () => context.push('/reading-groups/${group.id}'),
+        onTap: () => pushOrPop<void>(context, '/reading-groups/${group.id}'),
         backgroundColor: scheme.surfaceContainerHigh,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -1065,6 +1065,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Convidar a partir do grupo chega muito em breve. Por agora, cria um novo grupo na página do manga.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Último capítulo terminado: {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Indica o último capítulo que terminaste",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "A guardar…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Capítulos, leitura online e detalhes do título",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "O meu progresso",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Indica o último capítulo que terminaste. Os membros do grupo verão o teu progresso.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Último capítulo terminado",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Introduz um número inteiro, 0 ou mais.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "Menos um capítulo",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "Mais um capítulo",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Acompanhar {name} (cap. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Não foi possível obter o teu progresso. Tenta novamente daqui a pouco.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "Não foi possível copiar a ligação neste dispositivo.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Não foi possível copiar — eis a ligação",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Progresso guardado: capítulo {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Progresso guardado: capítulo {chapter}. O número de capítulos do título foi atualizado.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "O capítulo {chapter} ultrapassa o número de capítulos conhecido do título. Assinala os novos capítulos na página do manga.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Demasiadas alterações seguidas. Tenta novamente daqui a uns instantes.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Sem ligação: o capítulo {chapter} será guardado quando a rede voltar.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "A tua sessão expirou: volta a iniciar sessão para guardar o teu progresso.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "Este título não está na tua biblioteca: adiciona-o na sua página para acompanhar o teu progresso.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "Não foi possível guardar o progresso (erro {code}). Tenta novamente.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "Não foi possível guardar o progresso. Tenta novamente.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Um progresso guardado sem ligação (capítulo {chapter}) foi recusado pelo servidor.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Não foi possível guardar a tua avaliação. Tenta novamente.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Sem ligação: a tua avaliação não foi guardada.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "Vista em lista",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Vista em cartões",
