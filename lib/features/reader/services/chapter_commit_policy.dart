@@ -25,8 +25,8 @@ library;
 
 /// Transition de chapitre observée par le lecteur.
 ///
-/// Reflet pur de `ChapterChangeType` (`webview_navigation_service.dart`), qui
-/// dépend, lui, de la WebView. La conversion se fait dans la vue.
+/// Reflet pur de `ChapterChangeType` (`chapter_change_classifier.dart`), qui
+/// importe cette politique : la conversion se fait de ce côté-là.
 enum ChapterTransition {
   /// Premier chapitre identifié depuis l'URL.
   firstDetected,
