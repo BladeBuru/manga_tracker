@@ -489,7 +489,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushNotifShareTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Nouveau manga partagé'**
+  /// **'Nouvelle recommandation'**
   String get pushNotifShareTitle;
 
   /// No description provided for @pushNotifShareBody.
@@ -3009,7 +3009,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Partager ce manga'**
+  /// **'Recommander à un ami'**
   String get shareTitle;
 
   /// No description provided for @shareMessageHint.
@@ -3033,13 +3033,13 @@ abstract class AppLocalizations {
   /// No description provided for @shareSuccess.
   ///
   /// In fr, this message translates to:
-  /// **'Manga partagé'**
+  /// **'Recommandation envoyée'**
   String get shareSuccess;
 
   /// No description provided for @shareFailed.
   ///
   /// In fr, this message translates to:
-  /// **'Échec du partage'**
+  /// **'Échec de l\'envoi'**
   String get shareFailed;
 
   /// No description provided for @shareLoadError.
@@ -4423,37 +4423,37 @@ abstract class AppLocalizations {
   /// No description provided for @communityRecoAdd.
   ///
   /// In fr, this message translates to:
-  /// **'Recommander une œuvre'**
+  /// **'Suggérer un titre similaire'**
   String get communityRecoAdd;
 
   /// No description provided for @communityRecoToggleOn.
   ///
   /// In fr, this message translates to:
-  /// **'Je recommande aussi'**
+  /// **'Je le suggère aussi'**
   String get communityRecoToggleOn;
 
   /// No description provided for @communityRecoToggleOff.
   ///
   /// In fr, this message translates to:
-  /// **'Retirer ma recommandation'**
+  /// **'Retirer ma suggestion'**
   String get communityRecoToggleOff;
 
   /// No description provided for @communityRecoAdded.
   ///
   /// In fr, this message translates to:
-  /// **'Merci ! Votre recommandation est enregistrée'**
+  /// **'Merci ! Votre suggestion est enregistrée'**
   String get communityRecoAdded;
 
   /// No description provided for @communityRecoRemoved.
   ///
   /// In fr, this message translates to:
-  /// **'Recommandation retirée'**
+  /// **'Suggestion retirée'**
   String get communityRecoRemoved;
 
   /// No description provided for @communityRecoEmpty.
   ///
   /// In fr, this message translates to:
-  /// **'Personne n\'a encore recommandé d\'œuvre pour ce titre. Soyez le premier !'**
+  /// **'Personne n\'a encore suggéré de titre similaire. Soyez le premier !'**
   String get communityRecoEmpty;
 
   /// No description provided for @communityRecoLoadError.
@@ -4465,19 +4465,19 @@ abstract class AppLocalizations {
   /// No description provided for @communityRecoActionError.
   ///
   /// In fr, this message translates to:
-  /// **'Impossible d\'enregistrer la recommandation. Réessayez plus tard.'**
+  /// **'Impossible d\'enregistrer la suggestion. Réessayez plus tard.'**
   String get communityRecoActionError;
 
   /// No description provided for @communityRecoThrottled.
   ///
   /// In fr, this message translates to:
-  /// **'Vous avez recommandé beaucoup d\'œuvres d\'un coup. Réessayez dans un moment.'**
+  /// **'Vous avez suggéré beaucoup de titres d\'un coup. Réessayez dans un moment.'**
   String get communityRecoThrottled;
 
   /// No description provided for @communityRecoPickerTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Quelle œuvre recommandez-vous ?'**
+  /// **'Quel titre similaire suggérez-vous ?'**
   String get communityRecoPickerTitle;
 
   /// No description provided for @communityRecoPickerHint.
@@ -4755,6 +4755,312 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Télécharger ({count})'**
   String downloadConfirmCount(int count);
+
+  /// Message d'erreur générique (repli)
+  ///
+  /// In fr, this message translates to:
+  /// **'Une erreur est survenue. Réessayez.'**
+  String get errorGeneric;
+
+  /// Réponse 429 du serveur
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de tentatives, réessayez dans un instant'**
+  String get errorTooManyRequests;
+
+  /// Réponse 5xx du serveur
+  ///
+  /// In fr, this message translates to:
+  /// **'Le service est momentanément indisponible. Réessayez plus tard.'**
+  String get errorServerUnavailable;
+
+  /// Réponse 403 sans message exploitable
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous n\'avez pas accès à cette action.'**
+  String get errorForbidden;
+
+  /// Réponse 404 sans message exploitable
+  ///
+  /// In fr, this message translates to:
+  /// **'Introuvable : l\'élément a peut-être été supprimé.'**
+  String get errorNotFound;
+
+  /// Réponse 409 sans message exploitable
+  ///
+  /// In fr, this message translates to:
+  /// **'C\'est déjà fait.'**
+  String get errorConflict;
+
+  /// Session refusée par le serveur
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre session a expiré. Reconnectez-vous.'**
+  String get errorSessionExpired;
+
+  /// Centre de notifications : action « tout lu »
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout marquer comme lu'**
+  String get notificationsMarkAllRead;
+
+  /// Centre de notifications : bouton réglages
+  ///
+  /// In fr, this message translates to:
+  /// **'Réglages des notifications'**
+  String get notificationsSettingsTooltip;
+
+  /// Centre de notifications vide : titre
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune notification'**
+  String get notificationsEmptyTitle;
+
+  /// Centre de notifications vide : explication
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelles sorties de votre bibliothèque, demandes d\'amis, recommandations : tout arrive ici.'**
+  String get notificationsEmptySubtitle;
+
+  /// Centre de notifications : échec du chargement
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger les notifications.'**
+  String get notificationsLoadError;
+
+  /// Centre de notifications : échec de la page suivante
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger la suite.'**
+  String get notificationsLoadMoreError;
+
+  /// Pastille « non lue » (lecteur d’écran)
+  ///
+  /// In fr, this message translates to:
+  /// **'Non lue'**
+  String get notificationsUnread;
+
+  /// Cloche de l’accueil : libellé accessible avec le nombre de non lues
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Notifications} =1{Notifications, 1 non lue} other{Notifications, {count} non lues}}'**
+  String notificationsBellUnread(int count);
+
+  /// Auteur inconnu d’une notification
+  ///
+  /// In fr, this message translates to:
+  /// **'Quelqu\'un'**
+  String get notificationsSomeone;
+
+  /// Titre inconnu d’une notification
+  ///
+  /// In fr, this message translates to:
+  /// **'un titre'**
+  String get notificationsSomeTitle;
+
+  /// Notification : demande d’ami reçue
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} vous a envoyé une demande d\'ami'**
+  String notifItemFriendRequest(String name);
+
+  /// Notification : demande d’ami acceptée
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} a accepté votre demande d\'ami'**
+  String notifItemFriendAccepted(String name);
+
+  /// Notification : un ami recommande un titre
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} vous recommande {title}'**
+  String notifItemMangaShare(String name, String title);
+
+  /// Notification : ajout à une lecture partagée nommée
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} vous a ajouté à la lecture partagée « {group} »'**
+  String notifItemReadingGroupNamed(String name, String group);
+
+  /// Notification : ajout à une lecture partagée (sans nom)
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} vous a ajouté à une lecture partagée de {title}'**
+  String notifItemReadingGroup(String name, String title);
+
+  /// Notification : nouveaux chapitres d’un titre suivi
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Nouveau chapitre de {title} (ch. {chapter})} other{{count} nouveaux chapitres de {title} (ch. {chapter})}}'**
+  String notifItemNewChapters(int count, String title, String chapter);
+
+  /// Notification système : demande acceptée (titre)
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande d\'ami acceptée'**
+  String get pushNotifFriendAcceptedTitle;
+
+  /// Notification système : lecture partagée (titre)
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle lecture partagée'**
+  String get pushNotifReadingGroupTitle;
+
+  /// Notification système : nouveaux chapitres (titre)
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveaux chapitres'**
+  String get pushNotifNewChaptersTitle;
+
+  /// Réglages : interrupteur demandes acceptées
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes acceptées'**
+  String get notifFriendAcceptedTitle;
+
+  /// Réglages : explication demandes acceptées
+  ///
+  /// In fr, this message translates to:
+  /// **'Un ami a accepté votre demande'**
+  String get notifFriendAcceptedSubtitle;
+
+  /// Réglages : interrupteur lectures partagées
+  ///
+  /// In fr, this message translates to:
+  /// **'Lectures partagées'**
+  String get notifReadingGroupsTitle;
+
+  /// Réglages : explication lectures partagées
+  ///
+  /// In fr, this message translates to:
+  /// **'Un ami vous ajoute à une lecture partagée'**
+  String get notifReadingGroupsSubtitle;
+
+  /// Amis : échec de la recherche
+  ///
+  /// In fr, this message translates to:
+  /// **'La recherche a échoué. Réessayez.'**
+  String get friendsSearchError;
+
+  /// Amis : bouton « Ajouter » d’un résultat
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter'**
+  String get friendsRelationAdd;
+
+  /// Amis : résultat déjà ami
+  ///
+  /// In fr, this message translates to:
+  /// **'Ami'**
+  String get friendsRelationFriends;
+
+  /// Amis : annuler une demande envoyée
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la demande'**
+  String get friendsCancelRequest;
+
+  /// Amis : confirmation avant envoi d’une demande
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer une demande d\'ami à {name} ?'**
+  String friendsSendConfirmTitle(String name);
+
+  /// Amis : explication de la confirmation d’envoi
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette personne pourra l\'accepter ou la refuser.'**
+  String get friendsSendConfirmBody;
+
+  /// Amis : bouton d’envoi de la demande
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyer'**
+  String get friendsSendConfirmAction;
+
+  /// Amis : confirmation d’annulation d’une demande
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler la demande envoyée à {name} ?'**
+  String friendsCancelConfirmTitle(String name);
+
+  /// Amis : garder la demande (fermer la confirmation)
+  ///
+  /// In fr, this message translates to:
+  /// **'Garder'**
+  String get friendsKeepRequest;
+
+  /// Amis : section des demandes envoyées
+  ///
+  /// In fr, this message translates to:
+  /// **'Demandes envoyées'**
+  String get friendsSectionSent;
+
+  /// Amis : confirmation d’annulation
+  ///
+  /// In fr, this message translates to:
+  /// **'Demande annulée'**
+  String get friendsRequestCancelled;
+
+  /// Amis : demande acceptée, vous êtes amis
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous et {name} êtes maintenant amis'**
+  String friendsNowFriends(String name);
+
+  /// Commentaires : signaler
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler'**
+  String get commentsReport;
+
+  /// Commentaires : confirmation du signalement
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler ce commentaire ?'**
+  String get commentsReportConfirmTitle;
+
+  /// Commentaires : explication du signalement
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'équipe de modération l\'examinera.'**
+  String get commentsReportConfirmBody;
+
+  /// Commentaires : signalement envoyé
+  ///
+  /// In fr, this message translates to:
+  /// **'Merci, le commentaire a été signalé.'**
+  String get commentsReportSuccess;
+
+  /// Commentaires : menu d’actions
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus d\'actions'**
+  String get commentsMoreActions;
+
+  /// Fiche : bouton des titres similaires (suggestions de la communauté)
+  ///
+  /// In fr, this message translates to:
+  /// **'Titres similaires'**
+  String get similarTitles;
+
+  /// Fiche : bandeau, titre recommandé par un ami
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommandé par {name}'**
+  String receivedShareBy(String name);
+
+  /// Fiche : bandeau, titre recommandé par plusieurs amis
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Recommandé par {name} et 1 autre ami} other{Recommandé par {name} et {count} autres amis}}'**
+  String receivedShareByMany(String name, int count);
+
+  /// Fiche : message joint à une recommandation, entre guillemets
+  ///
+  /// In fr, this message translates to:
+  /// **'« {message} »'**
+  String receivedShareMessage(String message);
 }
 
 class _AppLocalizationsDelegate
