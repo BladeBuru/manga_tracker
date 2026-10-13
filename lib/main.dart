@@ -5,12 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/router/app_router.dart';
+import 'package:mangatracker/core/router/web_history/history_aware_route_information_provider.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/deep_link_handler.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/theme_service.dart';
+import 'package:mangatracker/core/theme/app_scroll_behavior.dart';
+import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/auth/services/auth_session.dart';
 import 'package:mangatracker/features/manga/services/chapter_check_background_service.dart';
 import 'package:mangatracker/features/manga/services/notification_service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -30,6 +35,12 @@ const List<DeviceOrientation> appOrientations = [
 ];
 
 Future<void> main() async {
+  // Web : URL réelles (`/manga/12`, plus de `/#/`) — nginx renvoie déjà
+  // `index.html` pour toute route inconnue. Sans effet hors web.
+  usePathUrlStrategy();
+  // Web : les pages empilées (`context.push`) ont aussi leur URL — F5 et le
+  // partage rouvrent la page affichée, pas l'onglet en dessous.
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   // S'assure que les plugins de plateforme sont initialisés avant toute opération async
   WidgetsFlutterBinding.ensureInitialized();
   //
@@ -45,6 +56,19 @@ Future<void> main() async {
   // Register all services
   setupServiceLocator();
   await getIt.allReady();
+
+  // Session connue AVANT le premier écran : un lien direct vers une page
+  // protégée s'ouvre tout de suite (jetons présents) ou renvoie à
+  // `/login?from=…` (aucune session).
+  try {
+    final auth = getIt<AuthService>();
+    await getIt<AuthSession>().restore(
+      read: auth.storageService.readSecureData,
+      isExpired: auth.isTokenExpired,
+    );
+  } catch (e) {
+    debugPrint('⚠️ Session non restaurée au démarrage : $e');
+  }
 
   // Initialiser le service de vérification en arrière-plan
   try {
@@ -86,21 +110,30 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   /// Créé une seule fois : une nouvelle instance à chaque rendu notifiait
   /// toutes les zones défilantes de l'application.
-  static final ScrollBehavior _scrollBehavior = const ScrollBehavior().copyWith(
-    physics: const BouncingScrollPhysics(
-      parent: AlwaysScrollableScrollPhysics(),
-    ),
-  );
+  static final ScrollBehavior _scrollBehavior = AppScrollBehavior.forPlatform();
 
   Locale _locale = const Locale('fr', '');
   ThemeMode _themeMode = ThemeMode.system;
   DeepLinkHandler? _deepLinkHandler;
   late final GoRouter _router;
 
+  /// Web : l'historique du navigateur suit la pile de l'application
+  /// (cf. [HistoryAwareRouteInformationProvider]). Mobile : go_router seul.
+  late final RouterConfig<RouteMatchList> _routerConfig;
+
   @override
   void initState() {
     super.initState();
     _router = buildAppRouter();
+    _routerConfig = kIsWeb
+        ? RouterConfig<RouteMatchList>(
+            routeInformationProvider:
+                HistoryAwareRouteInformationProvider(_router),
+            routeInformationParser: _router.routeInformationParser,
+            routerDelegate: _router.routerDelegate,
+            backButtonDispatcher: _router.backButtonDispatcher,
+          )
+        : _router;
     _loadLocale();
     _loadTheme();
     // Écouter les changements de langue via un callback global
@@ -227,7 +260,7 @@ class _MyAppState extends State<MyApp> {
         Locale('pt', ''),
         Locale('es', ''),
       ],
-      routerConfig: _router,
+      routerConfig: _routerConfig,
       // Rien sous la barre de navigation du système (Android 15 bord à
       // bord, barre à boutons, indicateur d'accueil iOS) — sauf dans les
       // lecteurs, où la page occupe tout l'écran.

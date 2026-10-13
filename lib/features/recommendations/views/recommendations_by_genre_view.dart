@@ -8,6 +8,7 @@ import 'package:mangatracker/features/manga/widgets/manga_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/features/recommendations/widgets/recommendations_segmented_toggle.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page « Recommandations par genre ».
 ///
@@ -81,6 +82,7 @@ class _RecommendationsByGenreViewState
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(
           l10n?.recommendationsByGenreTitle ?? 'Recommandations par genre',
         ),

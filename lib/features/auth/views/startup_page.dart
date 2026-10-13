@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/changelog_dialog.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/app_update_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -218,16 +218,14 @@ class _StartupPageState extends State<StartupPage> {
   }
 
   // --- Fonctions de navigation ---
+  // L'entrée `/` est REMPLACÉE : le bouton retour du navigateur ne ramène
+  // jamais sur l'écran de démarrage (ni, après connexion, sur `/login`).
   void _navigateToHome() {
-    if (mounted) {
-      context.go('/home');
-    }
+    if (mounted) AuthNavigation.finishStartup(context, '/home');
   }
 
   void _goToLogin() {
-    if (mounted) {
-      context.go('/login');
-    }
+    if (mounted) AuthNavigation.finishStartup(context, '/login');
   }
 
   @override

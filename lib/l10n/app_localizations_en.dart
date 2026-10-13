@@ -2708,4 +2708,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'Download ($count)';
   }
+
+  @override
+  String get routeNotFoundTitle => 'Page not found';
+
+  @override
+  String get routeNotFoundMessage =>
+      'This address doesn\'t match any page of the app.';
+
+  @override
+  String get backToHome => 'Back to home';
+
+  @override
+  String get newVersionAvailable => 'A new version of the app is available.';
+
+  @override
+  String get reloadApp => 'Reload';
+
+  @override
+  String get carouselPrevious => 'Previous titles';
+
+  @override
+  String get carouselNext => 'Next titles';
 }

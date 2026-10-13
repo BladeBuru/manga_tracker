@@ -2853,5 +2853,33 @@
         "type": "int"
       }
     }
+  },
+  "routeNotFoundTitle": "Page introuvable",
+  "@routeNotFoundTitle": {
+    "description": "Titre de la page affichée pour une adresse (URL) inconnue"
+  },
+  "routeNotFoundMessage": "Cette adresse ne correspond à aucune page de l'application.",
+  "@routeNotFoundMessage": {
+    "description": "Explication de la page affichée pour une adresse (URL) inconnue"
+  },
+  "backToHome": "Retour à l'accueil",
+  "@backToHome": {
+    "description": "Bouton ou infobulle ramenant à l'accueil quand il n'y a pas de page précédente"
+  },
+  "newVersionAvailable": "Une nouvelle version de l'application est disponible.",
+  "@newVersionAvailable": {
+    "description": "Bandeau web : une version plus récente a été déployée pendant que la page était ouverte"
+  },
+  "reloadApp": "Recharger",
+  "@reloadApp": {
+    "description": "Bouton du bandeau de nouvelle version : recharge la page"
+  },
+  "carouselPrevious": "Titres précédents",
+  "@carouselPrevious": {
+    "description": "Infobulle de la flèche gauche d'un carrousel de l'accueil (grand écran)"
+  },
+  "carouselNext": "Titres suivants",
+  "@carouselNext": {
+    "description": "Infobulle de la flèche droite d'un carrousel de l'accueil (grand écran)"
   }
 }

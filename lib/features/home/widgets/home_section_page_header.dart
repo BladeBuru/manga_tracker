@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_chip.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
@@ -9,6 +8,7 @@ import 'package:mangatracker/features/home/dto/home_section_kind.dart';
 import 'package:mangatracker/features/home/helpers/home_section_l10n.dart';
 import 'package:mangatracker/features/home/widgets/home_section_header.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 /// En-tete de la page « Tout voir » : meme composant que sur l'accueil
 /// (icone + titre), avec le total de titres a droite, puis les bandeaux
@@ -47,7 +47,7 @@ class HomeSectionPageHeader extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.s + AppSpacing.xs),
             child: SessionRejectedBanner(
-              onReconnect: () => context.push('/login'),
+              onReconnect: () => goToLogin(context),
             ),
           )
         else if (current.isOffline)

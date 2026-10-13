@@ -2739,4 +2739,27 @@ class AppLocalizationsPt extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'Baixar ($count)';
   }
+
+  @override
+  String get routeNotFoundTitle => 'Página não encontrada';
+
+  @override
+  String get routeNotFoundMessage =>
+      'Este endereço não corresponde a nenhuma página do aplicativo.';
+
+  @override
+  String get backToHome => 'Voltar ao início';
+
+  @override
+  String get newVersionAvailable =>
+      'Uma nova versão do aplicativo está disponível.';
+
+  @override
+  String get reloadApp => 'Recarregar';
+
+  @override
+  String get carouselPrevious => 'Títulos anteriores';
+
+  @override
+  String get carouselNext => 'Próximos títulos';
 }

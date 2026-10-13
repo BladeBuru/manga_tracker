@@ -4755,6 +4755,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Télécharger ({count})'**
   String downloadConfirmCount(int count);
+
+  /// Titre de la page affichée pour une adresse (URL) inconnue
+  ///
+  /// In fr, this message translates to:
+  /// **'Page introuvable'**
+  String get routeNotFoundTitle;
+
+  /// Explication de la page affichée pour une adresse (URL) inconnue
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette adresse ne correspond à aucune page de l\'application.'**
+  String get routeNotFoundMessage;
+
+  /// Bouton ou infobulle ramenant à l'accueil quand il n'y a pas de page précédente
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour à l\'accueil'**
+  String get backToHome;
+
+  /// Bandeau web : une version plus récente a été déployée pendant que la page était ouverte
+  ///
+  /// In fr, this message translates to:
+  /// **'Une nouvelle version de l\'application est disponible.'**
+  String get newVersionAvailable;
+
+  /// Bouton du bandeau de nouvelle version : recharge la page
+  ///
+  /// In fr, this message translates to:
+  /// **'Recharger'**
+  String get reloadApp;
+
+  /// Infobulle de la flèche gauche d'un carrousel de l'accueil (grand écran)
+  ///
+  /// In fr, this message translates to:
+  /// **'Titres précédents'**
+  String get carouselPrevious;
+
+  /// Infobulle de la flèche droite d'un carrousel de l'accueil (grand écran)
+  ///
+  /// In fr, this message translates to:
+  /// **'Titres suivants'**
+  String get carouselNext;
 }
 
 class _AppLocalizationsDelegate

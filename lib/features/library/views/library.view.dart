@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -9,6 +8,7 @@ import 'package:mangatracker/features/manga/widgets/manga_row.dart';
 import '../../auth/exceptions/invalid_credentials.exception.dart';
 import '../../manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 class LibraryView extends StatefulWidget {
   const LibraryView({super.key});
@@ -90,9 +90,7 @@ class _LibraryViewState extends State<LibraryView> {
     _loadMangas();
   }
 
-  void redirectToLoginPage() {
-    context.push('/login');
-  }
+  void redirectToLoginPage() => goToLogin(context);
 
   @override
   Widget build(BuildContext context) {

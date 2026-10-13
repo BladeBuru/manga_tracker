@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -107,7 +107,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: scheme.primary, size: 24),
-          onPressed: () => context.pop(),
+          onPressed: () => popOrGo(context, fallback: '/profile'),
         ),
       ),
       body: LayoutBuilder(

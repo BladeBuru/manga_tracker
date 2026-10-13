@@ -1481,5 +1481,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "routeNotFoundTitle": "ページが見つかりません",
+  "routeNotFoundMessage": "このアドレスに対応するページはありません。",
+  "backToHome": "ホームに戻る",
+  "newVersionAvailable": "アプリの新しいバージョンがあります。",
+  "reloadApp": "再読み込み",
+  "carouselPrevious": "前のタイトル",
+  "carouselNext": "次のタイトル"
 }

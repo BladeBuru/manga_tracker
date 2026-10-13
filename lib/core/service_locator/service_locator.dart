@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/auth/services/auth_session.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
 import 'package:mangatracker/features/library/services/chapter_log.service.dart';
@@ -56,6 +57,9 @@ void setupServiceLocator() {
       () async => StorageService().init());
   // Service d'historique de recherche (sans dépendances, peut être enregistré tôt)
   getIt.registerSingleton<SearchHistoryService>(SearchHistoryService());
+  // Session vue par le garde du routeur — restaurée avant `runApp`
+  // (`main.dart`), mise à jour par `AuthService`.
+  getIt.registerSingleton<AuthSession>(AuthSession());
   // LanguageService tôt : HttpService injecte le header Accept-Language à
   // chaque requête. PAS dans les dependsOn de HttpService — GetIt exige que
   // les types de dependsOn soient déjà enregistrés au moment de

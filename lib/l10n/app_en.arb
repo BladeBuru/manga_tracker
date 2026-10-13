@@ -1487,5 +1487,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "routeNotFoundTitle": "Page not found",
+  "routeNotFoundMessage": "This address doesn't match any page of the app.",
+  "backToHome": "Back to home",
+  "newVersionAvailable": "A new version of the app is available.",
+  "reloadApp": "Reload",
+  "carouselPrevious": "Previous titles",
+  "carouselNext": "Next titles"
 }

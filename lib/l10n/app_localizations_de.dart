@@ -2745,4 +2745,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'Herunterladen ($count)';
   }
+
+  @override
+  String get routeNotFoundTitle => 'Seite nicht gefunden';
+
+  @override
+  String get routeNotFoundMessage =>
+      'Diese Adresse entspricht keiner Seite der App.';
+
+  @override
+  String get backToHome => 'Zurück zur Startseite';
+
+  @override
+  String get newVersionAvailable => 'Eine neue Version der App ist verfügbar.';
+
+  @override
+  String get reloadApp => 'Neu laden';
+
+  @override
+  String get carouselPrevious => 'Vorherige Titel';
+
+  @override
+  String get carouselNext => 'Nächste Titel';
 }

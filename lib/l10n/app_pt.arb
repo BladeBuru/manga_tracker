@@ -1481,5 +1481,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "routeNotFoundTitle": "Página não encontrada",
+  "routeNotFoundMessage": "Este endereço não corresponde a nenhuma página do aplicativo.",
+  "backToHome": "Voltar ao início",
+  "newVersionAvailable": "Uma nova versão do aplicativo está disponível.",
+  "reloadApp": "Recarregar",
+  "carouselPrevious": "Títulos anteriores",
+  "carouselNext": "Próximos títulos"
 }

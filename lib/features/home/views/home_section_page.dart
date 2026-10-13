@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -16,6 +15,8 @@ import 'package:mangatracker/features/home/helpers/home_section_l10n.dart';
 import 'package:mangatracker/features/home/widgets/home_section_page_body.dart';
 import 'package:mangatracker/features/home/widgets/home_section_page_header.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 /// Page « Tout voir » d'une section de l'accueil (`/home/section/:id`).
 ///
@@ -100,7 +101,10 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
       builder: (context, state) {
         final title = _title(l10n, state);
         return Scaffold(
-          appBar: AppBar(title: Text(title)),
+          appBar: AppBar(
+            leading: const AppBackButton(),
+            title: Text(title),
+          ),
           body: LayoutBuilder(
             builder: (context, constraints) {
               final metrics = HomeLayoutMetrics.of(constraints.maxWidth);
@@ -130,7 +134,7 @@ class _HomeSectionPageState extends State<HomeSectionPage> {
                           onRetry: () => _bloc.add(const LoadSectionPage()),
                           onRetryLoadMore: () =>
                               _bloc.add(const LoadMoreSectionPage()),
-                          onBack: () => context.pop(),
+                          onBack: () => popOrGo(context),
                         ),
                         // La page est accessible en lien direct : elle
                         // porte son propre credit de source.

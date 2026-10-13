@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/storage/services/storage.service.dart';
 import '../../../core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
+import 'auth_session.dart';
 import 'biometric.service.dart';
 import 'session_refresher.dart';
 
@@ -109,7 +110,7 @@ class AuthService {
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
         // Changement de compte : purge le cache du precedent utilisateur.
-        await _adoptCacheOwner();
+        await _onSignedIn();
         // Ne plus sauvegarder automatiquement les identifiants biométriques
         // La sauvegarde se fera uniquement si l'utilisateur active la biométrie
         return data;
@@ -273,6 +274,13 @@ class AuthService {
     // Race condition fix : si l'user logout puis se reconnecte immédiatement,
     // les `deleteSecureData` non-awaités pouvaient s'exécuter APRÈS le nouveau
     // `writeSecureData` du login suivant → tokens du nouveau login effacés.
+    await _deleteTokens();
+    // Session rejetée, PAS déconnectée : le routeur ne redirige pas, le cache
+    // reste lisible (invitation non bloquante à se reconnecter).
+    _session?.markRejected();
+  }
+
+  Future<void> _deleteTokens() async {
     await storageService.deleteSecureData('refreshToken');
     await storageService.deleteSecureData('accessToken');
     // Note : ne supprime pas `secure_credentials` (identifiants biométriques)
@@ -289,9 +297,39 @@ class AuthService {
   /// ⚠️ Ne PAS appeler depuis un chemin d'invalidation automatique — utiliser
   /// [clearSessionTokens].
   Future<void> logout() async {
-    await clearSessionTokens();
+    // Révocation côté serveur de la session de CET appareil, au mieux et
+    // sans attendre : hors ligne, la déconnexion locale ne doit pas traîner.
+    unawaited(_revokeServerSession(
+      await storageService.readSecureData('refreshToken'),
+    ));
+    await _deleteTokens();
     await _purgeCache();
     _resetNotificationCounts();
+    // En dernier : le garde du routeur retire alors l'application de l'écran.
+    _session?.markSignedOut();
+  }
+
+  /// `POST /auth/logout` (Bearer refresh token, 204) : la session ne pourra
+  /// plus être rafraîchie, même si le jeton a fuité. Erreurs ignorées.
+  Future<void> _revokeServerSession(String? refreshToken) async {
+    if (refreshToken == null || refreshToken.isEmpty) return;
+    try {
+      await http.post(
+        buildApiUri('/auth/logout'),
+        headers: {HttpHeaders.authorizationHeader: 'Bearer $refreshToken'},
+      ).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Hors ligne ou serveur indisponible : la session expirera seule.
+    }
+  }
+
+  AuthSession? get _session =>
+      getIt.isRegistered<AuthSession>() ? getIt<AuthSession>() : null;
+
+  /// Jetons tout juste enregistrés (connexion, Google, lien email…).
+  Future<void> _onSignedIn() async {
+    await _adoptCacheOwner();
+    _session?.markSignedIn();
   }
 
   /// Pastilles et anti-doublons des notifications : rien ne doit passer au
@@ -528,7 +566,7 @@ class AuthService {
         final data = jsonDecode(res.body);
         await storageService.writeSecureData('accessToken', data['accessToken']);
         await storageService.writeSecureData('refreshToken', data['refreshToken']);
-        await _adoptCacheOwner();
+        await _onSignedIn();
         debugPrint('✅ AuthService: Connexion Google mobile réussie');
         return GoogleLoginResult.success;
       } else {
@@ -586,7 +624,7 @@ class AuthService {
 
     await storageService.writeSecureData('accessToken', result.accessToken);
     await storageService.writeSecureData('refreshToken', result.refreshToken);
-    await _adoptCacheOwner();
+    await _onSignedIn();
     debugPrint('✅ AuthService: Connexion Google web réussie');
     return GoogleLoginResult.success;
   }
@@ -607,7 +645,7 @@ class AuthService {
     if (refreshToken.isNotEmpty) {
       await storageService.writeSecureData('refreshToken', refreshToken);
     }
-    await _adoptCacheOwner();
+    await _onSignedIn();
     debugPrint('✅ AuthService: Tokens persistés via persistTokens()');
   }
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/router/auth_redirect.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/auth/presentation/cubit/auth_submission_status.dart';
@@ -33,11 +35,15 @@ import 'package:mangatracker/core/router/app_modals.dart';
 /// - GDPR consent obligatoire (les deux checkboxes bloquent submit)
 /// - `GdprService.recordConsent` après succès (via Cubit)
 /// - Google OAuth (mobile + web idToken/WebView via `AuthService`)
-/// - Navigation vers `/login` et `/home`
+/// - Navigation vers `/login` (retour) et, après inscription, vers
+///   [returnTo] ou `/home` en remplaçant l'historique
 class RegisterView extends StatefulWidget {
   final String emailText;
 
-  const RegisterView({super.key, required this.emailText});
+  /// Page à rouvrir après l'inscription (`from` transmis par la connexion).
+  final String? returnTo;
+
+  const RegisterView({super.key, required this.emailText, this.returnTo});
 
   @override
   State<RegisterView> createState() => _RegisterViewState();
@@ -87,7 +93,17 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  void _goToLogin() => context.push('/login');
+  /// Ouverte depuis la connexion : vrai retour ; par lien direct : la
+  /// connexion (jamais empilée par-dessus l'inscription).
+  void _goToLogin() => popOrGo(
+        context,
+        fallback: loginLocationFor(
+          Uri.tryParse(widget.returnTo ?? homeLocation) ?? Uri(path: homeLocation),
+        ),
+      );
+
+  void _completeSignIn() =>
+      AuthNavigation.completeSignIn(context, returnTo: widget.returnTo);
 
   void _onConsentRefused(AppLocalizations? l10n) {
     final theme = Theme.of(context);
@@ -135,7 +151,7 @@ class _RegisterViewState extends State<RegisterView> {
     if (!mounted) return;
     switch (result) {
       case GoogleLoginResult.success:
-        context.go('/home');
+        _completeSignIn();
       case GoogleLoginResult.cancelled:
         break; // fermeture volontaire du sélecteur — pas un échec
       case GoogleLoginResult.configError:
@@ -170,7 +186,7 @@ class _RegisterViewState extends State<RegisterView> {
             // Propose l'enregistrement des identifiants au gestionnaire de
             // mots de passe (hotfix-v0-10-1 US-1).
             TextInput.finishAutofillContext();
-            context.go('/home');
+            _completeSignIn();
           }
         },
         child: AuthScaffold(
