@@ -4,6 +4,29 @@
 
 ---
 
+## ✅ Corrigés le 2026-10-13 — lecture partagée (`fix/progression-lecture-partagee`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| « Ma progression » refusée (105 → 124, téléphone et web) | La ligne ne faisait qu'ouvrir la fiche ; au retour, le groupe (et la carte de la fiche, chargée une fois) affichaient l'ancienne valeur. Sur la fiche, tout échec → `DetailError` (texte FR en dur) remplaçant la page, « Réessayer » rechargeait ; un chargement en vol réaffichait 105 après l'enregistrement | Fenêtre « Ma progression » + `ChapterProgressService` (issue typée), groupe relu, `DetailActionFailed` sans quitter la page, garde `_keepNewerProgress` |
+| Retour à appuyer N fois | Fiche → `push` groupe, groupe → `push` fiche : 2 pages par aller-retour, chacune avec son poll de 30 s | `pushOrPop` + poll suspendu hors premier plan (`RouteVisibilityListener`) |
+| Lien copié sur le chapitre 1 / presse-papiers muet | « Moi » introuvable (profil en cache vide) → repli silencieux sur 1 ; `Clipboard.setData` sans garde ; données jusqu'à 30 s | Action désactivée et expliquée, groupe relu, erreur + lien affiché |
+| Progression hors ligne perdue | Rejeu : 406 abandonné en silence ; lecteur hors ligne : résultat ignoré | Rattrapage du 406 affirmé, refus annoncé, `_commitChapter` vérifie |
+| Note qui « saute » | Rollback muet | Rollback + message |
+| Ajout « déjà présent » en échec | 400/409 traités comme refus | Succès (en ligne et rejeu) |
+
+Côté serveur (autre chantier) : 503/500 si le rafraîchissement MangaUpdates
+de `checkManga` échoue, 429 d'un throttle global partagé derrière le proxy.
+L'app affiche désormais la raison (code HTTP, limite) et propose de réessayer.
+
+⚠️ Préexistant, non lié : `test/features/reader/reader_invariants_test.dart`
+(« mode téléchargement… aucune détection ») échoue sur une copie Windows
+(`core.autocrlf=true`) : le test cherche `'if (!_readOnlyMode &&
+'` dans un
+source en CRLF. Vert en CI (LF).
+
+---
+
 ## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
 
 | Symptôme | Cause racine | Correction |

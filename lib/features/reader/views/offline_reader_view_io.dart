@@ -107,22 +107,42 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
   /// enregistrait auparavant en silence dès 85 % de défilement, sans rien
   /// demander — l'utilisateur se retrouvait avec des chapitres « lus » qu'il
   /// n'avait pas finis.
+  ///
+  /// Les deux appelants sont des gestes de l'utilisateur (réponse « oui » à
+  /// la modale, appui sur le chapitre suivant téléchargé) — jamais une
+  /// détection automatique : au-delà du total connu, on signale comme sur la
+  /// fiche au lieu de perdre la progression. Un refus n'est plus compté
+  /// comme enregistré, et il est annoncé.
   Future<void> _commitChapter(int chapter) async {
     if (_hasSavedProgress) return;
+    final messenger = mounted ? ScaffoldMessenger.maybeOf(context) : null;
+    final failureMessage =
+        mounted ? AppLocalizations.of(context)?.errorUpdatingChapter : null;
+    var saved = false;
     try {
-      await _libraryService.saveChapterProgress(widget.muId, chapter);
-      _hasSavedProgress = true;
-      // Journal additif (Stats v2) — fire-and-forget, cf. RETRO-015.
-      unawaited(
-        _chapterLogService
-            .recordChapterLog(widget.muId, chapterNumber: chapter)
-            .then((_) {}, onError: (Object e) {
-          debugPrint('⚠️ chapterLog offline: $e');
-        }),
+      saved = await _libraryService.saveChapterProgress(
+        widget.muId,
+        chapter,
+        autoReportIfAboveTotal: true,
       );
     } catch (e) {
       debugPrint('⚠️ Erreur lors de la sauvegarde de la progression: $e');
     }
+    if (!saved) {
+      if (failureMessage != null) {
+        messenger?.showSnackBar(SnackBar(content: Text(failureMessage)));
+      }
+      return;
+    }
+    _hasSavedProgress = true;
+    // Journal additif (Stats v2) — fire-and-forget, cf. RETRO-015.
+    unawaited(
+      _chapterLogService
+          .recordChapterLog(widget.muId, chapterNumber: chapter)
+          .then((_) {}, onError: (Object e) {
+        debugPrint('⚠️ chapterLog offline: $e');
+      }),
+    );
   }
 
   /// Mesure « suis-je proche de la fin ? » bornée dans le temps, pour qu'un

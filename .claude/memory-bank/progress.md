@@ -23,6 +23,53 @@
 
 ## ✅ Complété
 
+### 👥 Lecture partagée : « Ma progression » réelle, plus de pages empilées (2026-10-13)
+
+Branche `fix/progression-lecture-partagee` (base `1946568`, v0.18.1). Retour :
+« ma copine était à 105, je voulais 124 sur Solo Leveling, ça refusait ; et
+au retour il fallait appuyer plein de fois sur retour ».
+
+- **Progression typée** : `ChapterProgressService.save` →
+  `ChapterProgressResult` scellé (enregistré, total rattrapé, total dépassé,
+  limite 429, hors ligne, session 401/403, hors bibliothèque 404, échec +
+  code). Même HTTP que `LibraryService.saveChapterProgress`, dont le booléen
+  (lecteur) est inchangé. Diffuse `changes` : `LibraryBloc` recharge (une
+  fois par rafale), une fiche ouverte en dessous se relit (`RefreshMangaDetail`).
+  Lazy singleton GetIt sans `dependsOn`.
+- **Groupe** : « Marquer ma progression » ouvre `ReadingGroupProgressDialog`
+  (saisie, −/+, « Me caler sur <membre> »), puis `UpdateMyGroupProgress`
+  (rattrapage du total + ajout à la bibliothèque si absent) → groupe relu,
+  `ReadingGroupProgressUpdated` → message par raison. « Ouvrir le manga »
+  conservé. `ReadingGroupDetailBloc` déplacé en `part`, injectable.
+- **Navigation** : `pushOrPop` (`core/router/navigation_helpers.dart`) —
+  groupe ⇄ fiche reviennent à la page du dessous. `RouteVisibilityListener`
+  (`ModalRoute.isCurrentOf`) : groupe, liste et carte « Lecture partagée »
+  relus au retour ; poll 30 s suspendu quand la page est recouverte.
+- **Fiche** : un refus émet `DetailActionFailed` (un `DetailLoaded`) → la
+  page reste, bandeau avec la raison + « Réessayer » qui relance
+  l'enregistrement ; `LateDetailView.progressFailureAttempt` annule
+  l'affichage anticipé. Course chargement/enregistrement corrigée
+  (`_progressWrites` + `_keepNewerProgress`). Note refusée : rollback + message.
+- **Copier le lien** : groupe relu avant le calcul, lien personnel recalé sur
+  le prochain chapitre, presse-papiers refusé → message + lien sélectionnable,
+  utilisateur non identifié → action désactivée et expliquée (plus de
+  chapitre 1 en silence).
+- **File hors ligne** : `OfflineAction.confirmedByUser` ; au rejeu, un 406
+  affirmé est rattrapé (signalement + un essai), un refus définitif de
+  progression est annoncé (`notifyOfflineProgressRefused`). « Déjà dans la
+  bibliothèque » (409, ou 400 « Manga already saved ») = succès en ligne et
+  au rejeu. Mise en file partagée : `OfflineWriteQueue`.
+- **Divers** : `getCustomLink` lit l'entrée de bibliothèque (plus de
+  `GET /mangas/:id` par titre) ; lecteur hors ligne : `_commitChapter`
+  vérifie le résultat, signale au-delà du total, annonce un refus.
+- **i18n** : 26 clés × 7 langues.
+- **Chiffres** : 814 tests verts (752 avant), +62 ; 1 échec préexistant propre à Windows (CRLF, cf. known-issues). `flutter analyze` : 33 infos, 0 avertissement (identique à la base).
+
+**À valider sur appareil / web** : parcours 105 → 124 depuis le groupe
+(téléphone ET navigateur), retour arrière après plusieurs allers-retours
+groupe ⇄ fiche, copie du lien sur Safari/Firefox (geste utilisateur),
+rejeu hors ligne d'une progression au-delà du total.
+
 ### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
 
 - Sessions multi-appareils fiabilisées (client `SessionRefresher` + API rotation tolérante, gardes 401).
