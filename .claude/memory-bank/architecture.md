@@ -94,6 +94,12 @@ UI (View) → Event → BLoC → State → UI (View)
 | `ScrollPositionService` | Singleton | Sauvegarde / restauration de la position dans les WebViews |
 | `ReadingPositionStore` | — (classe instanciée) | Persistance locale des positions (`SharedPreferences`), purgée par `purgeUserScopedCache()` |
 | `ReaderViewportProbe` | — (classe instanciée) | Seul point de contact JavaScript pour mesurer une page de lecture |
+| `NotificationsService` | Lazy singleton (sans `dependsOn`) | Centre de notifications `/notifications` + cache `cached_notifications` |
+| `NotificationCountsService` | Singleton (dépend de Friends + Sharing) | Pastilles (demandes, recommandations, non lues) toutes les 60 s + notifications locales via `NotificationAlerter` (un seul chemin, anti-doublon commun) |
+| `NotificationsBloc` | — (créé par la page) | Centre de notifications : chargement, pagination, lecture optimiste, hors ligne en lecture seule |
+
+Erreurs HTTP : `ApiException` + `userFacingErrorMessage` (`core/network/`) —
+tout code 2xx est un succès (`isHttpSuccess`), jamais `e.toString()` à l'écran.
 
 **Classes pures du lecteur** (ni Flutter, ni GetIt, ni réseau — la vue exécute,
 elle ne décide pas) : `ChapterCommitPolicy` (quel chapitre est lu),
