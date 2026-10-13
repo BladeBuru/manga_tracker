@@ -79,10 +79,16 @@ void _registerBackgroundTaskService() {
 - **Impact** : secret du keystore exposé dans git
 - **Fix** : `git rm --cached android/key.properties`, ajouter au `.gitignore`, stocker hors repo (1Password / GitHub Secrets en base64), rotation du mot de passe keystore.
 
-### `MaterialPageRoute` partout
-- **Plateforme** : casse le deep-linking web
-- **Impact** : sur web, recharger une URL profonde casse la nav
-- **Fix** : migration vers `go_router` (skill `/web-readiness`). Sur iOS, utiliser `CupertinoPageRoute` ou `MaterialPageRoute.fullscreenDialog` selon le contexte.
+### ✅ Navigation web (résolu 2026-10)
+- `go_router` + `usePathUrlStrategy()` : URL réelles, F5 et lien direct
+  rouvrent l'écran (onglets compris, `StatefulShellRoute`).
+- Historique du navigateur cohérent (`HistoryAwareRouteInformationProvider`),
+  garde d'auth (`auth_redirect.dart`), `popOrGo` / `AppBackButton`.
+- Accès au navigateur (historique, rechargement) isolé dans
+  `core/platform/browser_bridge.dart` (import conditionnel
+  `dart.library.js_interop`, stub hors web).
+- Sur iOS, `MaterialPage` reste utilisé ; `CupertinoPage` à étudier si UX
+  native voulue.
 
 ### Pas de `Platform.isAndroid` / guards
 - **Plateforme** : tout code Android-spécifique sans guard se cassera sur iOS/Web

@@ -4,6 +4,31 @@
 
 ---
 
+## ✅ Corrigés le 2026-10-13 — navigation web (`fix/navigation-web`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| F5 → accueil ; aucune page n'a d'URL | Pas de `usePathUrlStrategy` (URL `/#/…`) ; `optionURLReflectsImperativeAPIs` à `false` : ~50 `context.push` ne touchaient jamais l'URL, figée sur `/#/home` ; onglets sans URL (`PageView` interne) | URL réelles, pages empilées avec URL, `StatefulShellRoute` (une URL par onglet) |
+| Retour du navigateur → page de connexion | Aucune transition d'auth ne remplaçait l'historique (`[/, /login, /home]`) ; aucun garde | `AuthNavigation` (Router.neglect), garde `resolveAuthRedirect` |
+| « Le bouton retour est bizarre » | go_router signale chaque retour in-app comme une NOUVELLE entrée (même URL partout avant) : l'écran quitté restait « en avant », le retour navigateur le rouvrait | `HistoryAwareRouteInformationProvider` : vrai `history.go(-n)` |
+| `await context.push(...)` jamais terminé après un retour navigateur | go_router recrée la pile restaurée avec des `Completer` neufs (flutter/flutter#128122) | `reconcileImperativeCompleters` |
+| Extras perdus au retour navigateur (titre, couverture) ; `/profile/edit` en F5 → « Données utilisateur manquantes » | Pas d'`extraCodec` ; pages dépendantes de l'extra | `RouteExtrasCodec` ; `ProfileEditLoader`, nom d'ami retrouvé |
+| Pop dans le vide (écran blanc) sur une page ouverte par lien direct | `context.pop()` / `Navigator.pop` nus | `popOrGo`, `AppBackButton` |
+| Redirection forcée vers la connexion depuis la bibliothèque | `message.contains('InvalidCredentials')` (interdit, minifié en release web) | Bandeau typé (`requiresReauth` / `AuthSession`) |
+| Curseur jamais « main », carrousels inutilisables à la souris, onglets changés par le pavé tactile | `GestureDetector` nus ; souris absente de `dragDevices` ; `PageView` des onglets sensible au pavé | `HoverFeedback`, `ClickableCursor`, `AppScrollBehavior`, flèches, `MainTabsPager` |
+| Ancienne version de l'app (mois) jusqu'à l'effacement des données du site | Service worker « hors ligne d'abord » de `flutter build web` + nginx 30 j `immutable` sur des fichiers sans hash | Build sans service worker, interrupteur d'arrêt, nettoyage `index.html`, nginx revalidé, bandeau « Recharger » |
+
+Constats laissés ouverts :
+- **En-têtes de sécurité nginx inopérants** : `add_header` dans un `location`
+  annule ceux du `server` ; en prod, aucune CSP n'est envoyée (nosniff /
+  X-Frame-Options viennent de l'amont). La CSP écrite bloquerait CanvasKit et
+  Google Fonts (`connect-src`) : à élargir avant de l'activer.
+- **`reader_invariants_test` « mode téléchargement »** échoue sur une copie
+  Windows (`core.autocrlf=true`) : le test cherche `'if (!_readOnlyMode &&\n'`
+  dans un source en CRLF. Préexistant, sans lien avec la navigation.
+- Après un F5, l'historique antérieur n'est pas connu de l'app : un retour
+  in-app y ajoute une entrée (jamais de faux retour).
+
 ## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
 
 | Symptôme | Cause racine | Correction |

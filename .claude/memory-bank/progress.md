@@ -1,6 +1,6 @@
 # Progrès — Manga Tracker Flutter
 
-**Version actuelle** : `0.16.1+31` — **Dernière mise à jour** : 2026-09-30
+**Version actuelle** : `0.18.1+34` — **Dernière mise à jour** : 2026-10-13
 
 ---
 
@@ -22,6 +22,38 @@
 ---
 
 ## ✅ Complété
+
+### 🌐 Web : URL réelles, retour du navigateur, souris, plus de version périmée (2026-10-13)
+
+Branche `fix/navigation-web` (base v0.18.1). Retours : « retour = page de
+connexion », « F5 = accueil, aucune page n'a d'URL », « on ne voit pas ce qui
+est cliquable », « ancienne page de connexion sur un autre ordinateur ».
+
+- **URL** : `usePathUrlStrategy()` + `optionURLReflectsImperativeAPIs` ; pages
+  reconstructibles sans extra (`/profile/edit` recharge le profil,
+  `/friends/:id` retrouve le nom) ; `RouteExtrasCodec`.
+- **Onglets** : `StatefulShellRoute` (`/home`, `/library`, `/search`,
+  `/profile`), conteneur `MainTabsPager` (glissement au doigt conservé,
+  coupé souris / pavé / web), retour Android → accueil (`MainTabsBackScope`).
+- **Garde** : `AuthSession` + `resolveAuthRedirect` (pure) ; `/login?from=` ;
+  session rejetée jamais redirigée ; `AuthNavigation` (transitions en
+  remplacement d'historique), `POST /auth/logout` au mieux.
+- **Historique** : `HistoryAwareRouteInformationProvider` — retour in-app =
+  `history.go(-n)`, restauration redirigée = remplacement, `await push`
+  gardés vivants ; `popOrGo` / `AppBackButton` ; 9 `push('/login')` →
+  `goToLogin` ; déclencheur `message.contains(...)` de la bibliothèque retiré.
+- **Souris** : `HoverFeedback` / `HoverZoom` (cartes, rangées),
+  `ClickableCursor` (12 `GestureDetector`), flèches de carrousel ≥ 768 px,
+  `AppScrollBehavior` (souris/pavé sur web, physique de la plateforme).
+- **Version périmée** : build `--pwa-strategy=none`, bootstrap sans service
+  worker, interrupteur d'arrêt, nettoyage dans `index.html`, nginx sans cache
+  long, bandeau « Recharger » (`WebVersionWatcher`, `MT_WEB_BUILD`).
+- **Tests** : 752 → 800 verts (+ 1 échec préexistant, CRLF, cf.
+  known-issues) ; analyze 33 infos / 0 avertissement (identique).
+- **À valider connecté** : connexion → retour à `from`, retour du
+  navigateur après connexion / déconnexion, onglets et fiches en F5,
+  survol des cartes, flèches des carrousels ; Android : glissement entre
+  onglets, retour → accueil puis sortie.
 
 ### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
 

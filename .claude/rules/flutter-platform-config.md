@@ -43,7 +43,7 @@
   - Pas de scripts inline non audités.
   - Meta viewport responsive.
   - Liens vers `manifest.json`.
-- ✅ Service worker généré par Flutter activé (cache offline minimal).
+- ❌ **Pas** de service worker de cache (`--pwa-strategy=none`, cf. `deploy/web/README.md`) : il servait une version périmée de l'app.
 - ✅ `go_router` utilisé (deep-linking nécessite go_router pour le web).
 - ✅ Pas de `dart:io` direct (casse le build web).
 

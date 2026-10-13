@@ -60,16 +60,9 @@ lib/features/[feature]/
 | Services | `manga.service.dart` | Récupération mangas |
 | Views | `late_detail_view.dart`, `row_chapter.dart`, `web_view.dart` | Détail + lecture |
 
-⚠️ **Navigation vers DetailView** :
-```dart
-Navigator.of(context).push(MaterialPageRoute(
-  builder: (_) => BlocProvider(
-    create: (_) => getIt<DetailBloc>()..add(LoadDetail(muId: muId)),
-    child: const LateDetailView(),
-  ),
-));
-```
-À migrer vers `go_router` (voir skill `/web-readiness`).
+⚠️ **Navigation vers la fiche** : `context.push('/manga/$muId',
+extra: MangaDetailExtras(...))` — la route crée son `DetailBloc` (factory).
+L'extra ne fait que pré-remplir : la fiche se recharge depuis l'URL seule.
 
 ### `profile`
 | Composant | Fichier | Rôle |
@@ -139,20 +132,20 @@ lib/core/
 ## Navigation
 
 ```
-main.dart
-└── MyApp (MaterialApp)
-    └── StartupPage
-        ├── LoginView (si non auth)
-        └── BottomNavbar (si auth)
-            ├── [0] HomePageBlocView (HomePageBloc)
-            ├── [1] LibraryBlocView (LibraryBloc)
-            ├── [2] Search
-            └── [3] Profile
+main.dart (usePathUrlStrategy + AuthSession.restore avant runApp)
+└── MaterialApp.router (go_router — core/router/app_router.dart)
+    ├── /                StartupPage (restauration, biométrie, « Quoi de neuf ? »)
+    ├── /login /register /forgot-password /auth/*   (publiques)
+    ├── StatefulShellRoute — BottomNavbar + MainTabsPager (PageView)
+    │   ├── /home      HomePageBlocView   (+ /home/section/:id plein écran)
+    │   ├── /library   LibraryBlocView
+    │   ├── /search    Search
+    │   └── /profile   Profile            (+ /profile/edit plein écran)
+    └── pages plein écran : /manga/:muId (+ /read, /read-offline), /authors/:id,
+        /friends(/:userId), /stats, /inbox, /reading-groups(/:id), /downloads…
 ```
 
-Pages détail : `MaterialPageRoute` + `BlocProvider(create: (_) => getIt<DetailBloc>())`.
-
-**Migration `go_router` prévue en v0.4 — obligatoire pour le build web.**
+Voir `.claude/memory-bank/architecture.md` (§ Navigation) pour la garde et l'historique web.
 
 ---
 
