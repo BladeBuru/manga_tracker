@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/comments/dto/comment.dto.dart';
 import 'package:mangatracker/features/comments/services/comments.service.dart';
+import 'package:mangatracker/features/profile/services/user.service.dart';
 
 part 'comments_event.dart';
 part 'comments_state.dart';
@@ -13,20 +14,38 @@ part 'comments_state.dart';
 /// via `BlocProvider` au mount de `CommentsSection`). Pas de singleton —
 /// chaque manga a son propre stream de commentaires.
 class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
-  final CommentsService _service = getIt<CommentsService>();
+  final CommentsService _service;
+  final Future<int?> Function() _loadCurrentUserId;
   final int muId;
 
-  CommentsBloc(this.muId) : super(const CommentsInitial()) {
+  CommentsBloc(
+    this.muId, {
+    CommentsService? service,
+    Future<int?> Function()? currentUserId,
+  })  : _service = service ?? getIt<CommentsService>(),
+        _loadCurrentUserId = currentUserId ?? _currentUserFromProfile,
+        super(const CommentsInitial()) {
     on<LoadComments>(_onLoad);
     on<LoadMoreComments>(_onLoadMore);
     on<PostComment>(_onPost);
     on<EditComment>(_onEdit);
     on<DeleteComment>(_onDelete);
+    on<ReportComment>(_onReport);
     on<ChangeCommentSort>(_onChangeSort);
+  }
+
+  /// Identifiant de l'utilisateur connecté, via le profil (en cache 7 j).
+  static Future<int?> _currentUserFromProfile() async {
+    try {
+      return (await getIt<UserService>().getUserInformation()).id;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _onLoad(LoadComments event, Emitter<CommentsState> emit) async {
     emit(const CommentsLoading());
+    final me = _loadCurrentUserId();
     try {
       final page = await _service.listForManga(muId, sort: event.sort);
       emit(CommentsLoaded(
@@ -34,9 +53,10 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         currentPage: page.page,
         hasMore: page.hasMore,
         sort: event.sort,
+        currentUserId: await me,
       ));
     } catch (e) {
-      emit(CommentsError(e.toString()));
+      emit(CommentsError(e));
     }
   }
 
@@ -84,7 +104,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       // On insère en tête pour donner un feedback immédiat.
       emit(current.copyWith(items: [created, ...current.items]));
     } catch (e) {
-      emit(current.copyWith(lastError: e.toString()));
+      emit(current.copyWith(lastError: e));
     }
   }
 
@@ -103,7 +123,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
             .toList(),
       ));
     } catch (e) {
-      emit(current.copyWith(lastError: e.toString()));
+      emit(current.copyWith(lastError: e));
     }
   }
 
@@ -136,7 +156,21 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         }).toList(),
       ));
     } catch (e) {
-      emit(current.copyWith(lastError: e.toString()));
+      emit(current.copyWith(lastError: e));
+    }
+  }
+
+  Future<void> _onReport(
+    ReportComment event,
+    Emitter<CommentsState> emit,
+  ) async {
+    if (state is! CommentsLoaded) return;
+    final current = state as CommentsLoaded;
+    try {
+      await _service.report(event.commentId);
+      emit(current.copyWith(feedback: CommentsFeedback.reported));
+    } catch (e) {
+      emit(current.copyWith(lastError: e));
     }
   }
 

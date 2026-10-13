@@ -50,6 +50,14 @@ class DeleteComment extends CommentsEvent {
   List<Object?> get props => [commentId];
 }
 
+/// Signale le commentaire d'un autre (après confirmation dans la vue).
+class ReportComment extends CommentsEvent {
+  final int commentId;
+  const ReportComment(this.commentId);
+  @override
+  List<Object?> get props => [commentId];
+}
+
 class ChangeCommentSort extends CommentsEvent {
   final CommentSort sort;
   const ChangeCommentSort(this.sort);
