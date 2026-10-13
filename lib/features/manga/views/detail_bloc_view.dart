@@ -29,6 +29,7 @@ import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
 import 'package:mangatracker/features/manga/widgets/detail_read_online_button.dart';
 import 'package:mangatracker/features/manga/widgets/community_recommendations_sheet.dart';
+import 'package:mangatracker/features/manga/widgets/detail_failure_snackbar.dart';
 import 'package:mangatracker/features/manga/widgets/last_site_link_suggestion.dart';
 import 'package:mangatracker/features/reader/services/last_site_link.service.dart';
 import 'package:mangatracker/features/reader/services/last_site_link_policy.dart';
@@ -246,13 +247,19 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       body: SafeArea(
         top: false,
         child: BlocConsumer<DetailBloc, DetailState>(
-          listener: (context, state) {
-            // Plus AUCUNE redirection automatique ici. Une session rejetee
-            // affiche desormais `SessionRejectedBanner` par-dessus le contenu
-            // en cache : l'authentification ne doit pas empecher de revoir des
-            // donnees que cet utilisateur avait deja obtenues. Le retour au
-            // login reste a portee de clic, via l'action du bandeau.
-          },
+          // Plus AUCUNE redirection automatique ici. Une session rejetee
+          // affiche desormais `SessionRejectedBanner` par-dessus le contenu
+          // en cache : l'authentification ne doit pas empecher de revoir des
+          // donnees que cet utilisateur avait deja obtenues. Le retour au
+          // login reste a portee de clic, via l'action du bandeau.
+          // Seul effet ecoute : l'echec d'une action (progression, note),
+          // signale sans quitter la fiche.
+          listenWhen: (_, current) => current is DetailActionFailed,
+          listener: (context, state) => showDetailFailureSnackBar(
+            context,
+            state as DetailActionFailed,
+            onReconnect: widget.onRedirectToLogin,
+          ),
           builder: (context, state) {
             if (state is DetailLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -504,6 +511,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       authors: manga.authors,
                       year: manga.year,
                       readChapters: readChapters,
+                      // Enregistrement refusé : la fiche annule l'affichage
+                      // anticipé du chapitre (cf. DetailActionFailed).
+                      progressFailureAttempt: state is DetailActionFailed &&
+                              state.notice is ProgressSaveFailed
+                          ? state.attempt
+                          : null,
                       inLibrary: manga.inLibrary,
                       genres: manga.genres,
                       seasonChapters: manga.seasonChapters,

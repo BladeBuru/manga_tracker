@@ -6,6 +6,8 @@ import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
+import 'package:mangatracker/features/library/services/chapter_progress.service.dart';
+import 'package:mangatracker/features/library/services/chapter_progress_result.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
@@ -20,12 +22,17 @@ import 'package:mangatracker/features/manga/services/notification_preferences_se
 import 'detail_event.dart';
 import 'detail_state.dart';
 
+part 'detail_progress_handlers.dart';
+
 /// BLoC pour la gestion des détails de manga
 class DetailBloc extends Bloc<DetailEvent, DetailState> {
   final MangaService _mangaService = getIt<MangaService>();
 
   /// Résolu à l'appel (non enregistré dans GetIt) : injectable en test.
   final CommunityService _community;
+
+  /// Enregistrement typé de la progression (raison d'un refus) — injectable.
+  final ChapterProgressService _progress;
   final LibraryService _libraryService = getIt<LibraryService>();
   final ChapterReportService _chapterReportService =
       getIt<ChapterReportService>();
@@ -39,11 +46,28 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       ReadingStatusAutoUpdateService();
 
   StreamSubscription<bool>? _connectivitySubscription;
+  StreamSubscription<ChapterProgressChange>? _progressSubscription;
   int? _currentMuId;
   Timer? _chapterCheckTimer; // Timer pour la vérification différée des chapitres
 
-  DetailBloc({CommunityService? communityService})
-      : _community = communityService ?? const CommunityService(),
+  /// Compteur d'écritures de progression (+1 au début ET à la fin de chacune).
+  /// Un chargement commencé avant ou pendant une écriture ne doit pas
+  /// remettre l'ancienne valeur à l'écran : les handlers tournent en
+  /// parallèle, et un chargement en vol émettait « 105 » APRÈS
+  /// l'enregistrement de « 124 » (cf. [_keepNewerProgress]).
+  int _progressWrites = 0;
+
+  /// Numéro du dernier échec signalé ([DetailActionFailed.attempt]).
+  int _failureAttempt = 0;
+
+  DetailBloc({
+    CommunityService? communityService,
+    ChapterProgressService? progressService,
+  })  : _community = communityService ?? const CommunityService(),
+        _progress = progressService ??
+            (getIt.isRegistered<ChapterProgressService>()
+                ? getIt<ChapterProgressService>()
+                : ChapterProgressService()),
         super(const DetailInitial()) {
     on<LoadMangaDetail>(_onLoadMangaDetail);
     on<RefreshMangaDetail>(_onRefreshMangaDetail);
@@ -58,6 +82,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     on<ReadingStatusAutoFlipped>(_onReadingStatusAutoFlipped);
 
     _initializeConnectivityListener();
+    _listenToExternalProgress();
   }
 
   /// Reflet local d'une bascule automatique de statut — aucun appel réseau
@@ -74,6 +99,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   @override
   Future<void> close() {
     _connectivitySubscription?.cancel();
+    _progressSubscription?.cancel();
     _chapterCheckTimer?.cancel();
     return super.close();
   }
@@ -93,6 +119,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
   Future<void> _onLoadMangaDetail(LoadMangaDetail event, Emitter<DetailState> emit) async {
     debugPrint('🔄 DetailBloc: Chargement du manga ${event.muId}...');
     _currentMuId = event.muId;
+    final writesAtStart = _progressWrites;
 
     final cachedDetail = await _cacheHelper.getCachedMangaDetail(event.muId);
     MangaDetailDto? enrichedCachedDetail;
@@ -104,7 +131,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       // TOUT DE SUITE — pas seulement après l'échec de la requête. C'est ce
       // décalage qui faisait clignoter/disparaître l'indicateur.
       emit(DetailLoaded(
-        mangaDetail: enrichedCachedDetail,
+        mangaDetail: _keepNewerProgress(enrichedCachedDetail, writesAtStart),
         isOffline: !_connectivityService.isConnected,
         pendingActions: pendingCached,
         stale: true,
@@ -125,7 +152,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
       
       // Si aucune erreur, on est online - émettre l'état immédiatement
       emit(DetailLoaded(
-        mangaDetail: updatedMangaDetail,
+        mangaDetail: _keepNewerProgress(updatedMangaDetail, writesAtStart),
         isOffline: false,
         pendingActions: pendingActions,
         stale: false,
@@ -168,7 +195,7 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         if (fallbackDetail != null) {
           debugPrint('✅ Détail manga servi depuis le cache (hors ligne)');
           emit(DetailLoaded(
-            mangaDetail: fallbackDetail,
+            mangaDetail: _keepNewerProgress(fallbackDetail, writesAtStart),
             isOffline: offline,
             pendingActions: await _getPendingActionsCount(),
             stale: true,
@@ -493,154 +520,6 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
     }
   }
 
-  /// Sauvegarde la progression de lecture
-  Future<void> _onSaveChapterProgress(SaveChapterProgress event, Emitter<DetailState> emit) async {
-    debugPrint('🔄 DetailBloc: Sauvegarde du chapitre ${event.readChapters} pour manga ${event.muId}...');
-    if (state is! DetailLoaded) return;
-    
-    final currentState = state as DetailLoaded;
-    
-    // Vérifier le statut de connectivité
-    final isOffline = !_connectivityService.isConnected;
-    
-    try {
-      // Si on décoche tous les chapitres (0 chapitres lus), retirer de la bibliothèque
-      if (event.readChapters == 0 && currentState.mangaDetail.inLibrary) {
-        debugPrint('🗑️ Aucun chapitre lu, retrait automatique de la bibliothèque...');
-        final removeSuccess = await _libraryService.removeMangaFromLibrary(event.muId);
-        if (removeSuccess) {
-          final updatedMangaDetail = _copyMangaDetail(
-            currentState.mangaDetail,
-            inLibrary: false,
-            clearReadChaptersCount: true,
-            clearReadingStatus: true,
-          );
-          
-          final pendingActions = isOffline ? currentState.pendingActions + 1 : currentState.pendingActions;
-          
-          emit(DetailLoaded(
-            mangaDetail: updatedMangaDetail,
-            isOffline: isOffline,
-            pendingActions: pendingActions,
-            stale: currentState.isStale,
-          ));
-          debugPrint('✅ Manga retiré de la bibliothèque');
-        }
-        return;
-      }
-      
-      // Si le manga n'est pas dans la bibliothèque, l'ajouter d'abord
-      bool wasAddedToLibrary = false;
-      if (!currentState.mangaDetail.inLibrary) {
-        debugPrint('📚 Le manga n\'est pas dans la bibliothèque, ajout automatique...');
-        final addSuccess = await _libraryService.addMangaToLibrary(event.muId);
-        // Si offline et addSuccess, ça veut dire que c'est en queue
-        if (!addSuccess && !isOffline) {
-          emit(DetailError(
-            message: 'Erreur lors de l\'ajout à la bibliothèque',
-            isOffline: false,
-            cachedMangaDetail: currentState.mangaDetail,
-          ));
-          return;
-        }
-        wasAddedToLibrary = true;
-        debugPrint('✅ DetailBloc: Manga ajouté automatiquement à la bibliothèque');
-      }
-      
-      debugPrint('🔍 Sauvegarde du chapitre dans le service...');
-      // Tap explicite de l'utilisateur sur un chapitre de la fiche : il
-      // affirme l'avoir lu. Si le total connu est dépassé, on signale
-      // automatiquement au lieu de perdre la progression en silence.
-      final success = await _libraryService.saveChapterProgress(
-        event.muId,
-        event.readChapters,
-        autoReportIfAboveTotal: true,
-      );
-      debugPrint('🔍 Résultat de la sauvegarde: $success');
-      
-      if (success) {
-        debugPrint('🔍 Détermination du statut de lecture...');
-        // Déterminer le statut de lecture automatiquement
-        ReadingStatus newStatus = await _determineReadingStatus(
-          currentReadingStatus: currentState.mangaDetail.readingStatus,
-          readChapters: event.readChapters,
-          totalChapters: currentState.mangaDetail.totalChapters,
-          isCompleted: currentState.mangaDetail.isCompleted,
-          customLink: currentState.mangaDetail.customLink,
-          muId: event.muId,
-        );
-        debugPrint('🔍 Nouveau statut déterminé: ${newStatus.name}');
-        
-        // Si le statut a changé, mettre à jour également le statut (uniquement si dans la bibliothèque)
-        final isNowInLibrary = currentState.mangaDetail.inLibrary || wasAddedToLibrary;
-          debugPrint('🔍 isNowInLibrary: $isNowInLibrary, statut actuel: ${currentState.mangaDetail.readingStatus}, nouveau statut: ${newStatus.name}');
-        if (newStatus != currentState.mangaDetail.readingStatus && isNowInLibrary) {
-          debugPrint('🔄 Mise à jour automatique du statut vers: ${newStatus.name}');
-          await _libraryService.updateMangaStatus(event.muId, newStatus);
-        }
-        
-        // Compter le nombre d'actions offline
-        int offlineActionCount = 0;
-        if (isOffline) {
-          if (wasAddedToLibrary) offlineActionCount++; // Ajout à la bibliothèque
-          offlineActionCount++; // Sauvegarde du chapitre
-          if (newStatus != currentState.mangaDetail.readingStatus && isNowInLibrary) {
-            offlineActionCount++; // Mise à jour du statut
-          }
-        }
-        
-        // Mettre à jour l'état local sans recharger
-        debugPrint('✅ DetailBloc: Chapitre sauvegardé, mise à jour locale...');
-        final updatedMangaDetail = _copyMangaDetail(
-          currentState.mangaDetail,
-          inLibrary: isNowInLibrary,
-          readChaptersCount: event.readChapters,
-          readingStatus: newStatus,
-        );
-        
-        emit(DetailLoaded(
-          mangaDetail: updatedMangaDetail,
-          isOffline: isOffline,
-          pendingActions: currentState.pendingActions + offlineActionCount,
-          stale: currentState.isStale,
-        ));
-      } else {
-        // Échec uniquement si on est online
-        if (!isOffline) {
-          emit(DetailError(
-            message: 'Erreur lors de la sauvegarde de la progression',
-            isOffline: false,
-            cachedMangaDetail: currentState.mangaDetail,
-          ));
-        }
-      }
-    } catch (e) {
-      // Exception uniquement si on est online
-      // INVARIANT : ne jamais sortir d'un handler de mutation sans emit —
-      // le bloc restait sinon bloque sur DetailActionInProgress et l'ecran
-      // affichait un spinner plein ecran sans issue.
-      final mode = classifyFailure(e);
-      // ÉCRITURE : une session rejetée ne met RIEN en file d'attente et
-      // n'applique rien localement — la mutation est refusée, et l'invite de
-      // reconnexion s'affiche par-dessus le contenu resté consultable.
-      if (!requiresReauthPrompt(mode)) {
-        // Hors ligne / session expiree : l'action part en file d'attente,
-        // on rend la main sur le detail en cache avec le bandeau.
-        emit(currentState.copyWith(
-          isOffline: showsOfflineIndicator(mode),
-          pendingActions: currentState.pendingActions + 1,
-        ));
-      } else {
-        emit(DetailError(
-          message: e.toString(),
-          isOffline: false,
-          cachedMangaDetail: currentState.mangaDetail,
-          requiresReauth: true,
-        ));
-      }
-    }
-  }
-  
   /// Détermine le statut de lecture automatiquement en fonction de la progression
   /// Vérifie également s'il y a de nouveaux chapitres disponibles avant de passer à "À jour"
   Future<ReadingStatus> _determineReadingStatus({
@@ -859,62 +738,6 @@ class DetailBloc extends Bloc<DetailEvent, DetailState> {
         isOffline: currentState.isOffline,
         cachedMangaDetail: currentState.mangaDetail,
       ));
-    }
-  }
-
-  /// Met à jour la note personnelle de l'utilisateur (0-10).
-  /// Mise à jour optimiste : on actualise l'état immédiatement, on roll-back
-  /// si l'API échoue.
-  Future<void> _onUpdateUserRating(
-    UpdateUserRating event,
-    Emitter<DetailState> emit,
-  ) async {
-    final currentState = state;
-    if (currentState is! DetailLoaded) return;
-
-    if (event.rating < 0 || event.rating > 10) {
-      debugPrint('⚠️ UpdateUserRating: rating hors plage (${event.rating})');
-      return;
-    }
-
-    final previousRating = currentState.mangaDetail.userRating;
-    // 1. Update optimiste UI
-    emit(currentState.copyWith(
-      mangaDetail: currentState.mangaDetail.copyWith(userRating: event.rating),
-    ));
-
-    // 2. Appel API
-    final success = await _libraryService.updateRating(event.muId, event.rating);
-
-    if (!success) {
-      // 3. Rollback si échec
-      debugPrint('⚠️ UpdateUserRating: échec API, rollback à $previousRating');
-      emit(currentState.copyWith(
-        mangaDetail:
-            currentState.mangaDetail.copyWith(userRating: previousRating),
-      ));
-      return;
-    }
-
-    // 4. Note globale et total des votes à jour : ils incluent désormais le
-    // vote de l'utilisateur (lecture en base côté API, aucun appel
-    // MangaUpdates). Échec silencieux : seule la note globale resterait
-    // celle d'avant le vote jusqu'au prochain chargement.
-    try {
-      final summary = await _community.getRatingSummary(event.muId);
-      final latest = state;
-      if (summary == null || latest is! DetailLoaded) return;
-      emit(latest.copyWith(
-        mangaDetail: latest.mangaDetail.withRatingSummary(
-          communityRating: summary.communityRating,
-          communityRatingCount: summary.communityRatingCount,
-          aggregatedRating: summary.aggregatedRating,
-          muRatingVotes: summary.muRatingVotes,
-          totalRatingVotes: summary.totalRatingVotes,
-        ),
-      ));
-    } catch (e) {
-      debugPrint('⚠️ UpdateUserRating: synthèse des notes indisponible ($e)');
     }
   }
 
