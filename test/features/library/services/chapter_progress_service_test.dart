@@ -234,6 +234,7 @@ void main() {
           body: any(named: 'body'),
         ));
     expect(queuedAction().confirmedByUser, isFalse);
+    await sub.cancel();
   });
 
   test('signalement impossible faute de réseau → progression en file',

@@ -60,9 +60,37 @@ class ReadingGroupDetailLoading extends ReadingGroupDetailState {
 
 class ReadingGroupDetailLoaded extends ReadingGroupDetailState {
   final ReadingGroupDto group;
-  const ReadingGroupDetailLoaded({required this.group});
+
+  /// Un enregistrement de MA progression est en cours.
+  final bool isSavingProgress;
+
+  const ReadingGroupDetailLoaded({
+    required this.group,
+    this.isSavingProgress = false,
+  });
+
   @override
-  List<Object?> get props => [group];
+  List<Object?> get props => [group, isSavingProgress];
+}
+
+/// Issue d'un enregistrement de MA progression (effet ponctuel : la page
+/// affiche le message adapté). Reste un [ReadingGroupDetailLoaded] : le
+/// contenu ne disparaît jamais derrière un écran d'erreur. [attempt] rend
+/// chaque issue distincte (deux échecs identiques s'affichent tous les deux).
+class ReadingGroupProgressUpdated extends ReadingGroupDetailLoaded {
+  final int readChapters;
+  final ChapterProgressResult result;
+  final int attempt;
+
+  const ReadingGroupProgressUpdated({
+    required super.group,
+    required this.readChapters,
+    required this.result,
+    required this.attempt,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, readChapters, result, attempt];
 }
 
 class ReadingGroupDetailError extends ReadingGroupDetailState {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
-import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/profile/services/user.service.dart';
@@ -12,6 +11,7 @@ import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/services/reading_groups.service.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_action_row.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_links.dart';
+import 'package:mangatracker/features/sharing/widgets/reading_group_progress_actions.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_progress_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
@@ -24,8 +24,8 @@ import 'package:mangatracker/core/router/app_modals.dart';
 // ║   - ReadingGroupCurrentUserScope : FutureBuilder qui résout l'id du   ║
 // ║     user courant via UserService (cache 7j).                          ║
 // ║   - ReadingGroupProgressSection : section V1 + 2 rows (toi vs ami).   ║
-// ║   - ReadingGroupActionsSection  : section V1 + 3 rows (mark / invite  ║
-// ║     / leave-or-delete).                                               ║
+// ║   - ReadingGroupActionsSection  : section V1 (ma progression, fiche  ║
+// ║     du manga, liens, invite, leave-or-delete).                        ║
 // ╚═══════════════════════════════════════════════════════════════════════╝
 
 /// FutureBuilder centralisé qui charge l'id du user courant.
@@ -134,10 +134,14 @@ class ReadingGroupActionsSection extends StatelessWidget {
   final ReadingGroupDto group;
   final int? currentUserId;
 
+  /// Un enregistrement de MA progression est en cours.
+  final bool isSavingProgress;
+
   const ReadingGroupActionsSection({
     super.key,
     required this.group,
     required this.currentUserId,
+    this.isSavingProgress = false,
   });
 
   bool get _isOwner =>
@@ -174,15 +178,6 @@ class ReadingGroupActionsSection extends StatelessWidget {
       ),
     );
     return result == true;
-  }
-
-  Future<void> _markProgress(BuildContext context) async {
-    final muId = int.tryParse(group.mangaMuId);
-    if (muId == null || muId <= 0) return;
-    await context.push(
-      '/manga/$muId',
-      extra: MangaDetailExtras(title: group.mangaTitle),
-    );
   }
 
   void _inviteFriend(BuildContext context) {
@@ -258,8 +253,6 @@ class ReadingGroupActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final muId = int.tryParse(group.mangaMuId);
-    final canOpenManga = muId != null && muId > 0;
     final links =
         ReadingGroupLinks(group: group, currentUserId: currentUserId);
     final friend = links.friendWithLink();
@@ -268,26 +261,38 @@ class ReadingGroupActionsSection extends StatelessWidget {
     return ProfileEditSection(
       label: l10n.readingGroupSectionActions,
       children: [
-        ReadingGroupActionRow(
-          icon: Icons.bookmark_outline,
-          color: PastelTileColor.green,
-          title: l10n.readingGroupActionsMarkProgress,
-          subtitle: l10n.readingGroupActionsMarkProgressSubtitle,
-          onTap: canOpenManga ? () => _markProgress(context) : null,
+        // Vraie mise à jour de MA progression (avant : ouvrait seulement la
+        // fiche du manga, sans relire le groupe au retour).
+        ReadingGroupUpdateProgressRow(
+          group: group,
+          currentUserId: currentUserId,
+          isSaving: isSavingProgress,
         ),
+        ReadingGroupOpenMangaRow(group: group),
         // **2026-05-19** : nouvelle action « Copier le lien de l'ami ».
         // Visible uniquement si l'ami a configuré un customLink sur ce
         // manga. Substitue le numéro de chapitre via `ChapterLinkResolver`
         // pour pointer sur le prochain chapitre à lire côté user.
         // Copie réelle dans le presse-papiers (son lien, sinon celui de
-        // l'ami adapté à son prochain chapitre).
+        // l'ami adapté à son prochain chapitre). Groupe relu avant le calcul ;
+        // utilisateur non identifié → action désactivée et expliquée (avant :
+        // le chapitre 1 était visé en silence).
         if (links.hasAnyLink)
           ReadingGroupActionRow(
             icon: Icons.content_copy_outlined,
             color: PastelTileColor.teal,
             title: l10n.readingGroupActionsCopyLink,
-            subtitle: l10n.readingGroupActionsCopyLinkSubtitle,
-            onTap: () => copyReadingGroupLink(context, links),
+            subtitle: links.isMeKnown
+                ? l10n.readingGroupActionsCopyLinkSubtitle
+                : l10n.readingGroupProgressUnknown,
+            onTap: links.isMeKnown
+                ? () => copyReadingGroupLink(
+                      context,
+                      links,
+                      refresh: () =>
+                          getIt<ReadingGroupsService>().getGroup(group.id),
+                    )
+                : null,
           ),
         if (friend != null)
           ReadingGroupActionRow(
@@ -296,10 +301,12 @@ class ReadingGroupActionsSection extends StatelessWidget {
             title: l10n.readingGroupActionsCopyFriendLink(
               friend.effectiveDisplayName,
             ),
-            subtitle: l10n.readingGroupActionsCopyFriendLinkSubtitle(
-              targetChapter,
-            ),
-            onTap: () => applyReadingGroupFriendLink(context, links),
+            subtitle: targetChapter == null
+                ? l10n.readingGroupProgressUnknown
+                : l10n.readingGroupActionsCopyFriendLinkSubtitle(targetChapter),
+            onTap: targetChapter == null
+                ? null
+                : () => applyReadingGroupFriendLink(context, links),
           ),
         ReadingGroupActionRow(
           icon: Icons.person_add_alt_1_outlined,
