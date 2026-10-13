@@ -2910,4 +2910,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String receivedShareMessage(String message) {
     return '“$message”';
   }
+
+  @override
+  String get routeNotFoundTitle => '페이지를 찾을 수 없습니다';
+
+  @override
+  String get routeNotFoundMessage => '이 주소에 해당하는 페이지가 없습니다.';
+
+  @override
+  String get backToHome => '홈으로 돌아가기';
+
+  @override
+  String get newVersionAvailable => '앱의 새 버전을 사용할 수 있습니다.';
+
+  @override
+  String get reloadApp => '새로고침';
+
+  @override
+  String get carouselPrevious => '이전 작품';
+
+  @override
+  String get carouselNext => '다음 작품';
 }

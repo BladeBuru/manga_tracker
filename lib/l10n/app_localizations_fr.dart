@@ -3063,4 +3063,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String receivedShareMessage(String message) {
     return '« $message »';
   }
+
+  @override
+  String get routeNotFoundTitle => 'Page introuvable';
+
+  @override
+  String get routeNotFoundMessage =>
+      'Cette adresse ne correspond à aucune page de l\'application.';
+
+  @override
+  String get backToHome => 'Retour à l\'accueil';
+
+  @override
+  String get newVersionAvailable =>
+      'Une nouvelle version de l\'application est disponible.';
+
+  @override
+  String get reloadApp => 'Recharger';
+
+  @override
+  String get carouselPrevious => 'Titres précédents';
+
+  @override
+  String get carouselNext => 'Titres suivants';
 }

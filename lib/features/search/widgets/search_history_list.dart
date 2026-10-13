@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Header de la section "Historique de recherche" + bouton "Effacer".
 ///
@@ -39,7 +40,7 @@ class SearchHistoryHeader extends StatelessWidget {
             ),
           ),
           if (canClear)
-            GestureDetector(
+            ClickableCursor(child: GestureDetector(
               onTap: onClearAll,
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -53,7 +54,7 @@ class SearchHistoryHeader extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+            )),
         ],
       ),
     );
@@ -178,7 +179,7 @@ class _HistoryRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            GestureDetector(
+            ClickableCursor(child: GestureDetector(
               onTap: onRemove,
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -189,7 +190,7 @@ class _HistoryRow extends StatelessWidget {
                   color: AppColors.dsText3(brightness),
                 ),
               ),
-            ),
+            )),
           ],
         ),
       ),

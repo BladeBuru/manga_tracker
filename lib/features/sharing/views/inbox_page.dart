@@ -15,6 +15,7 @@ import 'package:mangatracker/features/sharing/services/sharing.service.dart';
 import 'package:mangatracker/features/sharing/widgets/inbox_filter_chips.dart';
 import 'package:mangatracker/features/sharing/widgets/inbox_share_tile.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page Inbox des shares reçus — Design System V1 « Refined Classic ».
 ///
@@ -111,6 +112,7 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

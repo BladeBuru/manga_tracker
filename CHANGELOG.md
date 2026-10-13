@@ -27,14 +27,26 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
-## [Unreleased] — lecteur vraiment plein écran
+## [Unreleased] — lecteur vraiment plein écran, site web plus naturel
+
+### ⚡ Améliorations
+
+- **Sur le site, chaque page a sa propre adresse** : actualiser la page, partager un lien ou ouvrir un favori vous ramène exactement là où vous étiez (un onglet, une fiche, un profil d'ami…).
+- **À la souris, on voit ce qui est cliquable** : le curseur devient une main sur les titres et les boutons, les couvertures réagissent au survol, et des flèches permettent de faire défiler les carrousels de l'accueil sur grand écran.
+- **Sur ordinateur, un geste sur le pavé tactile ne change plus d'onglet par accident.**
+- **Sur Android, le bouton retour ramène à l'accueil** depuis les autres onglets, avant de quitter l'application.
 
 ### 🐛 Corrections
 
+- **Le bouton retour du navigateur ne vous renvoie plus vers la page de connexion** et ne rouvre plus la page que vous venez de quitter.
+- **Ouvrir un lien sans être connecté** vous amène à la connexion, puis directement à la page demandée.
+- **Plus d'ancienne version du site affichée** sur un ordinateur où vous étiez déjà venu : la dernière version est toujours chargée, et un bandeau vous propose de recharger quand une mise à jour arrive pendant que la page est ouverte.
 - **Lecture en plein écran** : quand la barre du haut se retire, la page occupe tout l'écran (heure, batterie et boutons du téléphone se retirent aussi) ; ils reviennent quand vous remontez. Fini la bande blanche en haut et la bande ajoutée en bas du lecteur.
 
 ### Notes d'implémentation
 
+- Web : `usePathUrlStrategy` + `optionURLReflectsImperativeAPIs` ; onglets en `StatefulShellRoute` (`MainTabsPager`) ; garde `resolveAuthRedirect` + `AuthSession` (session rejetée jamais redirigée) ; `HistoryAwareRouteInformationProvider` (retour in-app = `history.go(-n)`, restauration redirigée = remplacement, `await push` gardés vivants) ; `RouteExtrasCodec` ; `popOrGo` / `AppBackButton` / `goToLogin` / `AuthNavigation` ; `POST /auth/logout` au mieux à la déconnexion.
+- Web : build `--pwa-strategy=none` + `web/flutter_bootstrap.js` sans service worker, interrupteur d'arrêt `deploy/web/flutter_service_worker.js`, nettoyage dans `index.html`, nginx revalidé (plus de 30 j `immutable`), `WebVersionWatcher` (`--dart-define=MT_WEB_BUILD`).
 - v0.18.0 appliquait au lecteur la protection prévue pour les pages à boutons : `SystemBarsInset` (bande en bas) et un `SafeArea` autour de la page (place de la barre d'état laissée vide). `SystemBarsInset(enabled:)` est désormais coupé sur les routes `manga-read` / `manga-read-offline` (`isFullscreenReaderRoute`, écoute de `routerDelegate`) ; `ReaderAutoHideBar` passe en `SystemUiMode.immersiveSticky` quand la barre est cachée et rétablit `edgeToEdge` quand elle revient et en quittant le lecteur (posé aussi au démarrage). L'AppBar couvre elle-même la barre d'état.
 
 ---

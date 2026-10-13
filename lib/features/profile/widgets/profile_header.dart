@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  ProfileHeader — version refondue (Design System V1).                 ║
@@ -41,7 +42,7 @@ class ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 22),
       child: Column(
         children: [
-          GestureDetector(
+          ClickableCursor(enabled: onAvatarTap != null, child: GestureDetector(
             onTap: onAvatarTap,
             child: Container(
               width: 88,
@@ -57,7 +58,7 @@ class ProfileHeader extends StatelessWidget {
               alignment: Alignment.center,
               child: _buildAvatarContent(brightness),
             ),
-          ),
+          )),
           const SizedBox(height: 10),
           Text(
             username,

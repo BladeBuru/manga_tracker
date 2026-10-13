@@ -6,6 +6,7 @@ import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/features/manga/dto/reading_status.enum.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  V1 « Refined Classic » — Sélecteur de statut horizontal scrollable.  ║
@@ -122,7 +123,7 @@ class _StatusChip extends StatelessWidget {
         selected ? scheme.primary : AppColors.dsBorder(brightness);
     final textColor = selected ? scheme.primary : AppColors.dsText2(brightness);
 
-    return GestureDetector(
+    return ClickableCursor(child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -153,7 +154,7 @@ class _StatusChip extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

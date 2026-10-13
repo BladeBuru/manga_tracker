@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/router/auth_redirect.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/auth/presentation/cubit/auth_submission_status.dart';
@@ -33,8 +35,14 @@ import 'package:mangatracker/core/router/app_modals.dart';
 /// - Google OAuth (mobile + web idToken/WebView via `AuthService`)
 /// - Biometric login si activé
 /// - Navigation vers `/register` et `/forgot-password`
+/// - Après connexion : retour à [returnTo] (`/login?from=…`, page demandée
+///   avant la connexion), sinon l'accueil — en remplaçant l'entrée
+///   d'historique (`AuthNavigation.completeSignIn`).
 class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+  /// Page à rouvrir après la connexion (validée par `safeReturnPath`).
+  final String? returnTo;
+
+  const LoginView({super.key, this.returnTo});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -106,16 +114,20 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _goToRegister() {
-    final email = _emailController.text;
-    final encoded = Uri.encodeQueryComponent(email);
-    context.push('/register?email=$encoded');
+    context.push(Uri(path: '/register', queryParameters: {
+      'email': _emailController.text,
+      if (widget.returnTo != null) returnToParam: widget.returnTo!,
+    }).toString());
   }
+
+  void _completeSignIn() =>
+      AuthNavigation.completeSignIn(context, returnTo: widget.returnTo);
 
   Future<void> _onBiometricLogin() async {
     final success = await _authService.tryBiometricLogin(context);
     if (!mounted) return;
     if (success) {
-      context.go('/home');
+      _completeSignIn();
     } else {
       final l10n = AppLocalizations.of(context);
       _notifier.error(
@@ -130,7 +142,7 @@ class _LoginViewState extends State<LoginView> {
     if (!mounted) return;
     switch (result) {
       case GoogleLoginResult.success:
-        context.go('/home');
+        _completeSignIn();
       case GoogleLoginResult.cancelled:
         break; // fermeture volontaire du sélecteur — pas un échec
       case GoogleLoginResult.configError:
@@ -176,7 +188,7 @@ class _LoginViewState extends State<LoginView> {
             // identifiants (hotfix-v0-10-1 US-1, fonctionne avec
             // AutofillGroup ci-dessous).
             TextInput.finishAutofillContext();
-            context.go('/home');
+            _completeSignIn();
             _loginCubit.reset();
           }
         },

@@ -3,6 +3,7 @@ import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/home/helpers/home_section_l10n.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Section "Genres populaires" — header petit gris + Wrap de chips pilule.
 ///
@@ -83,7 +84,7 @@ class _GenreChip extends StatelessWidget {
       button: true,
       label: AppLocalizations.of(context)!.searchGenreChipAccessibility(label),
       excludeSemantics: true,
-      child: GestureDetector(
+      child: ClickableCursor(child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 32,
@@ -106,7 +107,7 @@ class _GenreChip extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 }

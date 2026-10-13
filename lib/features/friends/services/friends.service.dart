@@ -60,6 +60,21 @@ class FriendsService {
     }
   }
 
+  /// Amitié acceptée avec [friendUserId], ou `null` (inconnue, hors ligne
+  /// sans cache). Sert au profil d'un ami ouvert par lien direct, qui n'a
+  /// pas reçu le nom à afficher.
+  Future<FriendshipDto?> findAcceptedFriend(int friendUserId) async {
+    try {
+      final friends = await getAcceptedFriends();
+      for (final friend in friends) {
+        if (friend.otherUserId == friendUserId) return friend;
+      }
+    } catch (_) {
+      // Le nom manquera simplement : la bibliothèque reste affichée.
+    }
+    return null;
+  }
+
   /// Bibliothèque d'un ami accepté (`GET /friends/:id/library`).
   ///
   /// 403 si l'amitié n'est pas acceptée — propagé en exception. Pas de

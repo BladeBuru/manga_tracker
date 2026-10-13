@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/components/app_avatar.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -16,15 +17,18 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// compteur) puis la bibliothèque de l'ami en grille responsive
 /// ([AppBreakpoints]). RGPD : l'API renvoie 403 si l'amitié n'est pas
 /// acceptée — l'acceptation vaut consentement de partage entre amis.
+///
+/// Ouverte par lien direct (F5, retour du navigateur), [displayName] est
+/// absent : il est retrouvé dans la liste d'amis.
 class FriendProfileView extends StatefulWidget {
   final int friendUserId;
-  final String displayName;
+  final String? displayName;
   final String? avatarUrl;
 
   const FriendProfileView({
     super.key,
     required this.friendUserId,
-    required this.displayName,
+    this.displayName,
     this.avatarUrl,
   });
 
@@ -34,6 +38,8 @@ class FriendProfileView extends StatefulWidget {
 
 class _FriendProfileViewState extends State<FriendProfileView> {
   late Future<List<MangaQuickViewDto>> _libraryFuture;
+  late String _name = widget.displayName ?? '';
+  late String? _avatarUrl = widget.avatarUrl;
 
   @override
   void initState() {
@@ -41,6 +47,18 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     _libraryFuture = getIt<FriendsService>().getFriendLibrary(
       widget.friendUserId,
     );
+    if (_name.isEmpty) _resolveFriend();
+  }
+
+  Future<void> _resolveFriend() async {
+    final friend = await getIt<FriendsService>().findAcceptedFriend(
+      widget.friendUserId,
+    );
+    if (!mounted || friend == null) return;
+    setState(() {
+      _name = friend.displayName;
+      _avatarUrl ??= friend.otherAvatarUrl;
+    });
   }
 
   void _retry() {
@@ -55,7 +73,10 @@ class _FriendProfileViewState extends State<FriendProfileView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(widget.displayName)),
+      appBar: AppBar(
+        leading: const AppBackButton(fallback: '/friends'),
+        title: Text(_name),
+      ),
       body: AppContentWidth(
         child: FutureBuilder<List<MangaQuickViewDto>>(
           future: _libraryFuture,
@@ -73,8 +94,8 @@ class _FriendProfileViewState extends State<FriendProfileView> {
             }
             final library = snapshot.data ?? const [];
             return _FriendLibraryContent(
-              friendName: widget.displayName,
-              avatarUrl: widget.avatarUrl,
+              friendName: _name,
+              avatarUrl: _avatarUrl,
               library: library,
             );
           },

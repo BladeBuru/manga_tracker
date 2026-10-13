@@ -54,11 +54,68 @@
 
 ---
 
-### Navigation : MaterialPageRoute (migration go_router prévue)
-**Décision** : Navigation impérative avec `Navigator` + `MaterialPageRoute`.
-**Raison** : Simplicité initiale, go_router non nécessaire pour le MVP Android.
-**Impact** : Migration vers `go_router` **obligatoire avant le build web** (deep-linking). Prévu v0.4.
-**Date** : Conception initiale
+### Navigation : go_router, URL réelles, onglets avec URL (2026-10)
+**Décision** : `go_router` (14.x) partout. Sur le web : `usePathUrlStrategy()`
+(plus de `/#/`) et `GoRouter.optionURLReflectsImperativeAPIs = true` (les pages
+empilées ont leur URL). Onglets en `StatefulShellRoute` (`/home`, `/library`,
+`/search`, `/profile`) avec un `PageView` comme conteneur (`MainTabsPager`) :
+glissement au doigt conservé sur téléphone, coupé à la souris / au pavé
+tactile et sur le web ; onglets gardés vivants, rechargement en arrière-plan
+au retour sur Accueil / Bibliothèque (comme avant, où l'onglet était
+reconstruit). Retour Android hors accueil → onglet accueil.
+**Raison** : sur le web, l'URL restait figée sur `/#/home` (F5 = accueil,
+retour du navigateur = page de connexion).
+**Impact** : toute page doit se reconstruire depuis son URL ; extras
+sérialisés par `RouteExtrasCodec` (sauf lecteur et `UserInformationDto`).
+**Remplace** : « Navigation : MaterialPageRoute (migration go_router prévue) ».
+**Date** : 2026-10-13
+
+---
+
+### Garde d'authentification du routeur (2026-10)
+**Décision** : `redirect` pur (`resolveAuthRedirect`) + `AuthSession`
+(restaurée avant `runApp` depuis la présence de jetons utilisables).
+`refreshListenable` = `AuthSession.routerRefresh`, qui ne notifie QUE la perte
+de session : une connexion est toujours suivie d'une navigation explicite
+(`AuthNavigation.completeSignIn`) — un rafraîchissement à ce moment quittait
+`/login` avant la proposition de biométrie et laissait une entrée d'historique.
+**Invariant offline-first** : une session **rejetée** (401/403,
+`clearSessionTokens`) ne redirige jamais ; seule l'absence de session renvoie
+à `/login?from=…`. `from` : chemin interne uniquement (`safeReturnPath`).
+**Date** : 2026-10-13
+
+---
+
+### Historique du navigateur tenu par l'application (web, 2026-10)
+**Décision** : `HistoryAwareRouteInformationProvider` enveloppe le fournisseur
+go_router (web uniquement). (1) Un retour dans l'app vers l'état de l'entrée
+précédente du navigateur devient un vrai `history.go(-n)` (sinon go_router
+empile l'écran retrouvé : doublon « en avant », le retour du navigateur
+rouvrait la page quittée). (2) Une restauration redirigée (retour vers une page
+interdite, déconnexion) remplace l'entrée. (3) Les `await context.push(...)`
+sont terminés (`null`) quand le navigateur retire la page, et re-branchés quand
+go_router recrée la pile (flutter/flutter#128122). Rang des entrées lu dans
+`history.state.serialCount` (moteur Flutter web).
+**Limites** : après un F5, les entrées précédentes ne sont pas connues → un
+retour in-app empile alors une entrée (pas de faux retour) ; une navigation
+lancée pendant les quelques ms de traitement du retour est rejouée après lui.
+**Alternatives écartées** : signaler les retours en remplacement (laisse des
+entrées mortes) ; rien (doublons).
+**Date** : 2026-10-13
+
+---
+
+### Web sans service worker de cache (2026-10)
+**Décision** : `flutter build web --pwa-strategy=none` + `web/flutter_bootstrap.js`
+sans `serviceWorkerSettings` ; interrupteur d'arrêt
+(`deploy/web/flutter_service_worker.js`) et nettoyage dans `web/index.html`
+pour les navigateurs qui ont l'ancien ; nginx revalide tout (aucun fichier du
+build n'a de hash) ; bandeau « Recharger » (`WebVersionWatcher`,
+`MT_WEB_BUILD`).
+**Raison** : le service worker « hors ligne d'abord » servait une version de
+plusieurs mois jusqu'à l'effacement des données du site. L'app n'a pas de
+mode hors ligne web (cache de données dans `shared_preferences`).
+**Date** : 2026-10-13
 
 ---
 
@@ -214,7 +271,6 @@ bloqueur et réseau écartés. Détails : `known-issues.md` (Problèmes résolus
 
 | Sujet | Contexte | Deadline | Options |
 |-------|----------|----------|---------|
-| Navigation go_router | Deep linking, navigation déclarative — bloque le web | v0.4 | go_router uniquement |
 | Thème sombre | Code déjà préparé | v0.4 | Activer + tester sur toutes les vues |
 | Tests | Structure prête | v0.4 | Commencer par les BLoCs critiques |
 | Notifications push | Alertes nouvelles sorties | v0.5 | `firebase_messaging` (multi-plateformes) |

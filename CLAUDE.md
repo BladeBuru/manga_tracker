@@ -19,7 +19,7 @@
 - **Auth biométrique** : `local_auth`
 - **WebView** : `flutter_inappwebview` + `webview_flutter`
 - **Connectivité** : `connectivity_plus`
-- **Navigation** : `MaterialPageRoute` (migration vers `go_router` prévue, **obligatoire pour Web**)
+- **Navigation** : `go_router 14` — URL réelles sur le web, onglets en `StatefulShellRoute`, garde d'authentification (`core/router/`)
 
 ---
 
@@ -132,9 +132,8 @@ Voir skill `/refactor-large-file`.
 **TOUT texte visible DOIT être traduit.** 7 langues : FR (référence), EN, DE, JA, KO, PT, ES.
 
 ```dart
-// ✅ BON
+// ✅ BON (l'extension `context.l10n` n'existe PAS dans ce projet)
 Text(AppLocalizations.of(context)!.libraryTitle)
-Text(context.l10n.libraryTitle)
 
 // ❌ MAUVAIS
 Text('Ma bibliothèque')
@@ -360,6 +359,23 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   n'est pas une simple ligne ; hauteurs fixes de texte × `textScaler`.
   Onglets sans `AppBar` : `SliverSafeArea` / `MediaQuery.paddingOf(context).top`.
   Tests : `small_screen_components_test.dart` et voisins.
+
+## 🧭 Navigation & web (depuis 2026-10)
+
+- ✅ Chaque écran se reconstruit depuis son URL seule (F5, lien partagé,
+  retour du navigateur) : un `extra` ne fait que pré-remplir. Ex. :
+  `/profile/edit` recharge le profil, `/friends/:id` retrouve le nom.
+- ✅ Retour : `popOrGo(context)` / `AppBackButton` — ❌ jamais de
+  `context.pop()` ou `Navigator.pop` nu sur une page (lien direct = rien à
+  dépiler). Reconnexion : `goToLogin(context)` — ❌ jamais
+  `push('/login')`. Connexion / déconnexion : `AuthNavigation`
+  (remplacement d'historique, `from` validé).
+- 🔒 Garde du routeur : seule l'absence TOTALE de session redirige ; une
+  session rejetée ne redirige jamais (offline-first). Logique pure dans
+  `auth_redirect.dart` (tests `test/core/router/`).
+- 🔒 Web : pas de service worker de cache (`--pwa-strategy=none`,
+  `web/flutter_bootstrap.js`) — il servait une version périmée. Cf.
+  `deploy/web/README.md`.
 
 ## 🌐 Cross-platform non-négociable (évolution iOS/Web)
 

@@ -1635,5 +1635,12 @@
   "similarTitles": "비슷한 작품",
   "receivedShareBy": "{name}님의 추천",
   "receivedShareByMany": "{count, plural, other{{name}님 외 {count}명의 추천}}",
-  "receivedShareMessage": "“{message}”"
+  "receivedShareMessage": "“{message}”",
+  "routeNotFoundTitle": "페이지를 찾을 수 없습니다",
+  "routeNotFoundMessage": "이 주소에 해당하는 페이지가 없습니다.",
+  "backToHome": "홈으로 돌아가기",
+  "newVersionAvailable": "앱의 새 버전을 사용할 수 있습니다.",
+  "reloadApp": "새로고침",
+  "carouselPrevious": "이전 작품",
+  "carouselNext": "다음 작품"
 }

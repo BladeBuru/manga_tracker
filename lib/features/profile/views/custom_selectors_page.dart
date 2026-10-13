@@ -6,6 +6,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 class CustomSelectorsPage extends StatefulWidget {
   const CustomSelectorsPage({super.key});
@@ -822,6 +823,7 @@ class _CustomSelectorsPageState extends State<CustomSelectorsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         title: Text(l10n?.customSelectors ?? 'Sélecteurs personnalisés'),
         actions: [
           IconButton(

@@ -24,6 +24,10 @@ class AppBreakpoints {
   static const double desktop = 800;
   static const double wide = 1200;
 
+  /// À partir de cette largeur, les carrousels horizontaux affichent des
+  /// flèches (souris, grand écran) — cf. `HorizontalScrollArrows`.
+  static const double carouselArrows = 768;
+
   /// Largeur max du contenu centré sur très grand écran (lecture confort).
   static const double contentMaxWidth = 1100;
 

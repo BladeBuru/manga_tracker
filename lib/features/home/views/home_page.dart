@@ -1,4 +1,3 @@
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
@@ -19,6 +18,7 @@ import '../../manga/widgets/manga_card.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/utils/responsive_layout.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -134,9 +134,7 @@ class _HomePageState extends State<HomePage> with ResponsiveLayoutMixin {
     });
   }
 
-  void redirectToLoginPage() {
-    context.push('/login');
-  }
+  void redirectToLoginPage() => goToLogin(context);
 
   get border => null;
 

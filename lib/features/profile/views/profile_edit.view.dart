@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show PlatformException;
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
@@ -204,7 +205,12 @@ class _ProfileEditViewState extends State<ProfileEditView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.profileSaved)),
       );
-      context.pop(true);
+      // Ouvert par lien direct, rien en dessous : retour au profil.
+      if (context.canPop()) {
+        context.pop(true);
+      } else {
+        context.go('/profile');
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -257,7 +263,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
           // Le texte du bouton porte déjà le libellé complet (lecteur d'écran).
           excludeFromSemantics: true,
           child: TextButton(
-            onPressed: () => context.pop(),
+            onPressed: () => popOrGo(context, fallback: '/profile'),
             style: TextButton.styleFrom(
               foregroundColor: scheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 4),

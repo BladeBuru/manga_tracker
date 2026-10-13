@@ -12,6 +12,7 @@ import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_detail_sections.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_hero_card.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page détail « Lectures à deux » — Design System V1 « Refined Classic ».
 ///
@@ -74,6 +75,7 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
         return Scaffold(
           backgroundColor: bg,
           appBar: AppBar(
+            leading: const AppBackButton(fallback: '/reading-groups'),
             backgroundColor: bg,
             surfaceTintColor: Colors.transparent,
             elevation: 0,

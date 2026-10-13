@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -62,8 +63,13 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     }
   }
 
-  void _goHome() => context.go('/home');
-  void _goLogin() => context.go('/login');
+  /// Remplacent l'entrée du lien reçu par email : le bouton retour n'y
+  /// ramène pas (jeton à usage unique).
+  void _goHome() {
+    if (mounted) AuthNavigation.completeSignIn(context);
+  }
+
+  void _goLogin() => goReplacing(context, '/login');
 
   @override
   Widget build(BuildContext context) {

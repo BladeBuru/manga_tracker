@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
@@ -16,6 +15,8 @@ import 'package:mangatracker/features/stats/widgets/stats_offline_banner.dart';
 import 'package:mangatracker/features/stats/widgets/stats_overview_section.dart';
 import 'package:mangatracker/features/stats/widgets/stats_status_section.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page Statistiques — Design System V1 « Refined Classic ».
 ///
@@ -53,6 +54,7 @@ class _StatsScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -146,7 +148,7 @@ class _StatsContent extends StatelessWidget {
               ],
               if (requiresReauth) ...[
                 SessionRejectedBanner(
-                  onReconnect: () => context.push('/login'),
+                  onReconnect: () => goToLogin(context),
                 ),
                 const SizedBox(height: 12),
               ],

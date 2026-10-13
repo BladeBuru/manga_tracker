@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
+import 'package:mangatracker/features/auth/services/auth_session.dart';
 import 'package:mangatracker/core/components/offline_banner.dart';
 import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/components/search_bar.dart'
@@ -148,8 +150,6 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
     });
   }
 
-  void _redirectToLoginPage() => context.push('/login');
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -193,16 +193,11 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
                       : (l10n?.libraryToggleCardView ?? 'Vue carte'),
             ),
             Expanded(
-              child: BlocConsumer<LibraryBloc, LibraryState>(
+              // Plus de redirection forcée vers la connexion (ni de détection
+              // par `message.contains(...)`, minifié en release web) : un
+              // refus de session s'affiche en invitation non bloquante.
+              child: BlocBuilder<LibraryBloc, LibraryState>(
                 bloc: _libraryBloc,
-                listener: (context, state) {
-                  if (state is LibraryError) {
-                    if (state.message.contains('InvalidCredentials') ||
-                        state.message.contains('Expired session')) {
-                      _redirectToLoginPage();
-                    }
-                  }
-                },
                 builder: (context, state) {
                   // Responsive (audit 2026-06-12) : branches locales 1200/600
                   // remplacées par le wrapper unifié AppContentWidth (max 1100)
@@ -240,7 +235,9 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
       return const Center(child: CircularProgressIndicator());
     }
     if (state is LibraryError) {
-      return LibraryErrorState(error: state, bloc: _libraryBloc);
+      final error = LibraryErrorState(error: state, bloc: _libraryBloc);
+      if (!_needsReconnect(state)) return error;
+      return Column(children: [_reauthBanner(), Expanded(child: error)]);
     }
     if (state is LibraryLoaded) return _buildLibraryContent(state);
     if (state is LibraryActionInProgress) return _buildActionInProgress(state);
@@ -295,8 +292,16 @@ class _LibraryBlocViewState extends State<LibraryBlocView> {
   /// reste affichee et navigable derriere.
   Widget _reauthBanner() => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: SessionRejectedBanner(onReconnect: () => context.push('/login')),
+    child: SessionRejectedBanner(onReconnect: () => goToLogin(context)),
   );
+
+  /// Échec typé (`requiresReauth`, issu de `classifyFailure`) ou session
+  /// sans jetons (`AuthSession`) : l'invitation remplace l'ancienne
+  /// redirection automatique.
+  bool _needsReconnect(LibraryError state) =>
+      state.requiresReauth ||
+      (getIt.isRegistered<AuthSession>() &&
+          getIt<AuthSession>().current != AuthStatus.authenticated);
 
   Widget _searchPadding() => Padding(
     padding: const EdgeInsets.all(16.0),

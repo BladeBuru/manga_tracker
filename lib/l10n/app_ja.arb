@@ -1635,5 +1635,12 @@
   "similarTitles": "似た作品",
   "receivedShareBy": "{name}さんのおすすめ",
   "receivedShareByMany": "{count, plural, other{{name}さんほか{count}人のおすすめ}}",
-  "receivedShareMessage": "「{message}」"
+  "receivedShareMessage": "「{message}」",
+  "routeNotFoundTitle": "ページが見つかりません",
+  "routeNotFoundMessage": "このアドレスに対応するページはありません。",
+  "backToHome": "ホームに戻る",
+  "newVersionAvailable": "アプリの新しいバージョンがあります。",
+  "reloadApp": "再読み込み",
+  "carouselPrevious": "前のタイトル",
+  "carouselNext": "次のタイトル"
 }

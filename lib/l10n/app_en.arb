@@ -1641,5 +1641,12 @@
   "similarTitles": "Similar titles",
   "receivedShareBy": "Recommended by {name}",
   "receivedShareByMany": "{count, plural, =1{Recommended by {name} and 1 other friend} other{Recommended by {name} and {count} other friends}}",
-  "receivedShareMessage": "“{message}”"
+  "receivedShareMessage": "“{message}”",
+  "routeNotFoundTitle": "Page not found",
+  "routeNotFoundMessage": "This address doesn't match any page of the app.",
+  "backToHome": "Back to home",
+  "newVersionAvailable": "A new version of the app is available.",
+  "reloadApp": "Reload",
+  "carouselPrevious": "Previous titles",
+  "carouselNext": "Next titles"
 }

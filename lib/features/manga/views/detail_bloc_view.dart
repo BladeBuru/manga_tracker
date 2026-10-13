@@ -46,6 +46,9 @@ import 'package:mangatracker/features/download/services/download_manager_service
 import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
 import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -69,9 +72,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
   final MangaService _mangaService = getIt<MangaService>();
   final Notifier _notifier = getIt<Notifier>();
 
-  void _redirectToLoginPage() {
-    context.push('/login');
-  }
+  void _redirectToLoginPage() => goToLogin(context);
 
   void _refreshLibraryState(BuildContext context) {
     context.read<DetailBloc>().add(const RefreshMangaDetail());
@@ -145,9 +146,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 34),
-          onPressed: () => Navigator.of(context).pop(),
+        // Lien direct (rien en dessous) : accueil au lieu d'une pile vide.
+        leading: AppBackButton(
+          color: Colors.white,
+          iconSize: 34,
+          onBack: () => popOrGo(context),
         ),
         actions: [
           // Phase 8.3 UI : bouton "Lire à deux" (créer un reading group)
@@ -369,7 +372,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             children: [
               // Header avec image et titre
               if (hero.showChrome)
-              GestureDetector(
+              ClickableCursor(child: GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
                   showAppDialog(
@@ -483,7 +486,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       ),
                   ],
                 ),
-              ),
+              )),
               // Détails du manga (LateDetailView) — contenu sous le hero
               // centré (max 1100) via AppContentWidth (audit 2026-06-12) ;
               // le hero au-dessus reste pleine largeur (cinématique).

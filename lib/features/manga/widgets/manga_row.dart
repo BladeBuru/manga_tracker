@@ -1,6 +1,7 @@
 import 'package:html/parser.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
@@ -74,6 +75,18 @@ class MangaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Souris : curseur « main » + voile léger sur la carte de la rangée
+    // (hors espacement du bas). Rien ne change au doigt.
+    return HoverFeedback.highlight(
+      inset: const EdgeInsets.only(bottom: _rowGap),
+      child: _buildTappable(context),
+    );
+  }
+
+  /// Espacement sous chaque rangée (densité réduite, 2026-05-18).
+  static const double _rowGap = 10;
+
+  Widget _buildTappable(BuildContext context) {
     return GestureDetector(
       onTap: () async {
         onOpen?.call();
@@ -150,8 +163,7 @@ class MangaRow extends StatelessWidget {
       child: Padding(
         // **Refactor 2026-05-18** : densité réduite. Espacement vertical 10
         // (au lieu de 20) pour des résultats plus denses, plus design.
-        padding: const EdgeInsets.only(
-            top: 0.0, bottom: 10.0, right: 0.0, left: 0.0),
+        padding: const EdgeInsets.only(bottom: _rowGap),
         child: Container(
           decoration: BoxDecoration(
             // **Refactor V1 "Refined Classic"** : surface blanche/dsSurfaceDark
@@ -193,14 +205,16 @@ class MangaRow extends StatelessWidget {
                         // la lisibilité.
                         width: 70,
                         height: 96,
-                        child: RefreshableMangaImage(
-                          muId: muId,
-                          originalUrl: mediumImgPath,
-                          width: 70,
-                          height: 96,
-                          // Phase 4 : proxy stable côté API.
-                          useProxy: true,
-                          proxySize: 'small',
+                        child: HoverZoom(
+                          child: RefreshableMangaImage(
+                            muId: muId,
+                            originalUrl: mediumImgPath,
+                            width: 70,
+                            height: 96,
+                            // Phase 4 : proxy stable côté API.
+                            useProxy: true,
+                            proxySize: 'small',
+                          ),
                         ),
                       ),
                       // Badge pour nouveaux chapitres

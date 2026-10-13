@@ -18,6 +18,7 @@ import 'package:mangatracker/features/friends/widgets/friends_section_card.dart'
 import 'package:mangatracker/features/friends/widgets/friends_tab_segmented.dart';
 import 'package:mangatracker/features/friends/widgets/user_search_field.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page « Mes amis » — design V1 « Refined Classic ».
 ///
@@ -62,6 +63,7 @@ class _FriendsScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

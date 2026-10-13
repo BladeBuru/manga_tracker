@@ -2907,4 +2907,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String receivedShareMessage(String message) {
     return '「$message」';
   }
+
+  @override
+  String get routeNotFoundTitle => 'ページが見つかりません';
+
+  @override
+  String get routeNotFoundMessage => 'このアドレスに対応するページはありません。';
+
+  @override
+  String get backToHome => 'ホームに戻る';
+
+  @override
+  String get newVersionAvailable => 'アプリの新しいバージョンがあります。';
+
+  @override
+  String get reloadApp => '再読み込み';
+
+  @override
+  String get carouselPrevious => '前のタイトル';
+
+  @override
+  String get carouselNext => '次のタイトル';
 }

@@ -9,6 +9,7 @@ import 'package:mangatracker/features/download/services/download_manager_service
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page de gestion des téléchargements
 class DownloadsPage extends StatefulWidget {
@@ -175,6 +176,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         title: Text(l10n?.downloads ?? 'Téléchargements'),
         actions: [
           if (_totalSize > 0)

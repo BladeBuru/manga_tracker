@@ -14,6 +14,7 @@ import 'package:mangatracker/features/sharing/bloc/reading_groups_bloc.dart';
 import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_list_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page liste « Lectures à deux » — Design System V1 « Refined Classic ».
 ///
@@ -65,6 +66,7 @@ class _ReadingGroupsScaffold extends StatelessWidget
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

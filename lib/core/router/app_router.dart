@@ -1,78 +1,38 @@
 /// Router central — `go_router` pour Manga Tracker.
 ///
-/// Migration depuis MaterialPageRoute pour permettre le **deep-linking web**
-/// (URL stable par écran : `/manga/:muId`, partageable et bookmarkable).
-///
 /// Architecture :
-/// - `/` → StartupPage (auto-login + redirect)
-/// - Auth public : `/login`, `/register`, `/forgot-password`
-/// - Auth deep-link : `/auth/verify`, `/auth/reset-password`
-/// - Shell principal : `/home` (BottomNavbar avec PageView interne — 4 tabs)
-/// - Routes manga : `/manga/:muId`, `/manga/:muId/read`, `/manga/:muId/read-offline`
-/// - Profile sub-routes : `/downloads`, `/notifications-settings`,
-///   `/my-data`, `/custom-selectors`
+/// - `/` → StartupPage (restauration de session, biométrie, « Quoi de
+///   neuf ? ») puis accueil ou connexion ;
+/// - authentification (publique) : `/login`, `/register`,
+///   `/forgot-password`, `/auth/verify`, `/auth/reset-password` ;
+/// - onglets (`StatefulShellRoute`, une URL par onglet) : `/home`
+///   (+ `/home/section/:id`), `/library`, `/search`, `/profile`
+///   (+ `/profile/edit`) — cf. `main_shell_route.dart` ;
+/// - pages plein écran : `/manga/:muId` (+ `/read`, `/read-offline`),
+///   `/authors/:authorId`, `/friends`, `/stats`… — cf. `app_routes.dart`.
 ///
-/// Sur **web**, l'URL reflète l'écran (F5, partage, bouton back marchent).
-/// Sur **mobile**, comportement inchangé (push/replace/pop natifs).
+/// **Web** : URL réelles (`usePathUrlStrategy`, dans `main.dart`), y compris
+/// pour les pages empilées (`optionURLReflectsImperativeAPIs`) ; F5, lien
+/// partagé et boutons du navigateur rouvrent l'écran affiché. L'historique
+/// du navigateur est tenu cohérent par
+/// `HistoryAwareRouteInformationProvider`.
+/// **Mobile** : comportement inchangé (push / pop natifs).
+///
+/// Garde d'authentification : [resolveAuthRedirect] (pure), réévaluée à
+/// chaque navigation et à la perte de session (`AuthSession.routerRefresh`).
 library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/app_routes.dart';
+import 'package:mangatracker/core/router/auth_redirect.dart';
+import 'package:mangatracker/core/router/main_shell_route.dart';
+import 'package:mangatracker/core/router/route_extras_codec.dart';
+import 'package:mangatracker/core/router/route_not_found_page.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/features/auth/services/auth_session.dart';
 
-// Auth views
-import 'package:mangatracker/features/auth/views/forgot_password.view.dart';
-import 'package:mangatracker/features/auth/views/login.view.dart';
-import 'package:mangatracker/features/auth/views/register.view.dart';
-import 'package:mangatracker/features/auth/views/reset_password.view.dart';
-import 'package:mangatracker/features/auth/views/startup_page.dart';
-import 'package:mangatracker/features/auth/views/verify_email.view.dart';
-
-// Shell
-import 'package:mangatracker/features/home/views/bottom_navbar.dart';
-
-// Accueil catalogue — page « Tout voir » d'une section
-import 'package:mangatracker/features/home/dto/home_section.dto.dart';
-import 'package:mangatracker/features/home/dto/home_section_kind.dart';
-import 'package:mangatracker/features/home/views/home_section_page.dart';
-
-// Manga
-import 'package:mangatracker/features/manga/views/detail_bloc_view.dart';
-import 'package:mangatracker/features/manga/views/web_view.dart';
-import 'package:mangatracker/features/reader/views/offline_reader_view.dart';
-
-// Profile sub-routes
-import 'package:mangatracker/features/download/views/downloads_page.dart';
-import 'package:mangatracker/features/profile/views/change_password.view.dart';
-import 'package:mangatracker/features/profile/views/my_data_view.dart';
-import 'package:mangatracker/features/profile/views/notifications_settings_page.dart';
-import 'package:mangatracker/features/profile/views/custom_selectors_page.dart';
-import 'package:mangatracker/features/profile/views/profile_edit.view.dart';
-import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
-
-// Recommendations
-import 'package:mangatracker/features/recommendations/views/paginated_recommendations_view.dart';
-import 'package:mangatracker/features/recommendations/views/recommendations_by_genre_view.dart';
-
-// Stats (Phase 2)
-import 'package:mangatracker/features/stats/views/stats_view.dart';
-
-// Friends (Phase 6.1)
-import 'package:mangatracker/features/friends/views/friends_list_page.dart';
-import 'package:mangatracker/features/friends/widgets/friends_tab_segmented.dart';
-import 'package:mangatracker/features/friends/views/friend_profile_view.dart';
-
-// Auteurs
-import 'package:mangatracker/features/authors/views/author_page.dart';
-
-// Inbox (Phase 8.1)
-import 'package:mangatracker/features/sharing/views/inbox_page.dart';
-
-// Centre de notifications
-import 'package:mangatracker/features/notifications/views/notifications_page.dart';
-
-// Reading Groups (Phase 8.3 UI)
-import 'package:mangatracker/features/sharing/views/reading_groups_list_page.dart';
-import 'package:mangatracker/features/sharing/views/reading_group_detail_page.dart';
+export 'route_extras.dart';
 
 /// Clé globale du Navigator racine — utilisée par DeepLinkHandler et
 /// SystemChrome (overlay style).
@@ -90,393 +50,28 @@ const Set<String> fullscreenReaderRouteNames = {
 bool isFullscreenReaderRoute(RouteBase? route) =>
     route is GoRoute && fullscreenReaderRouteNames.contains(route.name);
 
-/// Extras passés via `context.push('/manga/:muId', extra: ...)` — purement
-/// pour pré-remplir l'UI avant que le BLoC charge les vraies données.
-class MangaDetailExtras {
-  final String? title;
-  final String? coverPath;
-  const MangaDetailExtras({this.title, this.coverPath});
-}
-
-/// Extras passés via `context.push('/home/section/:id', extra: ...)` —
-/// titre + icône affichés immédiatement, avant la réponse de l'API (sur
-/// F5 web sans extras, la page les déduit de la réponse elle-même).
-class HomeSectionExtras {
-  final HomeSectionKind kind;
-  final HomeSectionParams params;
-  const HomeSectionExtras({
-    required this.kind,
-    this.params = HomeSectionParams.none,
-  });
-}
-
-/// Extras passés via `context.push('/authors/:authorId', extra: ...)` — le
-/// nom s'affiche dans la barre avant la réponse de l'API.
-class AuthorPageExtras {
-  final String name;
-  const AuthorPageExtras({required this.name});
-}
-
-/// Extras passés via `context.push('/friends/:userId', extra: ...)` —
-/// affichage immédiat du header (nom + avatar) pendant le fetch.
-class FriendProfileExtras {
-  final String displayName;
-  final String? avatarUrl;
-  const FriendProfileExtras({required this.displayName, this.avatarUrl});
-}
-
-/// Extras passés via `context.push('/manga/:muId/read', extra: ...)`.
-class ReaderWebExtras {
-  final String? mangaTitle;
-  final int initialLastRead;
-  final String initialUrl;
-  final String baseUserLink;
-  final bool autoDownload;
-  final void Function(bool)? onDownloadComplete;
-
-  /// Position (0..100) a laquelle reprendre le chapitre ouvert, quand elle
-  /// vient du serveur ou d'un autre appareil. `null` = ouvrir en haut de page.
-  /// Ignoree si cet appareil a deja une position en pixels pour ce chapitre,
-  /// forcement plus fidele.
-  final double? initialPositionPercent;
-
-  /// Mode « recherche de lien » : le lecteur s'ouvre sur le site d'une
-  /// autre lecture pour y trouver ce titre ; il n'enregistre rien tant que
-  /// l'utilisateur n'a pas choisi « Ceci est le nouveau lien ».
-  final bool linkDiscovery;
-
-  const ReaderWebExtras({
-    this.mangaTitle,
-    required this.initialLastRead,
-    required this.initialUrl,
-    required this.baseUserLink,
-    this.autoDownload = false,
-    this.onDownloadComplete,
-    this.initialPositionPercent,
-    this.linkDiscovery = false,
-  });
-}
-
-/// Extras passés via `context.push('/manga/:muId/read-offline', extra: ...)`.
-class OfflineReaderExtras {
-  final String mangaTitle;
-  const OfflineReaderExtras({required this.mangaTitle});
-}
-
-/// Helpers pour parser les path params (avec fallback safe).
-int _parseMuId(String? raw) => int.tryParse(raw ?? '') ?? 0;
-
-GoRouter buildAppRouter() {
+/// [session] : session observée par le garde (par défaut celle de GetIt).
+/// [initialLocation] : pour les tests (sur le web, l'URL du navigateur
+/// prime de toute façon).
+GoRouter buildAppRouter({AuthSession? session, String initialLocation = '/'}) {
+  final auth = session ??
+      (getIt.isRegistered<AuthSession>() ? getIt<AuthSession>() : AuthSession());
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: initialLocation,
     debugLogDiagnostics: false,
-    routes: [
-      // ──────────────────────────────────────────────────────────────
-      // Root — StartupPage gère la redirection vers /login ou /home
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/',
-        name: 'root',
-        builder: (context, state) => const StartupPage(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Auth public
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginView(),
-      ),
-      GoRoute(
-        path: '/register',
-        name: 'register',
-        builder: (context, state) {
-          final emailText = state.uri.queryParameters['email'] ?? '';
-          return RegisterView(emailText: emailText);
-        },
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        name: 'forgot-password',
-        builder: (context, state) => const ForgotPasswordView(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Auth deep-link (token via query param)
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/auth/verify',
-        name: 'auth-verify',
-        builder: (context, state) {
-          final token = state.uri.queryParameters['token'] ?? '';
-          return VerifyEmailView(token: token);
-        },
-      ),
-      GoRoute(
-        path: '/auth/reset-password',
-        name: 'auth-reset-password',
-        builder: (context, state) {
-          final token = state.uri.queryParameters['token'] ?? '';
-          return ResetPasswordView(token: token);
-        },
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Shell principal — BottomNavbar avec PageView interne
-      // (4 tabs : Home / Library / Search / Profile)
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const BottomNavbar(),
-        routes: [
-          // /home/section/:id — page « Tout voir » d'une section de
-          // l'accueil catalogue (grille paginée). L'id est encodé côté
-          // appelant (`type%3AManhwa`) ; go_router le décode.
-          GoRoute(
-            path: 'section/:id',
-            name: 'home-section',
-            builder: (context, state) {
-              final id = state.pathParameters['id'] ?? '';
-              final extras = state.extra as HomeSectionExtras?;
-              return HomeSectionPage(sectionId: id, extras: extras);
-            },
-          ),
-        ],
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Auteurs — mini bio + œuvres (noms cliquables de la fiche manga)
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/authors/:authorId',
-        name: 'author',
-        builder: (context, state) {
-          final extras = state.extra as AuthorPageExtras?;
-          return AuthorPage(
-            authorId: int.tryParse(state.pathParameters['authorId'] ?? '') ?? 0,
-            initialName: extras?.name,
-          );
-        },
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Manga
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/manga/:muId',
-        name: 'manga-detail',
-        builder: (context, state) {
-          final muId = _parseMuId(state.pathParameters['muId']);
-          final extras = state.extra as MangaDetailExtras?;
-          return DetailBlocView(
-            muId: muId,
-            mangaTitle: extras?.title,
-            coverPath: extras?.coverPath,
-          );
-        },
-        routes: [
-          // /manga/:muId/read — webview de lecture (mobile complet, web =
-          // bouton "ouvrir dans un onglet" via stub web_view_web.dart)
-          GoRoute(
-            path: 'read',
-            name: 'manga-read',
-            builder: (context, state) {
-              final muId = _parseMuId(state.pathParameters['muId']);
-              final extras = state.extra as ReaderWebExtras?;
-              if (extras == null) {
-                // F5 sur cette URL sans extras — fallback vers la fiche manga
-                return DetailBlocView(muId: muId);
-              }
-              return ReaderWebView(
-                muId: muId,
-                mangaTitle: extras.mangaTitle,
-                initialLastRead: extras.initialLastRead,
-                initialUrl: extras.initialUrl,
-                baseUserLink: extras.baseUserLink,
-                initialPositionPercent: extras.initialPositionPercent,
-                autoDownload: extras.autoDownload,
-                onDownloadComplete: extras.onDownloadComplete,
-                linkDiscovery: extras.linkDiscovery,
-              );
-            },
-          ),
-
-          // /manga/:muId/read-offline?chapter=N — lecteur offline
-          GoRoute(
-            path: 'read-offline',
-            name: 'manga-read-offline',
-            builder: (context, state) {
-              final muId = _parseMuId(state.pathParameters['muId']);
-              final chapter = int.tryParse(
-                    state.uri.queryParameters['chapter'] ?? '',
-                  ) ??
-                  1;
-              final extras = state.extra as OfflineReaderExtras?;
-              return OfflineReaderView(
-                muId: muId,
-                chapterNumber: chapter,
-                mangaTitle: extras?.mangaTitle ?? '',
-              );
-            },
-          ),
-        ],
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Profile sub-routes
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/downloads',
-        name: 'downloads',
-        builder: (context, state) => const DownloadsPage(),
-      ),
-      GoRoute(
-        path: '/notifications-settings',
-        name: 'notifications-settings',
-        builder: (context, state) => const NotificationsSettingsPage(),
-      ),
-      // Centre de notifications — ouvert par la cloche de l'accueil.
-      GoRoute(
-        path: '/notifications',
-        name: 'notifications',
-        builder: (context, state) => const NotificationsPage(),
-      ),
-      GoRoute(
-        path: '/my-data',
-        name: 'my-data',
-        builder: (context, state) => const MyDataView(),
-      ),
-      GoRoute(
-        path: '/change-password',
-        name: 'change-password',
-        builder: (context, state) => const ChangePasswordView(),
-      ),
-      GoRoute(
-        path: '/custom-selectors',
-        name: 'custom-selectors',
-        builder: (context, state) => const CustomSelectorsPage(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Recommendations
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/recommendations',
-        name: 'recommendations',
-        builder: (context, state) => const PaginatedRecommendationsView(),
-      ),
-      GoRoute(
-        path: '/recommendations/by-genre',
-        name: 'recommendations-by-genre',
-        builder: (context, state) => const RecommendationsByGenreView(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Stats (Phase 2) — page de statistiques du profil
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/stats',
-        name: 'stats',
-        builder: (context, state) => const StatsView(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Profil étendu (Phase 3) — formulaire d'édition
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/profile/edit',
-        name: 'profile-edit',
-        builder: (context, state) {
-          final extras = state.extra as UserInformationDto?;
-          if (extras == null) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('Profile')),
-              body: const Center(child: Text('Données utilisateur manquantes')),
-            );
-          }
-          return ProfileEditView(currentUser: extras);
-        },
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Amis (Phase 6.1) — liste amis + demandes + recherche
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/friends',
-        name: 'friends',
-        // `?tab=pending` : arrivée depuis une pastille / une notification.
-        builder: (context, state) => FriendsListPage(
-          initialTab: state.uri.queryParameters['tab'] == 'pending'
-              ? FriendsTab.pending
-              : FriendsTab.accepted,
-        ),
-      ),
-
-      // Profil d'un ami : sa bibliothèque (amitié acceptée requise côté API).
-      GoRoute(
-        path: '/friends/:userId',
-        name: 'friend-profile',
-        builder: (context, state) {
-          final userId =
-              int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
-          final extras = state.extra as FriendProfileExtras?;
-          return FriendProfileView(
-            friendUserId: userId,
-            displayName: extras?.displayName ?? '',
-            avatarUrl: extras?.avatarUrl,
-          );
-        },
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Inbox (Phase 8.1) — notifications de partage reçues
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/inbox',
-        name: 'inbox',
-        builder: (context, state) => const InboxPage(),
-      ),
-
-      // ──────────────────────────────────────────────────────────────
-      // Reading Groups (Phase 8.3 UI) — lecture à deux
-      // ──────────────────────────────────────────────────────────────
-      GoRoute(
-        path: '/reading-groups',
-        name: 'reading-groups',
-        builder: (context, state) => const ReadingGroupsListPage(),
-      ),
-      GoRoute(
-        path: '/reading-groups/:groupId',
-        name: 'reading-group-detail',
-        builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['groupId'] ?? '') ?? 0;
-          return ReadingGroupDetailPage(groupId: id);
-        },
-      ),
-    ],
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Page introuvable')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64),
-              const SizedBox(height: 16),
-              Text('Route inconnue : ${state.uri}'),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => context.go('/'),
-                child: const Text('Retour à l\'accueil'),
-              ),
-            ],
-          ),
-        ),
-      ),
+    extraCodec: const RouteExtrasCodec(),
+    refreshListenable: auth.routerRefresh,
+    redirect: (context, state) => resolveAuthRedirect(
+      state.uri,
+      status: auth.current,
+      startupCompleted: auth.startupCompleted,
     ),
+    routes: [
+      ...buildAuthRoutes(),
+      buildMainShellRoute(rootNavigatorKey),
+      ...buildDetailRoutes(),
+    ],
+    errorBuilder: (context, state) => const RouteNotFoundPage(),
   );
 }

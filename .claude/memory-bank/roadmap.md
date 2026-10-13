@@ -339,11 +339,14 @@
 
 ### ✅ Build Flutter Web fonctionnel (auth + biblio + recherche + détails + recommendations)
 ### ✅ Migration `MaterialPageRoute` → `go_router` (deep-linking)
+### ✅ URL réelles, onglets avec URL, garde d'authentification, historique du navigateur cohérent *(2026-10)*
+### ✅ Souris : curseur, survol, flèches de carrousel *(2026-10)*
+### ✅ Plus de version périmée : sans service worker, bandeau « Recharger » *(2026-10)*
 ### ✅ Stubs propres pour features web-incompatibles (download, offline reader, workmanager)
 ### ✅ Pipeline CI/CD web → Nginx Docker → NAS via NPMplus
 ### 🔵 Domaine `app.bladeburu.com` *(infra prête, attente lancement 1er deploy)*
 ### ⏳ Layouts responsive (LayoutBuilder mobile/tablette/desktop)
-### ⏳ PWA installable (manifest + service worker activés)
+### ⏳ PWA installable (manifest) — **sans** service worker de cache (décision 2026-10)
 ### ⏳ Adaptation des largeurs hardcodées au format desktop
 
 ---

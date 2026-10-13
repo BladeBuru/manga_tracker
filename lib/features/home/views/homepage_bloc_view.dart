@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/data_source_credit.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart';
@@ -17,6 +16,7 @@ import 'package:mangatracker/features/home/helpers/home_layout_metrics.dart';
 import 'package:mangatracker/features/home/widgets/home_header_block.dart';
 import 'package:mangatracker/features/home/widgets/home_recommendations_section.dart';
 import 'package:mangatracker/features/home/widgets/home_sections_sliver.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 /// Accueil « catalogue » (2026-09-05) : salutation + bandeaux, section
 /// « Recommandes pour vous » (`HomePageBloc`), puis les sections editoriales
@@ -133,7 +133,7 @@ class _HomePageBlocViewState extends State<HomePageBlocView> {
                       homeState is HomePageLoaded
                           ? homeState.pendingActions
                           : 0,
-                  onReconnect: () => context.push('/login'),
+                  onReconnect: () => goToLogin(context),
                 ),
               ),
             ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/horizontal_scroll_arrows.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/home/bloc/homepage_state.dart';
 import 'package:mangatracker/features/home/helpers/home_layout_metrics.dart';
 import 'package:mangatracker/features/home/widgets/home_section_header.dart';
 import 'package:mangatracker/features/home/widgets/home_sections_skeleton.dart';
+import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 import 'package:mangatracker/features/recommendations/recommendations_paging.dart';
 import 'package:mangatracker/features/recommendations/widgets/dismissible_recommendation_card.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
@@ -71,33 +73,75 @@ class HomeRecommendationsSection extends StatelessWidget {
               ),
             )
           else
-            SizedBox(
-              height: metrics.cardHeightFor(MediaQuery.textScalerOf(context)),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: recos.length,
-                padding: EdgeInsets.symmetric(horizontal: hPad),
-                itemBuilder:
-                    (context, index) => Padding(
-                      padding: EdgeInsets.only(
-                        right:
-                            index == recos.length - 1
-                                ? 0
-                                : HomeLayoutMetrics.cardGap,
-                      ),
-                      child: SizedBox(
-                        width: metrics.cardWidth,
-                        child: DismissibleRecommendationCard(
-                          manga: recos[index],
-                          coverHeight: metrics.coverHeight,
-                          onDismissed: onDismissed,
-                          onRestored: onRestored,
-                        ),
-                      ),
-                    ),
-              ),
+            _RecommendationsCarousel(
+              recos: recos,
+              metrics: metrics,
+              onDismissed: onDismissed,
+              onRestored: onRestored,
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Rangée horizontale des recommandations (flèches sur grand écran).
+class _RecommendationsCarousel extends StatefulWidget {
+  final List<MangaQuickViewDto> recos;
+  final HomeLayoutMetrics metrics;
+  final ValueChanged<num> onDismissed;
+  final ValueChanged<num> onRestored;
+
+  const _RecommendationsCarousel({
+    required this.recos,
+    required this.metrics,
+    required this.onDismissed,
+    required this.onRestored,
+  });
+
+  @override
+  State<_RecommendationsCarousel> createState() =>
+      _RecommendationsCarouselState();
+}
+
+class _RecommendationsCarouselState extends State<_RecommendationsCarousel> {
+  final ScrollController _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final recos = widget.recos;
+    final metrics = widget.metrics;
+    return SizedBox(
+      height: metrics.cardHeightFor(MediaQuery.textScalerOf(context)),
+      child: HorizontalScrollArrows(
+        controller: _scroll,
+        centerY: metrics.coverHeight / 2,
+        child: ListView.builder(
+          controller: _scroll,
+          scrollDirection: Axis.horizontal,
+          itemCount: recos.length,
+          padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding),
+          itemBuilder: (context, index) => Padding(
+            padding: EdgeInsets.only(
+              right: index == recos.length - 1 ? 0 : HomeLayoutMetrics.cardGap,
+            ),
+            child: SizedBox(
+              width: metrics.cardWidth,
+              child: DismissibleRecommendationCard(
+                manga: recos[index],
+                coverHeight: metrics.coverHeight,
+                onDismissed: widget.onDismissed,
+                onRestored: widget.onRestored,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
