@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:mangatracker/core/components/app_avatar.dart';
-import 'package:mangatracker/core/components/app_card.dart';
+import 'package:mangatracker/core/network/api_error_message.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
 import 'package:mangatracker/features/friends/services/friends.service.dart';
+import 'package:mangatracker/features/sharing/widgets/friend_pick_row.dart';
 import 'package:mangatracker/features/sharing/services/sharing.service.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
-/// Modal "Partager ce manga" (Phase 8.1 — refactor design system 2026-05-18).
+/// Modal « Recommander à un ami » (Phase 8.1 — refactor design system
+/// 2026-05-18). À ne pas confondre avec « Suggérer un titre similaire »
+/// (vote public de la communauté, sans destinataire).
 ///
 /// Refactor 2026-05-18 :
 ///  - Plus de bordures dures, surfaces tonales empilées
@@ -38,7 +40,7 @@ class _ShareMangaSheetState extends State<ShareMangaSheet> {
   final TextEditingController _msgCtrl = TextEditingController();
 
   List<FriendshipDto>? _friends;
-  String? _loadError;
+  Object? _loadError;
   final Set<int> _selected = {};
   bool _sending = false;
 
@@ -56,12 +58,14 @@ class _ShareMangaSheetState extends State<ShareMangaSheet> {
 
   Future<void> _loadFriends() async {
     try {
-      final list = await _friendsService.getAcceptedFriends();
+      // Toujours relue : un ami retiré depuis ne doit plus être proposé
+      // (le cache ne sert que de repli hors ligne).
+      final list = await _friendsService.getAcceptedFriends(forceRefresh: true);
       if (!mounted) return;
       setState(() => _friends = list);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _loadError = e.toString());
+      setState(() => _loadError = e);
     }
   }
 
@@ -82,8 +86,9 @@ class _ShareMangaSheetState extends State<ShareMangaSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _sending = false);
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('${AppLocalizations.of(context)!.shareFailed}: $e'),
+        content: Text(userFacingErrorMessage(e, l10n, fallback: l10n.shareFailed)),
         backgroundColor: Theme.of(context).colorScheme.error,
       ));
     }
@@ -139,7 +144,10 @@ class _ShareMangaSheetState extends State<ShareMangaSheet> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.m),
-          child: Text('${l10n.shareLoadError}: $_loadError'),
+          child: Text(
+            userFacingErrorMessage(_loadError, l10n, fallback: l10n.shareLoadError),
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -165,7 +173,7 @@ class _ShareMangaSheetState extends State<ShareMangaSheet> {
       itemBuilder: (context, i) {
         final f = _friends![i];
         final isSelected = _selected.contains(f.otherUserId);
-        return _FriendPickRow(
+        return FriendPickRow(
           friend: f,
           selected: isSelected,
           accentColor: scheme.primary,
@@ -259,86 +267,6 @@ class _MessageField extends StatelessWidget {
             color: scheme.primary.withValues(alpha: 0.5),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FriendPickRow extends StatelessWidget {
-  final FriendshipDto friend;
-  final bool selected;
-  final Color accentColor;
-  final VoidCallback onTap;
-
-  const _FriendPickRow({
-    required this.friend,
-    required this.selected,
-    required this.accentColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return AppCard(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s + 4,
-        vertical: AppSpacing.s + 2,
-      ),
-      backgroundColor: selected
-          ? scheme.primaryContainer
-          : scheme.surfaceContainerLow,
-      child: Row(
-        children: [
-          AppAvatar(
-            url: friend.otherAvatarUrl,
-            fallback: friend.displayName,
-            size: AppAvatarSize.medium,
-          ),
-          const SizedBox(width: AppSpacing.s + 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  friend.displayName,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: selected
-                            ? scheme.onPrimaryContainer
-                            : scheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                Text(
-                  '@${friend.safeOtherUsername}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: selected
-                            ? scheme.onPrimaryContainer
-                                .withValues(alpha: 0.85)
-                            : scheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: selected ? accentColor : Colors.transparent,
-              border: Border.all(
-                color: selected ? accentColor : scheme.outlineVariant,
-                width: 2,
-              ),
-            ),
-            child: selected
-                ? Icon(Icons.check, size: 16, color: scheme.onPrimary)
-                : null,
-          ),
-        ],
       ),
     );
   }

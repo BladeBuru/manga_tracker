@@ -73,29 +73,64 @@ class FriendshipDto {
   }
 }
 
+/// Relation entre moi et un résultat de recherche (`relation` de
+/// `GET /friends/search`). Absent sur un ancien serveur → [none] (il ne
+/// renvoyait alors que des inconnus).
+enum FriendRelation {
+  none('none'),
+  pendingSent('pending_sent'),
+  pendingReceived('pending_received'),
+  friends('friends');
+
+  final String wire;
+  const FriendRelation(this.wire);
+
+  static FriendRelation fromWire(Object? raw) {
+    for (final relation in values) {
+      if (relation.wire == raw) return relation;
+    }
+    return FriendRelation.none;
+  }
+}
+
 class UserSearchResultDto {
   final int id;
   final String username;
   final String? displayName;
   final String? avatarUrl;
+  final FriendRelation relation;
 
   const UserSearchResultDto({
     required this.id,
     required this.username,
     this.displayName,
     this.avatarUrl,
+    this.relation = FriendRelation.none,
   });
 
   String get effectiveDisplayName => stripEmailFormat(
         (displayName?.isNotEmpty ?? false) ? displayName! : username,
       );
 
+  /// Username sans format email pour le sous-titre `@username` (RGPD).
+  String get safeUsername => stripEmailFormat(username);
+
+  UserSearchResultDto withRelation(FriendRelation value) => UserSearchResultDto(
+        id: id,
+        username: username,
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+        relation: value,
+      );
+
   factory UserSearchResultDto.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
     return UserSearchResultDto(
-      id: (json['id'] as num).toInt(),
-      username: json['username'] as String? ?? '',
+      id: rawId is num ? rawId.toInt() : int.tryParse('$rawId') ?? 0,
+      username: json['username']?.toString() ?? '',
       displayName: json['displayName'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
+      relation: FriendRelation.fromWire(json['relation']),
     );
   }
 }

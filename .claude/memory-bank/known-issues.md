@@ -44,6 +44,32 @@ L'app affiche désormais la raison (code HTTP, limite) et propose de réessayer.
 source en CRLF. Vert en CI (LF).
 
 ---
+## ✅ Corrigés le 2026-10-13 — social et notifications (`feat/notifications-lecture-partagee`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Demande d'ami jamais notifiée | `FriendsBloc` recréé à chaque ouverture avec `_lastPendingCount = -1` : premier chargement toujours silencieux | Notifications locales déplacées dans `NotificationCountsService` + `NotificationAlerter` (première passe silencieuse par source, une seule fois) |
+| Recommandation reçue : rien sur la fiche, pastille qui reste allumée | Partages jamais affichés sur la fiche ; `mark-seen` répond 201, le client exigeait 200 → échec silencieux | `ReceivedShareBanner` ; tout 2xx accepté (`isHttpSuccess`) |
+| « Recommander une œuvre » pris pour un envoi à un ami | Vote communautaire et envoi à un ami appelés pareil | « Suggérer un titre similaire » vs « Recommander à un ami » (7 langues) |
+| Recherche d'amis : « Aucun utilisateur trouvé » sur une erreur, résultats périmés, envoi au premier appui | Erreur stockée jamais affichée ; recherches concurrentes ; aucun garde | Erreur affichée, numéro de génération, confirmation, relation par résultat |
+| Ami fantôme dans « Lire à deux » → 403 brut | Cache amis 24 h ; `e.toString()` affiché | Cache 5 min + relecture forcée ; `userFacingErrorMessage` |
+| « Supprimer » sur le commentaire d'un autre → 403 ; « Signaler » toujours en échec | Menu sans contrôle d'auteur ; `report` répond 201 | Menu selon l'auteur ; 2xx accepté |
+| Profil vide pendant 7 jours après un 429 | `/user/information` lu et mis en cache quel que soit le code | Lecture et cache sur 200 uniquement |
+
+### ⚠️ Restes connus (non traités ici)
+
+- Libellés des **canaux** Android de notifications en français en dur
+  (`NotificationChannel`) : affichés dans les réglages système.
+- Contenu `'[supprimé]'` en dur après suppression d'un commentaire
+  (`CommentsBloc._onDelete`, préexistant).
+- Toucher une notification **système** n'efface pas la ligne du centre
+  (sauf demandes d'ami / recommandations, marquées lues par le serveur).
+- Une hausse ET une baisse du nombre de non lues entre deux interrogations
+  (une lue ailleurs, une nouvelle) peuvent masquer l'annonce de la nouvelle :
+  le centre la montre quand même.
+- `ReadingGroupsBloc` affiche encore `e.toString()` dans ses états d'erreur.
+- `test/features/reader/reader_invariants_test.dart` échoue sur un checkout
+  Windows en CRLF (le test cherche `\n`) — préexistant, sans lien.
 
 ## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
 

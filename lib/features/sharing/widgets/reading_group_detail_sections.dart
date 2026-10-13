@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangatracker/core/network/api_error_message.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
@@ -243,7 +244,11 @@ class ReadingGroupActionsSection extends StatelessWidget {
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('${l10n.readingGroupLeaveFailed}: $e'),
+          content: Text(userFacingErrorMessage(
+            e,
+            l10n,
+            fallback: l10n.readingGroupLeaveFailed,
+          )),
           backgroundColor: scheme.error,
         ),
       );

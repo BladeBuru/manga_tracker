@@ -1,57 +1,53 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Familles de notifications locales, chacune avec son interrupteur dans
+/// « Notifications » (réglages du profil).
+enum NotificationFamily {
+  newChapters('new_chapter_notifications_enabled'),
+  friendRequests('notifications_friend_requests_enabled'),
+  friendAccepted('notifications_friend_accepted_enabled'),
+  sharesReceived('notifications_shares_received_enabled'),
+  readingGroups('notifications_reading_groups_enabled');
+
+  /// Clé `SharedPreferences` (les trois premières existaient déjà : ne pas
+  /// les renommer, les choix des utilisateurs y sont stockés).
+  final String prefsKey;
+  const NotificationFamily(this.prefsKey);
+}
+
 /// Service pour gérer les préférences de notifications locales.
 ///
-/// Trois familles de notifs gérées indépendamment :
-///  - Nouveaux chapitres (`new_chapter_notifications_enabled`).
-///  - Demandes d'ami (`notifications_friend_requests_enabled`).
-///  - Recommandations / partages reçus (`notifications_shares_received_enabled`).
-///
-/// Toutes les préférences sont activées par défaut (true).
+/// Cinq familles gérées indépendamment ([NotificationFamily]) : nouveaux
+/// chapitres, demandes d'ami, demandes acceptées, recommandations reçues,
+/// lectures partagées. Toutes activées par défaut.
 class NotificationPreferencesService {
-  static const String _prefsKeyNewChapterNotifications =
-      'new_chapter_notifications_enabled';
-  static const String _prefsKeyFriendRequestNotifications =
-      'notifications_friend_requests_enabled';
-  static const String _prefsKeyShareReceivedNotifications =
-      'notifications_shares_received_enabled';
+  /// Vérifie si une famille de notifications est activée.
+  Future<bool> isEnabled(NotificationFamily family) => _read(family.prefsKey);
 
-  // ─── Nouveaux chapitres ───
+  /// Active ou désactive une famille de notifications.
+  Future<void> setEnabled(NotificationFamily family, bool enabled) =>
+      _write(family.prefsKey, enabled);
 
-  /// Vérifie si les notifications pour les nouveaux chapitres sont activées.
-  Future<bool> areNewChapterNotificationsEnabled() async {
-    return _read(_prefsKeyNewChapterNotifications);
-  }
+  // ─── Accès historiques (conservés pour les appelants existants) ───
 
-  /// Active ou désactive les notifications pour les nouveaux chapitres.
-  Future<void> setNewChapterNotificationsEnabled(bool enabled) async {
-    await _write(_prefsKeyNewChapterNotifications, enabled);
-  }
+  Future<bool> areNewChapterNotificationsEnabled() =>
+      isEnabled(NotificationFamily.newChapters);
 
-  // ─── Demandes d'ami ───
+  Future<void> setNewChapterNotificationsEnabled(bool enabled) =>
+      setEnabled(NotificationFamily.newChapters, enabled);
 
-  /// Vérifie si les notifications pour les demandes d'ami sont activées.
-  Future<bool> areFriendRequestNotificationsEnabled() async {
-    return _read(_prefsKeyFriendRequestNotifications);
-  }
+  Future<bool> areFriendRequestNotificationsEnabled() =>
+      isEnabled(NotificationFamily.friendRequests);
 
-  /// Active ou désactive les notifications pour les demandes d'ami.
-  Future<void> setFriendRequestNotificationsEnabled(bool enabled) async {
-    await _write(_prefsKeyFriendRequestNotifications, enabled);
-  }
+  Future<void> setFriendRequestNotificationsEnabled(bool enabled) =>
+      setEnabled(NotificationFamily.friendRequests, enabled);
 
-  // ─── Partages reçus / recommandations ───
+  Future<bool> areShareReceivedNotificationsEnabled() =>
+      isEnabled(NotificationFamily.sharesReceived);
 
-  /// Vérifie si les notifications pour les recommandations reçues sont activées.
-  Future<bool> areShareReceivedNotificationsEnabled() async {
-    return _read(_prefsKeyShareReceivedNotifications);
-  }
-
-  /// Active ou désactive les notifications pour les recommandations reçues.
-  Future<void> setShareReceivedNotificationsEnabled(bool enabled) async {
-    await _write(_prefsKeyShareReceivedNotifications, enabled);
-  }
+  Future<void> setShareReceivedNotificationsEnabled(bool enabled) =>
+      setEnabled(NotificationFamily.sharesReceived, enabled);
 
   // ─── Helpers internes ───
 

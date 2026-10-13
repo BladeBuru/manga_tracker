@@ -36,6 +36,16 @@ Constantes `BorderRadius` pré-fabriquées : `AppRadius.allMedium`, etc.
 
 Styles de texte (titres, corps, captions). **Préférer `Theme.of(context).textTheme.*`** dans les widgets.
 
+### `AppSurfaces` ([core/theme/app_surfaces.dart](../../lib/core/theme/app_surfaces.dart)) — 2026-10
+
+Surfaces sobres et translucides des composants récents (centre de
+notifications, cloche, bandeau « Recommandé par », résultats de recherche
+d'amis), inspirées d'aniverse.fr et dérivées du `ColorScheme` :
+`muted(scheme)` (surfaceContainerHigh à 90 %), `hairline(scheme)` (onSurface
+à 10 %), `unreadTint(scheme)`, `iconButtonSize` = 40, `panelMaxWidth` = 480
+au-delà de `panelBreakpoint` = 768. Pour les nouveaux composants ; ne pas
+restyler l'existant avec.
+
 ### 🆕 `AppSpacing` (À CRÉER)
 
 À créer dans `lib/core/theme/app_spacing.dart` :

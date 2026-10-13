@@ -146,6 +146,7 @@
 
 ### ✅ Mise à jour instantanée de l'état (reading/completed/caughtUp/readLater)
 ### ✅ Bascule auto « À jour » → « En cours » quand un nouveau chapitre sort *(2026-09-05 — API sur hausse du total MU, app sur détection locale)*
+### 🔵 Centre de notifications *(2026-10 — front livré : cloche de l'accueil, demandes d'ami, demandes acceptées, recommandations, lectures partagées, nouveaux chapitres ; API `/notifications` développée en parallèle → ✅ quand elle est en production)*
 ### ⏳ Filtres avancés de notifications
 
 ### Lecture
@@ -195,13 +196,14 @@
 - ✅ Recherche d'utilisateurs (autocomplete)
 - ✅ Page Amis (onglets + recherche + cache 24h)
 - ✅ Badge BottomNavBar (compteur global polling — NotificationCountsService)
+- ✅ Recherche par pseudo OU nom affiché, relation de chaque résultat, demandes envoyées annulables, confirmation avant envoi *(2026-10 — API `/friends/sent` + `relation` en parallèle)*
 
 ### ⏳ Forum et discussions
 ### ⏳ Partage de théories
 ### ⏳ Mini-jeux communautaires
 ### ⏳ Chat en temps réel
 ### ✅ Voir la bibliothèque de ses amis *(livré v0.11.x — profil ami, réservé aux amitiés acceptées)*
-### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau)*
+### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau ; 2026-10 : « Recommander à un ami » explicite + bandeau « Recommandé par » sur la fiche)*
 
 ---
 

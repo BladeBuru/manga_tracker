@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mangatracker/core/components/app_chip.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/network/api_error_message.dart';
+import 'package:mangatracker/core/router/app_modals.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/comments/bloc/comments_bloc.dart';
 import 'package:mangatracker/features/comments/dto/comment.dto.dart';
@@ -17,12 +19,17 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// CustomScrollView via SliverToBoxAdapter, ou dans un Column scrollable.
 class CommentsSection extends StatelessWidget {
   final int muId;
-  const CommentsSection({super.key, required this.muId});
+
+  /// Injectable pour les tests.
+  final CommentsBloc Function()? createBloc;
+
+  const CommentsSection({super.key, required this.muId, this.createBloc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CommentsBloc>(
-      create: (_) => CommentsBloc(muId)..add(const LoadComments()),
+      create: (_) =>
+          (createBloc?.call() ?? CommentsBloc(muId))..add(const LoadComments()),
       child: const _CommentsContent(),
     );
   }
@@ -41,13 +48,19 @@ class _CommentsContentState extends State<_CommentsContent> {
     final l10n = AppLocalizations.of(context)!;
     return BlocConsumer<CommentsBloc, CommentsState>(
       listenWhen: (a, b) =>
-          b is CommentsLoaded && b.lastError != null,
+          b is CommentsLoaded && (b.lastError != null || b.feedback != null),
       listener: (context, state) {
-        if (state is CommentsLoaded && state.lastError != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.lastError!),
+        if (state is! CommentsLoaded) return;
+        final messenger = ScaffoldMessenger.of(context);
+        if (state.lastError != null) {
+          messenger.showSnackBar(SnackBar(
+            content: Text(userFacingErrorMessage(state.lastError, l10n)),
             backgroundColor: Theme.of(context).colorScheme.error,
           ));
+        } else if (state.feedback == CommentsFeedback.reported) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.commentsReportSuccess)),
+          );
         }
       },
       builder: (context, state) {
@@ -78,7 +91,7 @@ class _CommentsContentState extends State<_CommentsContent> {
               )
             else if (state is CommentsError)
               AppErrorState(
-                message: state.message,
+                message: userFacingErrorMessage(state.error, l10n),
                 retryLabel: l10n.retry,
                 onRetry: () =>
                     context.read<CommentsBloc>().add(const LoadComments()),
@@ -183,8 +196,15 @@ class _CommentsList extends StatelessWidget {
         for (final comment in state.items)
           CommentTile(
             comment: comment,
-            onDelete: () =>
-                context.read<CommentsBloc>().add(DeleteComment(comment.id)),
+            // « Supprimer » : mes commentaires seulement ; « Signaler » :
+            // ceux des autres (après confirmation).
+            onDelete: state.isMine(comment)
+                ? () =>
+                    context.read<CommentsBloc>().add(DeleteComment(comment.id))
+                : null,
+            onReport: state.isMine(comment)
+                ? null
+                : () => _confirmReport(context, comment.id),
           ),
         if (state.hasMore)
           Padding(
@@ -203,6 +223,31 @@ class _CommentsList extends StatelessWidget {
       ],
     );
   }
+}
+
+/// « Signaler ce commentaire ? » puis envoi.
+Future<void> _confirmReport(BuildContext context, int commentId) async {
+  final l10n = AppLocalizations.of(context)!;
+  final bloc = context.read<CommentsBloc>();
+  final confirmed = await showAppDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      scrollable: true,
+      title: Text(l10n.commentsReportConfirmTitle),
+      content: Text(l10n.commentsReportConfirmBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(l10n.commentsReport),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) bloc.add(ReportComment(commentId));
 }
 
 // _ErrorBlock retiré — utilise désormais AppErrorState du design system.

@@ -24,6 +24,18 @@ void main() {
     expect(NotificationPayload.routeFor('42'), '/manga/42');
   });
 
+  test('demande acceptée → profil de l\'ami ; lecture partagée → le groupe ; '
+      'centre → /notifications', () {
+    expect(NotificationPayload.routeFor(NotificationPayload.friend('42')),
+        '/friends/42');
+    expect(NotificationPayload.routeFor(NotificationPayload.readingGroup('5')),
+        '/reading-groups/5');
+    expect(NotificationPayload.routeFor(NotificationPayload.centre),
+        '/notifications');
+    expect(NotificationPayload.routeFor('friend:abc'), '/friends');
+    expect(NotificationPayload.routeFor('group:'), '/reading-groups');
+  });
+
   test('contenu inconnu ou vide → rien', () {
     expect(NotificationPayload.routeFor(null), isNull);
     expect(NotificationPayload.routeFor(''), isNull);

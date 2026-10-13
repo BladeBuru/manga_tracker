@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/router/app_router.dart';
+import 'package:mangatracker/features/manga/services/notification_channels.dart';
 import 'package:mangatracker/features/manga/services/notification_payload.dart';
 import 'package:mangatracker/features/manga/services/new_chapter_service.dart';
 import 'package:mangatracker/features/manga/services/notification_preferences_service.dart';
@@ -10,35 +11,16 @@ import 'package:mangatracker/features/manga/services/notification_preferences_se
 ///
 /// Canaux Android :
 ///  - `new_chapters` : nouveaux chapitres d'un manga suivi.
-///  - `friend_requests` : demandes d'ami entrantes.
+///  - `friend_requests` : demandes d'ami entrantes (et acceptées).
 ///  - `shares_received` : recommandations / partages reçus.
+///  - `reading_groups` : ajout à une lecture partagée.
 ///
-/// Chaque famille est feature-gated par `NotificationPreferencesService`.
+/// Chaque famille est feature-gated par `NotificationPreferencesService`
+/// ([NotificationFamily]) ; canaux décrits dans [NotificationChannel].
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
-
-  // Channel IDs / labels (Android)
-  static const _chanNewChapters = 'new_chapters';
-  static const _chanNewChaptersLabel = 'Nouveaux chapitres';
-  static const _chanNewChaptersDesc =
-      'Notifications pour les nouveaux chapitres de manga';
-
-  static const _chanFriendReq = 'friend_requests';
-  static const _chanFriendReqLabel = 'Demandes d\'ami';
-  static const _chanFriendReqDesc =
-      'Notifications quand quelqu\'un vous envoie une demande d\'ami';
-
-  static const _chanShares = 'shares_received';
-  static const _chanSharesLabel = 'Recommandations reçues';
-  static const _chanSharesDesc =
-      'Notifications quand un ami vous partage un manga';
-
-  // Plages d'IDs (évite les collisions entre canaux).
-  static const int _idBaseFriendRequests = 1000000;
-  static const int _idBaseSharesReceived = 2000000;
-  static const int _idRange = 100000;
 
   // Payloads pour le tap-handler : voir [NotificationPayload].
   static const String _payloadFriendRequest = NotificationPayload.friendRequest;
@@ -108,16 +90,14 @@ class NotificationService {
 
   /// Helper : construit un `NotificationDetails` cross-platform.
   NotificationDetails _details(
-    String channelId,
-    String channelName,
-    String channelDesc, {
+    NotificationChannel channel, {
     bool bigText = false,
   }) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        channelId,
-        channelName,
-        channelDescription: channelDesc,
+        channel.id,
+        channel.label,
+        channelDescription: channel.description,
         importance: Importance.high,
         priority: Priority.high,
         showWhen: true,
@@ -151,7 +131,7 @@ class NotificationService {
         muId,
         'Nouveau chapitre disponible !',
         body,
-        _details(_chanNewChapters, _chanNewChaptersLabel, _chanNewChaptersDesc),
+        _details(NotificationChannel.newChapters),
         payload: NotificationPayload.chapter(muId.toString()),
       );
       debugPrint(
@@ -185,12 +165,7 @@ class NotificationService {
         999999,
         title,
         body,
-        _details(
-          _chanNewChapters,
-          _chanNewChaptersLabel,
-          _chanNewChaptersDesc,
-          bigText: true,
-        ),
+        _details(NotificationChannel.newChapters, bigText: true),
       );
       debugPrint(
         '✅ NotificationService: Notif groupée ($mangaCount mangas)',
@@ -200,68 +175,78 @@ class NotificationService {
     }
   }
 
-  // ─── Demandes d'ami ───
+  // ─── Notifications du centre (une famille = un interrupteur) ───
 
-  /// Affiche une notification pour une demande d'ami entrante.
+  /// Affiche une notification « activité » : demande d'ami, demande
+  /// acceptée, recommandation, lecture partagée, nouveaux chapitres.
   ///
-  /// [title] et [body] doivent être déjà traduits par l'appelant.
-  Future<void> showFriendRequestNotification({
-    required String senderUsername,
+  /// [key] est la clé anti-doublon de l'appelant (`friendship:12`,
+  /// `share:34`…) : elle donne un identifiant Android **stable**, donc une
+  /// seconde annonce du même événement remplace la première au lieu de
+  /// s'empiler. Nouveaux chapitres : l'identifiant est le `muId`, comme la
+  /// vérification en arrière-plan — une seule notification par titre.
+  ///
+  /// [title] et [body] sont déjà traduits par l'appelant.
+  Future<void> showFamilyNotification({
+    required NotificationFamily family,
+    required String key,
     required String title,
     required String body,
+    String? payload,
+    int? muId,
   }) async {
-    if (!await _preferences.areFriendRequestNotificationsEnabled()) return;
+    if (!await _preferences.isEnabled(family)) return;
     if (!_isInitialized) await initialize();
     try {
-      final id =
-          _idBaseFriendRequests + (senderUsername.hashCode.abs() % _idRange);
+      final channel = NotificationChannel.forFamily(family);
+      final id = family == NotificationFamily.newChapters && muId != null
+          ? muId
+          : channel.idFor(key);
       await _notifications.show(
         id,
         title,
         body,
-        _details(_chanFriendReq, _chanFriendReqLabel, _chanFriendReqDesc),
-        payload: _payloadFriendRequest,
+        _details(channel),
+        payload: payload,
       );
-      debugPrint(
-        '✅ NotificationService: Notif demande d\'ami de $senderUsername',
-      );
+      debugPrint('✅ NotificationService: notif ${family.name} ($key)');
     } catch (e) {
-      debugPrint('❌ NotificationService: Erreur showFriendRequest: $e');
+      debugPrint('❌ NotificationService: Erreur showFamily: $e');
     }
   }
 
-  // ─── Partages / recommandations ───
+  /// Demande d'ami entrante. [title] et [body] déjà traduits.
+  Future<void> showFriendRequestNotification({
+    required String senderUsername,
+    required String title,
+    required String body,
+    String? key,
+  }) =>
+      showFamilyNotification(
+        family: NotificationFamily.friendRequests,
+        key: key ?? senderUsername,
+        title: title,
+        body: body,
+        payload: _payloadFriendRequest,
+      );
 
-  /// Affiche une notification pour un manga partagé / recommandé par un ami.
-  ///
-  /// [title] et [body] doivent être déjà traduits.
-  /// [muId] sert de payload pour naviguer vers le détail au tap.
+  /// Manga recommandé par un ami ; le toucher ouvre « Recommandations
+  /// reçues ». [title] et [body] déjà traduits.
   Future<void> showShareReceivedNotification({
     required String senderUsername,
     required String mangaTitle,
     required String muId,
     required String title,
     required String body,
-  }) async {
-    if (!await _preferences.areShareReceivedNotificationsEnabled()) return;
-    if (!_isInitialized) await initialize();
-    try {
-      final id = _idBaseSharesReceived +
-          ('$senderUsername:$mangaTitle'.hashCode.abs() % _idRange);
-      await _notifications.show(
-        id,
-        title,
-        body,
-        _details(_chanShares, _chanSharesLabel, _chanSharesDesc),
+    String? key,
+  }) =>
+      showFamilyNotification(
+        family: NotificationFamily.sharesReceived,
+        key: key ?? '$senderUsername:$mangaTitle',
+        title: title,
+        body: body,
         payload: NotificationPayload.share(muId),
       );
-      debugPrint(
-        '✅ NotificationService: Notif partage $senderUsername → $mangaTitle',
-      );
-    } catch (e) {
-      debugPrint('❌ NotificationService: Erreur showShareReceived: $e');
-    }
-  }
 
   // ─── Cancel ───
 

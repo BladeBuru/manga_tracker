@@ -232,7 +232,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get pushNotifShareTitle => 'Nuevo manga compartido';
+  String get pushNotifShareTitle => 'Nueva recomendación';
 
   @override
   String pushNotifShareBody(String senderUsername, String mangaTitle) {
@@ -1659,7 +1659,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get shareTitle => 'Compartir este manga';
+  String get shareTitle => 'Recomendar a un amigo';
 
   @override
   String get shareMessageHint => 'Añadir un mensaje (opcional)';
@@ -1671,10 +1671,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareSend => 'Enviar';
 
   @override
-  String get shareSuccess => 'Manga compartido';
+  String get shareSuccess => 'Recomendación enviada';
 
   @override
-  String get shareFailed => 'Error al compartir';
+  String get shareFailed => 'Error al enviar';
 
   @override
   String get shareLoadError => 'No se pudieron cargar tus amigos';
@@ -2612,23 +2612,23 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get communityRecoAdd => 'Recomendar una obra';
+  String get communityRecoAdd => 'Sugerir un título similar';
 
   @override
-  String get communityRecoToggleOn => 'Yo también lo recomiendo';
+  String get communityRecoToggleOn => 'Yo también lo sugiero';
 
   @override
-  String get communityRecoToggleOff => 'Quitar mi recomendación';
+  String get communityRecoToggleOff => 'Quitar mi sugerencia';
 
   @override
-  String get communityRecoAdded => '¡Gracias! Tu recomendación se ha guardado';
+  String get communityRecoAdded => '¡Gracias! Tu sugerencia se ha guardado';
 
   @override
-  String get communityRecoRemoved => 'Recomendación retirada';
+  String get communityRecoRemoved => 'Sugerencia retirada';
 
   @override
   String get communityRecoEmpty =>
-      'Nadie ha recomendado todavía una obra para este título. ¡Sé el primero!';
+      'Nadie ha sugerido todavía un título similar. ¡Sé el primero!';
 
   @override
   String get communityRecoLoadError =>
@@ -2636,14 +2636,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityRecoActionError =>
-      'No se pudo guardar la recomendación. Inténtalo más tarde.';
+      'No se pudo guardar la sugerencia. Inténtalo más tarde.';
 
   @override
   String get communityRecoThrottled =>
-      'Has recomendado muchas obras de golpe. Vuelve a intentarlo en un momento.';
+      'Has sugerido muchos títulos de golpe. Vuelve a intentarlo en un momento.';
 
   @override
-  String get communityRecoPickerTitle => '¿Qué obra recomiendas?';
+  String get communityRecoPickerTitle => '¿Qué título similar sugieres?';
 
   @override
   String get communityRecoPickerHint => 'Buscar un título';
@@ -2846,5 +2846,214 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String downloadConfirmCount(int count) {
     return 'Descargar ($count)';
+  }
+
+  @override
+  String get errorGeneric => 'Se ha producido un error. Inténtalo de nuevo.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Demasiados intentos, vuelve a intentarlo en un momento';
+
+  @override
+  String get errorServerUnavailable =>
+      'El servicio no está disponible temporalmente. Inténtalo más tarde.';
+
+  @override
+  String get errorForbidden => 'No tienes permiso para realizar esta acción.';
+
+  @override
+  String get errorNotFound => 'No encontrado: puede que se haya eliminado.';
+
+  @override
+  String get errorConflict => 'Esto ya está hecho.';
+
+  @override
+  String get errorSessionExpired =>
+      'Tu sesión ha caducado. Vuelve a iniciar sesión.';
+
+  @override
+  String get notificationsMarkAllRead => 'Marcar todo como leído';
+
+  @override
+  String get notificationsSettingsTooltip => 'Ajustes de notificaciones';
+
+  @override
+  String get notificationsEmptyTitle => 'No hay notificaciones';
+
+  @override
+  String get notificationsEmptySubtitle =>
+      'Novedades de tu biblioteca, solicitudes de amistad, recomendaciones: todo llega aquí.';
+
+  @override
+  String get notificationsLoadError =>
+      'No se pudieron cargar las notificaciones.';
+
+  @override
+  String get notificationsLoadMoreError => 'No se pudo cargar más.';
+
+  @override
+  String get notificationsUnread => 'No leída';
+
+  @override
+  String notificationsBellUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Notificaciones, $count sin leer',
+      one: 'Notificaciones, 1 sin leer',
+      zero: 'Notificaciones',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsSomeone => 'Alguien';
+
+  @override
+  String get notificationsSomeTitle => 'un título';
+
+  @override
+  String notifItemFriendRequest(String name) {
+    return '$name te ha enviado una solicitud de amistad';
+  }
+
+  @override
+  String notifItemFriendAccepted(String name) {
+    return '$name ha aceptado tu solicitud de amistad';
+  }
+
+  @override
+  String notifItemMangaShare(String name, String title) {
+    return '$name te recomienda $title';
+  }
+
+  @override
+  String notifItemReadingGroupNamed(String name, String group) {
+    return '$name te ha añadido a la lectura compartida «$group»';
+  }
+
+  @override
+  String notifItemReadingGroup(String name, String title) {
+    return '$name te ha añadido a una lectura compartida de $title';
+  }
+
+  @override
+  String notifItemNewChapters(int count, String title, String chapter) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capítulos nuevos de $title (cap. $chapter)',
+      one: 'Nuevo capítulo de $title (cap. $chapter)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pushNotifFriendAcceptedTitle => 'Solicitud de amistad aceptada';
+
+  @override
+  String get pushNotifReadingGroupTitle => 'Nueva lectura compartida';
+
+  @override
+  String get pushNotifNewChaptersTitle => 'Nuevos capítulos';
+
+  @override
+  String get notifFriendAcceptedTitle => 'Solicitudes aceptadas';
+
+  @override
+  String get notifFriendAcceptedSubtitle =>
+      'Alguien ha aceptado tu solicitud de amistad';
+
+  @override
+  String get notifReadingGroupsTitle => 'Lecturas compartidas';
+
+  @override
+  String get notifReadingGroupsSubtitle =>
+      'Un amigo te añade a una lectura compartida';
+
+  @override
+  String get friendsSearchError =>
+      'La búsqueda ha fallado. Inténtalo de nuevo.';
+
+  @override
+  String get friendsRelationAdd => 'Añadir';
+
+  @override
+  String get friendsRelationFriends => 'Amigo';
+
+  @override
+  String get friendsCancelRequest => 'Cancelar solicitud';
+
+  @override
+  String friendsSendConfirmTitle(String name) {
+    return '¿Enviar una solicitud de amistad a $name?';
+  }
+
+  @override
+  String get friendsSendConfirmBody =>
+      'Esta persona podrá aceptarla o rechazarla.';
+
+  @override
+  String get friendsSendConfirmAction => 'Enviar';
+
+  @override
+  String friendsCancelConfirmTitle(String name) {
+    return '¿Cancelar la solicitud enviada a $name?';
+  }
+
+  @override
+  String get friendsKeepRequest => 'Mantener';
+
+  @override
+  String get friendsSectionSent => 'Solicitudes enviadas';
+
+  @override
+  String get friendsRequestCancelled => 'Solicitud cancelada';
+
+  @override
+  String friendsNowFriends(String name) {
+    return '$name y tú ya sois amigos';
+  }
+
+  @override
+  String get commentsReport => 'Denunciar';
+
+  @override
+  String get commentsReportConfirmTitle => '¿Denunciar este comentario?';
+
+  @override
+  String get commentsReportConfirmBody =>
+      'Nuestro equipo de moderación lo revisará.';
+
+  @override
+  String get commentsReportSuccess =>
+      'Gracias, el comentario ha sido denunciado.';
+
+  @override
+  String get commentsMoreActions => 'Más acciones';
+
+  @override
+  String get similarTitles => 'Títulos similares';
+
+  @override
+  String receivedShareBy(String name) {
+    return 'Recomendado por $name';
+  }
+
+  @override
+  String receivedShareByMany(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recomendado por $name y $count amigos más',
+      one: 'Recomendado por $name y 1 amigo más',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receivedShareMessage(String message) {
+    return '«$message»';
   }
 }

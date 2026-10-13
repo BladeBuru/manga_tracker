@@ -244,7 +244,7 @@
       }
     }
   },
-  "pushNotifShareTitle": "Nouveau manga partagé",
+  "pushNotifShareTitle": "Nouvelle recommandation",
   "@pushNotifShareTitle": {},
   "pushNotifShareBody": "{senderUsername} vous recommande {mangaTitle}",
   "@pushNotifShareBody": {
@@ -1787,7 +1787,7 @@
       }
     }
   },
-  "shareTitle": "Partager ce manga",
+  "shareTitle": "Recommander à un ami",
   "@shareTitle": {},
   "shareMessageHint": "Ajouter un message (optionnel)",
   "@shareMessageHint": {},
@@ -1795,9 +1795,9 @@
   "@shareCancel": {},
   "shareSend": "Envoyer",
   "@shareSend": {},
-  "shareSuccess": "Manga partagé",
+  "shareSuccess": "Recommandation envoyée",
   "@shareSuccess": {},
-  "shareFailed": "Échec du partage",
+  "shareFailed": "Échec de l'envoi",
   "@shareFailed": {},
   "shareLoadError": "Impossible de charger vos amis",
   "@shareLoadError": {},
@@ -2750,16 +2750,16 @@
       }
     }
   },
-  "communityRecoAdd": "Recommander une œuvre",
-  "communityRecoToggleOn": "Je recommande aussi",
-  "communityRecoToggleOff": "Retirer ma recommandation",
-  "communityRecoAdded": "Merci ! Votre recommandation est enregistrée",
-  "communityRecoRemoved": "Recommandation retirée",
-  "communityRecoEmpty": "Personne n'a encore recommandé d'œuvre pour ce titre. Soyez le premier !",
+  "communityRecoAdd": "Suggérer un titre similaire",
+  "communityRecoToggleOn": "Je le suggère aussi",
+  "communityRecoToggleOff": "Retirer ma suggestion",
+  "communityRecoAdded": "Merci ! Votre suggestion est enregistrée",
+  "communityRecoRemoved": "Suggestion retirée",
+  "communityRecoEmpty": "Personne n'a encore suggéré de titre similaire. Soyez le premier !",
   "communityRecoLoadError": "Impossible de charger les recommandations",
-  "communityRecoActionError": "Impossible d'enregistrer la recommandation. Réessayez plus tard.",
-  "communityRecoThrottled": "Vous avez recommandé beaucoup d'œuvres d'un coup. Réessayez dans un moment.",
-  "communityRecoPickerTitle": "Quelle œuvre recommandez-vous ?",
+  "communityRecoActionError": "Impossible d'enregistrer la suggestion. Réessayez plus tard.",
+  "communityRecoThrottled": "Vous avez suggéré beaucoup de titres d'un coup. Réessayez dans un moment.",
+  "communityRecoPickerTitle": "Quel titre similaire suggérez-vous ?",
   "communityRecoPickerHint": "Rechercher un titre",
   "communityRecoPickerEmpty": "Aucun titre trouvé",
   "communityRecoReadersAlsoRead": "Les lecteurs de ce titre lisent aussi",
@@ -2954,6 +2954,293 @@
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "errorGeneric": "Une erreur est survenue. Réessayez.",
+  "@errorGeneric": {
+    "description": "Message d'erreur générique (repli)"
+  },
+  "errorTooManyRequests": "Trop de tentatives, réessayez dans un instant",
+  "@errorTooManyRequests": {
+    "description": "Réponse 429 du serveur"
+  },
+  "errorServerUnavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
+  "@errorServerUnavailable": {
+    "description": "Réponse 5xx du serveur"
+  },
+  "errorForbidden": "Vous n'avez pas accès à cette action.",
+  "@errorForbidden": {
+    "description": "Réponse 403 sans message exploitable"
+  },
+  "errorNotFound": "Introuvable : l'élément a peut-être été supprimé.",
+  "@errorNotFound": {
+    "description": "Réponse 404 sans message exploitable"
+  },
+  "errorConflict": "C'est déjà fait.",
+  "@errorConflict": {
+    "description": "Réponse 409 sans message exploitable"
+  },
+  "errorSessionExpired": "Votre session a expiré. Reconnectez-vous.",
+  "@errorSessionExpired": {
+    "description": "Session refusée par le serveur"
+  },
+  "notificationsMarkAllRead": "Tout marquer comme lu",
+  "@notificationsMarkAllRead": {
+    "description": "Centre de notifications : action « tout lu »"
+  },
+  "notificationsSettingsTooltip": "Réglages des notifications",
+  "@notificationsSettingsTooltip": {
+    "description": "Centre de notifications : bouton réglages"
+  },
+  "notificationsEmptyTitle": "Aucune notification",
+  "@notificationsEmptyTitle": {
+    "description": "Centre de notifications vide : titre"
+  },
+  "notificationsEmptySubtitle": "Nouvelles sorties de votre bibliothèque, demandes d'amis, recommandations : tout arrive ici.",
+  "@notificationsEmptySubtitle": {
+    "description": "Centre de notifications vide : explication"
+  },
+  "notificationsLoadError": "Impossible de charger les notifications.",
+  "@notificationsLoadError": {
+    "description": "Centre de notifications : échec du chargement"
+  },
+  "notificationsLoadMoreError": "Impossible de charger la suite.",
+  "@notificationsLoadMoreError": {
+    "description": "Centre de notifications : échec de la page suivante"
+  },
+  "notificationsUnread": "Non lue",
+  "@notificationsUnread": {
+    "description": "Pastille « non lue » (lecteur d’écran)"
+  },
+  "notificationsBellUnread": "{count, plural, =0{Notifications} =1{Notifications, 1 non lue} other{Notifications, {count} non lues}}",
+  "@notificationsBellUnread": {
+    "description": "Cloche de l’accueil : libellé accessible avec le nombre de non lues",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsSomeone": "Quelqu'un",
+  "@notificationsSomeone": {
+    "description": "Auteur inconnu d’une notification"
+  },
+  "notificationsSomeTitle": "un titre",
+  "@notificationsSomeTitle": {
+    "description": "Titre inconnu d’une notification"
+  },
+  "notifItemFriendRequest": "{name} vous a envoyé une demande d'ami",
+  "@notifItemFriendRequest": {
+    "description": "Notification : demande d’ami reçue",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifItemFriendAccepted": "{name} a accepté votre demande d'ami",
+  "@notifItemFriendAccepted": {
+    "description": "Notification : demande d’ami acceptée",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifItemMangaShare": "{name} vous recommande {title}",
+  "@notifItemMangaShare": {
+    "description": "Notification : un ami recommande un titre",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notifItemReadingGroupNamed": "{name} vous a ajouté à la lecture partagée « {group} »",
+  "@notifItemReadingGroupNamed": {
+    "description": "Notification : ajout à une lecture partagée nommée",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "notifItemReadingGroup": "{name} vous a ajouté à une lecture partagée de {title}",
+  "@notifItemReadingGroup": {
+    "description": "Notification : ajout à une lecture partagée (sans nom)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notifItemNewChapters": "{count, plural, =1{Nouveau chapitre de {title} (ch. {chapter})} other{{count} nouveaux chapitres de {title} (ch. {chapter})}}",
+  "@notifItemNewChapters": {
+    "description": "Notification : nouveaux chapitres d’un titre suivi",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "pushNotifFriendAcceptedTitle": "Demande d'ami acceptée",
+  "@pushNotifFriendAcceptedTitle": {
+    "description": "Notification système : demande acceptée (titre)"
+  },
+  "pushNotifReadingGroupTitle": "Nouvelle lecture partagée",
+  "@pushNotifReadingGroupTitle": {
+    "description": "Notification système : lecture partagée (titre)"
+  },
+  "pushNotifNewChaptersTitle": "Nouveaux chapitres",
+  "@pushNotifNewChaptersTitle": {
+    "description": "Notification système : nouveaux chapitres (titre)"
+  },
+  "notifFriendAcceptedTitle": "Demandes acceptées",
+  "@notifFriendAcceptedTitle": {
+    "description": "Réglages : interrupteur demandes acceptées"
+  },
+  "notifFriendAcceptedSubtitle": "Un ami a accepté votre demande",
+  "@notifFriendAcceptedSubtitle": {
+    "description": "Réglages : explication demandes acceptées"
+  },
+  "notifReadingGroupsTitle": "Lectures partagées",
+  "@notifReadingGroupsTitle": {
+    "description": "Réglages : interrupteur lectures partagées"
+  },
+  "notifReadingGroupsSubtitle": "Un ami vous ajoute à une lecture partagée",
+  "@notifReadingGroupsSubtitle": {
+    "description": "Réglages : explication lectures partagées"
+  },
+  "friendsSearchError": "La recherche a échoué. Réessayez.",
+  "@friendsSearchError": {
+    "description": "Amis : échec de la recherche"
+  },
+  "friendsRelationAdd": "Ajouter",
+  "@friendsRelationAdd": {
+    "description": "Amis : bouton « Ajouter » d’un résultat"
+  },
+  "friendsRelationFriends": "Ami",
+  "@friendsRelationFriends": {
+    "description": "Amis : résultat déjà ami"
+  },
+  "friendsCancelRequest": "Annuler la demande",
+  "@friendsCancelRequest": {
+    "description": "Amis : annuler une demande envoyée"
+  },
+  "friendsSendConfirmTitle": "Envoyer une demande d'ami à {name} ?",
+  "@friendsSendConfirmTitle": {
+    "description": "Amis : confirmation avant envoi d’une demande",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsSendConfirmBody": "Cette personne pourra l'accepter ou la refuser.",
+  "@friendsSendConfirmBody": {
+    "description": "Amis : explication de la confirmation d’envoi"
+  },
+  "friendsSendConfirmAction": "Envoyer",
+  "@friendsSendConfirmAction": {
+    "description": "Amis : bouton d’envoi de la demande"
+  },
+  "friendsCancelConfirmTitle": "Annuler la demande envoyée à {name} ?",
+  "@friendsCancelConfirmTitle": {
+    "description": "Amis : confirmation d’annulation d’une demande",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsKeepRequest": "Garder",
+  "@friendsKeepRequest": {
+    "description": "Amis : garder la demande (fermer la confirmation)"
+  },
+  "friendsSectionSent": "Demandes envoyées",
+  "@friendsSectionSent": {
+    "description": "Amis : section des demandes envoyées"
+  },
+  "friendsRequestCancelled": "Demande annulée",
+  "@friendsRequestCancelled": {
+    "description": "Amis : confirmation d’annulation"
+  },
+  "friendsNowFriends": "Vous et {name} êtes maintenant amis",
+  "@friendsNowFriends": {
+    "description": "Amis : demande acceptée, vous êtes amis",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commentsReport": "Signaler",
+  "@commentsReport": {
+    "description": "Commentaires : signaler"
+  },
+  "commentsReportConfirmTitle": "Signaler ce commentaire ?",
+  "@commentsReportConfirmTitle": {
+    "description": "Commentaires : confirmation du signalement"
+  },
+  "commentsReportConfirmBody": "L'équipe de modération l'examinera.",
+  "@commentsReportConfirmBody": {
+    "description": "Commentaires : explication du signalement"
+  },
+  "commentsReportSuccess": "Merci, le commentaire a été signalé.",
+  "@commentsReportSuccess": {
+    "description": "Commentaires : signalement envoyé"
+  },
+  "commentsMoreActions": "Plus d'actions",
+  "@commentsMoreActions": {
+    "description": "Commentaires : menu d’actions"
+  },
+  "similarTitles": "Titres similaires",
+  "@similarTitles": {
+    "description": "Fiche : bouton des titres similaires (suggestions de la communauté)"
+  },
+  "receivedShareBy": "Recommandé par {name}",
+  "@receivedShareBy": {
+    "description": "Fiche : bandeau, titre recommandé par un ami",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "receivedShareByMany": "{count, plural, =1{Recommandé par {name} et 1 autre ami} other{Recommandé par {name} et {count} autres amis}}",
+  "@receivedShareByMany": {
+    "description": "Fiche : bandeau, titre recommandé par plusieurs amis",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "receivedShareMessage": "« {message} »",
+  "@receivedShareMessage": {
+    "description": "Fiche : message joint à une recommandation, entre guillemets",
+    "placeholders": {
+      "message": {
+        "type": "String"
       }
     }
   }

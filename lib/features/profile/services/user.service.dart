@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
+import 'package:mangatracker/core/network/api_exception.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -13,9 +14,18 @@ import '../../auth/exceptions/invalid_credentials.exception.dart';
 import '../dto/user_information.dto.dart';
 
 class UserService {
-  final AuthService authService = getIt<AuthService>();
-  final HttpService httpService = getIt<HttpService>();
-  final OfflineCacheService _cacheService = getIt<OfflineCacheService>();
+  final AuthService authService;
+  final HttpService httpService;
+  final OfflineCacheService _cacheService;
+
+  /// Dépendances injectables pour les tests ; résolues par GetIt sinon.
+  UserService({
+    AuthService? authService,
+    HttpService? httpService,
+    OfflineCacheService? cacheService,
+  })  : authService = authService ?? getIt<AuthService>(),
+        httpService = httpService ?? getIt<HttpService>(),
+        _cacheService = cacheService ?? getIt<OfflineCacheService>();
 
   Future<UserService> init() async {
     return this;
@@ -50,15 +60,7 @@ class UserService {
 
     // Charger depuis le réseau
     try {
-      Uri url = buildApiUri('/user/information');
-      Response response = await httpService.getWithAuthTokens(url);
-      Map<String, dynamic> data = jsonDecode(response.body);
-      final userInfo = UserInformationDto.fromJson(data);
-
-      // Mettre en cache
-      await _cacheService.cacheUserInformation(userInfo);
-
-      return userInfo;
+      return await _fetchAndCacheUserInformation();
     } catch (e) {
       // Si erreur réseau et qu'on a un cache (même expiré), l'utiliser
       if (cachedInfo != null) {
@@ -72,17 +74,37 @@ class UserService {
   /// Met à jour les informations utilisateur depuis le réseau en arrière-plan
   Future<void> _refreshUserInformationFromNetwork() async {
     try {
-      Uri url = buildApiUri('/user/information');
-      Response response = await httpService.getWithAuthTokens(url);
-      Map<String, dynamic> data = jsonDecode(response.body);
-      final userInfo = UserInformationDto.fromJson(data);
-      
-      // Mettre à jour le cache
-      await _cacheService.cacheUserInformation(userInfo);
+      await _fetchAndCacheUserInformation();
     } catch (e) {
       // Erreur silencieuse en arrière-plan
       debugPrint('Erreur lors de la mise à jour en arrière-plan des infos utilisateur: $e');
     }
+  }
+
+  /// `GET /user/information`, lu et mis en cache **seulement sur un 200**.
+  ///
+  /// Avant, le corps était lu quel que soit le code : un 429 ou un 500
+  /// (`{"statusCode":429,…}`) devenait un utilisateur vide (id `null`,
+  /// pseudo vide) mis en cache 7 jours — la détection de « moi » dans les
+  /// lectures partagées et le profil cassait jusqu'à expiration. Désormais
+  /// une réponse non réussie lève une exception : le cache existant reste
+  /// intact et l'appelant se replie dessus.
+  Future<UserInformationDto> _fetchAndCacheUserInformation() async {
+    final Response response =
+        await httpService.getWithAuthTokens(buildApiUri('/user/information'));
+    if (response.statusCode == HttpStatus.forbidden) {
+      throw InvalidCredentialsException('Not authorized to access this resource');
+    }
+    if (response.statusCode != HttpStatus.ok) {
+      throw ApiException.fromResponse(response);
+    }
+    final data = jsonDecode(response.body);
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('user/information : corps inattendu');
+    }
+    final userInfo = UserInformationDto.fromJson(data);
+    await _cacheService.cacheUserInformation(userInfo);
+    return userInfo;
   }
 
   Future deleteAccount() async {

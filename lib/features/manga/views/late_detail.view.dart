@@ -22,6 +22,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/comments/widgets/comments_section.dart';
 import 'package:mangatracker/features/sharing/widgets/shared_reading_section.dart';
+import 'package:mangatracker/features/sharing/widgets/received_share_banner.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -578,6 +579,8 @@ class _LateDetailViewState extends State<LateDetailView> {
             // Phase 8.3 (2026-05-18) : section "Lecture partagée" si l'user
             // fait partie d'un reading group pour ce manga (sinon invisible).
             SharedReadingSection(muId: int.tryParse(widget.muId) ?? 0),
+            // « Recommandé par Léa : « message » » si un ami me l'a envoyé.
+            ReceivedShareBanner(muId: int.tryParse(widget.muId) ?? 0),
             // Informations principales V1 (chapitres · note · statut · année ·
             // auteur · artiste) regroupées dans une seule card hairline avec
             // rows label-uppercase / valeur. Remplace l'ancienne grille 6-cells

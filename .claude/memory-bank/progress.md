@@ -111,6 +111,56 @@ au retour il fallait appuyer plein de fois sur retour ».
 (téléphone ET navigateur), retour arrière après plusieurs allers-retours
 groupe ⇄ fiche, copie du lien sur Safari/Firefox (geste utilisateur),
 rejeu hors ligne d'une progression au-delà du total.
+### 🔔 Centre de notifications + social fiabilisé (2026-10-13)
+
+Branche `feat/notifications-lecture-partagee` (Flutter ; **contrat API
+`/notifications` + `/friends/sent` + `relation` codé en parallèle côté
+serveur — déployer l'API d'abord**). Retour utilisateur : « on m'a envoyé une
+recommandation, rien ne me l'a signalé » + « une demande d'ami jamais reçue ».
+
+- **Centre de notifications** `/notifications` (`features/notifications/`) :
+  cloche en haut à droite de l'accueil (pastille des non lues), lignes
+  groupées par jour (Aujourd'hui / Hier / Plus tôt), défilement infini
+  (`before`), tirer pour rafraîchir, « Tout marquer comme lu », toucher →
+  lu + écran concerné, lecture seule hors ligne (`cached_notifications`).
+  Contenu borné à 480 px au-delà de 768 px. Style sobre translucide
+  (`AppSurfaces`, inspiration aniverse). `NotificationsBloc` (une instance
+  par ouverture, lecture optimiste dans `notifications_read_handlers.dart`).
+- **Notifications locales, un seul chemin** : `NotificationCountsService`
+  interroge aussi `/notifications/unread-count` ; quand il augmente, les
+  lignes récentes passent par `NotificationAlerter` (clé anti-doublon
+  commune `friendship:<id>` / `share:<id>`, première passe silencieuse PAR
+  source, jamais un silence définitif, interrupteurs respectés). Ancien
+  serveur : boîte de réception + demandes en attente prennent le relais.
+  Cause de la demande d'ami jamais notifiée : `FriendsBloc` recréé à chaque
+  ouverture avec `_lastPendingCount = -1` → logique retirée du BLoC.
+  Interrupteurs ajoutés : « Demandes acceptées », « Lectures partagées »
+  (`NotificationFamily`, canal Android `reading_groups`).
+- **Pastille « Recommandations reçues » qui ne s'éteignait jamais** :
+  `mark-seen` répond 201, le client n'acceptait que 200.
+- **Deux gestes clarifiés** : bouton étincelles = « Titres similaires » /
+  « Suggérer un titre similaire » (vote public) ; « Recommander à un ami »
+  (barre du haut + entrée dans la feuille des titres similaires). Bandeau
+  « Recommandé par Léa : « message » » sur la fiche (`ReceivedShareBanner`).
+- **Amis** : erreurs de recherche affichées, réponses périmées ignorées
+  (numéro de génération), relation de chaque résultat (Ajouter / Demande
+  envoyée / Accepter / Ami), confirmation avant envoi, section « Demandes
+  envoyées » annulable, cache amis 5 min + relecture forcée (page et
+  sélecteurs), 409/403/429 lisibles.
+- **Erreurs serveur lisibles partout** : `ApiException` +
+  `userFacingErrorMessage` (`core/network/`) — fini « Exception: …403 {json} ».
+- **Commentaires** : « Supprimer » sur mes commentaires seulement,
+  « Signaler » (confirmation, 201 accepté) sur ceux des autres.
+- **Profil** : `GET /user/information` n'est mis en cache que sur un 200.
+
+**Tests** : 752 → 813 verts (+61 ; 1 échec préexistant CRLF inchangé) ; nouveaux tests :
+DTO / présentation / regroupement des notifications, BLoC notifications,
+page + cloche, alertes du compteur, messages d'erreur, service profil,
+BLoC + recherche amis, bandeau « Recommandé par », menu des commentaires.
+
+**À valider sur appareil** : notifications locales réelles (demande d'ami,
+recommandation, ajout à une lecture partagée) avec le nouveau serveur ;
+cloche + centre sur téléphone (320 dp, texte ×1,3) et sur le web (≥ 768 px).
 
 ### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
 

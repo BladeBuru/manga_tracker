@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mangatracker/core/components/app_avatar.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
-import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
+import 'package:mangatracker/features/friends/widgets/user_search_results.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Champ de recherche d'utilisateur — design V1 « Refined Classic ».
@@ -14,18 +13,27 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///  - border 1.5px (`primary` si query non vide, sinon `hairline`)
 ///  - icône person_search_outlined gauche, clear × droit quand query non vide
 ///
-/// Debounce 300 ms — préserve l'ancien comportement. Les résultats s'affichent
-/// dans une carte V1 indépendante en-dessous (radius 16, hairline border).
+/// Debounce 300 ms. Les résultats ([UserSearchResultsCard]) s'affichent
+/// dessous ; un appui sur l'action d'un résultat ne l'exécute plus
+/// directement : la page demande d'abord confirmation, et la recherche reste
+/// affichée (le bouton passe à « Demande envoyée »).
 class UserSearchField extends StatefulWidget {
   final List<UserSearchResultDto> results;
+  final bool loading;
+  final Object? error;
+  final FriendRelation Function(UserSearchResultDto user) relationOf;
   final ValueChanged<String> onQueryChanged;
-  final ValueChanged<int> onSendRequest;
+  final void Function(UserSearchResultDto user, FriendRelation relation)
+      onAction;
 
   const UserSearchField({
     super.key,
     required this.results,
+    required this.relationOf,
     required this.onQueryChanged,
-    required this.onSendRequest,
+    required this.onAction,
+    this.loading = false,
+    this.error,
   });
 
   @override
@@ -70,11 +78,6 @@ class _UserSearchFieldState extends State<UserSearchField> {
     widget.onQueryChanged('');
   }
 
-  void _onResultTap(UserSearchResultDto user) {
-    widget.onSendRequest(user.id);
-    _clear();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -89,9 +92,12 @@ class _UserSearchFieldState extends State<UserSearchField> {
         ),
         if (_hasQuery) ...[
           const SizedBox(height: 14),
-          _SearchResultsCard(
+          UserSearchResultsCard(
             results: widget.results,
-            onTap: _onResultTap,
+            loading: widget.loading,
+            error: widget.error,
+            relationOf: widget.relationOf,
+            onAction: widget.onAction,
           ),
         ],
       ],
@@ -175,153 +181,6 @@ class _SearchPill extends StatelessWidget {
               tooltip: l10n.friendsSearchClear,
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _SearchResultsCard extends StatelessWidget {
-  final List<UserSearchResultDto> results;
-  final ValueChanged<UserSearchResultDto> onTap;
-
-  const _SearchResultsCard({required this.results, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDark = brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.dsSurfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dsHairline(brightness),
-          width: 1,
-        ),
-        boxShadow: isDark
-            ? null
-            : const [
-                BoxShadow(
-                  color: Color(0x0A140A0A),
-                  blurRadius: 2,
-                  offset: Offset(0, 1),
-                ),
-              ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: results.isEmpty
-          ? Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 22,
-                horizontal: 16,
-              ),
-              child: Text(
-                l10n.friendsSearchEmpty,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.dsText3(brightness),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (int i = 0; i < results.length; i++) ...[
-                  _SearchResultRow(
-                    user: results[i],
-                    onTap: () => onTap(results[i]),
-                  ),
-                  if (i < results.length - 1)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 58),
-                      child: Container(
-                        height: 1,
-                        color: AppColors.dsHairline(brightness),
-                      ),
-                    ),
-                ],
-              ],
-            ),
-    );
-  }
-}
-
-class _SearchResultRow extends StatelessWidget {
-  final UserSearchResultDto user;
-  final VoidCallback onTap;
-
-  const _SearchResultRow({required this.user, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-        child: Row(
-          children: [
-            AppAvatar(
-              url: user.avatarUrl,
-              fallback: user.effectiveDisplayName,
-              size: AppAvatarSize.medium,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    user.effectiveDisplayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.075,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '@${user.username}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.dsText2(brightness),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Bouton icône : le libellé « Envoyer une demande » (~180 px)
-            // écrasait le nom sur petit écran. Le libellé est l'infobulle,
-            // que `IconButton` expose aussi aux lecteurs d'écran.
-            IconButton.filledTonal(
-              onPressed: onTap,
-              tooltip: l10n.friendsAddRequest,
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.dsRedSoft(brightness),
-                foregroundColor: scheme.primary,
-              ),
-              constraints: const BoxConstraints.tightFor(
-                width: AppSpacing.xl + AppSpacing.s,
-                height: AppSpacing.xl + AppSpacing.s,
-              ),
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.person_add_outlined, size: 20),
-            ),
-          ],
-        ),
       ),
     );
   }
