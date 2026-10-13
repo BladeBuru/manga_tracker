@@ -22,6 +22,14 @@ import 'package:mangatracker/features/reader/utils/webview_result_parser.dart';
 class PageChapterProbe {
   const PageChapterProbe();
 
+  /// Relectures après une navigation interne du site (`pushState`) : le
+  /// titre et les données de la page suivent l'adresse avec retard. Jamais
+  /// au défilement.
+  static const List<Duration> retryDelays = [
+    Duration(milliseconds: 500),
+    Duration(milliseconds: 1500),
+  ];
+
   /// Script du relevé. [titleSelector] : sélecteur CSS propre au site dont
   /// le texte est le titre du chapitre (crochet pour un réglage futur ; le
   /// sélecteur « contenu du chapitre » existant désigne le conteneur des
