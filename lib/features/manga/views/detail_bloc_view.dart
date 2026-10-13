@@ -1284,7 +1284,8 @@ class _RecommendationsIconButton extends StatelessWidget {
     final isDark = brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     return Tooltip(
-      message: l10n?.recommendations ?? 'Recommandations',
+      // Suggestions de la communauté (≠ « Recommander à un ami »).
+      message: l10n?.similarTitles ?? 'Recommandations',
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,

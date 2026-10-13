@@ -12,13 +12,18 @@ import 'package:mangatracker/features/manga/dto/manga_recommendation_view.dto.da
 import 'package:mangatracker/features/manga/widgets/community_recommendation_tile.dart';
 import 'package:mangatracker/features/manga/widgets/detail_recommendations_section.dart';
 import 'package:mangatracker/features/manga/widgets/manga_picker_sheet.dart';
+import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
 
-/// Feuille « Si vous avez aimé ce titre » de la fiche : recommandations
+/// Feuille « Si vous avez aimé ce titre » de la fiche : suggestions
 /// MangaUpdates + Manga Tracker (avec leur total), vote de l'utilisateur,
-/// ajout d'une recommandation, puis les titres souvent présents dans les
-/// mêmes bibliothèques ([readersAlsoRead], l'ancienne liste — conservée).
+/// « Suggérer un titre similaire », puis les titres souvent présents dans
+/// les mêmes bibliothèques ([readersAlsoRead], l'ancienne liste — conservée).
+///
+/// C'est un vote PUBLIC, sans destinataire. L'envoi privé à un ami
+/// (« Recommander à un ami ») est proposé ici aussi, car c'est là que les
+/// utilisateurs le cherchaient.
 Future<void> showCommunityRecommendationsSheet(
   BuildContext context, {
   required int muId,
@@ -46,6 +51,19 @@ Future<void> showCommunityRecommendationsSheet(
             ),
           ),
         ),
+  );
+}
+
+/// « Recommander à un ami » : la feuille d'envoi s'ouvre par-dessus.
+void _recommendToFriend(BuildContext context, int muId) {
+  showAppBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: false,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => ShareMangaSheet(muId: muId),
   );
 }
 
@@ -147,10 +165,24 @@ class _SheetBodyState extends State<_SheetBody> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s),
-                    FilledButton.tonalIcon(
-                      onPressed: () => _pickAndRecommend(context),
-                      icon: const Icon(Icons.add_rounded),
-                      label: Text(l10n.communityRecoAdd),
+                    // Deux gestes distincts, autrefois confondus : suggérer
+                    // un titre similaire (vote public) et recommander CE
+                    // titre à un ami (envoi privé, notifié).
+                    Wrap(
+                      spacing: AppSpacing.s,
+                      runSpacing: AppSpacing.s,
+                      children: [
+                        FilledButton.tonalIcon(
+                          onPressed: () => _pickAndRecommend(context),
+                          icon: const Icon(Icons.add_rounded),
+                          label: Text(l10n.communityRecoAdd),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => _recommendToFriend(context, muId),
+                          icon: const Icon(Icons.send_outlined, size: 18),
+                          label: Text(l10n.shareTitle),
+                        ),
+                      ],
                     ),
                     _VoteFeedback(message: _feedback),
                   ],
