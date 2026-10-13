@@ -87,10 +87,15 @@ class _BannerCard extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
+        // Surface du thème (pas `inverse*` : le thème ne les définit pas,
+        // le bouton « Recharger » devenait invisible en mode sombre).
         child: Material(
           elevation: 3,
-          color: scheme.inverseSurface,
-          borderRadius: AppRadius.circularXl,
+          color: scheme.surfaceContainerHigh,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppRadius.circularXl,
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.m,
@@ -100,22 +105,18 @@ class _BannerCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.system_update_alt_outlined,
-                    color: scheme.onInverseSurface),
+                Icon(Icons.system_update_alt_outlined, color: scheme.primary),
                 const SizedBox(width: AppSpacing.s),
                 Expanded(
                   child: Text(
                     l10n?.newVersionAvailable ?? '',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: scheme.onInverseSurface),
+                    style: TextStyle(color: scheme.onSurface),
                   ),
                 ),
                 TextButton(
                   onPressed: onReload,
-                  style: TextButton.styleFrom(
-                    foregroundColor: scheme.inversePrimary,
-                  ),
                   child: Text(l10n?.reloadApp ?? ''),
                 ),
                 // Pas d'Overlay ici : libellé d'accessibilité, sans infobulle.
@@ -123,7 +124,7 @@ class _BannerCard extends StatelessWidget {
                   onPressed: onDismiss,
                   icon: Icon(
                     Icons.close_outlined,
-                    color: scheme.onInverseSurface,
+                    color: scheme.onSurfaceVariant,
                     semanticLabel: l10n?.close,
                   ),
                 ),
