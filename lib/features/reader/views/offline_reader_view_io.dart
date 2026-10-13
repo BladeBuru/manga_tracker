@@ -16,7 +16,7 @@ import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/features/reader/utils/offline_html_sanitizer.dart';
 import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
 import 'package:mangatracker/features/reader/services/scroll_position_service.dart';
-import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
+import 'package:mangatracker/features/reader/widgets/reader_bar_controller.dart';
 import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
 import 'package:mangatracker/features/reader/widgets/reader_chapter_title.dart';
 import 'package:mangatracker/features/reader/widgets/chapter_completion_dialog.dart';
@@ -40,15 +40,23 @@ class OfflineReaderView extends StatefulWidget {
 
 class _OfflineReaderViewState extends State<OfflineReaderView>
     with WidgetsBindingObserver {
-  /// Barre du haut affichée (cf. [ReaderBarVisibility]).
-  final ReaderBarVisibility _barVisibility = ReaderBarVisibility();
-  bool _barVisible = true;
+  /// Barre du haut : hauteur révélée, pilotée par le défilement (logique
+  /// pure : `ReaderBarVisibility`). Seule la barre se reconstruit.
+  final ReaderBarController _barVisibility = ReaderBarController();
 
   final DownloadManagerService _downloadManager = DownloadManagerService();
   final LibraryService _libraryService = getIt<LibraryService>();
   final ChapterLogService _chapterLogService = getIt<ChapterLogService>();
   final ScrollPositionService _scrollPosition = getIt<ScrollPositionService>();
   DownloadedChapter? _chapter;
+
+  /// HTML du chapitre, lu et nettoyé UNE fois au chargement : il était relu
+  /// et re-nettoyé à chaque reconstruction (la sauvegarde de position en
+  /// provoque une toutes les 2 s).
+  String? _html;
+
+  /// Dossier du chapitre (base des images locales).
+  String? _htmlDir;
   List<DownloadedChapter> _allChapters = [];
   bool _isLoading = true;
   int _currentImageIndex = 0;
@@ -78,6 +86,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
     WidgetsBinding.instance.removeObserver(this);
     _scrollSaveTimer?.cancel();
     _saveScrollPosition(immediate: true);
+    _barVisibility.dispose();
     // NE PLUS enregistrer le chapitre ici : `dispose()` ne peut rien
     // demander à l'utilisateur, et un chapitre atteint à 85 % n'est pas un
     // chapitre fini. La question est posée par la modale de sortie
@@ -222,9 +231,22 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
         (c) => c.chapterNumber == widget.chapterNumber,
         orElse: () => chapters.first,
       );
-      
+
+      String? html;
+      String? htmlDir;
+      final htmlPath = chapter.htmlPath;
+      if (htmlPath != null) {
+        final file = File(htmlPath);
+        if (await file.exists()) {
+          html = OfflineHtmlSanitizer.sanitize(await file.readAsString());
+          htmlDir = file.parent.path;
+        }
+      }
+      if (!mounted) return;
       setState(() {
         _chapter = chapter;
+        _html = html;
+        _htmlDir = htmlDir;
         _isLoading = false;
       });
     } catch (e) {
@@ -303,10 +325,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
       );
     }
 
-    // Si on a un fichier HTML, l'afficher dans un WebView
-    if (_chapter!.htmlPath != null) {
-      final htmlFile = File(_chapter!.htmlPath!);
-      if (htmlFile.existsSync()) {
+    // Si on a un fichier HTML (lu au chargement), l'afficher dans un WebView
+    final html = _html;
+    final htmlDir = _htmlDir;
+    if (html != null && htmlDir != null) {
         final nextChapter = _getNextChapterNumber();
         final previousChapter = _getPreviousChapterNumber();
         
@@ -317,10 +339,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
             unawaited(_handleExitRequest());
           },
           child: Scaffold(
-          // Plein écran : la barre se retire en descendant, revient en
-          // remontant (même comportement que le lecteur en ligne).
+          // Plein écran : la barre suit le défilement, au prorata (même
+          // comportement que le lecteur en ligne).
           body: ReaderAutoHideBar(
-            visible: _barVisible,
+            controller: _barVisibility,
             appBar: AppBar(
               title: ReaderChapterTitle(
                 mangaTitle: widget.mangaTitle,
@@ -343,17 +365,12 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
                 ),
             ],
           ),
-          child: Builder(
-            builder: (context) {
-              final originalHtml = htmlFile.readAsStringSync();
-              final cleanedHtml = OfflineHtmlSanitizer.sanitize(originalHtml);
-              
-              return InAppWebView(
+          page: InAppWebView(
                 initialData: InAppWebViewInitialData(
-                  data: cleanedHtml,
+                  data: html,
                   mimeType: 'text/html',
                   encoding: 'utf-8',
-                  baseUrl: WebUri('file://${htmlFile.parent.path}/'),
+                  baseUrl: WebUri('file://$htmlDir/'),
                 ),
                 initialSettings: InAppWebViewSettings(
                   javaScriptEnabled: true,
@@ -370,10 +387,7 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
                   _webViewController = controller;
                 },
                 onScrollChanged: (controller, x, y) {
-                  final visible = _barVisibility.onScroll(y);
-                  if (visible != _barVisible && mounted) {
-                    setState(() => _barVisible = visible);
-                  }
+                  _barVisibility.onScroll(y);
                 },
                 onLoadStop: (controller, url) async {
                   // Attendre que le DOM soit prêt
@@ -431,13 +445,10 @@ class _OfflineReaderViewState extends State<OfflineReaderView>
                 // androidShouldInterceptRequest gère les ressources pour Android
                 // Pour iOS, shouldOverrideUrlLoading devrait suffire, mais on peut aussi injecter du JavaScript
                 // pour bloquer les requêtes réseau au niveau du DOM
-              );
-            },
-          ),
+              ),
           ),
           ),
         );
-      }
     }
 
     // Fallback: afficher les images si disponibles

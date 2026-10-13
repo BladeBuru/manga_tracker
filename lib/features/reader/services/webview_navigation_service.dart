@@ -1,50 +1,13 @@
 import 'package:mangatracker/features/reader/utils/chapter_link_resolver.dart';
 import 'package:mangatracker/features/reader/services/ad_blocker_service.dart';
-import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
+import 'package:mangatracker/features/reader/services/chapter_change_classifier.dart';
 
-/// Type de changement de chapitre détecté
-enum ChapterChangeType {
-  firstDetected, // Premier chapitre détecté
-  nextChapter, // Passage au chapitre suivant (+1)
-  jumpForward, // Saut vers l'avant (>+1)
-  jumpBackward, // Retour en arrière (<)
-  noChange, // Même chapitre
-}
-
-/// Traduction vers le vocabulaire de [ChapterCommitPolicy], qui est pur et ne
-/// peut donc pas dépendre de ce fichier (lié à la WebView).
-extension ChapterChangeTypeTransition on ChapterChangeType {
-  ChapterTransition get asTransition {
-    switch (this) {
-      case ChapterChangeType.firstDetected:
-        return ChapterTransition.firstDetected;
-      case ChapterChangeType.nextChapter:
-        return ChapterTransition.nextChapter;
-      case ChapterChangeType.jumpForward:
-        return ChapterTransition.jumpForward;
-      case ChapterChangeType.jumpBackward:
-        return ChapterTransition.jumpBackward;
-      case ChapterChangeType.noChange:
-        return ChapterTransition.noChange;
-    }
-  }
-}
-
-/// Résultat d'une détection de changement de chapitre
-class ChapterChangeResult {
-  final int? newChapter;
-  final ChapterChangeType changeType;
-  final int? previousChapter;
-
-  ChapterChangeResult({
-    required this.newChapter,
-    required this.changeType,
-    this.previousChapter,
-  });
-}
+export 'package:mangatracker/features/reader/services/chapter_change_classifier.dart';
 
 /// Service pour gérer la navigation et la détection de chapitres dans les WebViews
 class WebViewNavigationService {
+  static const _classifier = ChapterChangeClassifier();
+
   /// Vérifie si deux domaines appartiennent au même provider
   bool sameProvider(String a, String b) {
     String root(String h) {
@@ -54,6 +17,18 @@ class WebViewNavigationService {
     return root(a) == root(b);
   }
 
+  /// Classement pur d'un chapitre détecté (voir [ChapterChangeClassifier]).
+  ChapterChangeResult classify(int newChapter, int? currentChapter) =>
+      _classifier.classify(newChapter, currentChapter);
+
+  /// Le lecteur ne réagit qu'à son propre site : ni pubs, ni trackers, ni
+  /// autre domaine.
+  bool _isReaderHost(String host, String originHost) {
+    if (AdBlockerService.denyHosts.contains(host)) return false;
+    // On reste sur le même provider (ou sous-domaines)
+    return sameProvider(host, originHost);
+  }
+
   /// Détecte un changement de chapitre depuis une URI
   /// Retourne null si aucun changement n'est détecté ou si le domaine n'est pas valide
   Future<ChapterChangeResult?> detectChapterChange(
@@ -61,57 +36,27 @@ class WebViewNavigationService {
     String originHost,
     int? currentChapter,
   ) async {
-    // Filtrage domaines : on ne réagit pas aux pubs/trackers
-    final host = uri.host;
-    if (AdBlockerService.denyHosts.contains(host)) return null;
-    
-    // On reste sur le même provider (ou sous-domaines)
-    if (!sameProvider(host, originHost)) return null;
-
+    if (!_isReaderHost(uri.host, originHost)) return null;
     final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
     if (newCh == null) return null;
+    return classify(newCh, currentChapter);
+  }
 
-    // Premier chapitre détecté
-    if (currentChapter == null) {
-      return ChapterChangeResult(
-        newChapter: newCh,
-        changeType: ChapterChangeType.firstDetected,
-      );
+  /// Changement de chapitre lu dans la PAGE ([pageChapter], cf.
+  /// `PageChapterParser`) affichée à [uri].
+  ///
+  /// Uniquement quand l'URL ne donne AUCUN chapitre : un site déjà détecté
+  /// par son URL garde exactement son comportement (l'URL reste prioritaire).
+  Future<ChapterChangeResult?> detectPageChapterChange(
+    Uri uri,
+    String originHost, {
+    required int pageChapter,
+    int? currentChapter,
+  }) async {
+    if (!_isReaderHost(uri.host, originHost)) return null;
+    if (await ChapterLinkResolver.extractChapter(uri.toString()) != null) {
+      return null;
     }
-
-    // Passage naturel au suivant
-    if (newCh == currentChapter + 1) {
-      return ChapterChangeResult(
-        newChapter: newCh,
-        changeType: ChapterChangeType.nextChapter,
-        previousChapter: currentChapter,
-      );
-    }
-
-    // Saut vers l'avant
-    if (newCh > currentChapter + 1) {
-      return ChapterChangeResult(
-        newChapter: newCh,
-        changeType: ChapterChangeType.jumpForward,
-        previousChapter: currentChapter,
-      );
-    }
-
-    // Retour en arrière
-    if (newCh < currentChapter) {
-      return ChapterChangeResult(
-        newChapter: newCh,
-        changeType: ChapterChangeType.jumpBackward,
-        previousChapter: currentChapter,
-      );
-    }
-
-    // Même chapitre
-    return ChapterChangeResult(
-      newChapter: newCh,
-      changeType: ChapterChangeType.noChange,
-      previousChapter: currentChapter,
-    );
+    return classify(pageChapter, currentChapter);
   }
 }
-

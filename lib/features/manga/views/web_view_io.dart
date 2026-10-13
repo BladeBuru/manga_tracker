@@ -40,11 +40,15 @@ import 'package:mangatracker/features/reader/widgets/reader_action_bar.dart';
 import 'package:mangatracker/features/reader/services/chapter_commit_policy.dart';
 import 'package:mangatracker/features/reader/widgets/link_discovery_banner.dart';
 import 'package:mangatracker/features/reader/services/webview_navigation_service.dart';
+import 'package:mangatracker/features/reader/services/chapter_detection_queue.dart';
+import 'package:mangatracker/features/reader/services/page_chapter_probe.dart';
+import 'package:mangatracker/features/reader/utils/page_chapter_parser.dart';
+import 'package:mangatracker/features/reader/widgets/reader_chapter_title.dart';
 import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'dart:async';
-import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
+import 'package:mangatracker/features/reader/widgets/reader_bar_controller.dart';
 import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
 
@@ -121,15 +125,22 @@ class _ReaderWebViewState extends State<ReaderWebView>
   // décision, elle ne décide pas.
   static const _commitPolicy = ChapterCommitPolicy();
 
-  // Sérialisation des détections d'URL : `_handleDetected` est appelé jusqu'à
+  // Sérialisation des détections : `_handleDetected` est appelé jusqu'à
   // trois fois par navigation (shouldOverrideUrlLoading, onLoadStart,
-  // onUpdateVisitedHistory). Sans garde, une seule navigation produisait
-  // plusieurs PUT, plusieurs notifications et plusieurs entrées de journal, et
-  // les transitions étaient reclassées à tort parce que `_currentChapter`
-  // n'était mis à jour qu'après plusieurs `await`.
-  bool _processingDetection = false;
-  Uri? _pendingDetection; // file d'attente de profondeur 1 (la plus récente)
-  String? _lastHandledUrl; // idempotence : une URL n'est traitée qu'une fois
+  // onUpdateVisitedHistory), et le numéro lu dans la page arrive par d'autres
+  // rappels (titre, fin de chargement). Sans garde, une seule navigation
+  // produisait plusieurs PUT, plusieurs notifications et plusieurs entrées de
+  // journal. Une file unique, pure et testée : un traitement à la fois, une
+  // URL (ou une URL + un chapitre de page) traitée une seule fois.
+  late final ChapterDetectionQueue _detections = ChapterDetectionQueue(
+    (d) => _applyChapterChange(d.uri, pageChapter: d.pageChapter),
+    onError: (e) => debugPrint('⚠️ Détection de chapitre impossible: $e'),
+  );
+  static const _pageProbe = PageChapterProbe();
+
+  /// Relectures de la page après une navigation interne du site
+  /// (`pushState`) : le titre et les données suivent l'adresse avec retard.
+  final List<Timer> _pageProbeTimers = [];
 
   // Garde de réentrance de la sortie : un double appui sur « retour » ne doit
   // pas empiler deux modales de fin de chapitre.
@@ -160,9 +171,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// Enregistrement « Ceci est le nouveau lien » en cours.
   bool _savingLink = false;
 
-  /// Barre du haut affichée (cf. [ReaderBarVisibility]).
-  final ReaderBarVisibility _barVisibility = ReaderBarVisibility();
-  bool _barVisible = true;
+  /// Barre du haut : hauteur révélée, pilotée par le défilement (logique
+  /// pure : `ReaderBarVisibility`). Seule la barre se reconstruit.
+  final ReaderBarController _barVisibility = ReaderBarController();
 
   // Lecture seule : ni chapitre lu, ni lien réécrit, ni position. Le mode
   // « recherche de lien » y ajoute la seule écriture voulue par
@@ -1139,13 +1150,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
   Future<void> _updateNextLinkFrom(String currentUrl, {int? currentChapter}) async {
     final next = await ChapterLinkResolver.buildNextUrl(currentUrl, currentChapter: currentChapter)
         ?? await ChapterLinkResolver.buildNextUrl(widget.baseUserLink, currentChapter: currentChapter);
-    // Seulement si le lien change : il était renvoyé une à deux fois par
-    // chapitre, et chaque envoi raté s'ajoutait à la file hors ligne.
-    if (next != null && next != _lastSavedNextLink) {
-      _lastSavedNextLink = next;
-      final ok = await _library.updateCustomLink(widget.muId, next);
-      if (!ok && _lastSavedNextLink == next) _lastSavedNextLink = null;
-    }
+    if (next != null) await _saveReadingLink(next);
+  }
+
+  /// Enregistre le lien de lecture — seulement s'il change : il était
+  /// renvoyé une à deux fois par chapitre, et chaque envoi raté s'ajoutait à
+  /// la file hors ligne.
+  Future<void> _saveReadingLink(String link) async {
+    if (link == _lastSavedNextLink) return;
+    _lastSavedNextLink = link;
+    final ok = await _library.updateCustomLink(widget.muId, link);
+    if (!ok && _lastSavedNextLink == link) _lastSavedNextLink = null;
   }
 
   /// Dernier lien « chapitre suivant » enregistré pendant cette lecture.
@@ -1160,32 +1175,59 @@ class _ReaderWebViewState extends State<ReaderWebView>
   void _handleDetected(Uri uri) {
     // Lecture seule (téléchargement, recherche de lien) : aucun suivi.
     if (_readOnlyMode) return;
-    if (uri.toString() == _lastHandledUrl) return;
-    if (_processingDetection) {
-      _pendingDetection = uri;
-      return;
-    }
-    unawaited(_drainDetections(uri));
+    unawaited(_detections.add(ChapterDetection.url(uri)));
   }
 
-  Future<void> _drainDetections(Uri first) async {
-    _processingDetection = true;
+  /// Numéro de chapitre lu dans la PAGE (titre, données structurées), pour
+  /// les sites dont l'URL n'en porte aucun (aniverse.fr). Une URL qui en
+  /// porte un reste seule juge : rien ne change pour ces sites.
+  ///
+  /// Même file que [_handleDetected], donc mêmes règles (une navigation = un
+  /// enregistrement, politique d'enregistrement inchangée). Se termine une
+  /// fois la détection appliquée : `onLoadStop` restaure ensuite la position
+  /// du bon chapitre.
+  Future<void> _detectChapterFromPage() async {
+    final controller = _controller;
+    if (_readOnlyMode || _challengePending || controller == null) return;
     try {
-      Uri? next = first;
-      while (next != null) {
-        final url = next.toString();
-        if (url != _lastHandledUrl) {
-          _lastHandledUrl = url;
-          await _applyChapterChange(next);
-        }
-        next = _pendingDetection;
-        _pendingDetection = null;
+      final current = (await controller.getUrl())?.toString();
+      if (current == null ||
+          await ChapterLinkResolver.extractChapter(current) != null) {
+        return;
       }
+      final signals = await _pageProbe.read(controller);
+      final uri = Uri.tryParse(signals?.url ?? '');
+      final chapter = signals == null ? null : PageChapterParser.parse(signals);
+      ReaderDiagnostics.log('chapter.page', {
+        'url': uri,
+        'chapter': chapter,
+        'title': signals?.title,
+      });
+      if (uri == null || chapter == null || !mounted) return;
+      await _detections.add(ChapterDetection.page(uri, chapter));
     } catch (e) {
-      debugPrint('⚠️ Détection de chapitre impossible: $e');
-    } finally {
-      _processingDetection = false;
+      debugPrint('⚠️ Lecture du chapitre dans la page impossible: $e');
     }
+  }
+
+  /// Après un `pushState`, relit la page un peu plus tard (jamais au
+  /// défilement) : le titre se met à jour après l'adresse.
+  void _schedulePageProbes() {
+    for (final timer in _pageProbeTimers) {
+      timer.cancel();
+    }
+    _pageProbeTimers
+      ..clear()
+      ..addAll([
+        for (final delay in PageChapterProbe.retryDelays)
+          Timer(delay, () => unawaited(_detectChapterFromPage())),
+      ]);
+  }
+
+  /// Chapitre affiché — aussi le titre de la barre du haut.
+  void _setCurrentChapter(int chapter) {
+    _currentChapter = chapter;
+    if (mounted) setState(() {});
   }
 
   /// Applique la décision de [ChapterCommitPolicy] pour une URL détectée.
@@ -1194,13 +1236,24 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// Le chapitre d'arrivée (`result.newChapter`) n'est jamais passé à
   /// `_commitIfNeeded` — seul le chapitre quitté peut l'être. Verrouillé par
   /// `test/features/reader/reader_invariants_test.dart`.
-  Future<void> _applyChapterChange(Uri uri) async {
-    final result = await _navigationService.detectChapterChange(
-      uri,
-      _originHost,
-      _currentChapter,
-    );
+  ///
+  /// [pageChapter] : numéro lu dans la page (URL sans numéro), même
+  /// politique.
+  Future<void> _applyChapterChange(Uri uri, {int? pageChapter}) async {
+    final result = pageChapter == null
+        ? await _navigationService.detectChapterChange(
+            uri,
+            _originHost,
+            _currentChapter,
+          )
+        : await _navigationService.detectPageChapterChange(
+            uri,
+            _originHost,
+            pageChapter: pageChapter,
+            currentChapter: _currentChapter,
+          );
     ReaderDiagnostics.log('chapter.detect', {
+      'source': pageChapter == null ? 'url' : 'page',
       'url': uri,
       'previous': _currentChapter,
       'result': result == null
@@ -1253,9 +1306,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // 4. Suivi du nouveau chapitre courant.
     final initialize = decision.initializeChapter;
     if (initialize != null) {
-      _currentChapter = initialize;
-      unawaited(
-          _updateNextLinkFrom(uri.toString(), currentChapter: initialize));
+      _setCurrentChapter(initialize);
+      if (pageChapter == null) {
+        unawaited(
+            _updateNextLinkFrom(uri.toString(), currentChapter: initialize));
+      } else if (result.changeType == ChapterChangeType.nextChapter) {
+        // URL sans numéro : impossible d'en fabriquer une pour le chapitre
+        // suivant. Après N → N+1 (N terminé), la page AFFICHÉE est le
+        // chapitre à reprendre : son adresse est enregistrée telle quelle,
+        // jamais réécrite.
+        unawaited(_saveReadingLink(uri.toString()));
+      }
       _hasRestoredScroll = false;
       if (_controller != null) {
         _scrollPositionService.startSaveTimer(
@@ -1464,12 +1525,19 @@ class _ReaderWebViewState extends State<ReaderWebView>
       canPop: false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-        // Lecture plein écran : la barre se retire quand on descend dans la
-        // page et revient dès qu'on remonte (ReaderBarVisibility, pure).
+        // Lecture plein écran : la barre suit le défilement, au prorata —
+        // elle se retire en descendant, revient en remontant
+        // (ReaderBarVisibility, pure).
         body: ReaderAutoHideBar(
-          visible: _barVisible,
+          controller: _barVisibility,
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne'),
+            // « Chapitre N » dès qu'il est détecté (URL ou page).
+            title: _currentChapter == null
+                ? Text(AppLocalizations.of(context)?.readOnline ?? 'Lire en ligne')
+                : ReaderChapterTitle(
+                    mangaTitle: widget.mangaTitle ?? '',
+                    chapterNumber: _currentChapter!,
+                  ),
             actions: [
               ReaderActionBar(
                 adBlockerEnabled: _adBlockerEnabled,
@@ -1481,9 +1549,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
               ),
             ],
           ),
-          child: Stack(
-          children: [
-            InAppWebView(
+          page: InAppWebView(
           initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
           // INVARIANT (régression v0.13.0) : `initialSettings` est le SEUL
           // endroit où les réglages sont posés. Ne JAMAIS appeler
@@ -1543,20 +1609,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return NavigationActionPolicy.ALLOW;
           },
 
-          // Barre du haut : cachée en descendant, de retour en remontant.
-          // Aucun effet sur la lecture (ni mesure, ni enregistrement).
+          // Barre du haut : elle suit le défilement, au prorata. Aucun effet
+          // sur la lecture (ni mesure, ni enregistrement), et le lecteur ne
+          // se reconstruit pas à chaque défilement.
           onScrollChanged: (controller, x, y) {
-            final visible = _barVisibility.onScroll(y);
-            if (visible != _barVisible && mounted) {
-              setState(() => _barVisible = visible);
-            }
+            _barVisibility.onScroll(y);
           },
 
           // 2) Début de chargement - Vérification supplémentaire et détection précoce de captcha
           onLoadStart: (controller, url) async {
             // Nouvelle page : la barre réapparaît.
             _barVisibility.reset();
-            if (!_barVisible && mounted) setState(() => _barVisible = true);
             ReaderDiagnostics.log('load.start', {
               'url': url,
               'allowedHost': url == null ? null : _isAllowedDomain(url.host),
@@ -1596,6 +1659,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
               final host = uri.host;
               if (_isAllowedDomain(host)) {
                 _handleDetected(uri);
+                _schedulePageProbes();
               }
             }
           },
@@ -1645,10 +1709,16 @@ class _ReaderWebViewState extends State<ReaderWebView>
               final newCh = await ChapterLinkResolver.extractChapter(uri.toString());
               if (newCh != null) {
                 debugPrint('🔍 onLoadStop - Détection du chapitre depuis l\'URL: $newCh');
-                _currentChapter = newCh;
+                _setCurrentChapter(newCh);
                 _updateNextLinkFrom(uri.toString(), currentChapter: newCh);
                 _hasRestoredScroll = false;
               }
+            }
+            // URL sans numéro (aniverse.fr) : la page le donne peut-être.
+            // Attendu, pour que la restauration ci-dessous vise le bon
+            // chapitre (et que la position de reprise s'applique).
+            if (!_readOnlyMode && url != null) {
+              await _detectChapterFromPage();
             }
             
             // Restaurer la position de scroll si disponible (en arrière-plan pour ne pas bloquer)
@@ -1742,13 +1812,15 @@ class _ReaderWebViewState extends State<ReaderWebView>
             }
           },
 
-          // Diagnostic uniquement : hors build de diagnostic, ces rappels
-          // restent absents pour ne rien changer au comportement.
-          onTitleChanged: ReaderDiagnostics.enabled
-              ? (controller, title) =>
-                  ReaderDiagnostics.log('title', {'title': title})
-              : null,
+          // Le titre change (chargement, navigation interne du site) : le
+          // numéro de chapitre est peut-être dans la page (URL sans numéro).
+          onTitleChanged: (controller, title) {
+            ReaderDiagnostics.log('title', {'title': title});
+            unawaited(_detectChapterFromPage());
+          },
 
+          // Diagnostic uniquement : hors build de diagnostic, ce rappel reste
+          // absent pour ne rien changer au comportement.
           onRenderProcessGone: ReaderDiagnostics.enabled
               ? (controller, detail) => ReaderDiagnostics.log(
                   'render.gone', {'crash': detail.didCrash})
@@ -1783,6 +1855,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return null;
           },
         ),
+          // Ancrés à l'écran, sous la barre : ils ne suivent pas le décalage
+          // de la page pendant que la barre glisse.
+          overlay: Stack(
+          children: [
             // Par-dessus le lecteur (qui reste monté : son contrôleur et son
             // état de lecture survivent à la vérification).
             if (_showHandoff && _challengeUrl != null)
@@ -1826,6 +1902,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
     debugPrint('🔍 dispose() - Arrêt du timer et sauvegarde finale');
     debugPrint('🔍 dispose() - Controller: ${_controller != null}, Chapitre: $_currentChapter');
     _scrollPositionService.stopSaveTimer();
+    for (final timer in _pageProbeTimers) {
+      timer.cancel();
+    }
     // Sauvegarder la position de scroll avant de fermer (sans await car dispose ne peut pas être async)
     // La sauvegarde sera faite de manière synchrone dans le service
     if (_controller != null && _currentChapter != null && !_challengePending) {
@@ -1850,6 +1929,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // Si dispose() est appelé directement (par exemple lors d'un crash), on ne veut pas marquer
     // le chapitre comme lu si l'utilisateur n'était pas à la fin
     
+    _barVisibility.dispose();
     _urlTextController.dispose();
     super.dispose();
   }

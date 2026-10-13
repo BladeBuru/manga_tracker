@@ -277,6 +277,12 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   **sérialisé et idempotent** (garde + mémorisation de la dernière URL
   traitée), sinon on produit PUT, notifications et entrées de journal en
   double.
+- 🔒 **Chapitre lu dans la page = dernier recours** (2026-10-13, aniverse.fr) :
+  seulement quand l'URL ne donne AUCUN numéro (`PageChapterParser`, pur), par
+  la même file (`ChapterDetectionQueue`) et la même `ChapterCommitPolicy`.
+  ❌ Jamais le texte des liens (la page montre souvent le chapitre suivant),
+  ❌ jamais au défilement ; sources en désaccord → rien. Un UUID n'est jamais
+  un numéro de chapitre, et un lien sans numéro n'est jamais réécrit.
 - 🔒 **Anti-redirection** : pendant la lecture, toute navigation de la frame
   principale vers un domaine autre que celui du lien de l'utilisateur est
   **annulée** (`ReaderNavigationPolicy`, pure). Verrouillé par
@@ -315,13 +321,16 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   mesure et ne redirige rien. Seule écriture : « Ceci est le nouveau lien »,
   sur geste explicite. Verrouillé par `reader_invariants_test.dart`.
 - 🔒 **Barre du haut auto-masquée = purement visuelle** (`ReaderBarVisibility`,
-  pure) : le défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
-  `reader_invariants_test.dart`. Visible, elle **réserve sa place** au-dessus
-  de la page (`ReaderAutoHideBar`) : ❌ jamais en superposition — elle masquait
-  le haut de chaque chapitre et le bandeau de vérification. **Cachée, la page
-  occupe TOUT l'écran** : barres du système masquées (mode immersif), aucune
-  bande réservée en haut ni en bas ; elles reviennent avec la barre et en
-  quittant le lecteur. ❌ Jamais de `SafeArea` autour de la page du lecteur.
+  pure) : elle suit le défilement **au prorata** (remonter la révèle peu à peu,
+  descendre la retire) et se recale entière ou cachée quand il s'arrête ; le
+  défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
+  `reader_invariants_test.dart`. Toujours **au-dessus** de la page
+  (`ReaderAutoHideBar`) : en mouvement, la page glisse juste dessous ; au
+  repos, visible, elle **réserve sa place** — ❌ jamais en superposition, elle
+  masquait le haut de chaque chapitre et le bandeau de vérification. **Cachée,
+  la page occupe TOUT l'écran** : barres du système masquées (mode immersif),
+  aucune bande réservée en haut ni en bas ; elles reviennent avec la barre et
+  en quittant le lecteur. ❌ Jamais de `SafeArea` autour de la page du lecteur.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.

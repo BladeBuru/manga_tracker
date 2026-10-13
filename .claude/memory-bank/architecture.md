@@ -99,7 +99,12 @@ UI (View) → Event → BLoC → State → UI (View)
 elle ne décide pas) : `ChapterCommitPolicy` (quel chapitre est lu),
 `ReaderNavigationPolicy` (anti-redirection), `ReadingResumePolicy` (quel
 chapitre ouvrir et à quelle position), `ReadingPositionCalculator`
-(pixels ⇄ pourcentage), `WebViewResultParser` (retours `Map` **et** `String`).
+(pixels ⇄ pourcentage), `WebViewResultParser` (retours `Map` **et** `String`),
+`PageChapterParser` (numéro lu dans la page quand l'URL n'en a pas),
+`ChapterChangeClassifier` (premier / suivant / saut / retour),
+`ChapterDetectionQueue` (une navigation = un traitement), `ReaderBarVisibility`
+(barre du haut au prorata du défilement). Seul point de contact JavaScript pour
+le numéro dans la page : `PageChapterProbe`.
 
 ---
 

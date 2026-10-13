@@ -10,10 +10,68 @@
 /// - garde-fous anti-faux-positifs : les paires de segments ressemblant à une
 ///   date (`/2024/05/...`) et les segments de plus de 6 chiffres (ids
 ///   techniques) sont ignorés.
+///
+/// Fournit aussi [maskOpaqueIds] : les identifiants opaques (UUID, jetons
+/// hexadécimaux) sont neutralisés avant toute recherche de motif.
 class ChapterUrlHeuristics {
   ChapterUrlHeuristics._();
 
   static final RegExp _fullyNumeric = RegExp(r'^\d+$');
+
+  /// UUID canonique (8-4-4-4-12 caractères hexadécimaux).
+  static final RegExp _uuid = RegExp(
+    r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+    caseSensitive: false,
+  );
+
+  /// Jeton alphanumérique ASCII (entre deux séparateurs de l'URL).
+  static final RegExp _alnumToken = RegExp(r'[0-9a-z]+', caseSensitive: false);
+  static final RegExp _hexOnly = RegExp(r'^[0-9a-f]+$', caseSensitive: false);
+  static final RegExp _hasDigit = RegExp(r'\d');
+  static final RegExp _hasHexLetter = RegExp(r'[a-f]', caseSensitive: false);
+
+  /// Longueur à partir de laquelle un jeton hexadécimal mêlant chiffres et
+  /// lettres est un identifiant technique (ObjectId, hash…), jamais un mot.
+  static const int _minOpaqueHexLength = 8;
+
+  /// Copie de [url] **de même longueur** où chaque identifiant opaque (UUID,
+  /// long jeton hexadécimal) est remplacé par des espaces.
+  ///
+  /// Un identifiant opaque n'est JAMAIS un numéro de chapitre. Sur aniverse.fr
+  /// (`/read/chainsaw-man/56f9e3ca-e8f5-49fc-8116-da885090eaf3`), l'URL ne
+  /// porte aucun numéro ; mais un UUID contenant `-c41b-` faisait lire
+  /// « chapitre 41 » au motif `c(\d+)`, et le lien de lecture était ensuite
+  /// réécrit en remplaçant ce morceau d'UUID — un lien cassé.
+  ///
+  /// Les index restent alignés avec [url] : un motif trouvé dans la copie
+  /// masquée se remplace au même endroit dans l'URL d'origine. Les espaces
+  /// n'appartiennent à aucun motif de chapitre (et `Uri.toString()` n'en
+  /// contient jamais).
+  static String maskOpaqueIds(String url) {
+    final units = List<int>.of(url.codeUnits);
+    void blank(int start, int end) {
+      for (var i = start; i < end; i++) {
+        units[i] = 0x20;
+      }
+    }
+
+    for (final m in _uuid.allMatches(url)) {
+      blank(m.start, m.end);
+    }
+    for (final m in _alnumToken.allMatches(url)) {
+      final token = m.group(0)!;
+      if (token.length >= _minOpaqueHexLength &&
+          _hexOnly.hasMatch(token) &&
+          _hasDigit.hasMatch(token) &&
+          _hasHexLetter.hasMatch(token)) {
+        blank(m.start, m.end);
+      }
+    }
+    return String.fromCharCodes(units);
+  }
+
+  /// `true` si [value] contient un identifiant opaque (voir [maskOpaqueIds]).
+  static bool containsOpaqueId(String value) => maskOpaqueIds(value) != value;
 
   /// Nombre de chiffres maximum d'un candidat (au-delà : id technique).
   static const int _maxCandidateDigits = 6;

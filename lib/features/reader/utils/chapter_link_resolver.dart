@@ -11,6 +11,11 @@ import 'package:mangatracker/features/reader/utils/chapter_url_heuristics.dart';
 /// 2) patterns de chemin connus (`chapitre-616`, `c120`, `/manga/22`, ...) ;
 /// 3) fallback : segment de chemin entièrement numérique
 ///    (voir [ChapterUrlHeuristics]).
+///
+/// Les identifiants opaques (UUID, jetons hexadécimaux) ne donnent JAMAIS de
+/// chapitre et ne sont jamais réécrits (étapes 1 à 3) : sur aniverse.fr,
+/// `/read/<série>/<uuid>` n'a pas de numéro — c'est la page qui le donne
+/// (`PageChapterParser`).
 class ChapterLinkResolver {
   static CustomSelectorsService? _selectorsService;
 
@@ -31,8 +36,9 @@ class ChapterLinkResolver {
     // /chapitre-616/  | /chapter-616/ | -chapitre_616 | _chapter616
     RegExp(r'(?:^|[\/\-_])chap(?:itre|ter)?[\/\-_]?(\d+)(?=[\/\-_]?|$)',
         caseSensitive: false),
-    // /c120/ | -c120 | _c120
-    RegExp(r'(?:^|[\/\-_])c(\d+)(?=[\/\-_]?|$)', caseSensitive: false),
+    // /c120/ | -c120 | _c120 — jamais suivi d'une lettre ou d'un chiffre
+    // (`c41b` est un morceau d'identifiant hexadécimal, pas le chapitre 41).
+    RegExp(r'(?:^|[\/\-_])c(\d+)(?![a-z0-9])', caseSensitive: false),
     // /ch120/ | /chap120/
     RegExp(r'(?:^|[\/\-_])ch(?:ap)?[\/\-_]?(\d+)(?=[\/\-_]?|$)',
         caseSensitive: false),
@@ -51,8 +57,8 @@ class ChapterLinkResolver {
     // /chapitre-616/  | /chapter-616/
     RegExp(r'((?:^|[\/\-_])chap(?:itre|ter)?[\/\-_]?)(\d+)(?=[\/\-_]?|$)',
         caseSensitive: false),
-    // /c120/
-    RegExp(r'((?:^|[\/\-_])c)(\d+)(?=[\/\-_]?|$)', caseSensitive: false),
+    // /c120/ (même garde que l'extraction)
+    RegExp(r'((?:^|[\/\-_])c)(\d+)(?![a-z0-9])', caseSensitive: false),
     // /ch120/ | /chap120/
     RegExp(r'((?:^|[\/\-_])ch(?:ap)?[\/\-_]?)(\d+)(?=[\/\-_]?|$)',
         caseSensitive: false),
@@ -83,17 +89,18 @@ class ChapterLinkResolver {
     final uri = Uri.tryParse(url);
     if (uri == null) return null;
 
-    // 1) Paramètres de requête (ex: Webtoons ?episode_no=3)
+    // 1) Paramètres de requête (ex: Webtoons ?episode_no=3) — jamais un
+    //    identifiant opaque (`?no=<uuid>`).
     for (final key in _chapterQueryKeys) {
       final v = uri.queryParameters[key];
-      if (v != null) {
+      if (v != null && !ChapterUrlHeuristics.containsOpaqueId(v)) {
         final n = int.tryParse(_onlyDigits(v));
         if (n != null) return n;
       }
     }
 
-    // 2) Patterns connus dans le chemin / slug
-    final whole = uri.toString();
+    // 2) Patterns connus dans le chemin / slug, identifiants opaques masqués
+    final whole = ChapterUrlHeuristics.maskOpaqueIds(uri.toString());
     for (final rx in _knownExtractPatterns) {
       final m = rx.firstMatch(whole);
       if (m != null) {
@@ -131,18 +138,24 @@ class ChapterLinkResolver {
     // 1) Si l'URL a un paramètre de chapitre -> on le remplace
     final qp = Map<String, String>.from(uri.queryParameters);
     for (final key in _chapterQueryKeys) {
-      if (qp.containsKey(key)) {
+      final v = qp[key];
+      if (v != null && !ChapterUrlHeuristics.containsOpaqueId(v)) {
         qp[key] = chStr;
         return uri.replace(queryParameters: qp).toString();
       }
     }
 
-    // 2) Sinon on remplace dans le chemin/slug selon les patterns connus
+    // 2) Sinon on remplace dans le chemin/slug selon les patterns connus —
+    //    cherchés dans la copie masquée (jamais dans un UUID), remplacés au
+    //    même endroit dans l'URL d'origine (les index sont alignés).
+    final masked = ChapterUrlHeuristics.maskOpaqueIds(baseUrl);
     for (final rx in _knownReplacePatterns) {
-      final m = rx.firstMatch(baseUrl);
+      final m = rx.firstMatch(masked);
       if (m != null) {
-        // conserve le préfixe et remplace UNIQUEMENT le groupe numérique
-        return baseUrl.replaceFirstMapped(rx, (mm) => '${mm.group(1)}$chStr');
+        // conserve le préfixe et remplace UNIQUEMENT le groupe numérique (le
+        // `/` final de `/manga/22/` n'est plus perdu au passage).
+        final start = m.start + m.group(1)!.length;
+        return baseUrl.replaceRange(start, start + m.group(2)!.length, chStr);
       }
     }
 

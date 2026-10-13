@@ -23,6 +23,49 @@
 
 ## ✅ Complété
 
+### 📖 Lecteur : chapitre lu dans la page + barre du haut progressive (2026-10-13)
+
+Branche `feat/lecteur-detection-barre` (base `1946568`, v0.18.1). **Non poussée,
+non fusionnée.**
+
+**Détection du chapitre hors URL (aniverse.fr)**
+- `PageChapterParser` (pur) + `PageChapterProbe` (un `evaluateJavascript`,
+  lecture seule) : JSON-LD `Chapter`, `og:title`, `document.title`, fil
+  d'Ariane. Sources fortes en désaccord → rien ; jamais le texte des liens ;
+  segments « suivant / next / previous… » ignorés ; décimal, intervalle,
+  année → rien. Vérifié sur la vraie page aniverse.fr (chapitre 1).
+- Utilisé SEULEMENT quand l'URL ne donne aucun numéro. Déclencheurs :
+  `onTitleChanged` (branché en production), `onLoadStop`, 0,5 s / 1,5 s après
+  `onUpdateVisitedHistory`.
+- `ChapterDetectionQueue` (pur, testé) remplace la garde en ligne de
+  `_handleDetected` ; `ChapterChangeClassifier.classify` extrait de
+  `detectChapterChange`. `ChapterCommitPolicy` inchangée.
+- Lien de lecture : après N → N+1 détecté par la page, l'adresse affichée est
+  enregistrée telle quelle (jamais réécrite).
+- Barre du haut du lecteur en ligne : « Chapitre N » + titre de l'œuvre.
+- **Bug corrigé** : un UUID d'URL (`…-c41b-…`) donnait « chapitre 41 » et le
+  lien de lecture était réécrit dans l'UUID (`maskOpaqueIds`).
+
+**Barre du haut progressive (en ligne + hors ligne)**
+- `ReaderBarVisibility` (pur) au prorata, en pixels logiques (Android :
+  pixels physiques convertis), marge 12 dp, zone haute 32 dp, recalage à la
+  moitié. `ReaderBarController` : seule la barre se reconstruit.
+- Pendant le mouvement, page à hauteur fixe décalée sous la barre (jamais
+  recouverte) ; recalage 150 ms après le dernier défilement, doigt levé ; un
+  seul redimensionnement au repos. Immersif quitté dès que la barre revient.
+- Hors ligne : HTML lu et nettoyé une fois (il l'était toutes les 2 s).
+
+**Chiffres** : 830 tests verts (751 + 1 échec CRLF avant — le fil de détente
+lit désormais les sources en `\n`) ; analyze 33 infos / 0 avertissement /
+0 erreur (identique).
+
+**À valider sur appareil** : aniverse.fr — premier chapitre, « Chapitre
+suivant » (N → N+1 enregistre N, lien = page affichée), retour arrière, titre
+de la barre ; un site déjà suivi par l'URL (aucun changement) ; barre :
+fluidité du glissement de la WebView (Hybrid Composition), recalage, bas de
+chapitre (recul du navigateur), mode immersif ; iOS : unités de
+`onScrollChanged` (points ÷ échelle d'après le source du plugin).
+
 ### 🗣️ Retours utilisateurs d'octobre — sessions, file hors ligne, fenêtres, barres système (2026-10-06)
 
 - Sessions multi-appareils fiabilisées (client `SessionRefresher` + API rotation tolérante, gardes 401).

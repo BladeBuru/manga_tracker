@@ -156,6 +156,8 @@
 - ✅ Téléchargement de chapitre (Android/iOS uniquement)
 - ✅ Bloqueur de pub dans le webview
 - ✅ Barre du haut auto-masquée au défilement *(2026-10, en ligne + hors ligne)*
+  - 🔵 Progressive, au prorata du défilement *(2026-10-13, branche `feat/lecteur-detection-barre` — à valider sur appareil)*
+- 🔵 Chapitre détecté dans la page quand l'URL n'a pas de numéro (aniverse.fr) + « Chapitre N » dans la barre *(2026-10-13, même branche — à valider sur appareil)*
 - ✅ Portrait inversé autorisé (lecture en charge) *(2026-10)*
 
 ### Statistiques

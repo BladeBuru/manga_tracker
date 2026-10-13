@@ -5,6 +5,28 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/) · Versioning 
 
 ---
 
+## [Unreleased] — lecteur : chapitre suivi sur plus de sites, barre du haut progressive
+
+### ✨ Nouveautés
+
+- **Le chapitre est suivi même quand l'adresse de la page ne contient pas son numéro** (par exemple sur aniverse.fr) : le lecteur le lit sur la page elle-même, sans jamais le confondre avec le chapitre suivant affiché en bas de page.
+- **Le numéro du chapitre s'affiche en haut du lecteur en ligne**, avec le titre de l'œuvre.
+
+### ⚡ Améliorations
+
+- **La barre du haut suit votre doigt** : elle apparaît peu à peu quand vous remontez et se retire peu à peu quand vous descendez. Remonter un peu pour relire une ligne ne la fait plus revenir en entier.
+
+### 🐛 Corrections
+
+- Sur certains sites, le lien de lecture enregistré pouvait être abîmé et un faux numéro de chapitre détecté : c'est corrigé.
+
+### Notes d'implémentation
+
+- `PageChapterParser` (pur) + `PageChapterProbe` (JSON-LD `Chapter`, `og:title`, `document.title`, fil d'Ariane ; jamais le texte des liens), utilisés seulement si l'URL n'a pas de numéro ; même `ChapterDetectionQueue` (pure, extraite de `web_view_io.dart`) et même `ChapterCommitPolicy` que l'URL. `ChapterUrlHeuristics.maskOpaqueIds` : un UUID n'est plus lu comme un chapitre (`…-c41b-…` → 41) ni réécrit.
+- Barre : `ReaderBarVisibility` au prorata en pixels logiques, `ReaderBarController` (seule la barre se reconstruit), page à hauteur fixe décalée pendant le mouvement puis un seul redimensionnement au recalage (`ReaderBarLayout`, `ReaderBarSnapper`). Lecteur hors ligne : HTML lu une seule fois.
+
+---
+
 ## [Unreleased] — lecteur vraiment plein écran
 
 ### 🐛 Corrections
