@@ -4,6 +4,25 @@
 
 ---
 
+## ✅ Corrigés le 2026-10-13 — lecteur (`feat/lecteur-detection-barre`, non fusionnée)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Lien de lecture cassé / faux chapitre sur un site à URL sans numéro (`/read/<série>/<uuid>`) | Le motif `c(\d+)` (cherché dans toute l'URL, lookahead sans effet) trouvait un chapitre dans l'UUID (`…-c41b-…` → 41) ; `buildUrlForChapter` réécrivait ensuite ce morceau d'UUID et `_updateNextLinkFrom` l'enregistrait | `ChapterUrlHeuristics.maskOpaqueIds` (UUID, jetons hexadécimaux) avant les motifs ; `cN` jamais suivi d'une lettre ou d'un chiffre ; remplacement au même index |
+| aniverse.fr : aucun suivi de chapitre | Le numéro n'est que dans la page (titre, JSON-LD) | `PageChapterParser` + `PageChapterProbe`, utilisés seulement si l'URL n'a pas de numéro |
+| Barre du haut « tout ou rien » : un infime retour la montrait entière | Seuil de 24 px **physiques** (≈ 8,7 dp) et bascule binaire | Barre au prorata du défilement, en pixels logiques, recalage à la moitié |
+
+### Résiduels connus, assumés
+- Chapitres décimaux (271.5) lus dans la page : non suivis (l'app compte des
+  entiers) ; 271 → 272 l'est.
+- Site qui change le titre AVANT l'adresse (lecture en continu) : le lien de
+  lecture peut viser le chapitre précédent (un chapitre déjà lu).
+- Saut ou « Avez-vous fini ? » sur un chapitre lu dans la page : le lien de
+  lecture n'est pas mis à jour (aucune adresse connue pour la suite).
+- Bas de chapitre : au premier mouvement depuis « barre visible », la page
+  reprend la hauteur de l'écran ; le navigateur peut reculer d'une hauteur de
+  barre (à mesurer sur appareil).
+
 ## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
 
 | Symptôme | Cause racine | Correction |

@@ -127,6 +127,28 @@ go_router /manga/:muId/read-offline?chapter=N
 | `lib/features/manga/views/web_view_io.dart` | Suppression du `controller.setSettings(...)` post-chargement (racine de la régression v0.13.0 : sur Android, cet appel remplace l'objet de réglages ENTIER par un neuf, réinitialisant `useShouldOverrideUrlLoading` à `false`). Retour à `initialSettings`. |
 | `lib/features/reader/widgets/reader_action_bar.dart` | Interrupteur `Switch` du bloqueur de pub rétabli (actif par défaut, désactivé pendant un défi, rétabli après) avec un seul nœud sémantique. |
 
+**Ajouts feat/lecteur-detection-barre (2026-10-13) :**
+
+| Fichier | Rôle |
+|---------|------|
+| `lib/features/reader/utils/page_chapter_parser.dart` | **Pur.** `PageChapterParser.parse(PageChapterSignals)` : numéro du chapitre affiché lu dans la page (JSON-LD `Chapter` + `og:title` + `document.title` doivent concorder, fil d'Ariane à défaut, sélecteur propre au site prioritaire). Segments contenant suivant/précédent/next/previous/siguiente/nächstes… ignorés ; décimal, intervalle, année (1900–2100), > 99999 → `null`. |
+| `lib/features/reader/services/page_chapter_probe.dart` | Un seul `evaluateJavascript` en lecture seule : `location.href`, titres, `name` des nœuds JSON-LD `Chapter` de premier niveau (racine, `@graph`, `mainEntity`), dernier élément du fil d'Ariane. Décodage via `WebViewResultParser`. `retryDelays` = 0,5 s / 1,5 s. |
+| `lib/features/reader/services/chapter_change_classifier.dart` | **Pur.** `ChapterChangeType`, `ChapterChangeResult`, `ChapterChangeClassifier.classify(new, current)` — extrait de `detectChapterChange` (ré-exporté par `webview_navigation_service.dart`). |
+| `lib/features/reader/services/chapter_detection_queue.dart` | **Pur.** File sérialisée et idempotente des détections (URL et page, deux places d'attente de profondeur 1, clé page = URL + chapitre). Remplace la garde en ligne de `_handleDetected`. |
+| `lib/features/reader/widgets/reader_bar_controller.dart` | `ChangeNotifier` autour de `ReaderBarVisibility` : seule la barre se reconstruit au défilement. |
+| `lib/features/reader/widgets/reader_bar_layout.dart` | Disposition page / barre / recouvrements (page à hauteur fixe décalée pendant le mouvement, place réservée au repos) + `ReaderBarSurface` (barre d'état de hauteur fixe). |
+| `lib/features/reader/widgets/reader_bar_snapper.dart` | Recalage 150 ms après le dernier défilement, doigt levé (`Listener` passif sur la page), animation 200 ms. |
+| `lib/features/reader/widgets/reader_system_ui.dart` | Mode immersif / bord à bord ; unités de `onScrollChanged` par pixel logique (Android : px physiques ; iOS : points ÷ échelle). |
+
+**Modifications feat/lecteur-detection-barre :**
+
+| Fichier | Modification |
+|---------|-------------|
+| `lib/features/reader/utils/chapter_link_resolver.dart`, `chapter_url_heuristics.dart` | `maskOpaqueIds` : UUID et jetons hexadécimaux (≥ 8, chiffres + lettres) neutralisés avant les motifs connus, remplacement au même index (le `/` final de `/manga/22/` n'est plus perdu) ; `cN` jamais suivi d'une lettre ou d'un chiffre ; paramètres de requête opaques ignorés. |
+| `lib/features/reader/services/webview_navigation_service.dart` | `detectPageChapterChange` : classe un numéro lu dans la page **seulement si l'URL n'en donne aucun**. |
+| `lib/features/manga/views/web_view_io.dart` | `_detectChapterFromPage` (même file que `_handleDetected`) appelé par `onTitleChanged` (branché en production), `onLoadStop` (attendu avant la restauration de position) et 0,5 s / 1,5 s après `onUpdateVisitedHistory`. Après N → N+1 détecté par la page, l'adresse affichée devient le lien de lecture (`_saveReadingLink`, même garde que `_updateNextLinkFrom`). Titre de la barre : `ReaderChapterTitle` dès que le chapitre est connu. Barre pilotée par `ReaderBarController` (plus de `setState` par défilement). |
+| `lib/features/reader/views/offline_reader_view_io.dart` | Même barre ; HTML lu et nettoyé une fois au chargement (il l'était à chaque reconstruction). |
+
 ---
 
 ## Schéma BDD (si applicable)
@@ -199,7 +221,7 @@ La racine de la régression v0.13.0 était un appel `controller.setSettings(...)
 `ReaderActionBar` remplace l'ancienne barre à 6 commandes à plat. Actions rapides (toujours visibles) : Rafraîchir + Bloqueur de pub (interrupteur `Switch` rétabli dans fix/reader-redirect-regression — actif par défaut, désactivé pendant un défi, rétabli après, avec un seul nœud sémantique). Actions secondaires (menu trois points) : Télécharger la page, Copier l'URL, Mode de désignation des publicités, Aide. Le bouton Bloqueur agit **immédiatement** sur la page active (activation) ou recharge avec préservation de position (désactivation — nécessaire pour faire réapparaître les éléments déjà retirés). Textes i18n ×7 langues.
 
 ### Sélecteurs personnalisés extensibles
-`AdBlockerService` et `ChapterLinkResolver` consultent `CustomSelectorsService` pour charger des règles spécifiques au domaine. Type `adBlocker` = sélecteur CSS à masquer. Type `urlPattern` = regex pour extraire le numéro de chapitre depuis l'URL. Cela permet à l'utilisateur d'étendre les règles via l'UI "Custom Selectors" sans mise à jour de l'application.
+`AdBlockerService` et `ChapterLinkResolver` consultent `CustomSelectorsService` pour charger des règles spécifiques au domaine. Type `adBlocker` = sélecteur CSS à masquer. Type `urlPattern` = regex pour extraire le numéro de chapitre depuis l'URL. Cela permet à l'utilisateur d'étendre les règles via l'UI "Custom Selectors" sans mise à jour de l'application. Le type `chapterContent` (« contenu du chapitre », exemples : conteneur des images) n'est **pas** utilisé comme source du numéro lu dans la page : son texte peut contenir le chapitre suivant. `PageChapterProbe` accepte un `titleSelector` et `PageChapterParser` un `customText` pour un futur type dédié (non branché).
 
 ### Journal de lecture — `recordChapterLog` fire-and-forget (RETRO-015)
 
@@ -222,7 +244,13 @@ L'application intègre un bloqueur de publicités directement dans la WebView. L
 La détection opère selon l'ordre : (1) URL de la requête (patterns `challenge`, `cf_challenge`, `challenges.cloudflare.com`), (2) domaine hôte (liste `isCaptchaDomain`), (3) inspection DOM (iframes Cloudflare, éléments `[id*=cf-]`, éléments `[id*=recaptcha]`, iframes hCaptcha). La résolution est détectée par cookie `cf_clearance` ou `clearance`. Confiné au module reader (Q3=NON).
 
 ### Extraction du numéro de chapitre depuis l'URL — resolver multi-stratégies
-`ChapterLinkResolver.extractChapter()` applique dans l'ordre : (0) patterns regex personnalisés par domaine (depuis `CustomSelectorsService`), (1) paramètres de requête (`chapter`, `chapitre`, `ch`, `ep`, `episode`, `episode_no`, `num`, `no`), (2) 6 patterns regex dans le chemin de l'URL (formats `/chapter-N/`, `/cN/`, `/chN/`, `/ep-N/`, `/manga/N/`, `slug-chapitre-N/`). Une version synchrone (`extractChapterSync`) existe pour la compatibilité mais n'utilise que les patterns par défaut (pas de customSelectors). Confiné au module reader (AP-3 + Q3=NON).
+`ChapterLinkResolver.extractChapter()` applique dans l'ordre : (0) patterns regex personnalisés par domaine (depuis `CustomSelectorsService`), (1) paramètres de requête (`chapter`, `chapitre`, `ch`, `ep`, `episode`, `episode_no`, `num`, `no`), (2) 6 patterns regex dans le chemin de l'URL (formats `/chapter-N/`, `/cN/`, `/chN/`, `/ep-N/`, `/manga/N/`, `slug-chapitre-N/`), (3) segment numérique isolé (`ChapterUrlHeuristics`). Aux étapes 1 à 3, les identifiants opaques (UUID, jetons hexadécimaux ≥ 8 caractères mêlant chiffres et lettres) sont masqués : ils ne donnent jamais de chapitre et ne sont jamais réécrits par `buildUrlForChapter` (avant : `…/3f2a1c4e-c41b-…` → chapitre 41, puis lien de lecture réécrit dans l'UUID). Une version synchrone (`extractChapterSync`) existe pour la compatibilité mais n'utilise que les patterns par défaut (pas de customSelectors). Confiné au module reader (AP-3 + Q3=NON).
+
+### Numéro de chapitre lu dans la page — URL sans numéro
+Quand l'URL ne donne rien (aniverse.fr : `/read/<série>/<uuid>`), `PageChapterProbe` relève les signaux de la page et `PageChapterParser` décide (règle « aucun faux positif » : sources fortes en désaccord → `null`, le lecteur relit plus tard). L'URL reste prioritaire : `detectPageChapterChange` ignore la page dès que l'URL porte un numéro. Le numéro passe par la **même** `ChapterDetectionQueue` et la **même** `ChapterCommitPolicy` que l'URL. Déclencheurs : `onTitleChanged`, `onLoadStop`, relectures à 0,5 s et 1,5 s après `onUpdateVisitedHistory` (le titre suit le `pushState` avec retard) — jamais `onScrollChanged`.
+
+### Barre du haut progressive
+`ReaderBarVisibility` (pure) : `shown = clamp(shown − Δy / unités, 0, extent)`, marge de 12 dp pour quitter une position de repos, zone haute de 32 dp, `snapTarget()` = entière si ≥ moitié. `ReaderAutoHideBar` : pendant le mouvement la page garde la hauteur de l'écran et est décalée de `shown` sous un `ClipRect` (Stack) — la WebView (Hybrid Composition) n'est pas redimensionnée à chaque image ; au repos, une seule mise en page réserve la place de la barre. Stabilisation de 400 ms après un recalage sur « entière » (recul du navigateur en bas de page). Immersif quitté dès que `shown > 0`, repris après recalage sur « cachée ».
 
 ### Scroll : seuil de non-sauvegarde à 95%
 `ScrollPositionService.saveScrollPosition` ne sauvegarde pas la position si `(scrollPosition / (documentHeight - windowHeight)) * 100 > 95`. Ce seuil est symétrique du seuil "near end" de 15% dans `ReadingProgressHelper` : un utilisateur proche du bas a de grandes chances d'être à la fin du chapitre, et sa position ne doit pas être restaurée au prochain chargement. Décision de granularité fine, confinée à un seul service (Q1=NON → rejeté).
