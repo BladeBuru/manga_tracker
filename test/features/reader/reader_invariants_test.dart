@@ -36,12 +36,18 @@ void main() {
       .where((line) => !line.trimLeft().startsWith('//'))
       .join('\n');
 
+  /// Source normalisé en fins de ligne `\n` : sous Windows, git extrait les
+  /// fichiers en CRLF (`core.autocrlf`) et les motifs multilignes ci-dessous
+  /// échouaient sans qu'aucun invariant ne soit cassé.
+  String read(String path) =>
+      File(path).readAsStringSync().replaceAll('\r\n', '\n');
+
   setUpAll(() {
-    reader = File(readerPath).readAsStringSync();
-    settings = File(settingsPath).readAsStringSync();
-    offlineReader = File(offlineReaderPath).readAsStringSync();
-    scrollService = File(scrollServicePath).readAsStringSync();
-    detailView = File(detailViewPath).readAsStringSync();
+    reader = read(readerPath);
+    settings = read(settingsPath);
+    offlineReader = read(offlineReaderPath);
+    scrollService = read(scrollServicePath);
+    detailView = read(detailViewPath);
   });
 
   group('protection anti-redirection du lecteur', () {
