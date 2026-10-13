@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:get_it/get_it.dart';
-import 'package:mangatracker/core/network/network_compat.dart';
+import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
@@ -9,66 +8,70 @@ import 'package:mangatracker/features/friends/services/friends.service.dart';
 
 part 'friends_event.dart';
 part 'friends_state.dart';
+part 'friends_search_handlers.dart';
 
 /// BLoC de la page Amis (Phase 6.1).
 ///
-/// Gère 3 listes en parallèle dans le même state :
-///  - `accepted` : mes amis confirmés (cache 24h via FriendsService).
-///  - `pending` : demandes reçues à traiter (toujours fresh).
-///  - `searchResults` : autocomplete pour envoyer une nouvelle demande.
+/// Quatre listes couplées dans le même état : amis, demandes reçues,
+/// demandes envoyées, résultats de recherche (avec leur relation).
 ///
-/// On garde un seul BLoC (pas un par onglet) parce que les 3 listes sont
-/// fortement couplées : accepter une demande la déplace de pending vers
-/// accepted, envoyer une demande la retire des résultats de recherche, etc.
-class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
-  final FriendsService _service = getIt<FriendsService>();
+/// Les notifications locales des demandes d'ami ne vivent plus ici : elles
+/// passent par `NotificationCountsService` (interrogation périodique de
+/// toute l'application). L'ancien compteur de ce BLoC repartait de zéro à
+/// chaque ouverture de la page et ne notifiait donc jamais.
+class FriendsBloc extends Bloc<FriendsEvent, FriendsState>
+    with _FriendsSearchHandlers {
+  @override
+  final FriendsService _service;
+  final void Function() _refreshBadges;
 
-  FriendsBloc() : super(const FriendsInitial()) {
+  FriendsBloc({FriendsService? service, void Function()? refreshBadges})
+      : _service = service ?? getIt<FriendsService>(),
+        _refreshBadges = refreshBadges ?? _refreshNotificationCounts,
+        super(const FriendsInitial()) {
     on<LoadFriends>(_onLoad);
     on<SearchUsers>(_onSearch);
     on<SendFriendRequest>(_onSend);
     on<RespondToRequest>(_onRespond);
     on<RemoveFriend>(_onRemove);
+    on<CancelFriendRequest>(_onCancel);
   }
 
+  /// Trois listes en parallèle ; une source en échec n'empêche pas d'afficher
+  /// les autres (repli cache des amis). Tout en échec → état d'erreur.
   Future<void> _onLoad(LoadFriends event, Emitter<FriendsState> emit) async {
-    emit(const FriendsLoading());
-    try {
-      final accepted = await _service.getAcceptedFriends(
-        forceRefresh: event.forceRefresh,
-      );
-      final pending = await _service.getPendingRequests();
-      emit(FriendsLoaded(
-        accepted: accepted,
-        pending: pending,
-        searchResults: const [],
-      ));
-    } on SocketException catch (_) {
-      // FriendsService a déjà tenté un fallback cache pour `accepted`. Si
-      // on arrive ici, c'est qu'on n'a rien de exploitable.
-      emit(const FriendsError('Hors ligne'));
-    } catch (e) {
-      emit(FriendsError(e.toString()));
+    final previous = state is FriendsLoaded ? state as FriendsLoaded : null;
+    if (previous == null) emit(const FriendsLoading());
+    Object? failure;
+    Future<List<FriendshipDto>?> guard(
+        Future<List<FriendshipDto>> Function() call) async {
+      try {
+        return await call();
+      } catch (e) {
+        failure ??= e;
+        return null;
+      }
     }
-  }
 
-  Future<void> _onSearch(
-    SearchUsers event,
-    Emitter<FriendsState> emit,
-  ) async {
-    if (state is! FriendsLoaded) return;
-    final current = state as FriendsLoaded;
-    if (event.query.trim().length < 2) {
-      emit(current.copyWith(searchResults: const []));
+    final results = await Future.wait([
+      guard(() => _service.getAcceptedFriends(forceRefresh: event.forceRefresh)),
+      guard(_service.getPendingRequests),
+      guard(_service.getSentRequests),
+    ]);
+    final error = failure;
+    if (results.every((r) => r == null) && error != null) {
+      final mode = classifyFailure(error);
+      emit(FriendsError(error, isOffline: showsOfflineIndicator(mode)));
       return;
     }
-    try {
-      final results = await _service.searchUsers(event.query);
-      emit(current.copyWith(searchResults: results));
-    } catch (e) {
-      // Erreur silencieuse sur la recherche (on garde l'état actuel + log).
-      emit(current.copyWith(searchError: e.toString()));
-    }
+    emit(FriendsLoaded(
+      accepted: results[0] ?? previous?.accepted ?? const [],
+      pending: results[1] ?? previous?.pending ?? const [],
+      sent: results[2] ?? previous?.sent ?? const [],
+      searchQuery: previous?.searchQuery ?? '',
+      searchResults: previous?.searchResults ?? const [],
+      isOffline: error != null && showsOfflineIndicator(classifyFailure(error)),
+    ));
   }
 
   Future<void> _onSend(
@@ -76,27 +79,32 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
     Emitter<FriendsState> emit,
   ) async {
     if (state is! FriendsLoaded) return;
-    final current = state as FriendsLoaded;
     try {
       final created = await _service.sendRequest(addresseeId: event.userId);
-      // Retire le user des résultats de recherche, ajoute la demande
-      // appropriée (accepted si auto-acceptée côté serveur, sinon ignorée
-      // car c'est une demande sortante non visible dans pending/accepted).
-      final newResults = current.searchResults
-          .where((r) => r.id != event.userId)
-          .toList();
-      // Si le serveur a auto-accepté (demande inverse pending), on ajoute
-      // à accepted directement.
-      final newAccepted = created.status == FriendshipStatus.accepted
-          ? [created, ...current.accepted]
-          : current.accepted;
+      final current = state as FriendsLoaded;
+      // Demande inverse déjà en attente : le serveur accepte d'office.
+      if (created.status == FriendshipStatus.accepted) {
+        emit(current.copyWith(
+          accepted: [created, ...current.accepted],
+          pending: current.pending
+              .where((p) => p.otherUserId != event.userId)
+              .toList(),
+          searchResults:
+              current.resultsWith(event.userId, FriendRelation.friends),
+          feedback: FriendsFeedback.nowFriends,
+          feedbackName: event.displayName ?? created.displayName,
+        ));
+        _refreshBadges();
+        return;
+      }
       emit(current.copyWith(
-        accepted: newAccepted,
-        searchResults: newResults,
-        lastActionMessage: 'request_sent',
+        sent: [created, ...current.sent],
+        searchResults:
+            current.resultsWith(event.userId, FriendRelation.pendingSent),
+        feedback: FriendsFeedback.requestSent,
       ));
     } catch (e) {
-      emit(current.copyWith(lastActionError: e.toString()));
+      _emitActionError(emit, e);
     }
   }
 
@@ -105,55 +113,88 @@ class FriendsBloc extends Bloc<FriendsEvent, FriendsState> {
     Emitter<FriendsState> emit,
   ) async {
     if (state is! FriendsLoaded) return;
-    final current = state as FriendsLoaded;
     try {
       final updated =
           await _service.updateStatus(event.friendshipId, event.newStatus);
-      final newPending = current.pending
-          .where((p) => p.id != event.friendshipId)
-          .toList();
-      final newAccepted = event.newStatus == FriendshipStatus.accepted
-          ? [updated, ...current.accepted]
-          : current.accepted;
+      final current = state as FriendsLoaded;
+      final accepted = event.newStatus == FriendshipStatus.accepted;
       emit(current.copyWith(
-        accepted: newAccepted,
-        pending: newPending,
+        accepted: accepted ? [updated, ...current.accepted] : current.accepted,
+        pending:
+            current.pending.where((p) => p.id != event.friendshipId).toList(),
+        searchResults: current.resultsWith(
+          updated.otherUserId,
+          accepted ? FriendRelation.friends : FriendRelation.none,
+        ),
+        feedback: accepted ? FriendsFeedback.nowFriends : null,
+        feedbackName: accepted ? updated.displayName : null,
       ));
-      // Décrémente le badge BottomNavBar sans attendre le prochain poll
-      // (cf. NotificationCountsService Phase 6.2 + 8.2).
-      _refreshNotificationsBadge();
+      // Décrémente les pastilles sans attendre la prochaine interrogation.
+      _refreshBadges();
     } catch (e) {
-      emit(current.copyWith(lastActionError: e.toString()));
+      _emitActionError(emit, e);
     }
   }
 
-  /// Refresh non-bloquant du badge de notifs. Catch silencieux : si le
-  /// service n'est pas (encore) enregistré, on laisse tomber.
-  void _refreshNotificationsBadge() {
-    try {
-      final svc = GetIt.instance<NotificationCountsService>();
-      svc.refresh();
-    } catch (_) {}
-  }
-
+  /// Retire un ami ou refuse une demande reçue.
   Future<void> _onRemove(
     RemoveFriend event,
     Emitter<FriendsState> emit,
   ) async {
     if (state is! FriendsLoaded) return;
-    final current = state as FriendsLoaded;
     try {
       await _service.deleteFriendship(event.friendshipId);
+      final current = state as FriendsLoaded;
+      final removed = [...current.accepted, ...current.pending]
+          .where((f) => f.id == event.friendshipId).firstOrNull;
       emit(current.copyWith(
         accepted:
             current.accepted.where((f) => f.id != event.friendshipId).toList(),
         pending:
             current.pending.where((f) => f.id != event.friendshipId).toList(),
+        searchResults: removed == null
+            ? current.searchResults
+            : current.resultsWith(removed.otherUserId, FriendRelation.none),
       ));
       // Refuser une demande la retire aussi des pastilles.
-      _refreshNotificationsBadge();
+      _refreshBadges();
     } catch (e) {
-      emit(current.copyWith(lastActionError: e.toString()));
+      _emitActionError(emit, e);
     }
+  }
+
+  Future<void> _onCancel(
+    CancelFriendRequest event,
+    Emitter<FriendsState> emit,
+  ) async {
+    if (state is! FriendsLoaded) return;
+    try {
+      await _service.deleteFriendship(event.friendshipId);
+      final current = state as FriendsLoaded;
+      final cancelled =
+          current.sent.where((f) => f.id == event.friendshipId).firstOrNull;
+      emit(current.copyWith(
+        sent: current.sent.where((f) => f.id != event.friendshipId).toList(),
+        searchResults: cancelled == null
+            ? current.searchResults
+            : current.resultsWith(cancelled.otherUserId, FriendRelation.none),
+        feedback: FriendsFeedback.requestCancelled,
+      ));
+    } catch (e) {
+      _emitActionError(emit, e);
+    }
+  }
+
+  /// Une action en échec émet TOUJOURS un état (jamais de spinner sans
+  /// issue) ; le texte vient de `userFacingErrorMessage` dans la vue.
+  void _emitActionError(Emitter<FriendsState> emit, Object error) {
+    final current = state;
+    if (current is FriendsLoaded) emit(current.copyWith(actionError: error));
+  }
+
+  static void _refreshNotificationCounts() {
+    try {
+      getIt<NotificationCountsService>().refresh();
+    } catch (_) {}
   }
 }

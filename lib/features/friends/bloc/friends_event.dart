@@ -20,11 +20,17 @@ class SearchUsers extends FriendsEvent {
   List<Object?> get props => [query];
 }
 
+/// Envoi d'une demande, APRÈS confirmation de l'utilisateur (la vue
+/// demande d'abord « Envoyer une demande d'ami à X ? »).
 class SendFriendRequest extends FriendsEvent {
   final int userId;
-  const SendFriendRequest(this.userId);
+
+  /// Nom affiché dans le message de retour (« Vous et X êtes amis »).
+  final String? displayName;
+
+  const SendFriendRequest(this.userId, {this.displayName});
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [userId, displayName];
 }
 
 class RespondToRequest extends FriendsEvent {
@@ -41,6 +47,14 @@ class RespondToRequest extends FriendsEvent {
 class RemoveFriend extends FriendsEvent {
   final int friendshipId;
   const RemoveFriend(this.friendshipId);
+  @override
+  List<Object?> get props => [friendshipId];
+}
+
+/// Annule une demande que j'ai envoyée (`DELETE /friends/:id`).
+class CancelFriendRequest extends FriendsEvent {
+  final int friendshipId;
+  const CancelFriendRequest(this.friendshipId);
   @override
   List<Object?> get props => [friendshipId];
 }
