@@ -48,7 +48,7 @@ import 'package:mangatracker/features/reader/utils/reading_constants.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'dart:async';
-import 'package:mangatracker/features/reader/services/reader_bar_visibility.dart';
+import 'package:mangatracker/features/reader/widgets/reader_bar_controller.dart';
 import 'package:mangatracker/features/reader/widgets/reader_auto_hide_bar.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
 
@@ -171,9 +171,9 @@ class _ReaderWebViewState extends State<ReaderWebView>
   /// Enregistrement « Ceci est le nouveau lien » en cours.
   bool _savingLink = false;
 
-  /// Barre du haut affichée (cf. [ReaderBarVisibility]).
-  final ReaderBarVisibility _barVisibility = ReaderBarVisibility();
-  bool _barVisible = true;
+  /// Barre du haut : hauteur révélée, pilotée par le défilement (logique
+  /// pure : `ReaderBarVisibility`). Seule la barre se reconstruit.
+  final ReaderBarController _barVisibility = ReaderBarController();
 
   // Lecture seule : ni chapitre lu, ni lien réécrit, ni position. Le mode
   // « recherche de lien » y ajoute la seule écriture voulue par
@@ -1525,10 +1525,11 @@ class _ReaderWebViewState extends State<ReaderWebView>
       canPop: false,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
-        // Lecture plein écran : la barre se retire quand on descend dans la
-        // page et revient dès qu'on remonte (ReaderBarVisibility, pure).
+        // Lecture plein écran : la barre suit le défilement, au prorata —
+        // elle se retire en descendant, revient en remontant
+        // (ReaderBarVisibility, pure).
         body: ReaderAutoHideBar(
-          visible: _barVisible,
+          controller: _barVisibility,
           appBar: AppBar(
             // « Chapitre N » dès qu'il est détecté (URL ou page).
             title: _currentChapter == null
@@ -1548,9 +1549,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
               ),
             ],
           ),
-          child: Stack(
-          children: [
-            InAppWebView(
+          page: InAppWebView(
           initialUrlRequest: URLRequest(url: WebUri(widget.initialUrl)),
           // INVARIANT (régression v0.13.0) : `initialSettings` est le SEUL
           // endroit où les réglages sont posés. Ne JAMAIS appeler
@@ -1610,20 +1609,17 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return NavigationActionPolicy.ALLOW;
           },
 
-          // Barre du haut : cachée en descendant, de retour en remontant.
-          // Aucun effet sur la lecture (ni mesure, ni enregistrement).
+          // Barre du haut : elle suit le défilement, au prorata. Aucun effet
+          // sur la lecture (ni mesure, ni enregistrement), et le lecteur ne
+          // se reconstruit pas à chaque défilement.
           onScrollChanged: (controller, x, y) {
-            final visible = _barVisibility.onScroll(y);
-            if (visible != _barVisible && mounted) {
-              setState(() => _barVisible = visible);
-            }
+            _barVisibility.onScroll(y);
           },
 
           // 2) Début de chargement - Vérification supplémentaire et détection précoce de captcha
           onLoadStart: (controller, url) async {
             // Nouvelle page : la barre réapparaît.
             _barVisibility.reset();
-            if (!_barVisible && mounted) setState(() => _barVisible = true);
             ReaderDiagnostics.log('load.start', {
               'url': url,
               'allowedHost': url == null ? null : _isAllowedDomain(url.host),
@@ -1859,6 +1855,10 @@ class _ReaderWebViewState extends State<ReaderWebView>
             return null;
           },
         ),
+          // Ancrés à l'écran, sous la barre : ils ne suivent pas le décalage
+          // de la page pendant que la barre glisse.
+          overlay: Stack(
+          children: [
             // Par-dessus le lecteur (qui reste monté : son contrôleur et son
             // état de lecture survivent à la vérification).
             if (_showHandoff && _challengeUrl != null)
@@ -1929,6 +1929,7 @@ class _ReaderWebViewState extends State<ReaderWebView>
     // Si dispose() est appelé directement (par exemple lors d'un crash), on ne veut pas marquer
     // le chapitre comme lu si l'utilisateur n'était pas à la fin
     
+    _barVisibility.dispose();
     _urlTextController.dispose();
     super.dispose();
   }
