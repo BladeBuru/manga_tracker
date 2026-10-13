@@ -1,8 +1,22 @@
 {
-  "latestVersion": "0.18.1",
-  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.18.1/MangaTracker.apk",
+  "latestVersion": "0.19.0",
+  "apkUrl": "https://github.com/BladeBuru/manga_tracker/releases/download/v0.19.0/MangaTracker.apk",
   "inherit": true,
   "changelog": [
+    {
+      "version": "0.19.0",
+      "notes": [
+        "✨ Nouveautés",
+        "- Une cloche de notifications regroupe vos demandes d'amis, recommandations, lectures partagées et nouveaux chapitres.",
+        "- Dans une lecture partagée, vous pouvez maintenant mettre à jour votre progression directement.",
+        "⚡ Améliorations",
+        "- Le chapitre est suivi sur plus de sites, et la barre du haut du lecteur suit votre doigt.",
+        "- Sur le site, chaque page a sa propre adresse : actualiser ou revenir en arrière vous garde au bon endroit.",
+        "🐛 Corrections",
+        "- Les demandes d'amis et recommandations arrivent bien, et une progression refusée explique pourquoi.",
+        "- Le site ne peut plus afficher une ancienne version de l'application."
+      ]
+    },
     {
       "version": "0.18.1",
       "notes": [
