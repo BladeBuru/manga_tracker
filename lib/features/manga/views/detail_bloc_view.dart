@@ -47,6 +47,7 @@ import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet
 import 'package:mangatracker/core/router/app_modals.dart';
 import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/components/app_back_button.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -364,7 +365,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             children: [
               // Header avec image et titre
               if (hero.showChrome)
-              GestureDetector(
+              ClickableCursor(child: GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
                   showAppDialog(
@@ -478,7 +479,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       ),
                   ],
                 ),
-              ),
+              )),
               // Détails du manga (LateDetailView) — contenu sous le hero
               // centré (max 1100) via AppContentWidth (audit 2026-06-12) ;
               // le hero au-dessus reste pleine largeur (cinématique).

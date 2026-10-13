@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangatracker/core/components/horizontal_scroll_arrows.dart';
 import 'package:mangatracker/core/components/library_owned_ids_builder.dart';
 import 'package:mangatracker/features/home/bloc/home_section_page_bloc.dart';
 import 'package:mangatracker/features/home/bloc/home_section_page_event.dart';
@@ -56,6 +57,9 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
         limit: HomeSectionsService.defaultLimit,
       );
 
+  /// Partagé avec les flèches de grand écran ([HorizontalScrollArrows]).
+  final ScrollController _scroll = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +93,7 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
   @override
   void dispose() {
     if (widget.bloc == null) _bloc.close();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -114,15 +119,20 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
           ),
           child: NotificationListener<ScrollNotification>(
             onNotification: _onScroll,
-            child: LibraryOwnedIdsBuilder(
-              builder:
-                  (context, ownedMuIds) => _CarouselList(
-                    items: items,
-                    metrics: widget.metrics,
-                    ownedMuIds: ownedMuIds,
-                    footer: HomeSectionCarouselFooter.of(loaded),
-                    onRetry: () => _bloc.add(const LoadMoreSectionPage()),
-                  ),
+            child: HorizontalScrollArrows(
+              controller: _scroll,
+              centerY: widget.metrics.coverHeight / 2,
+              child: LibraryOwnedIdsBuilder(
+                builder:
+                    (context, ownedMuIds) => _CarouselList(
+                      controller: _scroll,
+                      items: items,
+                      metrics: widget.metrics,
+                      ownedMuIds: ownedMuIds,
+                      footer: HomeSectionCarouselFooter.of(loaded),
+                      onRetry: () => _bloc.add(const LoadMoreSectionPage()),
+                    ),
+              ),
             ),
           ),
         );
@@ -134,6 +144,7 @@ class _HomeSectionCarouselState extends State<HomeSectionCarousel> {
 /// Rendu pur du carrousel : cartes puis, le cas echeant, la tuile de pied
 /// (chargement en cours ou reessai).
 class _CarouselList extends StatelessWidget {
+  final ScrollController controller;
   final List<MangaQuickViewDto> items;
   final HomeLayoutMetrics metrics;
   final Set<int> ownedMuIds;
@@ -141,6 +152,7 @@ class _CarouselList extends StatelessWidget {
   final VoidCallback onRetry;
 
   const _CarouselList({
+    required this.controller,
     required this.items,
     required this.metrics,
     required this.ownedMuIds,
@@ -152,6 +164,7 @@ class _CarouselList extends StatelessWidget {
   Widget build(BuildContext context) {
     final count = items.length + (footer == null ? 0 : 1);
     return ListView.builder(
+      controller: controller,
       scrollDirection: Axis.horizontal,
       itemCount: count,
       padding: EdgeInsets.symmetric(horizontal: metrics.horizontalPadding),

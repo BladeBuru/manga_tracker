@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Barre de recherche pilule du Design System V1 « Refined Classic ».
 ///
@@ -85,7 +86,7 @@ class SearchBarInput extends StatelessWidget {
             ),
           ),
           if (hasQuery)
-            GestureDetector(
+            ClickableCursor(child: GestureDetector(
               onTap: onClear,
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -96,7 +97,7 @@ class SearchBarInput extends StatelessWidget {
                   color: AppColors.dsText3(brightness),
                 ),
               ),
-            ),
+            )),
         ],
       ),
     );

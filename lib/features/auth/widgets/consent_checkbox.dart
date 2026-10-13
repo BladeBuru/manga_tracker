@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Case à cocher de consentement RGPD V1 — alignée à gauche, avec un
 /// libellé cliquable (la flèche → ouvre la dialog d'aperçu du document
@@ -48,7 +49,7 @@ class ConsentCheckbox extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: GestureDetector(
+            child: ClickableCursor(child: GestureDetector(
               onTap: () => onChanged(!checked),
               behavior: HitTestBehavior.opaque,
               child: Padding(
@@ -78,7 +79,7 @@ class ConsentCheckbox extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

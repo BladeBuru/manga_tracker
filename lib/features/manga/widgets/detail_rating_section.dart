@@ -6,6 +6,7 @@ import 'package:mangatracker/features/manga/bloc/detail_bloc.dart';
 import 'package:mangatracker/features/manga/bloc/detail_event.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_breakdown.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  V1 « Refined Classic » — Section rating (votre note + communauté).   ║
@@ -216,7 +217,7 @@ class _AnimatedStarsRowState extends State<_AnimatedStarsRow> {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 1; i <= 5; i++)
-          GestureDetector(
+          ClickableCursor(child: GestureDetector(
             onTap: () => _handleTap(i),
             behavior: HitTestBehavior.opaque,
             child: AnimatedScale(
@@ -232,7 +233,7 @@ class _AnimatedStarsRowState extends State<_AnimatedStarsRow> {
                 ),
               ),
             ),
-          ),
+          )),
       ],
     );
   }
