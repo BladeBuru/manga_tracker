@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_count_badge.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/router/route_visibility_listener.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import 'package:mangatracker/features/sharing/bloc/reading_groups_bloc.dart';
 import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_list_row.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page liste « Lectures à deux » — Design System V1 « Refined Classic ».
 ///
@@ -25,6 +27,10 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///    groupe (avatars superposés, manga, "Avec X", progression mono),
 ///    divider hairline entre les rows.
 ///  - Empty state pastel (icône groupes) + CTA "Découvrir un manga".
+///
+/// Rechargée en silence quand elle repasse au premier plan : la progression
+/// affichée par ligne change dès qu'un membre avance (avant : seule une
+/// suppression rechargeait la liste au retour).
 class ReadingGroupsListPage extends StatelessWidget with ResponsiveLayoutMixin {
   const ReadingGroupsListPage({super.key});
 
@@ -32,7 +38,14 @@ class ReadingGroupsListPage extends StatelessWidget with ResponsiveLayoutMixin {
   Widget build(BuildContext context) {
     return BlocProvider<ReadingGroupsBloc>(
       create: (_) => ReadingGroupsBloc()..add(const LoadReadingGroups()),
-      child: const _ReadingGroupsScaffold(),
+      child: Builder(
+        builder: (context) => RouteVisibilityListener(
+          onVisible: () => context
+              .read<ReadingGroupsBloc>()
+              .add(const LoadReadingGroups(silent: true)),
+          child: const _ReadingGroupsScaffold(),
+        ),
+      ),
     );
   }
 }
@@ -53,6 +66,7 @@ class _ReadingGroupsScaffold extends StatelessWidget
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -133,13 +147,10 @@ class _GroupsListBodyState extends State<_GroupsListBody>
     }
   }
 
-  Future<void> _openDetail(BuildContext context, ReadingGroupDto group) async {
-    final bloc = context.read<ReadingGroupsBloc>();
-    final wasDeleted =
-        await context.push<bool>('/reading-groups/${group.id}');
-    if (wasDeleted == true) {
-      bloc.add(const LoadReadingGroups());
-    }
+  /// Le retour sur la liste la recharge (`RouteVisibilityListener`), groupe
+  /// supprimé ou quitté compris.
+  void _openDetail(BuildContext context, ReadingGroupDto group) {
+    context.push<bool>('/reading-groups/${group.id}');
   }
 
   @override

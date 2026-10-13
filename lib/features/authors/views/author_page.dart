@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
 import 'package:mangatracker/core/components/data_source_credit.dart';
@@ -78,7 +79,10 @@ class _AuthorScaffold extends StatelessWidget {
               brightness == Brightness.dark
                   ? AppColors.dsBgDark
                   : AppColors.dsBgLight,
-          appBar: AppBar(title: Text(name ?? '')),
+          appBar: AppBar(
+            leading: const AppBackButton(),
+            title: Text(name ?? ''),
+          ),
           body: LayoutBuilder(
             builder:
                 (context, constraints) => RefreshIndicator(
@@ -115,7 +119,7 @@ class _AuthorScaffold extends StatelessWidget {
                       icon: Icons.person_search_outlined,
                       title: l10n.authorNotFound,
                       actionLabel: l10n.back,
-                      onAction: () => context.pop(),
+                      onAction: () => popOrGo(context),
                     )
                     : AppErrorState(
                       message:

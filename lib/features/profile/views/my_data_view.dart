@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
@@ -85,12 +86,14 @@ class _MyDataViewState extends State<MyDataView> {
     final confirmed = await ProfileDialogs.showDeleteAccountConfirm(context);
     if (!confirmed || !mounted) return;
     setState(() => _deleting = true);
+    // Messager racine : il survit au départ de cette page (déconnexion).
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await _userService.deleteAccount();
-      await _authService.logout();
-      if (!mounted) return;
-      _showSnack(l10n.accountDeletedSuccess);
-      context.go('/login');
+      await AuthNavigation.signOut(_authService);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.accountDeletedSuccess)),
+      );
     } catch (_) {
       if (!mounted) return;
       _showSnack(l10n.accountDeleteError, error: true);
@@ -208,7 +211,7 @@ class _MyDataAppBar extends StatelessWidget implements PreferredSizeWidget {
         // Le texte du bouton porte déjà le libellé complet (lecteur d'écran).
         excludeFromSemantics: true,
         child: TextButton(
-          onPressed: () => context.pop(),
+          onPressed: () => popOrGo(context, fallback: '/profile'),
           style: TextButton.styleFrom(
             foregroundColor: scheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 4),

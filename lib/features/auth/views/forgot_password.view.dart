@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -62,7 +63,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             if (state.isSuccess) {
               return _ForgotPasswordSuccess(
                 email: state.submittedEmail,
-                onBack: () => Navigator.of(context).pop(),
+                onBack: () => popOrGo(context, fallback: '/login'),
               );
             }
             return Form(
@@ -72,7 +73,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 emailController: _emailController,
                 onSubmit: _submit,
                 validator: (v) => _validator.validateEmailAddress(v, context),
-                onBack: () => Navigator.of(context).pop(),
+                onBack: () => popOrGo(context, fallback: '/login'),
                 l10n: l10n,
               ),
             );

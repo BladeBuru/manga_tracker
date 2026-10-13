@@ -1,9 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
 import 'package:mangatracker/features/auth/services/auth.service.dart';
+import 'package:mangatracker/features/auth/services/auth_session.dart';
 import 'package:mangatracker/features/auth/services/email_auth.service.dart';
 import 'package:mangatracker/features/auth/services/validator.service.dart';
 import 'package:mangatracker/features/library/services/chapter_log.service.dart';
+import 'package:mangatracker/features/library/services/chapter_progress.service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/manga/services/manga.service.dart';
@@ -18,6 +20,7 @@ import 'package:mangatracker/features/comments/services/comments.service.dart';
 import 'package:mangatracker/features/sharing/services/sharing.service.dart';
 import 'package:mangatracker/features/sharing/services/reading_groups.service.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
+import 'package:mangatracker/features/notifications/services/notifications.service.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 
 import '../../features/auth/services/biometric.service.dart';
@@ -56,6 +59,9 @@ void setupServiceLocator() {
       () async => StorageService().init());
   // Service d'historique de recherche (sans dépendances, peut être enregistré tôt)
   getIt.registerSingleton<SearchHistoryService>(SearchHistoryService());
+  // Session vue par le garde du routeur — restaurée avant `runApp`
+  // (`main.dart`), mise à jour par `AuthService`.
+  getIt.registerSingleton<AuthSession>(AuthSession());
   // LanguageService tôt : HttpService injecte le header Accept-Language à
   // chaque requête. PAS dans les dependsOn de HttpService — GetIt exige que
   // les types de dependsOn soient déjà enregistrés au moment de
@@ -147,6 +153,11 @@ void setupServiceLocator() {
       () => ChapterReportService(),
       dependsOn: [HttpService]);
 
+  // Progression avec issue typée (lecture partagée, fiche manga). Lazy SANS
+  // `dependsOn` : ses dépendances sont résolues à l'appel.
+  getIt.registerLazySingleton<ChapterProgressService>(
+      () => ChapterProgressService());
+
   // Journal additif des chapitres (Stats v2) — extrait de LibraryService.
   getIt.registerSingletonWithDependencies<ChapterLogService>(
       () => ChapterLogService(),
@@ -232,6 +243,12 @@ void setupServiceLocator() {
   // chaque `cacheLibrary()`, et `null` à la purge (déconnexion / changement
   // de compte) — sans quoi l'index, qui vit en mémoire, survivrait à la
   // purge du trousseau et signalerait la bibliothèque du compte précédent.
+  // Centre de notifications (2026-10). Mêmes précautions : AJOUTÉ EN FIN, en
+  // lazy et SANS `dependsOn` — le service résout HttpService / StorageService
+  // à l'appel. `NotificationCountsService` le lit aussi à l'appel.
+  getIt.registerLazySingleton<NotificationsService>(
+      () => NotificationsService());
+
   getIt.registerLazySingleton<LibraryIndexService>(() {
     final index = LibraryIndexService();
     try {

@@ -220,7 +220,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get pushNotifShareTitle => '새 만화 공유됨';
+  String get pushNotifShareTitle => '새 추천';
 
   @override
   String pushNotifShareBody(String senderUsername, String mangaTitle) {
@@ -1602,7 +1602,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get shareTitle => '이 만화 공유';
+  String get shareTitle => '친구에게 추천하기';
 
   @override
   String get shareMessageHint => '메시지 추가 (선택)';
@@ -1614,10 +1614,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shareSend => '보내기';
 
   @override
-  String get shareSuccess => '공유되었습니다';
+  String get shareSuccess => '추천을 보냈습니다';
 
   @override
-  String get shareFailed => '공유 실패';
+  String get shareFailed => '보내기 실패';
 
   @override
   String get shareLoadError => '친구 목록을 불러올 수 없습니다';
@@ -1943,6 +1943,103 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get readingGroupInviteSoonMessage =>
       '그룹에서 친구를 초대하는 기능이 곧 추가됩니다. 지금은 만화 페이지에서 새 그룹을 만들어 주세요.';
+
+  @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return '마지막으로 다 읽은 화: $chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty => '마지막으로 다 읽은 화를 입력하세요';
+
+  @override
+  String get readingGroupProgressSaving => '저장 중…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle => '화 목록, 온라인 읽기, 작품 정보';
+
+  @override
+  String get readingGroupProgressDialogTitle => '내 진행 상황';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      '마지막으로 다 읽은 화를 입력하세요. 그룹 멤버에게 진행 상황이 표시됩니다.';
+
+  @override
+  String get readingGroupProgressFieldLabel => '마지막으로 다 읽은 화';
+
+  @override
+  String get readingGroupProgressInvalid => '0 이상의 정수를 입력하세요.';
+
+  @override
+  String get readingGroupProgressDecrease => '1화 줄이기';
+
+  @override
+  String get readingGroupProgressIncrease => '1화 늘리기';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return '$name에 맞추기 ($chapter화)';
+  }
+
+  @override
+  String get readingGroupProgressUnknown => '진행 상황을 찾을 수 없습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed => '이 기기에서 링크를 복사할 수 없습니다.';
+
+  @override
+  String get readingGroupCopyLinkManualTitle => '복사 실패 — 링크는 다음과 같습니다';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return '진행 상황 저장됨: $chapter화';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return '진행 상황 저장됨: $chapter화. 작품의 화 수가 업데이트되었습니다.';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return '$chapter화는 작품의 알려진 화 수를 넘습니다. 만화 페이지에서 새 화를 신고하세요.';
+  }
+
+  @override
+  String get chapterProgressThrottled => '연속 변경이 너무 많습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return '오프라인: $chapter화는 네트워크가 연결되면 저장됩니다.';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      '세션이 만료되었습니다. 진행 상황을 저장하려면 다시 로그인하세요.';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      '이 작품은 서재에 없습니다. 진행 상황을 기록하려면 작품 페이지에서 추가하세요.';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return '진행 상황을 저장하지 못했습니다(오류 $code). 다시 시도하세요.';
+  }
+
+  @override
+  String get chapterProgressFailed => '진행 상황을 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return '오프라인으로 저장한 진행 상황($chapter화)이 서버에서 거부되었습니다.';
+  }
+
+  @override
+  String get ratingSaveFailed => '평점을 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get ratingSaveOffline => '오프라인: 평점이 저장되지 않았습니다.';
 
   @override
   String get libraryToggleListView => '목록 보기';
@@ -2413,35 +2510,35 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get communityRecoAdd => '작품 추천하기';
+  String get communityRecoAdd => '비슷한 작품 제안하기';
 
   @override
-  String get communityRecoToggleOn => '나도 추천해요';
+  String get communityRecoToggleOn => '나도 제안해요';
 
   @override
-  String get communityRecoToggleOff => '내 추천 취소';
+  String get communityRecoToggleOff => '내 제안 취소';
 
   @override
-  String get communityRecoAdded => '감사합니다! 추천이 저장되었습니다';
+  String get communityRecoAdded => '감사합니다! 제안이 저장되었습니다';
 
   @override
-  String get communityRecoRemoved => '추천을 취소했습니다';
+  String get communityRecoRemoved => '제안을 취소했습니다';
 
   @override
-  String get communityRecoEmpty => '아직 이 작품에 대한 추천이 없습니다. 첫 번째로 추천해 보세요!';
+  String get communityRecoEmpty => '아직 비슷한 작품 제안이 없습니다. 첫 번째로 제안해 보세요!';
 
   @override
   String get communityRecoLoadError => '추천을 불러오지 못했습니다';
 
   @override
-  String get communityRecoActionError => '추천을 저장하지 못했습니다. 나중에 다시 시도해 주세요.';
+  String get communityRecoActionError => '제안을 저장하지 못했습니다. 나중에 다시 시도해 주세요.';
 
   @override
   String get communityRecoThrottled =>
-      '한 번에 너무 많은 작품을 추천했습니다. 잠시 후 다시 시도해 주세요.';
+      '한 번에 너무 많은 작품을 제안했습니다. 잠시 후 다시 시도해 주세요.';
 
   @override
-  String get communityRecoPickerTitle => '어떤 작품을 추천하시나요?';
+  String get communityRecoPickerTitle => '어떤 비슷한 작품을 제안하시나요?';
 
   @override
   String get communityRecoPickerHint => '작품 검색';
@@ -2617,4 +2714,221 @@ class AppLocalizationsKo extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return '다운로드 ($count)';
   }
+
+  @override
+  String get errorGeneric => '오류가 발생했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get errorTooManyRequests => '시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요';
+
+  @override
+  String get errorServerUnavailable => '서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해 주세요.';
+
+  @override
+  String get errorForbidden => '이 작업을 수행할 권한이 없습니다.';
+
+  @override
+  String get errorNotFound => '찾을 수 없습니다. 삭제되었을 수 있습니다.';
+
+  @override
+  String get errorConflict => '이미 완료된 작업입니다.';
+
+  @override
+  String get errorSessionExpired => '세션이 만료되었습니다. 다시 로그인해 주세요.';
+
+  @override
+  String get notificationsMarkAllRead => '모두 읽음으로 표시';
+
+  @override
+  String get notificationsSettingsTooltip => '알림 설정';
+
+  @override
+  String get notificationsEmptyTitle => '알림이 없습니다';
+
+  @override
+  String get notificationsEmptySubtitle =>
+      '내 서재의 새 소식, 친구 요청, 추천: 모두 여기에 도착합니다.';
+
+  @override
+  String get notificationsLoadError => '알림을 불러올 수 없습니다.';
+
+  @override
+  String get notificationsLoadMoreError => '더 불러올 수 없습니다.';
+
+  @override
+  String get notificationsUnread => '읽지 않음';
+
+  @override
+  String notificationsBellUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '알림, 읽지 않음 $count개',
+      zero: '알림',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsSomeone => '누군가';
+
+  @override
+  String get notificationsSomeTitle => '작품';
+
+  @override
+  String notifItemFriendRequest(String name) {
+    return '$name님이 친구 요청을 보냈습니다';
+  }
+
+  @override
+  String notifItemFriendAccepted(String name) {
+    return '$name님이 친구 요청을 수락했습니다';
+  }
+
+  @override
+  String notifItemMangaShare(String name, String title) {
+    return '$name님이 $title을(를) 추천합니다';
+  }
+
+  @override
+  String notifItemReadingGroupNamed(String name, String group) {
+    return '$name님이 회원님을 함께 읽기 ‘$group’에 추가했습니다';
+  }
+
+  @override
+  String notifItemReadingGroup(String name, String title) {
+    return '$name님이 회원님을 $title 함께 읽기에 추가했습니다';
+  }
+
+  @override
+  String notifItemNewChapters(int count, String title, String chapter) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$title 새 챕터 $count개 ($chapter화)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pushNotifFriendAcceptedTitle => '친구 요청 수락됨';
+
+  @override
+  String get pushNotifReadingGroupTitle => '새 함께 읽기';
+
+  @override
+  String get pushNotifNewChaptersTitle => '새 챕터';
+
+  @override
+  String get notifFriendAcceptedTitle => '수락된 요청';
+
+  @override
+  String get notifFriendAcceptedSubtitle => '누군가 친구 요청을 수락했을 때';
+
+  @override
+  String get notifReadingGroupsTitle => '함께 읽기';
+
+  @override
+  String get notifReadingGroupsSubtitle => '친구가 회원님을 함께 읽기에 추가했을 때';
+
+  @override
+  String get friendsSearchError => '검색에 실패했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get friendsRelationAdd => '추가';
+
+  @override
+  String get friendsRelationFriends => '친구';
+
+  @override
+  String get friendsCancelRequest => '요청 취소';
+
+  @override
+  String friendsSendConfirmTitle(String name) {
+    return '$name님에게 친구 요청을 보낼까요?';
+  }
+
+  @override
+  String get friendsSendConfirmBody => '상대방이 수락하거나 거절할 수 있습니다.';
+
+  @override
+  String get friendsSendConfirmAction => '보내기';
+
+  @override
+  String friendsCancelConfirmTitle(String name) {
+    return '$name님에게 보낸 요청을 취소할까요?';
+  }
+
+  @override
+  String get friendsKeepRequest => '유지';
+
+  @override
+  String get friendsSectionSent => '보낸 요청';
+
+  @override
+  String get friendsRequestCancelled => '요청을 취소했습니다';
+
+  @override
+  String friendsNowFriends(String name) {
+    return '이제 $name님과 친구입니다';
+  }
+
+  @override
+  String get commentsReport => '신고';
+
+  @override
+  String get commentsReportConfirmTitle => '이 댓글을 신고할까요?';
+
+  @override
+  String get commentsReportConfirmBody => '운영팀이 검토합니다.';
+
+  @override
+  String get commentsReportSuccess => '신고해 주셔서 감사합니다.';
+
+  @override
+  String get commentsMoreActions => '더 보기';
+
+  @override
+  String get similarTitles => '비슷한 작품';
+
+  @override
+  String receivedShareBy(String name) {
+    return '$name님의 추천';
+  }
+
+  @override
+  String receivedShareByMany(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$name님 외 $count명의 추천',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receivedShareMessage(String message) {
+    return '“$message”';
+  }
+
+  @override
+  String get routeNotFoundTitle => '페이지를 찾을 수 없습니다';
+
+  @override
+  String get routeNotFoundMessage => '이 주소에 해당하는 페이지가 없습니다.';
+
+  @override
+  String get backToHome => '홈으로 돌아가기';
+
+  @override
+  String get newVersionAvailable => '앱의 새 버전을 사용할 수 있습니다.';
+
+  @override
+  String get reloadApp => '새로고침';
+
+  @override
+  String get carouselPrevious => '이전 작품';
+
+  @override
+  String get carouselNext => '다음 작품';
 }

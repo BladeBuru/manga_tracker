@@ -22,6 +22,7 @@ import 'package:mangatracker/core/theme/app_radius.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/features/comments/widgets/comments_section.dart';
 import 'package:mangatracker/features/sharing/widgets/shared_reading_section.dart';
+import 'package:mangatracker/features/sharing/widgets/received_share_banner.dart';
 
 class LateDetailView extends StatefulWidget {
   final String muId;
@@ -41,6 +42,11 @@ class LateDetailView extends StatefulWidget {
   final List<AuthorDto>? authors;
   final String year;
   final num readChapters;
+
+  /// Change à chaque enregistrement de progression REFUSÉ : la valeur
+  /// affichée par anticipation est annulée (avant : la fiche entière laissait
+  /// place à un écran d'erreur).
+  final int? progressFailureAttempt;
 
   /// Le manga est-il dans la bibliothèque de l'utilisateur ? Pilote
   /// l'affichage du CTA « Signaler plus de chapitres » (chantier A) — y
@@ -73,6 +79,7 @@ class LateDetailView extends StatefulWidget {
     this.authors,
     required this.year,
     required this.readChapters,
+    this.progressFailureAttempt,
     this.inLibrary = false,
     this.genres,
     this.onReadCountChanged,
@@ -501,6 +508,17 @@ class _LateDetailViewState extends State<LateDetailView> {
   @override
   void didUpdateWidget(LateDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final failure = widget.progressFailureAttempt;
+    if (failure != null && failure != oldWidget.progressFailureAttempt) {
+      // Refus : retour à la valeur enregistrée, chapitres de nouveau
+      // cliquables (le message vient de la fiche).
+      setState(() {
+        _currentReadCount = widget.readChapters;
+        _isSaving = false;
+        _pendingChapterUpdate = null;
+      });
+      return;
+    }
     // Si les chapitres ont changé et correspondent à notre mise à jour en attente
     if (widget.readChapters != oldWidget.readChapters) {
       if (_pendingChapterUpdate != null &&
@@ -561,6 +579,8 @@ class _LateDetailViewState extends State<LateDetailView> {
             // Phase 8.3 (2026-05-18) : section "Lecture partagée" si l'user
             // fait partie d'un reading group pour ce manga (sinon invisible).
             SharedReadingSection(muId: int.tryParse(widget.muId) ?? 0),
+            // « Recommandé par Léa : « message » » si un ami me l'a envoyé.
+            ReceivedShareBanner(muId: int.tryParse(widget.muId) ?? 0),
             // Informations principales V1 (chapitres · note · statut · année ·
             // auteur · artiste) regroupées dans une seule card hairline avec
             // rows label-uppercase / valeur. Remplace l'ancienne grille 6-cells

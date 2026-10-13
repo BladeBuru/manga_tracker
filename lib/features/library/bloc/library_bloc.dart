@@ -6,6 +6,7 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/cache_helper_service.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/sync_service.dart';
+import 'package:mangatracker/features/library/services/chapter_progress.service.dart';
 import 'package:mangatracker/features/library/services/library.service.dart';
 import 'package:mangatracker/features/library/services/reading_status_auto_update.service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
@@ -25,6 +26,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<void>? _syncSubscription;
   StreamSubscription<List<MangaQuickViewDto>>? _librarySubscription;
+  StreamSubscription<void>? _progressSubscription;
+  Timer? _progressReload;
 
   /// Numéro du dernier chargement lancé. Les évènements étant traités en
   /// parallèle, un chargement plus ancien (retour de fiche, changement
@@ -46,6 +49,21 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     _initializeConnectivityListener();
     _checkInitialConnectivity();
     _listenToSync();
+    _listenToProgress();
+  }
+
+  /// Progression enregistrée hors de la bibliothèque (fenêtre « Ma
+  /// progression » d'une lecture partagée, fiche du manga) : la liste se
+  /// recharge — une seule fois pour une rafale de chapitres.
+  void _listenToProgress() {
+    if (!getIt.isRegistered<ChapterProgressService>()) return;
+    _progressSubscription =
+        getIt<ChapterProgressService>().changes.listen((_) {
+      _progressReload?.cancel();
+      _progressReload = Timer(const Duration(seconds: 1), () {
+        if (!isClosed) add(const LoadLibrary());
+      });
+    });
   }
 
   /// Modifications hors ligne envoyées : la liste et le compteur « en
@@ -63,6 +81,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   @override
   Future<void> close() {
     _syncSubscription?.cancel();
+    _progressSubscription?.cancel();
+    _progressReload?.cancel();
     _connectivitySubscription?.cancel();
     _librarySubscription?.cancel();
     return super.close();

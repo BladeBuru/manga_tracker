@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
@@ -64,7 +65,11 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     );
   }
 
-  void _goHome() => context.go('/home');
+  /// Jetons enregistrés par le Cubit : connecté, l'entrée du lien est
+  /// remplacée par l'accueil.
+  void _goHome() {
+    if (mounted) AuthNavigation.completeSignIn(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +93,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 confirmController: _confirmController,
                 validator: _validator,
                 onSubmit: _submit,
-                onBack: () => Navigator.of(context).pop(),
+                onBack: () => popOrGo(context, fallback: '/login'),
                 l10n: l10n,
               ),
             );

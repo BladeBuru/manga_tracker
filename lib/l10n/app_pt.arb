@@ -70,7 +70,7 @@
       }
     }
   },
-  "pushNotifShareTitle": "Novo mangá compartilhado",
+  "pushNotifShareTitle": "Nova recomendação",
   "pushNotifShareBody": "{senderUsername} recomenda {mangaTitle}",
   "@pushNotifShareBody": {
     "placeholders": {
@@ -787,7 +787,7 @@
       }
     }
   },
-  "shareTitle": "Compartilhar este mangá",
+  "shareTitle": "Recomendar a um amigo",
   "@shareTitle": {},
   "shareMessageHint": "Adicionar uma mensagem (opcional)",
   "@shareMessageHint": {},
@@ -795,9 +795,9 @@
   "@shareCancel": {},
   "shareSend": "Enviar",
   "@shareSend": {},
-  "shareSuccess": "Mangá compartilhado",
+  "shareSuccess": "Recomendação enviada",
   "@shareSuccess": {},
-  "shareFailed": "Falha ao compartilhar",
+  "shareFailed": "Falha ao enviar",
   "@shareFailed": {},
   "shareLoadError": "Não foi possível carregar seus amigos",
   "@shareLoadError": {},
@@ -1065,6 +1065,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Convidar a partir do grupo chega muito em breve. Por agora, cria um novo grupo na página do manga.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Último capítulo terminado: {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Indica o último capítulo que terminaste",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "A guardar…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Capítulos, leitura online e detalhes do título",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "O meu progresso",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Indica o último capítulo que terminaste. Os membros do grupo verão o teu progresso.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Último capítulo terminado",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Introduz um número inteiro, 0 ou mais.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "Menos um capítulo",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "Mais um capítulo",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Acompanhar {name} (cap. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Não foi possível obter o teu progresso. Tenta novamente daqui a pouco.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "Não foi possível copiar a ligação neste dispositivo.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Não foi possível copiar — eis a ligação",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Progresso guardado: capítulo {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Progresso guardado: capítulo {chapter}. O número de capítulos do título foi atualizado.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "O capítulo {chapter} ultrapassa o número de capítulos conhecido do título. Assinala os novos capítulos na página do manga.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Demasiadas alterações seguidas. Tenta novamente daqui a uns instantes.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Sem ligação: o capítulo {chapter} será guardado quando a rede voltar.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "A tua sessão expirou: volta a iniciar sessão para guardar o teu progresso.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "Este título não está na tua biblioteca: adiciona-o na sua página para acompanhar o teu progresso.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "Não foi possível guardar o progresso (erro {code}). Tenta novamente.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "Não foi possível guardar o progresso. Tenta novamente.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Um progresso guardado sem ligação (capítulo {chapter}) foi recusado pelo servidor.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Não foi possível guardar a tua avaliação. Tenta novamente.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Sem ligação: a tua avaliação não foi guardada.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "Vista em lista",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Vista em cartões",
@@ -1321,16 +1424,16 @@
       }
     }
   },
-  "communityRecoAdd": "Recomendar uma obra",
-  "communityRecoToggleOn": "Também recomendo",
-  "communityRecoToggleOff": "Remover minha recomendação",
-  "communityRecoAdded": "Obrigado! Sua recomendação foi salva",
-  "communityRecoRemoved": "Recomendação removida",
-  "communityRecoEmpty": "Ninguém recomendou uma obra para este título ainda. Seja o primeiro!",
+  "communityRecoAdd": "Sugerir um título semelhante",
+  "communityRecoToggleOn": "Também sugiro",
+  "communityRecoToggleOff": "Remover minha sugestão",
+  "communityRecoAdded": "Obrigado! Sua sugestão foi salva",
+  "communityRecoRemoved": "Sugestão removida",
+  "communityRecoEmpty": "Ninguém sugeriu um título semelhante ainda. Seja o primeiro!",
   "communityRecoLoadError": "Não foi possível carregar as recomendações",
-  "communityRecoActionError": "Não foi possível salvar a recomendação. Tente novamente mais tarde.",
-  "communityRecoThrottled": "Você recomendou muitas obras de uma vez. Tente novamente em instantes.",
-  "communityRecoPickerTitle": "Qual obra você recomenda?",
+  "communityRecoActionError": "Não foi possível salvar a sugestão. Tente novamente mais tarde.",
+  "communityRecoThrottled": "Você sugeriu muitos títulos de uma vez. Tente novamente em instantes.",
+  "communityRecoPickerTitle": "Qual título semelhante você sugere?",
   "communityRecoPickerHint": "Pesquisar um título",
   "communityRecoPickerEmpty": "Nenhum título encontrado",
   "communityRecoReadersAlsoRead": "Leitores deste título também leem",
@@ -1481,5 +1584,63 @@
         "type": "int"
       }
     }
-  }
+  },
+  "errorGeneric": "Ocorreu um erro. Tente novamente.",
+  "errorTooManyRequests": "Muitas tentativas, tente novamente em instantes",
+  "errorServerUnavailable": "O serviço está temporariamente indisponível. Tente novamente mais tarde.",
+  "errorForbidden": "Você não tem permissão para fazer isso.",
+  "errorNotFound": "Não encontrado: talvez tenha sido excluído.",
+  "errorConflict": "Isso já foi feito.",
+  "errorSessionExpired": "Sua sessão expirou. Entre novamente.",
+  "notificationsMarkAllRead": "Marcar tudo como lido",
+  "notificationsSettingsTooltip": "Configurações de notificações",
+  "notificationsEmptyTitle": "Nenhuma notificação",
+  "notificationsEmptySubtitle": "Novidades da sua biblioteca, pedidos de amizade, recomendações: tudo chega aqui.",
+  "notificationsLoadError": "Não foi possível carregar as notificações.",
+  "notificationsLoadMoreError": "Não foi possível carregar mais.",
+  "notificationsUnread": "Não lida",
+  "notificationsBellUnread": "{count, plural, =0{Notificações} =1{Notificações, 1 não lida} other{Notificações, {count} não lidas}}",
+  "notificationsSomeone": "Alguém",
+  "notificationsSomeTitle": "um título",
+  "notifItemFriendRequest": "{name} enviou um pedido de amizade",
+  "notifItemFriendAccepted": "{name} aceitou seu pedido de amizade",
+  "notifItemMangaShare": "{name} recomenda {title} para você",
+  "notifItemReadingGroupNamed": "{name} adicionou você à leitura compartilhada “{group}”",
+  "notifItemReadingGroup": "{name} adicionou você a uma leitura compartilhada de {title}",
+  "notifItemNewChapters": "{count, plural, =1{Novo capítulo de {title} (cap. {chapter})} other{{count} novos capítulos de {title} (cap. {chapter})}}",
+  "pushNotifFriendAcceptedTitle": "Pedido de amizade aceito",
+  "pushNotifReadingGroupTitle": "Nova leitura compartilhada",
+  "pushNotifNewChaptersTitle": "Novos capítulos",
+  "notifFriendAcceptedTitle": "Pedidos aceitos",
+  "notifFriendAcceptedSubtitle": "Alguém aceitou seu pedido de amizade",
+  "notifReadingGroupsTitle": "Leituras compartilhadas",
+  "notifReadingGroupsSubtitle": "Um amigo adiciona você a uma leitura compartilhada",
+  "friendsSearchError": "A busca falhou. Tente novamente.",
+  "friendsRelationAdd": "Adicionar",
+  "friendsRelationFriends": "Amigo",
+  "friendsCancelRequest": "Cancelar pedido",
+  "friendsSendConfirmTitle": "Enviar um pedido de amizade para {name}?",
+  "friendsSendConfirmBody": "Essa pessoa poderá aceitar ou recusar.",
+  "friendsSendConfirmAction": "Enviar",
+  "friendsCancelConfirmTitle": "Cancelar o pedido enviado para {name}?",
+  "friendsKeepRequest": "Manter",
+  "friendsSectionSent": "Pedidos enviados",
+  "friendsRequestCancelled": "Pedido cancelado",
+  "friendsNowFriends": "Você e {name} agora são amigos",
+  "commentsReport": "Denunciar",
+  "commentsReportConfirmTitle": "Denunciar este comentário?",
+  "commentsReportConfirmBody": "Nossa equipe de moderação vai analisá-lo.",
+  "commentsReportSuccess": "Obrigado, o comentário foi denunciado.",
+  "commentsMoreActions": "Mais ações",
+  "similarTitles": "Títulos semelhantes",
+  "receivedShareBy": "Recomendado por {name}",
+  "receivedShareByMany": "{count, plural, =1{Recomendado por {name} e mais 1 amigo} other{Recomendado por {name} e mais {count} amigos}}",
+  "receivedShareMessage": "“{message}”",
+  "routeNotFoundTitle": "Página não encontrada",
+  "routeNotFoundMessage": "Este endereço não corresponde a nenhuma página do aplicativo.",
+  "backToHome": "Voltar ao início",
+  "newVersionAvailable": "Uma nova versão do aplicativo está disponível.",
+  "reloadApp": "Recarregar",
+  "carouselPrevious": "Títulos anteriores",
+  "carouselNext": "Próximos títulos"
 }

@@ -34,50 +34,55 @@ class ReadingGroupActionRow extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final titleColor = danger ? AppColors.primary : scheme.onSurface;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            PastelTile(icon: icon, color: color),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.075,
-                      color: titleColor,
-                    ),
-                  ),
-                  if (subtitle != null && subtitle!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+    // Désactivée (onTap null) : atténuée, pour que l'explication du
+    // sous-titre se lise comme une raison et non comme une action.
+    return Opacity(
+      opacity: onTap == null ? 0.55 : 1,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              PastelTile(icon: icon, color: color),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      subtitle!,
+                      title,
                       style: TextStyle(
-                        fontSize: 12.5,
-                        height: 1.3,
-                        color: AppColors.dsText2(brightness),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.075,
+                        color: titleColor,
                       ),
                     ),
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.3,
+                          color: AppColors.dsText2(brightness),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: AppColors.dsText3(brightness),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.dsText3(brightness),
+              ),
+            ],
+          ),
         ),
       ),
     );

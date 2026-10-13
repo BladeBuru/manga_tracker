@@ -69,8 +69,13 @@ jobs:
       - name: flutter analyze (info only)
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
+      # Mêmes options que deploy/web/Dockerfile (image réellement déployée).
       - name: flutter build web
-        run: flutter build web --release --base-href "/"
+        run: |
+          APP_VERSION="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | tr -d '\r')"
+          flutter build web --release --base-href "/" --pwa-strategy=none \
+            --dart-define=MT_WEB_BUILD="$APP_VERSION"
+          cp deploy/web/flutter_service_worker.js build/web/flutter_service_worker.js
 
       - name: Build artifacts size
         run: |

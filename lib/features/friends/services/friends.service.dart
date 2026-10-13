@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:mangatracker/core/network/api_exception.dart';
 import 'package:mangatracker/core/network/http_service.dart';
-import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/storage/services/storage.service.dart';
@@ -11,21 +11,37 @@ import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
 
 /// Service côté Flutter pour le système d'amis (Phase 6).
 ///
-/// Cache 24h sur la liste d'amis acceptés (clé `cached_friends`) pour
-/// affichage offline. Les demandes en attente ne sont PAS cachées
-/// (UI doit refléter l'état serveur en temps quasi-réel pour le badge).
+/// Cache de la liste d'amis acceptés (clé `cached_friends`) pour l'affichage
+/// hors ligne. **5 minutes** seulement (24 h avant) : les sélecteurs
+/// « Recommander à un ami » / « Lire à deux » proposaient des amitiés
+/// supprimées depuis, d'où des 403 bruts à la création d'un groupe. Les
+/// sélecteurs et la page Amis forcent d'ailleurs le rafraîchissement ; le
+/// cache ne sert plus que de repli hors ligne.
+///
+/// Les demandes (reçues, envoyées) ne sont PAS cachées : l'interface doit
+/// refléter l'état serveur. Toute réponse non 2xx lève [ApiException], dont
+/// le message (409 « déjà demandé », 403…) s'affiche via
+/// `userFacingErrorMessage`.
 class FriendsService {
   static const String _friendsCacheKey = 'cached_friends';
   static const String _friendsCacheAtKey = 'cached_friends_at';
-  static const Duration _friendsCacheTtl = Duration(hours: 24);
+  static const Duration _friendsCacheTtl = Duration(minutes: 5);
 
-  final HttpService _http = getIt<HttpService>();
-  final StorageService _storage = getIt<StorageService>();
+  final HttpService? _httpOverride;
+  final StorageService? _storageOverride;
+
+  FriendsService({HttpService? http, StorageService? storage})
+      : _httpOverride = http,
+        _storageOverride = storage;
+
+  HttpService get _http => _httpOverride ?? getIt<HttpService>();
+  StorageService get _storage => _storageOverride ?? getIt<StorageService>();
 
   Future<FriendsService> init() async => this;
 
-  /// Liste des amis acceptés. Si `forceRefresh = false` et cache < 24h,
-  /// retourne le cache (fast path). Sinon fetch + cache.
+  /// Liste des amis acceptés. Sans [forceRefresh] et cache < 5 min : cache.
+  /// Sinon réseau ; sur échec (réseau coupé compris), dernier cache connu,
+  /// à défaut l'erreur remonte.
   Future<List<FriendshipDto>> getAcceptedFriends({
     bool forceRefresh = false,
   }) async {
@@ -33,18 +49,30 @@ class FriendsService {
       final cached = await _readCacheIfFresh();
       if (cached != null) return cached;
     }
-    final res = await _http.getWithAuthTokens(buildApiUri('/friends'));
-    if (res.statusCode != HttpStatus.ok) {
-      // Fallback cache stale en cas d'erreur réseau.
+    try {
+      final list = await _getFriendships('/friends');
+      await _writeCache(list);
+      return list;
+    } catch (e) {
       final stale = await _readCacheIgnoringTtl();
       if (stale != null) return stale;
-      throw Exception('getAcceptedFriends failed: ${res.statusCode}');
+      rethrow;
     }
-    final list = (jsonDecode(res.body) as List<dynamic>)
-        .map((e) => FriendshipDto.fromJson(e as Map<String, dynamic>))
-        .toList();
-    await _writeCache(list);
-    return list;
+  }
+
+  /// Amitié acceptée avec [friendUserId], ou `null` (inconnue, hors ligne
+  /// sans cache). Sert au profil d'un ami ouvert par lien direct, qui n'a
+  /// pas reçu le nom à afficher.
+  Future<FriendshipDto?> findAcceptedFriend(int friendUserId) async {
+    try {
+      final friends = await getAcceptedFriends();
+      for (final friend in friends) {
+        if (friend.otherUserId == friendUserId) return friend;
+      }
+    } catch (_) {
+      // Le nom manquera simplement : la bibliothèque reste affichée.
+    }
+    return null;
   }
 
   /// Bibliothèque d'un ami accepté (`GET /friends/:id/library`).
@@ -55,26 +83,29 @@ class FriendsService {
     final res = await _http.getWithAuthTokens(
       buildApiUri('/friends/$friendUserId/library'),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('getFriendLibrary failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     return (jsonDecode(res.body) as List<dynamic>)
         .map((e) => MangaQuickViewDto.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   /// Demandes reçues en attente. Pas de cache — toujours fresh pour le badge.
-  Future<List<FriendshipDto>> getPendingRequests() async {
-    final res = await _http.getWithAuthTokens(buildApiUri('/friends/pending'));
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('getPendingRequests failed: ${res.statusCode}');
+  Future<List<FriendshipDto>> getPendingRequests() =>
+      _getFriendships('/friends/pending');
+
+  /// Demandes que J'AI envoyées, encore en attente (`GET /friends/sent`).
+  /// Ancien serveur sans la route (404) → liste vide, pas une erreur.
+  Future<List<FriendshipDto>> getSentRequests() async {
+    try {
+      return await _getFriendships('/friends/sent');
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return const [];
+      rethrow;
     }
-    return (jsonDecode(res.body) as List<dynamic>)
-        .map((e) => FriendshipDto.fromJson(e as Map<String, dynamic>))
-        .toList();
   }
 
-  /// Envoie une demande d'amitié par username OU userId.
+  /// Envoie une demande d'amitié par username OU userId. 409 si une demande
+  /// existe déjà (message du serveur).
   Future<FriendshipDto> sendRequest({
     int? addresseeId,
     String? addresseeUsername,
@@ -88,14 +119,11 @@ class FriendsService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
     );
-    if (res.statusCode == HttpStatus.ok ||
-        res.statusCode == HttpStatus.created) {
-      // Invalide le cache amis : une demande acceptée auto (sens inverse)
-      // peut avoir fait basculer la relation en `accepted`.
-      await invalidateCache();
-      return FriendshipDto.fromJson(jsonDecode(res.body));
-    }
-    throw Exception('sendRequest failed: ${res.statusCode} ${res.body}');
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
+    // Invalide le cache amis : une demande acceptée auto (sens inverse)
+    // peut avoir fait basculer la relation en `accepted`.
+    await invalidateCache();
+    return FriendshipDto.fromJson(jsonDecode(res.body));
   }
 
   /// Accepte / rejette / bloque une demande pending.
@@ -108,33 +136,29 @@ class FriendsService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'status': newStatus.value}),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('updateStatus failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     await invalidateCache();
     return FriendshipDto.fromJson(jsonDecode(res.body));
   }
 
-  /// Supprime une amitié (les deux côtés peuvent supprimer).
+  /// Supprime une amitié, refuse une demande reçue ou **annule** une demande
+  /// envoyée (même route `DELETE /friends/:id`).
   Future<void> deleteFriendship(int friendshipId) async {
     final res = await _http.deleteWithAuthTokens(
       buildApiUri('/friends/$friendshipId'),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('deleteFriendship failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     await invalidateCache();
   }
 
-  /// Recherche d'utilisateurs pour autocomplete (min 2 chars).
+  /// Recherche d'utilisateurs (pseudo OU nom affiché, min 2 caractères).
+  /// Les personnes déjà liées sont renvoyées avec leur `relation`.
   Future<List<UserSearchResultDto>> searchUsers(String query) async {
     if (query.trim().length < 2) return [];
     final res = await _http.getWithAuthTokens(
       buildApiUri('/friends/search', {'q': query.trim()}),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('searchUsers failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     return (jsonDecode(res.body) as List<dynamic>)
         .map((e) => UserSearchResultDto.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -144,6 +168,14 @@ class FriendsService {
   Future<void> invalidateCache() async {
     await _storage.deleteSecureData(_friendsCacheKey);
     await _storage.deleteSecureData(_friendsCacheAtKey);
+  }
+
+  Future<List<FriendshipDto>> _getFriendships(String path) async {
+    final res = await _http.getWithAuthTokens(buildApiUri(path));
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
+    return (jsonDecode(res.body) as List<dynamic>)
+        .map((e) => FriendshipDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<FriendshipDto>?> _readCacheIfFresh() async {

@@ -227,7 +227,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get pushNotifShareTitle => 'Nouveau manga partagé';
+  String get pushNotifShareTitle => 'Nouvelle recommandation';
 
   @override
   String pushNotifShareBody(String senderUsername, String mangaTitle) {
@@ -1664,7 +1664,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get shareTitle => 'Partager ce manga';
+  String get shareTitle => 'Recommander à un ami';
 
   @override
   String get shareMessageHint => 'Ajouter un message (optionnel)';
@@ -1676,10 +1676,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shareSend => 'Envoyer';
 
   @override
-  String get shareSuccess => 'Manga partagé';
+  String get shareSuccess => 'Recommandation envoyée';
 
   @override
-  String get shareFailed => 'Échec du partage';
+  String get shareFailed => 'Échec de l\'envoi';
 
   @override
   String get shareLoadError => 'Impossible de charger vos amis';
@@ -2019,6 +2019,113 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get readingGroupInviteSoonMessage =>
       'L\'invitation depuis le groupe arrive très bientôt. Pour l\'instant, recrée un groupe depuis la fiche d\'un manga.';
+
+  @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return 'Dernier chapitre terminé : $chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty =>
+      'Indique le dernier chapitre que tu as terminé';
+
+  @override
+  String get readingGroupProgressSaving => 'Enregistrement…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle =>
+      'Chapitres, lecture en ligne et détails du titre';
+
+  @override
+  String get readingGroupProgressDialogTitle => 'Ma progression';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      'Indique le dernier chapitre que tu as terminé. Les membres du groupe verront ta progression.';
+
+  @override
+  String get readingGroupProgressFieldLabel => 'Dernier chapitre terminé';
+
+  @override
+  String get readingGroupProgressInvalid =>
+      'Saisis un nombre entier, 0 ou plus.';
+
+  @override
+  String get readingGroupProgressDecrease => 'Un chapitre de moins';
+
+  @override
+  String get readingGroupProgressIncrease => 'Un chapitre de plus';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return 'Me caler sur $name (ch. $chapter)';
+  }
+
+  @override
+  String get readingGroupProgressUnknown =>
+      'Ta progression n\'a pas pu être retrouvée. Réessaie dans un instant.';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed =>
+      'Impossible de copier le lien sur cet appareil.';
+
+  @override
+  String get readingGroupCopyLinkManualTitle =>
+      'Copie impossible — voici le lien';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return 'Progression enregistrée : chapitre $chapter';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return 'Progression enregistrée : chapitre $chapter. Le nombre de chapitres du titre a été mis à jour.';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return 'Le chapitre $chapter dépasse le nombre de chapitres connu du titre. Signale les nouveaux chapitres depuis la fiche du manga.';
+  }
+
+  @override
+  String get chapterProgressThrottled =>
+      'Trop de modifications d\'affilée. Réessaie dans quelques instants.';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return 'Hors ligne : le chapitre $chapter sera enregistré au retour du réseau.';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      'Ta session a expiré : reconnecte-toi pour enregistrer ta progression.';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      'Ce titre n\'est pas dans ta bibliothèque : ajoute-le depuis sa fiche pour suivre ta progression.';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return 'La progression n\'a pas pu être enregistrée (erreur $code). Réessaie.';
+  }
+
+  @override
+  String get chapterProgressFailed =>
+      'La progression n\'a pas pu être enregistrée. Réessaie.';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return 'Une progression enregistrée hors ligne (chapitre $chapter) a été refusée par le serveur.';
+  }
+
+  @override
+  String get ratingSaveFailed =>
+      'Ta note n\'a pas pu être enregistrée. Réessaie.';
+
+  @override
+  String get ratingSaveOffline =>
+      'Hors ligne : ta note n\'a pas été enregistrée.';
 
   @override
   String get libraryToggleListView => 'Vue liste';
@@ -2514,24 +2621,23 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get communityRecoAdd => 'Recommander une œuvre';
+  String get communityRecoAdd => 'Suggérer un titre similaire';
 
   @override
-  String get communityRecoToggleOn => 'Je recommande aussi';
+  String get communityRecoToggleOn => 'Je le suggère aussi';
 
   @override
-  String get communityRecoToggleOff => 'Retirer ma recommandation';
+  String get communityRecoToggleOff => 'Retirer ma suggestion';
 
   @override
-  String get communityRecoAdded =>
-      'Merci ! Votre recommandation est enregistrée';
+  String get communityRecoAdded => 'Merci ! Votre suggestion est enregistrée';
 
   @override
-  String get communityRecoRemoved => 'Recommandation retirée';
+  String get communityRecoRemoved => 'Suggestion retirée';
 
   @override
   String get communityRecoEmpty =>
-      'Personne n\'a encore recommandé d\'œuvre pour ce titre. Soyez le premier !';
+      'Personne n\'a encore suggéré de titre similaire. Soyez le premier !';
 
   @override
   String get communityRecoLoadError =>
@@ -2539,14 +2645,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityRecoActionError =>
-      'Impossible d\'enregistrer la recommandation. Réessayez plus tard.';
+      'Impossible d\'enregistrer la suggestion. Réessayez plus tard.';
 
   @override
   String get communityRecoThrottled =>
-      'Vous avez recommandé beaucoup d\'œuvres d\'un coup. Réessayez dans un moment.';
+      'Vous avez suggéré beaucoup de titres d\'un coup. Réessayez dans un moment.';
 
   @override
-  String get communityRecoPickerTitle => 'Quelle œuvre recommandez-vous ?';
+  String get communityRecoPickerTitle => 'Quel titre similaire suggérez-vous ?';
 
   @override
   String get communityRecoPickerHint => 'Rechercher un titre';
@@ -2751,4 +2857,233 @@ class AppLocalizationsFr extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'Télécharger ($count)';
   }
+
+  @override
+  String get errorGeneric => 'Une erreur est survenue. Réessayez.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Trop de tentatives, réessayez dans un instant';
+
+  @override
+  String get errorServerUnavailable =>
+      'Le service est momentanément indisponible. Réessayez plus tard.';
+
+  @override
+  String get errorForbidden => 'Vous n\'avez pas accès à cette action.';
+
+  @override
+  String get errorNotFound =>
+      'Introuvable : l\'élément a peut-être été supprimé.';
+
+  @override
+  String get errorConflict => 'C\'est déjà fait.';
+
+  @override
+  String get errorSessionExpired => 'Votre session a expiré. Reconnectez-vous.';
+
+  @override
+  String get notificationsMarkAllRead => 'Tout marquer comme lu';
+
+  @override
+  String get notificationsSettingsTooltip => 'Réglages des notifications';
+
+  @override
+  String get notificationsEmptyTitle => 'Aucune notification';
+
+  @override
+  String get notificationsEmptySubtitle =>
+      'Nouvelles sorties de votre bibliothèque, demandes d\'amis, recommandations : tout arrive ici.';
+
+  @override
+  String get notificationsLoadError =>
+      'Impossible de charger les notifications.';
+
+  @override
+  String get notificationsLoadMoreError => 'Impossible de charger la suite.';
+
+  @override
+  String get notificationsUnread => 'Non lue';
+
+  @override
+  String notificationsBellUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Notifications, $count non lues',
+      one: 'Notifications, 1 non lue',
+      zero: 'Notifications',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsSomeone => 'Quelqu\'un';
+
+  @override
+  String get notificationsSomeTitle => 'un titre';
+
+  @override
+  String notifItemFriendRequest(String name) {
+    return '$name vous a envoyé une demande d\'ami';
+  }
+
+  @override
+  String notifItemFriendAccepted(String name) {
+    return '$name a accepté votre demande d\'ami';
+  }
+
+  @override
+  String notifItemMangaShare(String name, String title) {
+    return '$name vous recommande $title';
+  }
+
+  @override
+  String notifItemReadingGroupNamed(String name, String group) {
+    return '$name vous a ajouté à la lecture partagée « $group »';
+  }
+
+  @override
+  String notifItemReadingGroup(String name, String title) {
+    return '$name vous a ajouté à une lecture partagée de $title';
+  }
+
+  @override
+  String notifItemNewChapters(int count, String title, String chapter) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nouveaux chapitres de $title (ch. $chapter)',
+      one: 'Nouveau chapitre de $title (ch. $chapter)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pushNotifFriendAcceptedTitle => 'Demande d\'ami acceptée';
+
+  @override
+  String get pushNotifReadingGroupTitle => 'Nouvelle lecture partagée';
+
+  @override
+  String get pushNotifNewChaptersTitle => 'Nouveaux chapitres';
+
+  @override
+  String get notifFriendAcceptedTitle => 'Demandes acceptées';
+
+  @override
+  String get notifFriendAcceptedSubtitle => 'Un ami a accepté votre demande';
+
+  @override
+  String get notifReadingGroupsTitle => 'Lectures partagées';
+
+  @override
+  String get notifReadingGroupsSubtitle =>
+      'Un ami vous ajoute à une lecture partagée';
+
+  @override
+  String get friendsSearchError => 'La recherche a échoué. Réessayez.';
+
+  @override
+  String get friendsRelationAdd => 'Ajouter';
+
+  @override
+  String get friendsRelationFriends => 'Ami';
+
+  @override
+  String get friendsCancelRequest => 'Annuler la demande';
+
+  @override
+  String friendsSendConfirmTitle(String name) {
+    return 'Envoyer une demande d\'ami à $name ?';
+  }
+
+  @override
+  String get friendsSendConfirmBody =>
+      'Cette personne pourra l\'accepter ou la refuser.';
+
+  @override
+  String get friendsSendConfirmAction => 'Envoyer';
+
+  @override
+  String friendsCancelConfirmTitle(String name) {
+    return 'Annuler la demande envoyée à $name ?';
+  }
+
+  @override
+  String get friendsKeepRequest => 'Garder';
+
+  @override
+  String get friendsSectionSent => 'Demandes envoyées';
+
+  @override
+  String get friendsRequestCancelled => 'Demande annulée';
+
+  @override
+  String friendsNowFriends(String name) {
+    return 'Vous et $name êtes maintenant amis';
+  }
+
+  @override
+  String get commentsReport => 'Signaler';
+
+  @override
+  String get commentsReportConfirmTitle => 'Signaler ce commentaire ?';
+
+  @override
+  String get commentsReportConfirmBody =>
+      'L\'équipe de modération l\'examinera.';
+
+  @override
+  String get commentsReportSuccess => 'Merci, le commentaire a été signalé.';
+
+  @override
+  String get commentsMoreActions => 'Plus d\'actions';
+
+  @override
+  String get similarTitles => 'Titres similaires';
+
+  @override
+  String receivedShareBy(String name) {
+    return 'Recommandé par $name';
+  }
+
+  @override
+  String receivedShareByMany(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recommandé par $name et $count autres amis',
+      one: 'Recommandé par $name et 1 autre ami',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receivedShareMessage(String message) {
+    return '« $message »';
+  }
+
+  @override
+  String get routeNotFoundTitle => 'Page introuvable';
+
+  @override
+  String get routeNotFoundMessage =>
+      'Cette adresse ne correspond à aucune page de l\'application.';
+
+  @override
+  String get backToHome => 'Retour à l\'accueil';
+
+  @override
+  String get newVersionAvailable =>
+      'Une nouvelle version de l\'application est disponible.';
+
+  @override
+  String get reloadApp => 'Recharger';
+
+  @override
+  String get carouselPrevious => 'Titres précédents';
+
+  @override
+  String get carouselNext => 'Titres suivants';
 }

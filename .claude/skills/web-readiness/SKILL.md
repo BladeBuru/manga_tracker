@@ -91,7 +91,7 @@ LayoutBuilder(
 }
 ```
 
-Service worker généré par Flutter (`flutter_service_worker.js`) — vérifier qu'il est activé dans `web/index.html`.
+⚠️ **Pas de service worker de cache** (décision 2026-10) : build en `--pwa-strategy=none`, `web/flutter_bootstrap.js` sans `serviceWorkerSettings`, interrupteur d'arrêt `deploy/web/flutter_service_worker.js`. L'ancien worker « hors ligne d'abord » servait une version périmée — cf. `deploy/web/README.md`.
 
 ---
 

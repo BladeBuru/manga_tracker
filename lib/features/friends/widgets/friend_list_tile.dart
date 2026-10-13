@@ -23,6 +23,9 @@ class FriendListTile extends StatelessWidget {
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
 
+  /// Demande envoyée : trailing = « Annuler la demande » (icône + infobulle).
+  final VoidCallback? onCancelRequest;
+
   const FriendListTile({
     super.key,
     required this.friendship,
@@ -31,6 +34,7 @@ class FriendListTile extends StatelessWidget {
     this.onReject,
     this.onRemove,
     this.onTap,
+    this.onCancelRequest,
   });
 
   @override
@@ -83,6 +87,15 @@ class FriendListTile extends StatelessWidget {
             const SizedBox(width: 8),
             if (showAcceptReject)
               _PendingActions(onAccept: onAccept, onReject: onReject)
+            else if (onCancelRequest != null)
+              IconButton(
+                onPressed: onCancelRequest,
+                tooltip: AppLocalizations.of(context)!.friendsCancelRequest,
+                color: scheme.onSurfaceVariant,
+                constraints: _PendingActions._buttonConstraints,
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.cancel_schedule_send_outlined, size: 20),
+              )
             else if (onRemove != null)
               _AcceptedMenu(onRemove: onRemove!),
           ],

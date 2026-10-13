@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:mangatracker/core/network/api_exception.dart';
 import 'package:mangatracker/core/network/http_service.dart';
-import 'package:mangatracker/core/network/network_compat.dart';
 import 'package:mangatracker/core/network/uri_builder.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/features/comments/dto/comment.dto.dart';
@@ -12,8 +12,15 @@ import 'package:mangatracker/features/comments/dto/comment.dto.dart';
 /// (poster, supprimer, éditer en temps réel) et l'usage attendu est
 /// "j'ouvre la page détail manga, je scroll les comm". Un BLoC dédié
 /// gérera la pagination + retry.
+///
+/// Tout code 2xx est un succès (`report` répond 201) ; sinon [ApiException]
+/// — par exemple 403 pour supprimer le commentaire d'un autre.
 class CommentsService {
-  final HttpService _http = getIt<HttpService>();
+  final HttpService? _httpOverride;
+
+  CommentsService({HttpService? http}) : _httpOverride = http;
+
+  HttpService get _http => _httpOverride ?? getIt<HttpService>();
 
   Future<CommentsService> init() async => this;
 
@@ -28,9 +35,7 @@ class CommentsService {
         'sort': sort.value,
       }),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('listForManga failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     return CommentsPage.fromJson(jsonDecode(res.body));
   }
 
@@ -38,9 +43,7 @@ class CommentsService {
     final res = await _http.getWithAuthTokens(
       buildApiUri('/mangas/comments/$commentId/replies'),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('listReplies failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     return (jsonDecode(res.body) as List<dynamic>)
         .map((e) => CommentDto.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -59,11 +62,8 @@ class CommentsService {
         if (rating != null) 'rating': rating,
       }),
     );
-    if (res.statusCode == HttpStatus.ok ||
-        res.statusCode == HttpStatus.created) {
-      return CommentDto.fromJson(jsonDecode(res.body));
-    }
-    throw Exception('create comment failed: ${res.statusCode} ${res.body}');
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
+    return CommentDto.fromJson(jsonDecode(res.body));
   }
 
   Future<CommentDto> reply(
@@ -79,11 +79,8 @@ class CommentsService {
         if (rating != null) 'rating': rating,
       }),
     );
-    if (res.statusCode == HttpStatus.ok ||
-        res.statusCode == HttpStatus.created) {
-      return CommentDto.fromJson(jsonDecode(res.body));
-    }
-    throw Exception('reply failed: ${res.statusCode}');
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
+    return CommentDto.fromJson(jsonDecode(res.body));
   }
 
   Future<CommentDto> update(
@@ -99,9 +96,7 @@ class CommentsService {
         if (rating != null) 'rating': rating,
       }),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('update comment failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
     return CommentDto.fromJson(jsonDecode(res.body));
   }
 
@@ -109,9 +104,7 @@ class CommentsService {
     final res = await _http.deleteWithAuthTokens(
       buildApiUri('/mangas/comments/$commentId'),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('delete comment failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
   }
 
   Future<void> report(int commentId, {String? reason}) async {
@@ -120,8 +113,6 @@ class CommentsService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({if (reason != null) 'reason': reason}),
     );
-    if (res.statusCode != HttpStatus.ok) {
-      throw Exception('report failed: ${res.statusCode}');
-    }
+    if (!isHttpSuccess(res.statusCode)) throw ApiException.fromResponse(res);
   }
 }

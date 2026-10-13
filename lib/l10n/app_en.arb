@@ -70,7 +70,7 @@
       }
     }
   },
-  "pushNotifShareTitle": "New manga shared",
+  "pushNotifShareTitle": "New recommendation",
   "pushNotifShareBody": "{senderUsername} recommends {mangaTitle}",
   "@pushNotifShareBody": {
     "placeholders": {
@@ -856,7 +856,7 @@
       }
     }
   },
-  "shareTitle": "Share this manga",
+  "shareTitle": "Recommend to a friend",
   "@shareTitle": {},
   "shareMessageHint": "Add a message (optional)",
   "@shareMessageHint": {},
@@ -864,15 +864,15 @@
   "@shareCancel": {},
   "shareSend": "Send",
   "@shareSend": {},
-  "shareSuccess": "Manga shared",
+  "shareSuccess": "Recommendation sent",
   "@shareSuccess": {},
-  "shareFailed": "Share failed",
+  "shareFailed": "Couldn't send",
   "@shareFailed": {},
   "shareLoadError": "Could not load your friends",
   "@shareLoadError": {},
   "shareNoFriends": "You have no friends to share with yet. Add some from the Friends page.",
   "@shareNoFriends": {},
-  "inboxTitle": "Inbox",
+  "inboxTitle": "Received recommendations",
   "@inboxTitle": {},
   "inboxEmpty": "No recommendations yet.",
   "@inboxEmpty": {},
@@ -1134,6 +1134,109 @@
   "@readingGroupInviteSoonTitle": {},
   "readingGroupInviteSoonMessage": "Inviting from inside a group is coming soon. For now, create a new group from the manga page.",
   "@readingGroupInviteSoonMessage": {},
+  "readingGroupMyProgressSubtitle": "Last chapter finished: {chapter}",
+  "@readingGroupMyProgressSubtitle": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupMyProgressEmpty": "Enter the last chapter you finished",
+  "@readingGroupMyProgressEmpty": {},
+  "readingGroupProgressSaving": "Saving…",
+  "@readingGroupProgressSaving": {},
+  "readingGroupOpenMangaSubtitle": "Chapters, online reading and title details",
+  "@readingGroupOpenMangaSubtitle": {},
+  "readingGroupProgressDialogTitle": "My progress",
+  "@readingGroupProgressDialogTitle": {},
+  "readingGroupProgressDialogExplainer": "Enter the last chapter you finished. Group members will see your progress.",
+  "@readingGroupProgressDialogExplainer": {},
+  "readingGroupProgressFieldLabel": "Last chapter finished",
+  "@readingGroupProgressFieldLabel": {},
+  "readingGroupProgressInvalid": "Enter a whole number, 0 or more.",
+  "@readingGroupProgressInvalid": {},
+  "readingGroupProgressDecrease": "One chapter less",
+  "@readingGroupProgressDecrease": {},
+  "readingGroupProgressIncrease": "One chapter more",
+  "@readingGroupProgressIncrease": {},
+  "readingGroupProgressAlignWith": "Catch up with {name} (ch. {chapter})",
+  "@readingGroupProgressAlignWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "readingGroupProgressUnknown": "Your progress couldn't be found. Try again in a moment.",
+  "@readingGroupProgressUnknown": {},
+  "readingGroupCopyLinkClipboardFailed": "The link couldn't be copied on this device.",
+  "@readingGroupCopyLinkClipboardFailed": {},
+  "readingGroupCopyLinkManualTitle": "Copy failed — here is the link",
+  "@readingGroupCopyLinkManualTitle": {},
+  "chapterProgressSavedAt": "Progress saved: chapter {chapter}",
+  "@chapterProgressSavedAt": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSavedReported": "Progress saved: chapter {chapter}. The title's chapter count has been updated.",
+  "@chapterProgressSavedReported": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressAboveTotal": "Chapter {chapter} is beyond the title's known chapter count. Report the new chapters from the manga page.",
+  "@chapterProgressAboveTotal": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressThrottled": "Too many changes in a row. Try again in a few moments.",
+  "@chapterProgressThrottled": {},
+  "chapterProgressQueued": "Offline: chapter {chapter} will be saved when you're back online.",
+  "@chapterProgressQueued": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressSessionRejected": "Your session has expired: sign in again to save your progress.",
+  "@chapterProgressSessionRejected": {},
+  "chapterProgressNotInLibrary": "This title isn't in your library: add it from its page to track your progress.",
+  "@chapterProgressNotInLibrary": {},
+  "chapterProgressFailedCode": "Progress couldn't be saved (error {code}). Try again.",
+  "@chapterProgressFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "chapterProgressFailed": "Progress couldn't be saved. Try again.",
+  "@chapterProgressFailed": {},
+  "offlineProgressRefused": "Progress saved offline (chapter {chapter}) was rejected by the server.",
+  "@offlineProgressRefused": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingSaveFailed": "Your rating couldn't be saved. Try again.",
+  "@ratingSaveFailed": {},
+  "ratingSaveOffline": "Offline: your rating wasn't saved.",
+  "@ratingSaveOffline": {},
   "libraryToggleListView": "List view",
   "@libraryToggleListView": {},
   "libraryToggleCardView": "Card view",
@@ -1327,16 +1430,16 @@
       }
     }
   },
-  "communityRecoAdd": "Recommend a title",
-  "communityRecoToggleOn": "I recommend it too",
-  "communityRecoToggleOff": "Remove my recommendation",
-  "communityRecoAdded": "Thanks! Your recommendation has been saved",
-  "communityRecoRemoved": "Recommendation removed",
-  "communityRecoEmpty": "Nobody has recommended a title for this one yet. Be the first!",
+  "communityRecoAdd": "Suggest a similar title",
+  "communityRecoToggleOn": "I suggest it too",
+  "communityRecoToggleOff": "Remove my suggestion",
+  "communityRecoAdded": "Thanks! Your suggestion has been saved",
+  "communityRecoRemoved": "Suggestion removed",
+  "communityRecoEmpty": "Nobody has suggested a similar title yet. Be the first!",
   "communityRecoLoadError": "Couldn't load the recommendations",
-  "communityRecoActionError": "Couldn't save the recommendation. Please try again later.",
-  "communityRecoThrottled": "You've recommended a lot of titles at once. Try again in a moment.",
-  "communityRecoPickerTitle": "Which title do you recommend?",
+  "communityRecoActionError": "Couldn't save the suggestion. Please try again later.",
+  "communityRecoThrottled": "You've suggested a lot of titles at once. Try again in a moment.",
+  "communityRecoPickerTitle": "Which similar title do you suggest?",
   "communityRecoPickerHint": "Search for a title",
   "communityRecoPickerEmpty": "No title found",
   "communityRecoReadersAlsoRead": "Readers of this title also read",
@@ -1487,5 +1590,63 @@
         "type": "int"
       }
     }
-  }
+  },
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorTooManyRequests": "Too many attempts, please try again in a moment",
+  "errorServerUnavailable": "The service is temporarily unavailable. Please try again later.",
+  "errorForbidden": "You're not allowed to do this.",
+  "errorNotFound": "Not found: it may have been deleted.",
+  "errorConflict": "This has already been done.",
+  "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "notificationsMarkAllRead": "Mark all as read",
+  "notificationsSettingsTooltip": "Notification settings",
+  "notificationsEmptyTitle": "No notifications",
+  "notificationsEmptySubtitle": "New releases from your library, friend requests, recommendations: everything shows up here.",
+  "notificationsLoadError": "Couldn't load notifications.",
+  "notificationsLoadMoreError": "Couldn't load more.",
+  "notificationsUnread": "Unread",
+  "notificationsBellUnread": "{count, plural, =0{Notifications} =1{Notifications, 1 unread} other{Notifications, {count} unread}}",
+  "notificationsSomeone": "Someone",
+  "notificationsSomeTitle": "a title",
+  "notifItemFriendRequest": "{name} sent you a friend request",
+  "notifItemFriendAccepted": "{name} accepted your friend request",
+  "notifItemMangaShare": "{name} recommends {title} to you",
+  "notifItemReadingGroupNamed": "{name} added you to the shared reading “{group}”",
+  "notifItemReadingGroup": "{name} added you to a shared reading of {title}",
+  "notifItemNewChapters": "{count, plural, =1{New chapter of {title} (ch. {chapter})} other{{count} new chapters of {title} (ch. {chapter})}}",
+  "pushNotifFriendAcceptedTitle": "Friend request accepted",
+  "pushNotifReadingGroupTitle": "New shared reading",
+  "pushNotifNewChaptersTitle": "New chapters",
+  "notifFriendAcceptedTitle": "Accepted requests",
+  "notifFriendAcceptedSubtitle": "Someone accepted your friend request",
+  "notifReadingGroupsTitle": "Shared readings",
+  "notifReadingGroupsSubtitle": "A friend adds you to a shared reading",
+  "friendsSearchError": "Search failed. Please try again.",
+  "friendsRelationAdd": "Add",
+  "friendsRelationFriends": "Friend",
+  "friendsCancelRequest": "Cancel request",
+  "friendsSendConfirmTitle": "Send a friend request to {name}?",
+  "friendsSendConfirmBody": "They can accept or decline it.",
+  "friendsSendConfirmAction": "Send",
+  "friendsCancelConfirmTitle": "Cancel the request sent to {name}?",
+  "friendsKeepRequest": "Keep",
+  "friendsSectionSent": "Sent requests",
+  "friendsRequestCancelled": "Request cancelled",
+  "friendsNowFriends": "You and {name} are now friends",
+  "commentsReport": "Report",
+  "commentsReportConfirmTitle": "Report this comment?",
+  "commentsReportConfirmBody": "Our moderation team will review it.",
+  "commentsReportSuccess": "Thanks, the comment has been reported.",
+  "commentsMoreActions": "More actions",
+  "similarTitles": "Similar titles",
+  "receivedShareBy": "Recommended by {name}",
+  "receivedShareByMany": "{count, plural, =1{Recommended by {name} and 1 other friend} other{Recommended by {name} and {count} other friends}}",
+  "receivedShareMessage": "“{message}”",
+  "routeNotFoundTitle": "Page not found",
+  "routeNotFoundMessage": "This address doesn't match any page of the app.",
+  "backToHome": "Back to home",
+  "newVersionAvailable": "A new version of the app is available.",
+  "reloadApp": "Reload",
+  "carouselPrevious": "Previous titles",
+  "carouselNext": "Next titles"
 }

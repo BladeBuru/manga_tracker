@@ -4,6 +4,97 @@
 
 ---
 
+## ✅ Corrigés le 2026-10-13 — lecteur (`feat/lecteur-detection-barre`, non fusionnée)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Lien de lecture cassé / faux chapitre sur un site à URL sans numéro (`/read/<série>/<uuid>`) | Le motif `c(\d+)` (cherché dans toute l'URL, lookahead sans effet) trouvait un chapitre dans l'UUID (`…-c41b-…` → 41) ; `buildUrlForChapter` réécrivait ensuite ce morceau d'UUID et `_updateNextLinkFrom` l'enregistrait | `ChapterUrlHeuristics.maskOpaqueIds` (UUID, jetons hexadécimaux) avant les motifs ; `cN` jamais suivi d'une lettre ou d'un chiffre ; remplacement au même index |
+| aniverse.fr : aucun suivi de chapitre | Le numéro n'est que dans la page (titre, JSON-LD) | `PageChapterParser` + `PageChapterProbe`, utilisés seulement si l'URL n'a pas de numéro |
+| Barre du haut « tout ou rien » : un infime retour la montrait entière | Seuil de 24 px **physiques** (≈ 8,7 dp) et bascule binaire | Barre au prorata du défilement, en pixels logiques, recalage à la moitié |
+
+### Résiduels connus, assumés
+- Chapitres décimaux (271.5) lus dans la page : non suivis (l'app compte des
+  entiers) ; 271 → 272 l'est.
+- Site qui change le titre AVANT l'adresse (lecture en continu) : le lien de
+  lecture peut viser le chapitre précédent (un chapitre déjà lu).
+- Saut ou « Avez-vous fini ? » sur un chapitre lu dans la page : le lien de
+  lecture n'est pas mis à jour (aucune adresse connue pour la suite).
+- Bas de chapitre : au premier mouvement depuis « barre visible », la page
+  reprend la hauteur de l'écran ; le navigateur peut reculer d'une hauteur de
+  barre (à mesurer sur appareil).
+## ✅ Corrigés le 2026-10-13 — lecture partagée (`fix/progression-lecture-partagee`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| « Ma progression » refusée (105 → 124, téléphone et web) | La ligne ne faisait qu'ouvrir la fiche ; au retour, le groupe (et la carte de la fiche, chargée une fois) affichaient l'ancienne valeur. Sur la fiche, tout échec → `DetailError` (texte FR en dur) remplaçant la page, « Réessayer » rechargeait ; un chargement en vol réaffichait 105 après l'enregistrement | Fenêtre « Ma progression » + `ChapterProgressService` (issue typée), groupe relu, `DetailActionFailed` sans quitter la page, garde `_keepNewerProgress` |
+| Retour à appuyer N fois | Fiche → `push` groupe, groupe → `push` fiche : 2 pages par aller-retour, chacune avec son poll de 30 s | `pushOrPop` + poll suspendu hors premier plan (`RouteVisibilityListener`) |
+| Lien copié sur le chapitre 1 / presse-papiers muet | « Moi » introuvable (profil en cache vide) → repli silencieux sur 1 ; `Clipboard.setData` sans garde ; données jusqu'à 30 s | Action désactivée et expliquée, groupe relu, erreur + lien affiché |
+| Progression hors ligne perdue | Rejeu : 406 abandonné en silence ; lecteur hors ligne : résultat ignoré | Rattrapage du 406 affirmé, refus annoncé, `_commitChapter` vérifie |
+| Note qui « saute » | Rollback muet | Rollback + message |
+| Ajout « déjà présent » en échec | 400/409 traités comme refus | Succès (en ligne et rejeu) |
+
+Côté serveur (autre chantier) : 503/500 si le rafraîchissement MangaUpdates
+de `checkManga` échoue, 429 d'un throttle global partagé derrière le proxy.
+L'app affiche désormais la raison (code HTTP, limite) et propose de réessayer.
+
+⚠️ Préexistant, non lié : `test/features/reader/reader_invariants_test.dart`
+(« mode téléchargement… aucune détection ») échoue sur une copie Windows
+(`core.autocrlf=true`) : le test cherche `'if (!_readOnlyMode &&
+'` dans un
+source en CRLF. Vert en CI (LF).
+
+---
+## ✅ Corrigés le 2026-10-13 — social et notifications (`feat/notifications-lecture-partagee`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| Demande d'ami jamais notifiée | `FriendsBloc` recréé à chaque ouverture avec `_lastPendingCount = -1` : premier chargement toujours silencieux | Notifications locales déplacées dans `NotificationCountsService` + `NotificationAlerter` (première passe silencieuse par source, une seule fois) |
+| Recommandation reçue : rien sur la fiche, pastille qui reste allumée | Partages jamais affichés sur la fiche ; `mark-seen` répond 201, le client exigeait 200 → échec silencieux | `ReceivedShareBanner` ; tout 2xx accepté (`isHttpSuccess`) |
+| « Recommander une œuvre » pris pour un envoi à un ami | Vote communautaire et envoi à un ami appelés pareil | « Suggérer un titre similaire » vs « Recommander à un ami » (7 langues) |
+| Recherche d'amis : « Aucun utilisateur trouvé » sur une erreur, résultats périmés, envoi au premier appui | Erreur stockée jamais affichée ; recherches concurrentes ; aucun garde | Erreur affichée, numéro de génération, confirmation, relation par résultat |
+| Ami fantôme dans « Lire à deux » → 403 brut | Cache amis 24 h ; `e.toString()` affiché | Cache 5 min + relecture forcée ; `userFacingErrorMessage` |
+| « Supprimer » sur le commentaire d'un autre → 403 ; « Signaler » toujours en échec | Menu sans contrôle d'auteur ; `report` répond 201 | Menu selon l'auteur ; 2xx accepté |
+| Profil vide pendant 7 jours après un 429 | `/user/information` lu et mis en cache quel que soit le code | Lecture et cache sur 200 uniquement |
+
+### ⚠️ Restes connus (non traités ici)
+
+- Libellés des **canaux** Android de notifications en français en dur
+  (`NotificationChannel`) : affichés dans les réglages système.
+- Contenu `'[supprimé]'` en dur après suppression d'un commentaire
+  (`CommentsBloc._onDelete`, préexistant).
+- Toucher une notification **système** n'efface pas la ligne du centre
+  (sauf demandes d'ami / recommandations, marquées lues par le serveur).
+- Une hausse ET une baisse du nombre de non lues entre deux interrogations
+  (une lue ailleurs, une nouvelle) peuvent masquer l'annonce de la nouvelle :
+  le centre la montre quand même.
+- `ReadingGroupsBloc` affiche encore `e.toString()` dans ses états d'erreur.
+- `test/features/reader/reader_invariants_test.dart` échoue sur un checkout
+  Windows en CRLF (le test cherche `\n`) — préexistant, sans lien.
+## ✅ Corrigés le 2026-10-13 — navigation web (`fix/navigation-web`)
+
+| Symptôme | Cause racine | Correction |
+|---|---|---|
+| F5 → accueil ; aucune page n'a d'URL | Pas de `usePathUrlStrategy` (URL `/#/…`) ; `optionURLReflectsImperativeAPIs` à `false` : ~50 `context.push` ne touchaient jamais l'URL, figée sur `/#/home` ; onglets sans URL (`PageView` interne) | URL réelles, pages empilées avec URL, `StatefulShellRoute` (une URL par onglet) |
+| Retour du navigateur → page de connexion | Aucune transition d'auth ne remplaçait l'historique (`[/, /login, /home]`) ; aucun garde | `AuthNavigation` (Router.neglect), garde `resolveAuthRedirect` |
+| « Le bouton retour est bizarre » | go_router signale chaque retour in-app comme une NOUVELLE entrée (même URL partout avant) : l'écran quitté restait « en avant », le retour navigateur le rouvrait | `HistoryAwareRouteInformationProvider` : vrai `history.go(-n)` |
+| `await context.push(...)` jamais terminé après un retour navigateur | go_router recrée la pile restaurée avec des `Completer` neufs (flutter/flutter#128122) | `reconcileImperativeCompleters` |
+| Extras perdus au retour navigateur (titre, couverture) ; `/profile/edit` en F5 → « Données utilisateur manquantes » | Pas d'`extraCodec` ; pages dépendantes de l'extra | `RouteExtrasCodec` ; `ProfileEditLoader`, nom d'ami retrouvé |
+| Pop dans le vide (écran blanc) sur une page ouverte par lien direct | `context.pop()` / `Navigator.pop` nus | `popOrGo`, `AppBackButton` |
+| Redirection forcée vers la connexion depuis la bibliothèque | `message.contains('InvalidCredentials')` (interdit, minifié en release web) | Bandeau typé (`requiresReauth` / `AuthSession`) |
+| Curseur jamais « main », carrousels inutilisables à la souris, onglets changés par le pavé tactile | `GestureDetector` nus ; souris absente de `dragDevices` ; `PageView` des onglets sensible au pavé | `HoverFeedback`, `ClickableCursor`, `AppScrollBehavior`, flèches, `MainTabsPager` |
+| Ancienne version de l'app (mois) jusqu'à l'effacement des données du site | Service worker « hors ligne d'abord » de `flutter build web` + nginx 30 j `immutable` sur des fichiers sans hash | Build sans service worker, interrupteur d'arrêt, nettoyage `index.html`, nginx revalidé, bandeau « Recharger » |
+
+Constats laissés ouverts :
+- **En-têtes de sécurité nginx inopérants** : `add_header` dans un `location`
+  annule ceux du `server` ; en prod, aucune CSP n'est envoyée (nosniff /
+  X-Frame-Options viennent de l'amont). La CSP écrite bloquerait CanvasKit et
+  Google Fonts (`connect-src`) : à élargir avant de l'activer.
+- **`reader_invariants_test` « mode téléchargement »** échoue sur une copie
+  Windows (`core.autocrlf=true`) : le test cherche `'if (!_readOnlyMode &&\n'`
+  dans un source en CRLF. Préexistant, sans lien avec la navigation.
+- Après un F5, l'historique antérieur n'est pas connu de l'app : un retour
+  in-app y ajoute une entrée (jamais de faux retour).
+
 ## ✅ Corrigé le 2026-10-06 (après v0.18.0) — lecteur pas vraiment plein écran
 
 | Symptôme | Cause racine | Correction |

@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mangatracker/core/bloc/notification_counts_cubit.dart';
 import 'package:mangatracker/core/components/language_selector_button.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/language_service.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
@@ -177,11 +178,6 @@ class _ProfileState extends State<Profile> {
 
   // ─── Actions ───────────────────────────────────────────────────────────
 
-  void _redirectToLoginPage() {
-    HapticFeedback.lightImpact();
-    context.go('/login');
-  }
-
   /// Nouvelle page dédiée `/change-password` (mot de passe actuel requis +
   /// déconnexion des autres appareils) — remplace l'ancien dialog legacy.
   void _onChangePassword() {
@@ -197,9 +193,8 @@ class _ProfileState extends State<Profile> {
       // Le compte n'existe plus : le cache local doit partir avec lui, sinon
       // ses donnees resteraient lisibles sur l'appareil. `my_data_view` le
       // faisait deja, pas ce chemin-ci.
-      await _authService.logout();
-      if (!mounted) return;
-      _redirectToLoginPage();
+      HapticFeedback.lightImpact();
+      await AuthNavigation.signOut(_authService);
       _notifier.success(l10n.accountDeletedSuccess);
     } catch (_) {
       _notifier.error(l10n.accountDeleteError);
@@ -209,9 +204,9 @@ class _ProfileState extends State<Profile> {
   Future<void> _onLogout() async {
     final confirmed = await ProfileDialogs.showLogoutConfirm(context);
     if (!confirmed) return;
-    await _authService.logout();
-    if (!mounted) return;
-    _redirectToLoginPage();
+    HapticFeedback.lightImpact();
+    // Remplace l'historique : le retour du navigateur ne rouvre pas l'app.
+    await AuthNavigation.signOut(_authService);
   }
 
   Future<void> _onEditProfile() async {

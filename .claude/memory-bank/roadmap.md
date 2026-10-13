@@ -146,6 +146,7 @@
 
 ### ✅ Mise à jour instantanée de l'état (reading/completed/caughtUp/readLater)
 ### ✅ Bascule auto « À jour » → « En cours » quand un nouveau chapitre sort *(2026-09-05 — API sur hausse du total MU, app sur détection locale)*
+### 🔵 Centre de notifications *(2026-10 — front livré : cloche de l'accueil, demandes d'ami, demandes acceptées, recommandations, lectures partagées, nouveaux chapitres ; API `/notifications` développée en parallèle → ✅ quand elle est en production)*
 ### ⏳ Filtres avancés de notifications
 
 ### Lecture
@@ -156,6 +157,8 @@
 - ✅ Téléchargement de chapitre (Android/iOS uniquement)
 - ✅ Bloqueur de pub dans le webview
 - ✅ Barre du haut auto-masquée au défilement *(2026-10, en ligne + hors ligne)*
+  - 🔵 Progressive, au prorata du défilement *(2026-10-13, branche `feat/lecteur-detection-barre` — à valider sur appareil)*
+- 🔵 Chapitre détecté dans la page quand l'URL n'a pas de numéro (aniverse.fr) + « Chapitre N » dans la barre *(2026-10-13, même branche — à valider sur appareil)*
 - ✅ Portrait inversé autorisé (lecture en charge) *(2026-10)*
 
 ### Statistiques
@@ -193,13 +196,14 @@
 - ✅ Recherche d'utilisateurs (autocomplete)
 - ✅ Page Amis (onglets + recherche + cache 24h)
 - ✅ Badge BottomNavBar (compteur global polling — NotificationCountsService)
+- ✅ Recherche par pseudo OU nom affiché, relation de chaque résultat, demandes envoyées annulables, confirmation avant envoi *(2026-10 — API `/friends/sent` + `relation` en parallèle)*
 
 ### ⏳ Forum et discussions
 ### ⏳ Partage de théories
 ### ⏳ Mini-jeux communautaires
 ### ⏳ Chat en temps réel
 ### ✅ Voir la bibliothèque de ses amis *(livré v0.11.x — profil ami, réservé aux amitiés acceptées)*
-### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau)*
+### ✅ Partage de manga entre amis *(Phase 8 + 8.1 — modal partage + inbox + badge nouveau ; 2026-10 : « Recommander à un ami » explicite + bandeau « Recommandé par » sur la fiche)*
 
 ---
 
@@ -210,6 +214,7 @@
 
 - ✅ Trouver le lien d'un titre via le site de la dernière lecture + « Ceci est le nouveau lien » dans le lecteur *(2026-09-30)*
 - ✅ Copier le lien d'une lecture à deux *(2026-09-30)*
+- ✅ Mettre à jour sa progression depuis une lecture à deux *(2026-10-13)*
 
 - ✅ Affichage de la page avec WebView (mobile)
 - ✅ Ouverture dans un nouvel onglet (web — `url_launcher`)
@@ -334,11 +339,14 @@
 
 ### ✅ Build Flutter Web fonctionnel (auth + biblio + recherche + détails + recommendations)
 ### ✅ Migration `MaterialPageRoute` → `go_router` (deep-linking)
+### ✅ URL réelles, onglets avec URL, garde d'authentification, historique du navigateur cohérent *(2026-10)*
+### ✅ Souris : curseur, survol, flèches de carrousel *(2026-10)*
+### ✅ Plus de version périmée : sans service worker, bandeau « Recharger » *(2026-10)*
 ### ✅ Stubs propres pour features web-incompatibles (download, offline reader, workmanager)
 ### ✅ Pipeline CI/CD web → Nginx Docker → NAS via NPMplus
 ### 🔵 Domaine `app.bladeburu.com` *(infra prête, attente lancement 1er deploy)*
 ### ⏳ Layouts responsive (LayoutBuilder mobile/tablette/desktop)
-### ⏳ PWA installable (manifest + service worker activés)
+### ⏳ PWA installable (manifest) — **sans** service worker de cache (décision 2026-10)
 ### ⏳ Adaptation des largeurs hardcodées au format desktop
 
 ---

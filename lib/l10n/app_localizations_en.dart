@@ -224,7 +224,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pushNotifShareTitle => 'New manga shared';
+  String get pushNotifShareTitle => 'New recommendation';
 
   @override
   String pushNotifShareBody(String senderUsername, String mangaTitle) {
@@ -1636,7 +1636,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shareTitle => 'Share this manga';
+  String get shareTitle => 'Recommend to a friend';
 
   @override
   String get shareMessageHint => 'Add a message (optional)';
@@ -1648,10 +1648,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareSend => 'Send';
 
   @override
-  String get shareSuccess => 'Manga shared';
+  String get shareSuccess => 'Recommendation sent';
 
   @override
-  String get shareFailed => 'Share failed';
+  String get shareFailed => 'Couldn\'t send';
 
   @override
   String get shareLoadError => 'Could not load your friends';
@@ -1661,7 +1661,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have no friends to share with yet. Add some from the Friends page.';
 
   @override
-  String get inboxTitle => 'Inbox';
+  String get inboxTitle => 'Received recommendations';
 
   @override
   String get inboxEmpty => 'No recommendations yet.';
@@ -1988,6 +1988,109 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get readingGroupInviteSoonMessage =>
       'Inviting from inside a group is coming soon. For now, create a new group from the manga page.';
+
+  @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return 'Last chapter finished: $chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty =>
+      'Enter the last chapter you finished';
+
+  @override
+  String get readingGroupProgressSaving => 'Saving…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle =>
+      'Chapters, online reading and title details';
+
+  @override
+  String get readingGroupProgressDialogTitle => 'My progress';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      'Enter the last chapter you finished. Group members will see your progress.';
+
+  @override
+  String get readingGroupProgressFieldLabel => 'Last chapter finished';
+
+  @override
+  String get readingGroupProgressInvalid => 'Enter a whole number, 0 or more.';
+
+  @override
+  String get readingGroupProgressDecrease => 'One chapter less';
+
+  @override
+  String get readingGroupProgressIncrease => 'One chapter more';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return 'Catch up with $name (ch. $chapter)';
+  }
+
+  @override
+  String get readingGroupProgressUnknown =>
+      'Your progress couldn\'t be found. Try again in a moment.';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed =>
+      'The link couldn\'t be copied on this device.';
+
+  @override
+  String get readingGroupCopyLinkManualTitle =>
+      'Copy failed — here is the link';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return 'Progress saved: chapter $chapter';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return 'Progress saved: chapter $chapter. The title\'s chapter count has been updated.';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return 'Chapter $chapter is beyond the title\'s known chapter count. Report the new chapters from the manga page.';
+  }
+
+  @override
+  String get chapterProgressThrottled =>
+      'Too many changes in a row. Try again in a few moments.';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return 'Offline: chapter $chapter will be saved when you\'re back online.';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      'Your session has expired: sign in again to save your progress.';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      'This title isn\'t in your library: add it from its page to track your progress.';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return 'Progress couldn\'t be saved (error $code). Try again.';
+  }
+
+  @override
+  String get chapterProgressFailed => 'Progress couldn\'t be saved. Try again.';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return 'Progress saved offline (chapter $chapter) was rejected by the server.';
+  }
+
+  @override
+  String get ratingSaveFailed => 'Your rating couldn\'t be saved. Try again.';
+
+  @override
+  String get ratingSaveOffline => 'Offline: your rating wasn\'t saved.';
 
   @override
   String get libraryToggleListView => 'List view';
@@ -2476,37 +2579,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get communityRecoAdd => 'Recommend a title';
+  String get communityRecoAdd => 'Suggest a similar title';
 
   @override
-  String get communityRecoToggleOn => 'I recommend it too';
+  String get communityRecoToggleOn => 'I suggest it too';
 
   @override
-  String get communityRecoToggleOff => 'Remove my recommendation';
+  String get communityRecoToggleOff => 'Remove my suggestion';
 
   @override
-  String get communityRecoAdded => 'Thanks! Your recommendation has been saved';
+  String get communityRecoAdded => 'Thanks! Your suggestion has been saved';
 
   @override
-  String get communityRecoRemoved => 'Recommendation removed';
+  String get communityRecoRemoved => 'Suggestion removed';
 
   @override
   String get communityRecoEmpty =>
-      'Nobody has recommended a title for this one yet. Be the first!';
+      'Nobody has suggested a similar title yet. Be the first!';
 
   @override
   String get communityRecoLoadError => 'Couldn\'t load the recommendations';
 
   @override
   String get communityRecoActionError =>
-      'Couldn\'t save the recommendation. Please try again later.';
+      'Couldn\'t save the suggestion. Please try again later.';
 
   @override
   String get communityRecoThrottled =>
-      'You\'ve recommended a lot of titles at once. Try again in a moment.';
+      'You\'ve suggested a lot of titles at once. Try again in a moment.';
 
   @override
-  String get communityRecoPickerTitle => 'Which title do you recommend?';
+  String get communityRecoPickerTitle => 'Which similar title do you suggest?';
 
   @override
   String get communityRecoPickerHint => 'Search for a title';
@@ -2708,4 +2811,230 @@ class AppLocalizationsEn extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'Download ($count)';
   }
+
+  @override
+  String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Too many attempts, please try again in a moment';
+
+  @override
+  String get errorServerUnavailable =>
+      'The service is temporarily unavailable. Please try again later.';
+
+  @override
+  String get errorForbidden => 'You\'re not allowed to do this.';
+
+  @override
+  String get errorNotFound => 'Not found: it may have been deleted.';
+
+  @override
+  String get errorConflict => 'This has already been done.';
+
+  @override
+  String get errorSessionExpired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all as read';
+
+  @override
+  String get notificationsSettingsTooltip => 'Notification settings';
+
+  @override
+  String get notificationsEmptyTitle => 'No notifications';
+
+  @override
+  String get notificationsEmptySubtitle =>
+      'New releases from your library, friend requests, recommendations: everything shows up here.';
+
+  @override
+  String get notificationsLoadError => 'Couldn\'t load notifications.';
+
+  @override
+  String get notificationsLoadMoreError => 'Couldn\'t load more.';
+
+  @override
+  String get notificationsUnread => 'Unread';
+
+  @override
+  String notificationsBellUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Notifications, $count unread',
+      one: 'Notifications, 1 unread',
+      zero: 'Notifications',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsSomeone => 'Someone';
+
+  @override
+  String get notificationsSomeTitle => 'a title';
+
+  @override
+  String notifItemFriendRequest(String name) {
+    return '$name sent you a friend request';
+  }
+
+  @override
+  String notifItemFriendAccepted(String name) {
+    return '$name accepted your friend request';
+  }
+
+  @override
+  String notifItemMangaShare(String name, String title) {
+    return '$name recommends $title to you';
+  }
+
+  @override
+  String notifItemReadingGroupNamed(String name, String group) {
+    return '$name added you to the shared reading “$group”';
+  }
+
+  @override
+  String notifItemReadingGroup(String name, String title) {
+    return '$name added you to a shared reading of $title';
+  }
+
+  @override
+  String notifItemNewChapters(int count, String title, String chapter) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new chapters of $title (ch. $chapter)',
+      one: 'New chapter of $title (ch. $chapter)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pushNotifFriendAcceptedTitle => 'Friend request accepted';
+
+  @override
+  String get pushNotifReadingGroupTitle => 'New shared reading';
+
+  @override
+  String get pushNotifNewChaptersTitle => 'New chapters';
+
+  @override
+  String get notifFriendAcceptedTitle => 'Accepted requests';
+
+  @override
+  String get notifFriendAcceptedSubtitle =>
+      'Someone accepted your friend request';
+
+  @override
+  String get notifReadingGroupsTitle => 'Shared readings';
+
+  @override
+  String get notifReadingGroupsSubtitle =>
+      'A friend adds you to a shared reading';
+
+  @override
+  String get friendsSearchError => 'Search failed. Please try again.';
+
+  @override
+  String get friendsRelationAdd => 'Add';
+
+  @override
+  String get friendsRelationFriends => 'Friend';
+
+  @override
+  String get friendsCancelRequest => 'Cancel request';
+
+  @override
+  String friendsSendConfirmTitle(String name) {
+    return 'Send a friend request to $name?';
+  }
+
+  @override
+  String get friendsSendConfirmBody => 'They can accept or decline it.';
+
+  @override
+  String get friendsSendConfirmAction => 'Send';
+
+  @override
+  String friendsCancelConfirmTitle(String name) {
+    return 'Cancel the request sent to $name?';
+  }
+
+  @override
+  String get friendsKeepRequest => 'Keep';
+
+  @override
+  String get friendsSectionSent => 'Sent requests';
+
+  @override
+  String get friendsRequestCancelled => 'Request cancelled';
+
+  @override
+  String friendsNowFriends(String name) {
+    return 'You and $name are now friends';
+  }
+
+  @override
+  String get commentsReport => 'Report';
+
+  @override
+  String get commentsReportConfirmTitle => 'Report this comment?';
+
+  @override
+  String get commentsReportConfirmBody => 'Our moderation team will review it.';
+
+  @override
+  String get commentsReportSuccess => 'Thanks, the comment has been reported.';
+
+  @override
+  String get commentsMoreActions => 'More actions';
+
+  @override
+  String get similarTitles => 'Similar titles';
+
+  @override
+  String receivedShareBy(String name) {
+    return 'Recommended by $name';
+  }
+
+  @override
+  String receivedShareByMany(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recommended by $name and $count other friends',
+      one: 'Recommended by $name and 1 other friend',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receivedShareMessage(String message) {
+    return '“$message”';
+  }
+
+  @override
+  String get routeNotFoundTitle => 'Page not found';
+
+  @override
+  String get routeNotFoundMessage =>
+      'This address doesn\'t match any page of the app.';
+
+  @override
+  String get backToHome => 'Back to home';
+
+  @override
+  String get newVersionAvailable => 'A new version of the app is available.';
+
+  @override
+  String get reloadApp => 'Reload';
+
+  @override
+  String get carouselPrevious => 'Previous titles';
+
+  @override
+  String get carouselNext => 'Next titles';
 }

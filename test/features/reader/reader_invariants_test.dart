@@ -22,6 +22,8 @@ void main() {
   const scrollServicePath =
       'lib/features/reader/services/scroll_position_service.dart';
   const detailViewPath = 'lib/features/manga/views/detail_bloc_view.dart';
+  const detectionQueuePath =
+      'lib/features/reader/services/chapter_detection_queue.dart';
 
   late String reader;
   late String settings;
@@ -36,12 +38,28 @@ void main() {
       .where((line) => !line.trimLeft().startsWith('//'))
       .join('\n');
 
+  /// Corps d'une méthode du lecteur, jusqu'à la déclaration suivante.
+  String methodBody(String signature) {
+    final code = withoutComments(reader);
+    final start = code.indexOf(signature);
+    expect(start, isNot(-1), reason: '$signature introuvable');
+    final next = code.indexOf(RegExp(r'\n  (Future|void|bool|int|String|static|@override)'),
+        start + signature.length);
+    return code.substring(start, next == -1 ? code.length : next);
+  }
+
+  /// Source normalisé en fins de ligne `\n` : sous Windows, git extrait les
+  /// fichiers en CRLF (`core.autocrlf`) et les motifs multilignes ci-dessous
+  /// échouaient sans qu'aucun invariant ne soit cassé.
+  String read(String path) =>
+      File(path).readAsStringSync().replaceAll('\r\n', '\n');
+
   setUpAll(() {
-    reader = File(readerPath).readAsStringSync();
-    settings = File(settingsPath).readAsStringSync();
-    offlineReader = File(offlineReaderPath).readAsStringSync();
-    scrollService = File(scrollServicePath).readAsStringSync();
-    detailView = File(detailViewPath).readAsStringSync();
+    reader = read(readerPath);
+    settings = read(settingsPath);
+    offlineReader = read(offlineReaderPath);
+    scrollService = read(scrollServicePath);
+    detailView = read(detailViewPath);
   });
 
   group('protection anti-redirection du lecteur', () {
@@ -221,15 +239,34 @@ void main() {
   });
 
   group('détection d\'URL — un seul traitement par navigation', () {
+    // Depuis le 2026-10-13, la garde et la mémorisation vivent dans
+    // ChapterDetectionQueue (pure, comportement verrouillé par
+    // chapter_detection_queue_test.dart) : le lecteur doit y passer.
     test('les détections sont sérialisées et idempotentes', () {
-      expect(reader, contains('_processingDetection'));
+      final queue = withoutComments(read(detectionQueuePath));
+      expect(queue, contains('_processingDetection'));
       expect(
-        reader,
+        queue,
         contains('_lastHandledUrl'),
         reason: '_handleDetected est appelé jusqu\'à 3 fois par navigation '
             '(shouldOverrideUrlLoading, onLoadStart, '
             'onUpdateVisitedHistory) : sans mémorisation, une navigation '
             'produit plusieurs enregistrements et plusieurs notifications.',
+      );
+      expect(reader, contains('ChapterDetectionQueue('));
+      expect(methodBody('void _handleDetected('),
+          contains('_detections.add(ChapterDetection.url(uri))'));
+    });
+
+    // aniverse.fr : URL sans numéro, chapitre lu dans la page. Il passe par
+    // la MÊME file, donc par la même politique d'enregistrement.
+    test('le chapitre lu dans la page passe par la même file', () {
+      final body = methodBody('Future<void> _detectChapterFromPage(');
+      expect(body, contains('_detections.add(ChapterDetection.page('));
+      expect(
+        body,
+        contains('if (_readOnlyMode || _challengePending'),
+        reason: 'lecture seule et vérification en cours : rien à détecter',
       );
     });
   });
@@ -390,16 +427,6 @@ void main() {
   // de lecture et la position, et pouvait poser la question de fin de
   // chapitre (constaté le 2026-09-27).
   group('mode téléchargement — le lecteur n\'enregistre rien', () {
-    /// Corps d'une méthode du lecteur, jusqu'à la déclaration suivante.
-    String methodBody(String signature) {
-      final code = withoutComments(reader);
-      final start = code.indexOf(signature);
-      expect(start, isNot(-1), reason: '$signature introuvable');
-      final next = code.indexOf(RegExp(r'\n  (Future|void|bool|int|String|static|@override)'),
-          start + signature.length);
-      return code.substring(start, next == -1 ? code.length : next);
-    }
-
     // Depuis le 2026-09-30 les gardes portent sur `_readOnlyMode`, qui
     // COUVRE le mode téléchargement (et le mode « recherche de lien »).
     test('le mode téléchargement est un mode en lecture seule', () {
@@ -563,7 +590,14 @@ void main() {
       expect(start, isNot(-1));
       final handler = code.substring(start, code.indexOf('},', start));
       expect(handler, contains('_barVisibility.onScroll(y)'));
-      for (final forbidden in ['_library', '_save', '_commit', '_handleDetected']) {
+      for (final forbidden in [
+        '_library',
+        '_save',
+        '_commit',
+        '_handleDetected',
+        '_detectChapterFromPage',
+        '_schedulePageProbes',
+      ]) {
         expect(handler, isNot(contains(forbidden)), reason: forbidden);
       }
     });

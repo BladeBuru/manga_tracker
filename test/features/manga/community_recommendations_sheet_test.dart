@@ -77,13 +77,13 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       }
 
-      await tester.tap(find.byTooltip('Je recommande aussi'));
+      await tester.tap(find.byTooltip('Je le suggère aussi'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 750));
 
       expect(
         find
-            .text('Merci ! Votre recommandation est enregistrée')
+            .text('Merci ! Votre suggestion est enregistrée')
             .hitTestable(),
         findsOneWidget,
       );

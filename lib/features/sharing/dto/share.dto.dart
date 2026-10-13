@@ -1,3 +1,6 @@
+import 'package:mangatracker/core/utils/safe_display_name.dart';
+
+/// Recommandation reçue d'un ami (`GET /sharing/inbox`).
 class MangaShareDto {
   final int id;
   final int senderId;
@@ -23,20 +26,46 @@ class MangaShareDto {
 
   bool get isNew => seenAt == null;
 
+  /// Nom de l'expéditeur, jamais au format email (RGPD).
+  String get senderName => stripEmailFormat(senderUsername);
+
+  /// Message joint, `null` s'il est vide.
+  String? get trimmedMessage {
+    final value = message?.trim();
+    return (value == null || value.isEmpty) ? null : value;
+  }
+
+  MangaShareDto markedSeen(DateTime at) => MangaShareDto(
+        id: id,
+        senderId: senderId,
+        senderUsername: senderUsername,
+        senderAvatarUrl: senderAvatarUrl,
+        mangaMuId: mangaMuId,
+        mangaTitle: mangaTitle,
+        message: message,
+        createdAt: createdAt,
+        seenAt: seenAt ?? at,
+      );
+
+  /// Identifiants reçus en nombre ou en chaîne (le `muId` est un bigint
+  /// côté serveur, sérialisé en chaîne).
   factory MangaShareDto.fromJson(Map<String, dynamic> json) {
     return MangaShareDto(
-      id: (json['id'] as num).toInt(),
-      senderId: (json['senderId'] as num).toInt(),
-      senderUsername: json['senderUsername'] as String? ?? '',
+      id: _int(json['id']),
+      senderId: _int(json['senderId']),
+      senderUsername: json['senderUsername']?.toString() ?? '',
       senderAvatarUrl: json['senderAvatarUrl'] as String?,
-      mangaMuId: json['mangaMuId'] as String? ?? '',
-      mangaTitle: json['mangaTitle'] as String? ?? '',
+      mangaMuId: json['mangaMuId']?.toString() ?? '',
+      mangaTitle: json['mangaTitle']?.toString() ?? '',
       message: json['message'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
-      seenAt: json['seenAt'] != null
-          ? DateTime.tryParse(json['seenAt'] as String)
-          : null,
+      seenAt: DateTime.tryParse(json['seenAt']?.toString() ?? ''),
     );
+  }
+
+  static int _int(Object? raw) {
+    if (raw is num) return raw.toInt();
+    return int.tryParse(raw?.toString() ?? '') ?? 0;
   }
 }

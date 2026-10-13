@@ -10,15 +10,21 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 /// Tile d'un commentaire (Phase 7.1, refactor design system).
 ///
 /// Utilise `AppCard` + `AppAvatar` + `AppChip` pour les ratings et badges.
+///
+/// Menu « ⋮ » : « Supprimer » (mes commentaires, [onDelete]) ou
+/// « Signaler » (ceux des autres, [onReport]). Avant, « Supprimer » était
+/// proposé partout et répondait 403 sur le commentaire d'un autre.
 class CommentTile extends StatelessWidget {
   final CommentDto comment;
   final VoidCallback? onDelete;
+  final VoidCallback? onReport;
   final VoidCallback? onReply;
 
   const CommentTile({
     super.key,
     required this.comment,
     this.onDelete,
+    this.onReport,
     this.onReply,
   });
 
@@ -68,20 +74,8 @@ class CommentTile extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s),
                 ],
-                if (onDelete != null && !comment.isDeleted)
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, size: 18),
-                    onSelected: (v) {
-                      if (v == 'delete') onDelete!();
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'delete',
-                        child:
-                            Text(AppLocalizations.of(context)!.commentsDelete),
-                      ),
-                    ],
-                  ),
+                if (!comment.isDeleted && (onDelete != null || onReport != null))
+                  _CommentMenu(onDelete: onDelete, onReport: onReport),
               ],
             ),
             const SizedBox(height: AppSpacing.s),
@@ -116,5 +110,32 @@ class CommentTile extends StatelessWidget {
     if (diff.inDays < 7) return l10n.timeDaysAgo(diff.inDays);
     return DateFormat.yMd(Localizations.localeOf(context).toString())
         .format(date);
+  }
+}
+
+/// Actions d'un commentaire, selon qu'il est à moi ou non.
+class _CommentMenu extends StatelessWidget {
+  final VoidCallback? onDelete;
+  final VoidCallback? onReport;
+
+  const _CommentMenu({this.onDelete, this.onReport});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return PopupMenuButton<String>(
+      tooltip: l10n.commentsMoreActions,
+      icon: const Icon(Icons.more_vert, size: 18),
+      onSelected: (v) {
+        if (v == 'delete') onDelete?.call();
+        if (v == 'report') onReport?.call();
+      },
+      itemBuilder: (_) => [
+        if (onDelete != null)
+          PopupMenuItem(value: 'delete', child: Text(l10n.commentsDelete)),
+        if (onReport != null)
+          PopupMenuItem(value: 'report', child: Text(l10n.commentsReport)),
+      ],
+    );
   }
 }

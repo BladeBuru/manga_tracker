@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/router/route_visibility_listener.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
 import 'package:mangatracker/core/utils/responsive_layout.dart';
+import 'package:mangatracker/features/library/widgets/chapter_progress_feedback.dart';
 import 'package:mangatracker/features/sharing/bloc/reading_groups_bloc.dart';
 import 'package:mangatracker/features/sharing/dto/reading_group.dto.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_detail_sections.dart';
 import 'package:mangatracker/features/sharing/widgets/reading_group_hero_card.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page détail « Lectures à deux » — Design System V1 « Refined Classic ».
 ///
@@ -21,10 +24,13 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 ///    "you vs friend" côte à côte avec mini progress bars relatives.
 ///  - Section "Progression" (ProfileEditSection) : row par membre avec
 ///    progress bar fine.
-///  - Section "Actions" (ProfileEditSection) : 3 rows pastel tile
-///    (Marquer progression / Inviter / Quitter ou Supprimer pour l'owner).
+///  - Section "Actions" (ProfileEditSection) : rows pastel tile (Ma
+///    progression — fenêtre de saisie —, Ouvrir le manga, liens, Inviter,
+///    Quitter ou Supprimer pour l'owner).
 ///
-/// Polling 30s (ReadingGroupDetailBloc) préservé.
+/// Polling 30s (ReadingGroupDetailBloc) préservé, mais seulement tant que la
+/// page est affichée ; relecture immédiate quand elle repasse au premier
+/// plan (retour depuis la fiche du manga).
 /// Confirmation dialog pour quitter / supprimer préservée.
 class ReadingGroupDetailPage extends StatelessWidget
     with ResponsiveLayoutMixin {
@@ -36,7 +42,17 @@ class ReadingGroupDetailPage extends StatelessWidget
     return BlocProvider<ReadingGroupDetailBloc>(
       create: (_) =>
           ReadingGroupDetailBloc(groupId)..add(const LoadGroupDetail()),
-      child: const _DetailScaffold(),
+      child: Builder(
+        builder: (context) => RouteVisibilityListener(
+          onVisible: () => context
+              .read<ReadingGroupDetailBloc>()
+              .add(const GroupDetailVisibilityChanged(true)),
+          onHidden: () => context
+              .read<ReadingGroupDetailBloc>()
+              .add(const GroupDetailVisibilityChanged(false)),
+          child: const _DetailScaffold(),
+        ),
+      ),
     );
   }
 }
@@ -59,6 +75,7 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
         return Scaffold(
           backgroundColor: bg,
           appBar: AppBar(
+            leading: const AppBackButton(fallback: '/reading-groups'),
             backgroundColor: bg,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
@@ -87,6 +104,10 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
 
   void _listen(BuildContext context, ReadingGroupDetailState state) {
     final l10n = AppLocalizations.of(context)!;
+    if (state is ReadingGroupProgressUpdated) {
+      _showProgressOutcome(context, state);
+      return;
+    }
     if (state is ReadingGroupDetailDeleted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.readingGroupDeleteSuccess)),
@@ -111,6 +132,31 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
     }
   }
 
+  /// Issue de « Ma progression » : succès, ou la raison exacte du refus
+  /// (avant : aucun retour, l'ancienne valeur restait affichée).
+  void _showProgressOutcome(
+    BuildContext context,
+    ReadingGroupProgressUpdated state,
+  ) {
+    final bloc = context.read<ReadingGroupDetailBloc>();
+    final router = GoRouter.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        chapterProgressSnackBar(
+          context,
+          state.result,
+          state.readChapters,
+          onRetry: () {
+            if (!bloc.isClosed) {
+              bloc.add(UpdateMyGroupProgress(state.readChapters));
+            }
+          },
+          onReconnect: () => router.push('/login'),
+        ),
+      );
+  }
+
   Widget _buildBody(
     BuildContext context,
     ReadingGroupDetailState state,
@@ -130,7 +176,10 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
       );
     }
     if (state is ReadingGroupDetailLoaded) {
-      return _GroupView(group: state.group);
+      return _GroupView(
+        group: state.group,
+        isSavingProgress: state.isSavingProgress,
+      );
     }
     if (state is ReadingGroupDetailDeleteFailed) {
       return _GroupView(group: state.group);
@@ -141,7 +190,8 @@ class _DetailScaffold extends StatelessWidget with ResponsiveLayoutMixin {
 
 class _GroupView extends StatelessWidget with ResponsiveLayoutMixin {
   final ReadingGroupDto group;
-  _GroupView({required this.group});
+  final bool isSavingProgress;
+  _GroupView({required this.group, this.isSavingProgress = false});
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +215,7 @@ class _GroupView extends StatelessWidget with ResponsiveLayoutMixin {
                 ReadingGroupActionsSection(
                   group: group,
                   currentUserId: myId,
+                  isSavingProgress: isSavingProgress,
                 ),
               ],
             ),

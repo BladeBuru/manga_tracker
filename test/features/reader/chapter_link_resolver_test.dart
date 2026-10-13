@@ -159,4 +159,89 @@ void main() {
       expect(result, contains('title_no=95'));
     });
   });
+
+  // aniverse.fr (vérifié le 2026-10-13) : l'URL de lecture ne porte AUCUN
+  // numéro de chapitre, seulement un UUID. Un UUID contenant `-c41b-` faisait
+  // lire « chapitre 41 », puis le lien de lecture était réécrit dans l'UUID.
+  group('identifiants opaques (UUID, hexadécimal) — jamais un chapitre', () {
+    const aniverse =
+        'https://aniverse.fr/read/chainsaw-man/56f9e3ca-e8f5-49fc-8116-da885090eaf3';
+    const trapUuid =
+        'https://aniverse.fr/read/chainsaw-man/3f2a1c4e-c41b-4d3b-9e1f-0a2b3c4d5e6f';
+    // Groupe de 4 caractères « c412 » : un simple garde après les chiffres ne
+    // suffirait pas, c'est l'UUID entier qui est neutralisé.
+    const trapGroup =
+        'https://aniverse.fr/read/chainsaw-man/3f2a1c4e-c412-4d3b-9e1f-0a2b3c4d5e6f';
+
+    test('aniverse : aucun chapitre dans l\'URL', () async {
+      expect(await ChapterLinkResolver.extractChapter(aniverse), isNull);
+      expect(ChapterLinkResolver.extractChapterSync(aniverse), isNull);
+    });
+
+    test('UUID contenant -c41b- : jamais « chapitre 41 »', () async {
+      expect(await ChapterLinkResolver.extractChapter(trapUuid), isNull);
+      expect(await ChapterLinkResolver.extractChapter(trapGroup), isNull);
+    });
+
+    test('jeton hexadécimal (ObjectId) : jamais un chapitre', () async {
+      const url = 'https://scan.example.com/read/c65f1c2a9e4b0c3d2a1f0987';
+      expect(await ChapterLinkResolver.extractChapter(url), isNull);
+    });
+
+    test('paramètre de requête opaque ignoré', () async {
+      const url =
+          'https://scan.example.com/read?no=56f9e3ca-e8f5-49fc-8116-da885090eaf3';
+      expect(await ChapterLinkResolver.extractChapter(url), isNull);
+      expect(await ChapterLinkResolver.buildUrlForChapter(url, 2), isNull);
+    });
+
+    test('un lien à UUID n\'est jamais réécrit', () async {
+      for (final url in [aniverse, trapUuid, trapGroup]) {
+        expect(await ChapterLinkResolver.buildUrlForChapter(url, 42), isNull,
+            reason: url);
+        expect(await ChapterLinkResolver.buildNextUrl(url, currentChapter: 1),
+            isNull,
+            reason: url);
+      }
+    });
+
+    test('UUID + numéro explicite : le numéro reste détecté, l\'UUID intact',
+        () async {
+      const url =
+          'https://scan.example.com/read/3f2a1c4e-c41b-4d3b-9e1f-0a2b3c4d5e6f/chapitre-12';
+      expect(await ChapterLinkResolver.extractChapter(url), 12);
+      expect(
+        await ChapterLinkResolver.buildUrlForChapter(url, 13),
+        'https://scan.example.com/read/3f2a1c4e-c41b-4d3b-9e1f-0a2b3c4d5e6f/chapitre-13',
+      );
+    });
+
+    test('c120 n\'est pas confondu avec un morceau d\'identifiant', () async {
+      const url = 'https://lelscan.net/scan-one-piece-c120/';
+      expect(await ChapterLinkResolver.extractChapter(url), 120);
+      expect(
+        await ChapterLinkResolver.buildUrlForChapter(url, 121),
+        'https://lelscan.net/scan-one-piece-c121/',
+      );
+      expect(
+        await ChapterLinkResolver.extractChapter(
+            'https://scan.example.com/read/c4e1/'),
+        isNull,
+        reason: 'c4e1 : hexadécimal, pas le chapitre 4',
+      );
+    });
+
+    test('/manga/22/ -> /manga/23/ (le / final est conservé)', () async {
+      expect(
+        await ChapterLinkResolver.buildUrlForChapter(
+            'https://scan.example.com/manga/22/', 23),
+        'https://scan.example.com/manga/23/',
+      );
+    });
+
+    test('mots hexadécimaux sans chiffre : intacts (decade-c12)', () async {
+      const url = 'https://scan.example.com/manga/decade-c12/';
+      expect(await ChapterLinkResolver.extractChapter(url), 12);
+    });
+  });
 }

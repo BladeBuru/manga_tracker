@@ -1,9 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
-import 'package:mangatracker/core/network/failure_classifier.dart';
 import 'package:mangatracker/features/auth/exceptions/invalid_credentials.exception.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 import 'package:mangatracker/core/network/network_compat.dart';
@@ -12,16 +10,17 @@ import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/connectivity_service.dart';
 import 'package:mangatracker/core/services/library_index_service.dart';
 import 'package:mangatracker/core/services/offline_cache_service.dart';
-import 'package:mangatracker/core/services/sync_service.dart';
 import 'package:mangatracker/features/manga/dto/manga_quick_view.dto.dart';
-import 'package:mangatracker/features/manga/services/manga.service.dart';
 import 'package:mangatracker/features/library/services/chapter_report.service.dart';
+import 'package:mangatracker/features/library/services/offline_write_queue.dart';
 
 import '../../manga/dto/reading_status.enum.dart';
 
 class LibraryService {
   final HttpService _http = getIt<HttpService>();
-  MangaService get _mangaService => getIt<MangaService>();
+
+  /// File d'attente hors ligne partagée avec `ChapterProgressService`.
+  final OfflineWriteQueue _writeQueue = OfflineWriteQueue();
 
   /// Résolu **paresseusement** : `ChapterReportService` est enregistré APRÈS
   /// `LibraryService` dans `setupServiceLocator`. Le résoudre dans le
@@ -75,6 +74,10 @@ class LibraryService {
           url: url,
           muId: muId,
           expectStatus: HttpStatus.created,
+          // Déjà dans la bibliothèque (autre appareil, double appui) : c'est
+          // l'état voulu. Avant, ce refus faisait échouer l'action.
+          alsoSuccess: (res) =>
+              isAlreadyInLibraryResponse(res.statusCode, res.body),
         );
         // La biblio a changé → les recos doivent refléter le changement
         // (le back invalide son cache, le front doit faire pareil).
@@ -131,11 +134,16 @@ class LibraryService {
       } catch (e) {
         // Rejet de session => refus, pas de mise en file.
         return await _queueUnlessRejected(
-            OfflineAction.saveChapterProgress(muId, readChapters), e);
+            OfflineAction.saveChapterProgress(muId, readChapters,
+                confirmedByUser: autoReportIfAboveTotal),
+            e);
       }
     } else {
-      // Mode hors ligne : ajouter à la queue
-      await _cacheService.queueOfflineAction(OfflineAction.saveChapterProgress(muId, readChapters));
+      // Mode hors ligne : ajouter à la queue. La confirmation suit l'action :
+      // au rejeu, un 406 sera rattrapé comme en ligne.
+      await _cacheService.queueOfflineAction(OfflineAction.saveChapterProgress(
+          muId, readChapters,
+          confirmedByUser: autoReportIfAboveTotal));
       return true; // Retourner true car l'action est en queue
     }
   }
@@ -176,7 +184,9 @@ class LibraryService {
       // progression, elle repart par la queue offline comme d'habitude.
       // Un rejet de session, lui, remonte au lieu d'être mis en file.
       return await _queueUnlessRejected(
-          OfflineAction.saveChapterProgress(muId, readChapters), e);
+          OfflineAction.saveChapterProgress(muId, readChapters,
+              confirmedByUser: true),
+          e);
     }
   }
 
@@ -323,44 +333,10 @@ class LibraryService {
     }
   }
 
-  /// Met une mutation en file d'attente hors ligne — **sauf** si le serveur a
-  /// explicitement rejeté la session.
-  ///
-  /// Frontière de sécurité (cf. `failure_classifier.dart`) : la LECTURE est
-  /// assouplie, l'ÉCRITURE ne l'est pas. Une mutation tentée avec une session
-  /// morte est **refusée** et l'exception remonte au BLoC, qui affichera
-  /// l'invitation à se reconnecter. La mettre en file serait un faux succès :
-  /// `SyncService` la rejouerait indéfiniment sans jamais pouvoir aboutir.
-  ///
-  /// Seule une panne de **réseau** (ou une session non vérifiable faute de
-  /// réseau) met en file : une autre erreur (bug,
-  /// réponse illisible) ne réussirait pas mieux plus tard. Et une mise en
-  /// file est un succès différé (`true`) : renvoyer `false` poussait les
-  /// écrans à réessayer, et chaque essai ajoutait une copie à la file.
-  Future<bool> _queueUnlessRejected(OfflineAction action, Object error) async {
-    final mode = classifyFailure(error);
-    if (requiresReauthPrompt(mode)) throw error;
-    // `sessionExpired` n'arrive plus que hors ligne (en ligne sans session,
-    // c'est un refus) : la modification repartira une fois reconnecté.
-    if (mode != FailureMode.network && mode != FailureMode.sessionExpired) {
-      debugPrint('⚠️ LibraryService: ${action.type} non appliqué ($error)');
-      return false;
-    }
-    await _cacheService.queueOfflineAction(action);
-    unawaited(_syncSoon());
-    return true;
-  }
-
-  /// La file sera rejouée par `SyncService` (reconnexion, retour au premier
-  /// plan, minuterie) ; ce rappel couvre le cas où le réseau revient vite.
-  Future<void> _syncSoon() async {
-    if (!getIt.isRegistered<SyncService>()) return;
-    try {
-      final sync = await getIt.getAsync<SyncService>();
-      await Future<void>.delayed(const Duration(seconds: 30));
-      await sync.syncNow();
-    } catch (_) {}
-  }
+  /// Mise en file sauf session rejetée — règle partagée, cf.
+  /// [OfflineWriteQueue.queueUnlessRejected].
+  Future<bool> _queueUnlessRejected(OfflineAction action, Object error) =>
+      _writeQueue.queueUnlessRejected(action, error);
 
   // ─────────── UTILS & HELPERS ───────────
 
@@ -405,21 +381,18 @@ class LibraryService {
     return  manga?.readingStatus;
   }
 
-  /// Récupère le customLink d'un manga, ou null si absent
+  /// Récupère le customLink d'un manga, ou null si absent.
+  ///
+  /// Lu dans l'entrée de bibliothèque (`/library/all`, avec repli sur le
+  /// cache) : le lien appartient à l'utilisateur. Avant, chaque appel
+  /// téléchargeait la fiche complète du manga (`GET /mangas/:id`) pour n'en
+  /// lire que ce champ, et renvoyait toujours `null` hors ligne.
   Future<String?> getCustomLink(int muId) async {
-    final isOnline = _connectivityService.isConnected;
-    
-    if (isOnline) {
-      try {
-        // Récupérer les détails du manga depuis MangaService
-        final mangaDetail = await _mangaService.getMangaDetail(muId.toString());
-        return mangaDetail.customLink;
-      } catch (e) {
-        debugPrint('⚠️ LibraryService: Erreur lors de la récupération du customLink: $e');
-        return null;
-      }
-    } else {
-      // En mode offline, on ne peut pas récupérer le customLink
+    try {
+      final link = (await getLibraryEntry(muId))?.customLink;
+      return link == null || link.isEmpty ? null : link;
+    } catch (e) {
+      debugPrint('⚠️ LibraryService: lien de lecture indisponible ($e)');
       return null;
     }
   }
@@ -450,6 +423,7 @@ class LibraryService {
     required int muId,
     int expectStatus = HttpStatus.ok,
     String bodyKey = 'muId',
+    bool Function(Response res)? alsoSuccess,
   }) async {
     final res = await method(
       url,
@@ -458,6 +432,7 @@ class LibraryService {
     );
 
     if (res.statusCode == expectStatus) return true;
+    if (alsoSuccess?.call(res) ?? false) return true;
     if (res.statusCode == HttpStatus.forbidden) {
       throw InvalidCredentialsException('403 sur ${url.path}');
     }

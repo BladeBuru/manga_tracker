@@ -16,6 +16,12 @@ class OfflineAction {
   final String? customLink;
   final int? readChapters;
   final DateTime timestamp;
+
+  /// Progression **affirmée** par l'utilisateur (tap sur un chapitre, modale,
+  /// fenêtre « Ma progression ») : au rejeu, un 406 (total dépassé) déclenche
+  /// alors le même rattrapage qu'en ligne (signalement puis nouvel essai).
+  /// Faux pour une détection automatique, qui ne doit jamais signaler.
+  final bool confirmedByUser;
   
   OfflineAction({
     required this.type,
@@ -23,6 +29,7 @@ class OfflineAction {
     this.status,
     this.customLink,
     this.readChapters,
+    this.confirmedByUser = false,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
   
@@ -32,6 +39,7 @@ class OfflineAction {
     'status': status?.name,
     'customLink': customLink,
     'readChapters': readChapters,
+    if (confirmedByUser) 'confirmedByUser': true,
     'timestamp': timestamp.toIso8601String(),
   };
   
@@ -45,6 +53,7 @@ class OfflineAction {
         .firstOrNull,
     customLink: json['customLink'],
     readChapters: json['readChapters'],
+    confirmedByUser: json['confirmedByUser'] == true,
     timestamp: DateTime.parse(json['timestamp']),
   );
   
@@ -59,10 +68,15 @@ class OfflineAction {
     muId: muId,
   );
   
-  static OfflineAction saveChapterProgress(int muId, int readChapters) => OfflineAction(
+  static OfflineAction saveChapterProgress(
+    int muId,
+    int readChapters, {
+    bool confirmedByUser = false,
+  }) => OfflineAction(
     type: 'saveChapterProgress',
     muId: muId,
     readChapters: readChapters,
+    confirmedByUser: confirmedByUser,
   );
   
   static OfflineAction updateMangaStatus(int muId, ReadingStatus status) => OfflineAction(

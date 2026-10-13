@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mangatracker/core/components/pastel_tile.dart';
 import 'package:mangatracker/core/notifier/notifier.dart';
@@ -12,10 +12,9 @@ import 'package:mangatracker/l10n/app_localizations.dart';
 
 /// Page de gestion des notifications — Design System V1 « Refined Classic ».
 ///
-/// Trois toggles indépendants :
-///  - Nouveaux chapitres (existant, ne pas casser).
-///  - Demandes d'ami (nouveau).
-///  - Recommandations reçues / partages (nouveau).
+/// Un interrupteur par famille ([NotificationFamily]) : nouveaux chapitres,
+/// demandes d'ami, demandes acceptées, recommandations reçues, lectures
+/// partagées.
 ///
 /// Plus une carte d'info expliquant la permission système.
 class NotificationsSettingsPage extends StatefulWidget {
@@ -31,9 +30,9 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
       NotificationPreferencesService();
   final Notifier _notifier = getIt<Notifier>();
 
-  bool? _newChapters;
-  bool? _friendRequests;
-  bool? _sharesReceived;
+  /// État de chaque interrupteur ; absent tant que la lecture n'est pas
+  /// faite (affiché activé, la valeur par défaut).
+  final Map<NotificationFamily, bool> _enabled = {};
 
   @override
   void initState() {
@@ -42,37 +41,57 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
   }
 
   Future<void> _loadAll() async {
-    final results = await Future.wait([
-      _prefs.areNewChapterNotificationsEnabled(),
-      _prefs.areFriendRequestNotificationsEnabled(),
-      _prefs.areShareReceivedNotificationsEnabled(),
+    final values = await Future.wait([
+      for (final family in NotificationFamily.values) _prefs.isEnabled(family),
     ]);
     if (!mounted) return;
     setState(() {
-      _newChapters = results[0];
-      _friendRequests = results[1];
-      _sharesReceived = results[2];
+      for (var i = 0; i < NotificationFamily.values.length; i++) {
+        _enabled[NotificationFamily.values[i]] = values[i];
+      }
     });
   }
 
-  Future<void> _toggleNewChapters(bool v) async {
-    await _prefs.setNewChapterNotificationsEnabled(v);
+  Future<void> _toggle(NotificationFamily family, bool v) async {
+    await _prefs.setEnabled(family, v);
     if (!mounted) return;
-    setState(() => _newChapters = v);
+    setState(() => _enabled[family] = v);
+    if (family != NotificationFamily.newChapters) return;
     final l10n = AppLocalizations.of(context)!;
     _notifier.success(v
         ? l10n.newChapterNotificationsEnabled
         : l10n.newChapterNotificationsDisabled);
   }
 
-  Future<void> _toggleFriendReq(bool v) async {
-    await _prefs.setFriendRequestNotificationsEnabled(v);
-    if (mounted) setState(() => _friendRequests = v);
-  }
-
-  Future<void> _toggleShares(bool v) async {
-    await _prefs.setShareReceivedNotificationsEnabled(v);
-    if (mounted) setState(() => _sharesReceived = v);
+  /// Une ligne par famille, dans l'ordre d'affichage.
+  List<_NotifToggleRow> _rows(AppLocalizations l10n) {
+    _NotifToggleRow row(NotificationFamily family, IconData icon,
+            PastelTileColor color, String title, String subtitle) =>
+        _NotifToggleRow(
+          icon: icon,
+          color: color,
+          title: title,
+          subtitle: subtitle,
+          value: _enabled[family] ?? true,
+          onChanged: (v) => _toggle(family, v),
+        );
+    return [
+      row(NotificationFamily.newChapters, Icons.menu_book_outlined,
+          PastelTileColor.blue, l10n.notifNewChaptersTitle,
+          l10n.notifNewChaptersSubtitle),
+      row(NotificationFamily.friendRequests, Icons.people_outline,
+          PastelTileColor.purple, l10n.notifFriendReqTitle,
+          l10n.notifFriendReqSubtitle),
+      row(NotificationFamily.friendAccepted, Icons.how_to_reg_outlined,
+          PastelTileColor.teal, l10n.notifFriendAcceptedTitle,
+          l10n.notifFriendAcceptedSubtitle),
+      row(NotificationFamily.sharesReceived, Icons.inbox_outlined,
+          PastelTileColor.pink, l10n.notifSharesTitle,
+          l10n.notifSharesSubtitle),
+      row(NotificationFamily.readingGroups, Icons.groups_outlined,
+          PastelTileColor.green, l10n.notifReadingGroupsTitle,
+          l10n.notifReadingGroupsSubtitle),
+    ];
   }
 
   @override
@@ -107,7 +126,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: scheme.primary, size: 24),
-          onPressed: () => context.pop(),
+          onPressed: () => popOrGo(context, fallback: '/profile'),
         ),
       ),
       body: LayoutBuilder(
@@ -121,32 +140,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
                 children: [
                   ProfileEditSection(
                     label: l10n.notifSectionApp,
-                    children: [
-                      _NotifToggleRow(
-                        icon: Icons.menu_book_outlined,
-                        color: PastelTileColor.blue,
-                        title: l10n.notifNewChaptersTitle,
-                        subtitle: l10n.notifNewChaptersSubtitle,
-                        value: _newChapters ?? true,
-                        onChanged: _toggleNewChapters,
-                      ),
-                      _NotifToggleRow(
-                        icon: Icons.people_outline,
-                        color: PastelTileColor.purple,
-                        title: l10n.notifFriendReqTitle,
-                        subtitle: l10n.notifFriendReqSubtitle,
-                        value: _friendRequests ?? true,
-                        onChanged: _toggleFriendReq,
-                      ),
-                      _NotifToggleRow(
-                        icon: Icons.inbox_outlined,
-                        color: PastelTileColor.pink,
-                        title: l10n.notifSharesTitle,
-                        subtitle: l10n.notifSharesSubtitle,
-                        value: _sharesReceived ?? true,
-                        onChanged: _toggleShares,
-                      ),
-                    ],
+                    children: _rows(l10n),
                   ),
                   const SizedBox(height: AppSpacing.l),
                   ProfileEditSection(

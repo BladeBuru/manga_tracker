@@ -220,7 +220,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pushNotifShareTitle => '新しい漫画が共有されました';
+  String get pushNotifShareTitle => '新しいおすすめ';
 
   @override
   String pushNotifShareBody(String senderUsername, String mangaTitle) {
@@ -1599,7 +1599,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get shareTitle => 'この漫画を共有';
+  String get shareTitle => '友達におすすめする';
 
   @override
   String get shareMessageHint => 'メッセージを追加（任意）';
@@ -1611,10 +1611,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareSend => '送信';
 
   @override
-  String get shareSuccess => '共有しました';
+  String get shareSuccess => 'おすすめを送信しました';
 
   @override
-  String get shareFailed => '共有に失敗しました';
+  String get shareFailed => '送信に失敗しました';
 
   @override
   String get shareLoadError => 'フレンドを読み込めませんでした';
@@ -1623,7 +1623,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareNoFriends => 'まだ共有できるフレンドがいません。フレンドページから追加してください。';
 
   @override
-  String get inboxTitle => '受信箱';
+  String get inboxTitle => '受け取ったおすすめ';
 
   @override
   String get inboxEmpty => 'まだおすすめはありません。';
@@ -1941,6 +1941,104 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get readingGroupInviteSoonMessage =>
       'グループからの招待機能はもうすぐ登場します。現時点ではマンガページから新しいグループを作成してください。';
+
+  @override
+  String readingGroupMyProgressSubtitle(int chapter) {
+    return '最後に読み終えた話：$chapter';
+  }
+
+  @override
+  String get readingGroupMyProgressEmpty => '最後に読み終えた話を入力してください';
+
+  @override
+  String get readingGroupProgressSaving => '保存中…';
+
+  @override
+  String get readingGroupOpenMangaSubtitle => '話一覧、オンライン閲覧、作品の詳細';
+
+  @override
+  String get readingGroupProgressDialogTitle => '自分の進捗';
+
+  @override
+  String get readingGroupProgressDialogExplainer =>
+      '最後に読み終えた話を入力してください。グループのメンバーにあなたの進捗が表示されます。';
+
+  @override
+  String get readingGroupProgressFieldLabel => '最後に読み終えた話';
+
+  @override
+  String get readingGroupProgressInvalid => '0以上の整数を入力してください。';
+
+  @override
+  String get readingGroupProgressDecrease => '1話戻す';
+
+  @override
+  String get readingGroupProgressIncrease => '1話進める';
+
+  @override
+  String readingGroupProgressAlignWith(String name, int chapter) {
+    return '$nameに合わせる（第$chapter話）';
+  }
+
+  @override
+  String get readingGroupProgressUnknown =>
+      'あなたの進捗を取得できませんでした。少し待ってからもう一度お試しください。';
+
+  @override
+  String get readingGroupCopyLinkClipboardFailed => 'この端末ではリンクをコピーできませんでした。';
+
+  @override
+  String get readingGroupCopyLinkManualTitle => 'コピーできませんでした — リンクはこちら';
+
+  @override
+  String chapterProgressSavedAt(int chapter) {
+    return '進捗を保存しました：第$chapter話';
+  }
+
+  @override
+  String chapterProgressSavedReported(int chapter) {
+    return '進捗を保存しました：第$chapter話。作品の話数を更新しました。';
+  }
+
+  @override
+  String chapterProgressAboveTotal(int chapter) {
+    return '第$chapter話は作品の既知の話数を超えています。マンガページから新しい話を報告してください。';
+  }
+
+  @override
+  String get chapterProgressThrottled => '短時間に変更が多すぎます。しばらくしてからもう一度お試しください。';
+
+  @override
+  String chapterProgressQueued(int chapter) {
+    return 'オフライン：第$chapter話はオンラインに戻ったときに保存されます。';
+  }
+
+  @override
+  String get chapterProgressSessionRejected =>
+      'セッションの有効期限が切れました。進捗を保存するには再ログインしてください。';
+
+  @override
+  String get chapterProgressNotInLibrary =>
+      'この作品はライブラリにありません。進捗を記録するには作品ページから追加してください。';
+
+  @override
+  String chapterProgressFailedCode(int code) {
+    return '進捗を保存できませんでした（エラー $code）。もう一度お試しください。';
+  }
+
+  @override
+  String get chapterProgressFailed => '進捗を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String offlineProgressRefused(int chapter) {
+    return 'オフラインで保存した進捗（第$chapter話）がサーバーに拒否されました。';
+  }
+
+  @override
+  String get ratingSaveFailed => '評価を保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get ratingSaveOffline => 'オフライン：評価は保存されませんでした。';
 
   @override
   String get libraryToggleListView => 'リスト表示';
@@ -2411,34 +2509,34 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get communityRecoAdd => '作品をおすすめする';
+  String get communityRecoAdd => '似た作品を提案する';
 
   @override
-  String get communityRecoToggleOn => '私もおすすめ';
+  String get communityRecoToggleOn => '私も提案する';
 
   @override
-  String get communityRecoToggleOff => 'おすすめを取り消す';
+  String get communityRecoToggleOff => '提案を取り消す';
 
   @override
-  String get communityRecoAdded => 'ありがとうございます！おすすめを登録しました';
+  String get communityRecoAdded => 'ありがとうございます！提案を登録しました';
 
   @override
-  String get communityRecoRemoved => 'おすすめを取り消しました';
+  String get communityRecoRemoved => '提案を取り消しました';
 
   @override
-  String get communityRecoEmpty => 'この作品へのおすすめはまだありません。最初のおすすめをしてみましょう！';
+  String get communityRecoEmpty => '似た作品の提案はまだありません。最初に提案してみましょう！';
 
   @override
   String get communityRecoLoadError => 'おすすめを読み込めませんでした';
 
   @override
-  String get communityRecoActionError => 'おすすめを保存できませんでした。後でもう一度お試しください。';
+  String get communityRecoActionError => '提案を保存できませんでした。後でもう一度お試しください。';
 
   @override
-  String get communityRecoThrottled => '短時間に多くの作品をおすすめしました。しばらくしてからお試しください。';
+  String get communityRecoThrottled => '短時間に多くの作品を提案しました。しばらくしてからお試しください。';
 
   @override
-  String get communityRecoPickerTitle => 'どの作品をおすすめしますか？';
+  String get communityRecoPickerTitle => 'どの似た作品を提案しますか？';
 
   @override
   String get communityRecoPickerHint => '作品を検索';
@@ -2614,4 +2712,220 @@ class AppLocalizationsJa extends AppLocalizations {
   String downloadConfirmCount(int count) {
     return 'ダウンロード（$count）';
   }
+
+  @override
+  String get errorGeneric => 'エラーが発生しました。もう一度お試しください。';
+
+  @override
+  String get errorTooManyRequests => '試行回数が多すぎます。しばらくしてからもう一度お試しください';
+
+  @override
+  String get errorServerUnavailable => 'サービスは一時的に利用できません。後でもう一度お試しください。';
+
+  @override
+  String get errorForbidden => 'この操作を行う権限がありません。';
+
+  @override
+  String get errorNotFound => '見つかりません。削除された可能性があります。';
+
+  @override
+  String get errorConflict => 'すでに完了しています。';
+
+  @override
+  String get errorSessionExpired => 'セッションの有効期限が切れました。もう一度ログインしてください。';
+
+  @override
+  String get notificationsMarkAllRead => 'すべて既読にする';
+
+  @override
+  String get notificationsSettingsTooltip => '通知設定';
+
+  @override
+  String get notificationsEmptyTitle => '通知はありません';
+
+  @override
+  String get notificationsEmptySubtitle => 'ライブラリの新着、友達リクエスト、おすすめ：すべてここに届きます。';
+
+  @override
+  String get notificationsLoadError => '通知を読み込めませんでした。';
+
+  @override
+  String get notificationsLoadMoreError => '続きを読み込めませんでした。';
+
+  @override
+  String get notificationsUnread => '未読';
+
+  @override
+  String notificationsBellUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '通知、未読 $count 件',
+      zero: '通知',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsSomeone => '誰か';
+
+  @override
+  String get notificationsSomeTitle => '作品';
+
+  @override
+  String notifItemFriendRequest(String name) {
+    return '$nameさんから友達リクエストが届きました';
+  }
+
+  @override
+  String notifItemFriendAccepted(String name) {
+    return '$nameさんが友達リクエストを承認しました';
+  }
+
+  @override
+  String notifItemMangaShare(String name, String title) {
+    return '$nameさんが$titleをおすすめしています';
+  }
+
+  @override
+  String notifItemReadingGroupNamed(String name, String group) {
+    return '$nameさんがあなたを共有読書「$group」に追加しました';
+  }
+
+  @override
+  String notifItemReadingGroup(String name, String title) {
+    return '$nameさんがあなたを$titleの共有読書に追加しました';
+  }
+
+  @override
+  String notifItemNewChapters(int count, String title, String chapter) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$titleの新しい話が$count件（第$chapter話）',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pushNotifFriendAcceptedTitle => '友達リクエストが承認されました';
+
+  @override
+  String get pushNotifReadingGroupTitle => '新しい共有読書';
+
+  @override
+  String get pushNotifNewChaptersTitle => '新しい話';
+
+  @override
+  String get notifFriendAcceptedTitle => '承認されたリクエスト';
+
+  @override
+  String get notifFriendAcceptedSubtitle => '友達リクエストが承認されたとき';
+
+  @override
+  String get notifReadingGroupsTitle => '共有読書';
+
+  @override
+  String get notifReadingGroupsSubtitle => '友達があなたを共有読書に追加したとき';
+
+  @override
+  String get friendsSearchError => '検索に失敗しました。もう一度お試しください。';
+
+  @override
+  String get friendsRelationAdd => '追加';
+
+  @override
+  String get friendsRelationFriends => '友達';
+
+  @override
+  String get friendsCancelRequest => 'リクエストを取り消す';
+
+  @override
+  String friendsSendConfirmTitle(String name) {
+    return '$nameさんに友達リクエストを送信しますか？';
+  }
+
+  @override
+  String get friendsSendConfirmBody => '相手は承認または拒否できます。';
+
+  @override
+  String get friendsSendConfirmAction => '送信';
+
+  @override
+  String friendsCancelConfirmTitle(String name) {
+    return '$nameさんへのリクエストを取り消しますか？';
+  }
+
+  @override
+  String get friendsKeepRequest => 'そのままにする';
+
+  @override
+  String get friendsSectionSent => '送信したリクエスト';
+
+  @override
+  String get friendsRequestCancelled => 'リクエストを取り消しました';
+
+  @override
+  String friendsNowFriends(String name) {
+    return '$nameさんと友達になりました';
+  }
+
+  @override
+  String get commentsReport => '報告';
+
+  @override
+  String get commentsReportConfirmTitle => 'このコメントを報告しますか？';
+
+  @override
+  String get commentsReportConfirmBody => 'モデレーションチームが確認します。';
+
+  @override
+  String get commentsReportSuccess => 'ご報告ありがとうございます。';
+
+  @override
+  String get commentsMoreActions => 'その他の操作';
+
+  @override
+  String get similarTitles => '似た作品';
+
+  @override
+  String receivedShareBy(String name) {
+    return '$nameさんのおすすめ';
+  }
+
+  @override
+  String receivedShareByMany(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$nameさんほか$count人のおすすめ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String receivedShareMessage(String message) {
+    return '「$message」';
+  }
+
+  @override
+  String get routeNotFoundTitle => 'ページが見つかりません';
+
+  @override
+  String get routeNotFoundMessage => 'このアドレスに対応するページはありません。';
+
+  @override
+  String get backToHome => 'ホームに戻る';
+
+  @override
+  String get newVersionAvailable => 'アプリの新しいバージョンがあります。';
+
+  @override
+  String get reloadApp => '再読み込み';
+
+  @override
+  String get carouselPrevious => '前のタイトル';
+
+  @override
+  String get carouselNext => '次のタイトル';
 }

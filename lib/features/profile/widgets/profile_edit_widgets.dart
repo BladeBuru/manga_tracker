@@ -3,6 +3,7 @@ import 'package:mangatracker/core/components/app_avatar.dart';
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/features/profile/dto/user_information.dto.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║  Design System V1 « Refined Classic » — Hero + GenderChips + CTA.     ║
@@ -37,7 +38,7 @@ class ProfileEditHero extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
       child: Column(
         children: [
-          GestureDetector(
+          ClickableCursor(child: GestureDetector(
             onTap: onPick,
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
@@ -86,9 +87,9 @@ class ProfileEditHero extends StatelessWidget {
                 ],
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 12),
-          GestureDetector(
+          ClickableCursor(child: GestureDetector(
             onTap: onPick,
             child: Text(
               l10n.profileChangePhoto,
@@ -99,7 +100,7 @@ class ProfileEditHero extends StatelessWidget {
                 color: scheme.primary,
               ),
             ),
-          ),
+          )),
         ],
       ),
     );
@@ -188,7 +189,7 @@ class _GenderChip extends StatelessWidget {
         : (brightness == Brightness.dark ? AppColors.dsSurfaceDark : Colors.white);
     final borderColor = selected ? scheme.primary : AppColors.dsBorder(brightness);
     final textColor = selected ? scheme.primary : AppColors.dsText2(brightness);
-    return GestureDetector(
+    return ClickableCursor(child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -217,7 +218,7 @@ class _GenderChip extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

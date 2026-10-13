@@ -197,6 +197,79 @@ manga (la dernière), jamais une file d'actions à rejouer.
 
 ---
 
+## Social : notifications, amis, recommandations, commentaires (2026-10)
+
+> Règle commune : **tout code 2xx est un succès** (`isHttpSuccess`), plusieurs
+> POST répondent 201 (`/sharing/inbox/mark-seen`, `/mangas/comments/:id/report`).
+> Toute autre réponse lève `ApiException` (`lib/core/network/api_exception.dart`) ;
+> le texte affiché vient de `userFacingErrorMessage` : `message` NestJS rédigé
+> (chaîne, pas une liste de validation), sinon texte de l'app par code
+> (429 « Trop de tentatives, réessayez dans un instant », 5xx, 403, 404, 409).
+
+### Centre de notifications (`NotificationsService`)
+
+| Méthode | Route | Réponse |
+|---------|-------|---------|
+| `GET` | `/notifications?limit=30&before=<ISO>` | `{ items: [...], unreadCount, nextBefore \| null }` |
+| `GET` | `/notifications/unread-count` | `{ count }` (interrogé toutes les 60 s par `NotificationCountsService`) |
+| `POST` | `/notifications/:id/read` | 200 `{ ok: true }` |
+| `POST` | `/notifications/read-all` | 200 `{ updated }` |
+
+Ligne : `{ id, type, createdAt, readAt|null, actor: {id, username, displayName|null}|null, manga: {muId, title, coverUrl|null}|null, data }`.
+`id` / `actor.id` lus en nombre OU chaîne (gardés en `String`), `muId` entier
+depuis un nombre ou une chaîne. **Type inconnu → ligne ignorée.**
+
+| `type` | `data` | Toucher → |
+|--------|--------|-----------|
+| `friend_request` | `{ friendshipId }` | `/friends?tab=pending` |
+| `friend_accepted` | `{ friendshipId }` | `/friends/:actorId` |
+| `manga_share` | `{ shareId, message\|null }` | `/manga/:muId` |
+| `reading_group_invite` | `{ groupId, groupName\|null }` | `/reading-groups/:groupId` |
+| `new_chapters` | `{ latestChapter, previousTotal, readChapters }` | `/manga/:muId` |
+
+Côté serveur : `friend_request` passe en lue quand la demande est acceptée ou
+supprimée, `manga_share` quand `/sharing/inbox/mark-seen` est appelé.
+Cache : première page sous `cached_notifications`.
+
+### Amis (`FriendsService`)
+
+| Méthode | Route | Note |
+|---------|-------|------|
+| `GET` | `/friends` | amis acceptés — cache `cached_friends` **5 min**, relu à l'ouverture de la page Amis et des sélecteurs |
+| `GET` | `/friends/pending` | demandes reçues |
+| `GET` | `/friends/sent` | **nouveau** — demandes envoyées (même forme ; l'autre = destinataire). 404 (ancien serveur) → liste vide |
+| `GET` | `/friends/search?q=` | pseudo OU nom affiché ; renvoie aussi les personnes liées, avec `relation: none \| pending_sent \| pending_received \| friends` (absent → `none`) |
+| `POST` | `/friends/request` | `{ addresseeId }` — **409** si une demande existe déjà (`message` en français) |
+| `PATCH` | `/friends/:id` | `{ status }` (accepter / bloquer) |
+| `DELETE` | `/friends/:id` | supprimer un ami, refuser une demande reçue, **annuler une demande envoyée** |
+
+### Recommandations entre amis (`SharingService`)
+
+| Méthode | Route | Note |
+|---------|-------|------|
+| `POST` | `/sharing/manga/:muId` | « Recommander à un ami » `{ friendIds, message? }` |
+| `GET` | `/sharing/inbox` | « Recommandations reçues » ; dernière réponse gardée en mémoire (bandeau « Recommandé par » de la fiche, `getInboxCached`) |
+| `POST` | `/sharing/inbox/mark-seen` | répond **201** (accepté) ; marque aussi lues les lignes `manga_share` du centre |
+| `GET` | `/sharing/inbox/unseen-count` | repli du compteur |
+
+« Suggérer un titre similaire » (`PUT /mangas/:muId/community-recommendations/:target`)
+est un **vote public** sans destinataire ni notification — distinct de
+l'envoi à un ami.
+
+### Commentaires (`CommentsService`)
+
+| Méthode | Route | Note |
+|---------|-------|------|
+| `DELETE` | `/mangas/comments/:id` | auteur seulement (403 sinon) — « Supprimer » n'est proposé que sur mes commentaires |
+| `POST` | `/mangas/comments/:id/report` | répond **201** ; « Signaler » sur les commentaires des autres |
+
+### Profil
+
+`GET /user/information` n'est lu et mis en cache **que sur un 200** : un 429
+ou un 500 ne remplace plus le profil par un utilisateur vide.
+
+---
+
 ## DTOs Flutter
 
 ### `MangaQuickViewDto`
@@ -300,6 +373,8 @@ HttpService gère :
 | `GET /mangas/:muId` | `cached_manga_detail_<muId>` |
 | `POST /mangas/search` (page 1) | `cached_search_<query>` |
 | `GET /users/profile` | `cached_user_info` (TTL 7 jours) |
+| `GET /notifications` (page 1) | `cached_notifications` |
+| `GET /friends` | `cached_friends` (TTL 5 min, repli hors ligne) |
 
 ---
 

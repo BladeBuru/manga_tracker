@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart';
 import 'package:mangatracker/core/components/cover_badge.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 import 'package:mangatracker/core/components/refreshable_manga_image.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_radius.dart';
@@ -133,6 +134,11 @@ class MangaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Souris : curseur « main » + couverture qui zoome (rien au doigt).
+    return HoverFeedback(child: _buildTappable(context));
+  }
+
+  Widget _buildTappable(BuildContext context) {
     return GestureDetector(
       onLongPress: onLongPress,
       onTap: () async {
@@ -241,12 +247,14 @@ class MangaCard extends StatelessWidget {
                     // useProxy: true (hotfix-v0-10-1 US-2) — l'URL MU brute
                     // est bloquée par CORS sur le web ; le proxy gère les
                     // deux plateformes (302 mobile, stream web).
-                    RefreshableMangaImage(
-                      muId: muId,
-                      originalUrl: mediumImgPath,
-                      width: double.infinity,
-                      height: coverHeight,
-                      useProxy: true,
+                    HoverZoom(
+                      child: RefreshableMangaImage(
+                        muId: muId,
+                        originalUrl: mediumImgPath,
+                        width: double.infinity,
+                        height: coverHeight,
+                        useProxy: true,
+                      ),
                     ),
                     if (compactLibrary && lastChapter != null)
                       MangaCardProgressOverlay(

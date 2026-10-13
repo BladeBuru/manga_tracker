@@ -19,7 +19,7 @@
 - **Auth biométrique** : `local_auth`
 - **WebView** : `flutter_inappwebview` + `webview_flutter`
 - **Connectivité** : `connectivity_plus`
-- **Navigation** : `MaterialPageRoute` (migration vers `go_router` prévue, **obligatoire pour Web**)
+- **Navigation** : `go_router 14` — URL réelles sur le web, onglets en `StatefulShellRoute`, garde d'authentification (`core/router/`)
 
 ---
 
@@ -132,9 +132,8 @@ Voir skill `/refactor-large-file`.
 **TOUT texte visible DOIT être traduit.** 7 langues : FR (référence), EN, DE, JA, KO, PT, ES.
 
 ```dart
-// ✅ BON
+// ✅ BON (l'extension `context.l10n` n'existe PAS dans ce projet)
 Text(AppLocalizations.of(context)!.libraryTitle)
-Text(context.l10n.libraryTitle)
 
 // ❌ MAUVAIS
 Text('Ma bibliothèque')
@@ -277,6 +276,12 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   **sérialisé et idempotent** (garde + mémorisation de la dernière URL
   traitée), sinon on produit PUT, notifications et entrées de journal en
   double.
+- 🔒 **Chapitre lu dans la page = dernier recours** (2026-10-13, aniverse.fr) :
+  seulement quand l'URL ne donne AUCUN numéro (`PageChapterParser`, pur), par
+  la même file (`ChapterDetectionQueue`) et la même `ChapterCommitPolicy`.
+  ❌ Jamais le texte des liens (la page montre souvent le chapitre suivant),
+  ❌ jamais au défilement ; sources en désaccord → rien. Un UUID n'est jamais
+  un numéro de chapitre, et un lien sans numéro n'est jamais réécrit.
 - 🔒 **Anti-redirection** : pendant la lecture, toute navigation de la frame
   principale vers un domaine autre que celui du lien de l'utilisateur est
   **annulée** (`ReaderNavigationPolicy`, pure). Verrouillé par
@@ -315,13 +320,16 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   mesure et ne redirige rien. Seule écriture : « Ceci est le nouveau lien »,
   sur geste explicite. Verrouillé par `reader_invariants_test.dart`.
 - 🔒 **Barre du haut auto-masquée = purement visuelle** (`ReaderBarVisibility`,
-  pure) : le défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
-  `reader_invariants_test.dart`. Visible, elle **réserve sa place** au-dessus
-  de la page (`ReaderAutoHideBar`) : ❌ jamais en superposition — elle masquait
-  le haut de chaque chapitre et le bandeau de vérification. **Cachée, la page
-  occupe TOUT l'écran** : barres du système masquées (mode immersif), aucune
-  bande réservée en haut ni en bas ; elles reviennent avec la barre et en
-  quittant le lecteur. ❌ Jamais de `SafeArea` autour de la page du lecteur.
+  pure) : elle suit le défilement **au prorata** (remonter la révèle peu à peu,
+  descendre la retire) et se recale entière ou cachée quand il s'arrête ; le
+  défilement ne mesure, n'enregistre et ne valide rien. Verrouillé par
+  `reader_invariants_test.dart`. Toujours **au-dessus** de la page
+  (`ReaderAutoHideBar`) : en mouvement, la page glisse juste dessous ; au
+  repos, visible, elle **réserve sa place** — ❌ jamais en superposition, elle
+  masquait le haut de chaque chapitre et le bandeau de vérification. **Cachée,
+  la page occupe TOUT l'écran** : barres du système masquées (mode immersif),
+  aucune bande réservée en haut ni en bas ; elles reviennent avec la barre et
+  en quittant le lecteur. ❌ Jamais de `SafeArea` autour de la page du lecteur.
 - ❌ **Aucune résolution automatisée de CAPTCHA / défi**, jamais.
 - ✅ CI : `.github/workflows/flutter-ci.yml` exécute `flutter analyze` +
   `flutter test` sur chaque PR. Une PR qui casse un test ne se merge pas.
@@ -351,6 +359,23 @@ protection anti-redirection du lecteur. Règles depuis le 2026-09-05 :
   n'est pas une simple ligne ; hauteurs fixes de texte × `textScaler`.
   Onglets sans `AppBar` : `SliverSafeArea` / `MediaQuery.paddingOf(context).top`.
   Tests : `small_screen_components_test.dart` et voisins.
+
+## 🧭 Navigation & web (depuis 2026-10)
+
+- ✅ Chaque écran se reconstruit depuis son URL seule (F5, lien partagé,
+  retour du navigateur) : un `extra` ne fait que pré-remplir. Ex. :
+  `/profile/edit` recharge le profil, `/friends/:id` retrouve le nom.
+- ✅ Retour : `popOrGo(context)` / `AppBackButton` — ❌ jamais de
+  `context.pop()` ou `Navigator.pop` nu sur une page (lien direct = rien à
+  dépiler). Reconnexion : `goToLogin(context)` — ❌ jamais
+  `push('/login')`. Connexion / déconnexion : `AuthNavigation`
+  (remplacement d'historique, `from` validé).
+- 🔒 Garde du routeur : seule l'absence TOTALE de session redirige ; une
+  session rejetée ne redirige jamais (offline-first). Logique pure dans
+  `auth_redirect.dart` (tests `test/core/router/`).
+- 🔒 Web : pas de service worker de cache (`--pwa-strategy=none`,
+  `web/flutter_bootstrap.js`) — il servait une version périmée. Cf.
+  `deploy/web/README.md`.
 
 ## 🌐 Cross-platform non-négociable (évolution iOS/Web)
 

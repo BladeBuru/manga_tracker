@@ -18,8 +18,9 @@
 | google_fonts | ^6.1.1 | Polices |
 | flutter_localizations + intl | SDK + ^0.20.2 | i18n — 7 langues (ARB) |
 
+| go_router | ^14.6.2 (14.8.1) | Navigation — URL réelles web, onglets `StatefulShellRoute`, garde d'auth |
+
 À faire (évolution) :
-- `go_router` (obligatoire pour build web)
 - Abstraction de `workmanager` (Android-only)
 - Création de `app_spacing.dart` (token manquant)
 
@@ -87,6 +88,8 @@ UI (View) → Event → BLoC → State → UI (View)
 | `SyncService` | Singleton | Synchronisation offline |
 | `LanguageService` | Singleton | Langue + persistance |
 | `NotificationService` | Singleton | Notifs locales (Android-only actuellement) |
+| `AuthSession` | Singleton (restaurée avant `runApp`) | Statut de session vu par le garde du routeur (`signedOut` / `authenticated` / `rejected`) |
+| `WebVersionWatcher` | — (classe, web) | Compare la version compilée à `/version.json` → bandeau « Recharger » |
 | `OfflineCachePurgeService` | — (fonction utilitaire) | `purgeUserScopedCache()` — efface le cache de l'utilisateur courant (appelé par `logout()` et changement de compte uniquement) |
 | `RecommendationDismissalService` | Lazy singleton (sans `dependsOn`) | Rejet et annulation de rejet de recommandations |
 | `ReadingPositionService` | Lazy singleton (sans `dependsOn`) | Synchronisation serveur de la position de lecture — throttle 10 s/manga, `flush()` à la sortie, jamais bloquant |
@@ -94,12 +97,23 @@ UI (View) → Event → BLoC → State → UI (View)
 | `ScrollPositionService` | Singleton | Sauvegarde / restauration de la position dans les WebViews |
 | `ReadingPositionStore` | — (classe instanciée) | Persistance locale des positions (`SharedPreferences`), purgée par `purgeUserScopedCache()` |
 | `ReaderViewportProbe` | — (classe instanciée) | Seul point de contact JavaScript pour mesurer une page de lecture |
+| `NotificationsService` | Lazy singleton (sans `dependsOn`) | Centre de notifications `/notifications` + cache `cached_notifications` |
+| `NotificationCountsService` | Singleton (dépend de Friends + Sharing) | Pastilles (demandes, recommandations, non lues) toutes les 60 s + notifications locales via `NotificationAlerter` (un seul chemin, anti-doublon commun) |
+| `NotificationsBloc` | — (créé par la page) | Centre de notifications : chargement, pagination, lecture optimiste, hors ligne en lecture seule |
+
+Erreurs HTTP : `ApiException` + `userFacingErrorMessage` (`core/network/`) —
+tout code 2xx est un succès (`isHttpSuccess`), jamais `e.toString()` à l'écran.
 
 **Classes pures du lecteur** (ni Flutter, ni GetIt, ni réseau — la vue exécute,
 elle ne décide pas) : `ChapterCommitPolicy` (quel chapitre est lu),
 `ReaderNavigationPolicy` (anti-redirection), `ReadingResumePolicy` (quel
 chapitre ouvrir et à quelle position), `ReadingPositionCalculator`
-(pixels ⇄ pourcentage), `WebViewResultParser` (retours `Map` **et** `String`).
+(pixels ⇄ pourcentage), `WebViewResultParser` (retours `Map` **et** `String`),
+`PageChapterParser` (numéro lu dans la page quand l'URL n'en a pas),
+`ChapterChangeClassifier` (premier / suivant / saut / retour),
+`ChapterDetectionQueue` (une navigation = un traitement), `ReaderBarVisibility`
+(barre du haut au prorata du défilement). Seul point de contact JavaScript pour
+le numéro dans la page : `PageChapterProbe`.
 
 ---
 
@@ -119,13 +133,32 @@ chapitre ouvrir et à quelle position), `ReadingPositionCalculator`
 ## Navigation
 
 ```
-StartupPage → LoginView (si non auth) | BottomNavbar (si auth)
-BottomNavbar [PageView] :
-  [0] HomePageBlocView  [1] LibraryBlocView  [2] Search  [3] Profile
-Pages détail : MaterialPageRoute + BlocProvider(create: (_) => getIt<DetailBloc>())
+main.dart (usePathUrlStrategy + AuthSession.restore avant runApp)
+└── MaterialApp.router (go_router — core/router/app_router.dart)
+    ├── /                StartupPage (restauration, biométrie, « Quoi de neuf ? »)
+    ├── /login /register /forgot-password /auth/*   (publiques)
+    ├── StatefulShellRoute — BottomNavbar + MainTabsPager (PageView)
+    │   ├── /home      HomePageBlocView   (+ /home/section/:id plein écran)
+    │   ├── /library   LibraryBlocView
+    │   ├── /search    Search
+    │   └── /profile   Profile            (+ /profile/edit plein écran)
+    └── pages plein écran : /manga/:muId (+ /read, /read-offline), /authors/:id,
+        /friends(/:userId), /stats, /inbox, /reading-groups(/:id), /downloads…
 ```
 
-Migration `go_router` prévue v0.4 — **obligatoire avant le build web**.
+- **Garde** : `resolveAuthRedirect` (pure) + `AuthSession.routerRefresh`.
+  Aucune session → `/login?from=…` ; connecté sur `/login` / `/register` /
+  `/` (démarrage fini) → `from` validé ou `/home` ; session **rejetée** →
+  jamais de redirection (offline-first).
+- **Web** : chaque écran a son URL (pages empilées comprises,
+  `optionURLReflectsImperativeAPIs`) ; `HistoryAwareRouteInformationProvider`
+  tient l'historique du navigateur cohérent (retour dans l'app = vrai
+  `history.go(-n)`, restauration redirigée = remplacement, `await push(...)`
+  terminés au retour du navigateur) ; `RouteExtrasCodec` garde les extras.
+- **Helpers** : `popOrGo` / `AppBackButton` (page ouverte par lien direct),
+  `goToLogin` (invitation à se reconnecter, jamais `push('/login')`),
+  `AuthNavigation` (transitions d'auth en remplacement d'historique).
+- `DetailBloc` reste créé par page (`BlocProvider(create: getIt<DetailBloc>())`).
 
 ---
 
@@ -143,6 +176,6 @@ Fichiers ARB dans `lib/l10n/`. `LanguageService` pour la persistance et le chang
 |------------|------|-------|
 | Android | ✅ Actif | CI/CD release_workflow.yml en place |
 | iOS | 🔴 Scaffoldé non wiré | Voir `.claude/skills/ios-readiness/SKILL.md` |
-| Web | 🔴 Scaffoldé non wiré | Voir `.claude/skills/web-readiness/SKILL.md` |
+| Web | ✅ Déployé (`app.bladeburu.com`) | URL réelles, garde d'auth, sans service worker — `deploy/web/README.md` |
 
 Tout nouveau code doit être platform-agnostic par défaut. Voir `.claude/docs/cross-platform.md` pour les patterns d'abstraction.

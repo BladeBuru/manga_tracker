@@ -29,6 +29,7 @@ import 'package:mangatracker/features/manga/widgets/detail_genre_chips.dart';
 import 'package:mangatracker/features/manga/widgets/detail_rating_section.dart';
 import 'package:mangatracker/features/manga/widgets/detail_read_online_button.dart';
 import 'package:mangatracker/features/manga/widgets/community_recommendations_sheet.dart';
+import 'package:mangatracker/features/manga/widgets/detail_failure_snackbar.dart';
 import 'package:mangatracker/features/manga/widgets/last_site_link_suggestion.dart';
 import 'package:mangatracker/features/reader/services/last_site_link.service.dart';
 import 'package:mangatracker/features/reader/services/last_site_link_policy.dart';
@@ -45,6 +46,9 @@ import 'package:mangatracker/features/download/services/download_manager_service
 import 'package:mangatracker/features/sharing/widgets/share_manga_sheet.dart';
 import 'package:mangatracker/features/sharing/widgets/create_reading_group_sheet.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
+import 'package:mangatracker/core/router/navigation_helpers.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
+import 'package:mangatracker/core/components/hover_feedback.dart';
 
 /// Vue réactive des détails de manga utilisant BLoC - Design original conservé
 class DetailBlocView extends StatefulWidget {
@@ -68,9 +72,7 @@ class _DetailBlocViewState extends State<DetailBlocView> {
   final MangaService _mangaService = getIt<MangaService>();
   final Notifier _notifier = getIt<Notifier>();
 
-  void _redirectToLoginPage() {
-    context.push('/login');
-  }
+  void _redirectToLoginPage() => goToLogin(context);
 
   void _refreshLibraryState(BuildContext context) {
     context.read<DetailBloc>().add(const RefreshMangaDetail());
@@ -144,9 +146,11 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 34),
-          onPressed: () => Navigator.of(context).pop(),
+        // Lien direct (rien en dessous) : accueil au lieu d'une pile vide.
+        leading: AppBackButton(
+          color: Colors.white,
+          iconSize: 34,
+          onBack: () => popOrGo(context),
         ),
         actions: [
           // Phase 8.3 UI : bouton "Lire à deux" (créer un reading group)
@@ -246,13 +250,19 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
       body: SafeArea(
         top: false,
         child: BlocConsumer<DetailBloc, DetailState>(
-          listener: (context, state) {
-            // Plus AUCUNE redirection automatique ici. Une session rejetee
-            // affiche desormais `SessionRejectedBanner` par-dessus le contenu
-            // en cache : l'authentification ne doit pas empecher de revoir des
-            // donnees que cet utilisateur avait deja obtenues. Le retour au
-            // login reste a portee de clic, via l'action du bandeau.
-          },
+          // Plus AUCUNE redirection automatique ici. Une session rejetee
+          // affiche desormais `SessionRejectedBanner` par-dessus le contenu
+          // en cache : l'authentification ne doit pas empecher de revoir des
+          // donnees que cet utilisateur avait deja obtenues. Le retour au
+          // login reste a portee de clic, via l'action du bandeau.
+          // Seul effet ecoute : l'echec d'une action (progression, note),
+          // signale sans quitter la fiche.
+          listenWhen: (_, current) => current is DetailActionFailed,
+          listener: (context, state) => showDetailFailureSnackBar(
+            context,
+            state as DetailActionFailed,
+            onReconnect: widget.onRedirectToLogin,
+          ),
           builder: (context, state) {
             if (state is DetailLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -362,7 +372,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
             children: [
               // Header avec image et titre
               if (hero.showChrome)
-              GestureDetector(
+              ClickableCursor(child: GestureDetector(
                 onTap: () {
                   // Afficher l'image en plein écran
                   showAppDialog(
@@ -476,7 +486,7 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       ),
                   ],
                 ),
-              ),
+              )),
               // Détails du manga (LateDetailView) — contenu sous le hero
               // centré (max 1100) via AppContentWidth (audit 2026-06-12) ;
               // le hero au-dessus reste pleine largeur (cinématique).
@@ -504,6 +514,12 @@ class _DetailBlocViewContentState extends State<_DetailBlocViewContent> {
                       authors: manga.authors,
                       year: manga.year,
                       readChapters: readChapters,
+                      // Enregistrement refusé : la fiche annule l'affichage
+                      // anticipé du chapitre (cf. DetailActionFailed).
+                      progressFailureAttempt: state is DetailActionFailed &&
+                              state.notice is ProgressSaveFailed
+                          ? state.attempt
+                          : null,
                       inLibrary: manga.inLibrary,
                       genres: manga.genres,
                       seasonChapters: manga.seasonChapters,
@@ -1284,7 +1300,8 @@ class _RecommendationsIconButton extends StatelessWidget {
     final isDark = brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     return Tooltip(
-      message: l10n?.recommendations ?? 'Recommandations',
+      // Suggestions de la communauté (≠ « Recommander à un ami »).
+      message: l10n?.similarTitles ?? 'Recommandations',
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,

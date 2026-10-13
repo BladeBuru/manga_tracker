@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/network/api_error_message.dart';
 import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/service_locator/service_locator.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
@@ -14,6 +15,7 @@ import 'package:mangatracker/features/sharing/services/sharing.service.dart';
 import 'package:mangatracker/features/sharing/widgets/inbox_filter_chips.dart';
 import 'package:mangatracker/features/sharing/widgets/inbox_share_tile.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page Inbox des shares reçus — Design System V1 « Refined Classic ».
 ///
@@ -43,7 +45,7 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
   final SharingService _service = getIt<SharingService>();
 
   List<MangaShareDto>? _items;
-  String? _error;
+  Object? _error;
   InboxFilter _filter = InboxFilter.all;
 
   @override
@@ -60,6 +62,10 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
         _items = items;
         _error = null;
       });
+      // `mark-seen` répond 201 : avant, seul 200 était accepté, l'appel
+      // « échouait » en silence et la pastille restait allumée. Le serveur
+      // marque aussi lues les lignes « recommandation » du centre, d'où le
+      // rafraîchissement complet des compteurs (cloche comprise).
       // ignore: unawaited_futures
       _service.markAllSeen().then((_) {
         try {
@@ -70,7 +76,7 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
       }).onError((_, __) {});
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(() => _error = e);
     }
   }
 
@@ -106,6 +112,7 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -139,7 +146,7 @@ class _InboxPageState extends State<InboxPage> with ResponsiveLayoutMixin {
   Widget _buildBody(BuildContext context, AppLocalizations l10n) {
     if (_error != null) {
       return AppErrorState(
-        message: _error!,
+        message: userFacingErrorMessage(_error, l10n),
         retryLabel: l10n.retry,
         onRetry: _loadAndMarkSeen,
       );

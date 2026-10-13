@@ -42,7 +42,10 @@ Le module gère également la lecture hors-ligne des chapitres préalablement t�
 
 3. **Redirection automatique vers le lecteur hors-ligne** : au démarrage de la WebView en ligne, si le prochain chapitre (numéro `initialLastRead + 1`) est déjà téléchargé, l'application redirige automatiquement vers `OfflineReaderView` sans afficher la WebView en ligne.
 
-4. **Détection du chapitre courant** : le numéro de chapitre en cours de lecture est déduit de l'URL chargée dans la WebView, selon un ordre de priorité : (1) patterns regex personnalisés par domaine, (2) paramètres de requête (`chapter`, `ch`, `ep`, `episode_no`, etc.), (3) patterns dans le chemin de l'URL (ex. `/chapter-120/`, `/c120`, `/ep-10/`).
+4. **Détection du chapitre courant** : le numéro de chapitre en cours de lecture est d'abord déduit de l'URL chargée dans la WebView, selon un ordre de priorité : (1) patterns regex personnalisés par domaine, (2) paramètres de requête (`chapter`, `ch`, `ep`, `episode_no`, etc.), (3) patterns dans le chemin de l'URL (ex. `/chapter-120/`, `/c120`, `/ep-10/`), (4) segment numérique isolé (`/190/`). Un identifiant opaque (UUID, jeton hexadécimal) n'est jamais un numéro de chapitre.
+   - **Quand l'URL n'a pas de numéro** (ex. aniverse.fr : `/read/<série>/<uuid>`), le numéro est lu **dans la page** : nom du chapitre dans les données structurées (JSON-LD `Chapter`), titre de la page (`og:title`, `document.title`), à défaut le fil d'Ariane. Les sources doivent concorder, sinon rien n'est détecté. Le texte des liens n'est jamais lu, et tout morceau de texte qui désigne un autre chapitre (« Chapitre suivant », « next », « précédent »…) est ignoré : la page affiche souvent le chapitre suivant pendant qu'on lit le courant. Chapitre décimal (271.5), intervalle (12-13) ou année → non détecté.
+   - Lecture de la page : au chargement, à chaque changement de titre, et 0,5 s / 1,5 s après une navigation interne du site — jamais au défilement. Une URL qui porte un numéro reste seule juge.
+   - Le chapitre détecté s'affiche dans la barre du haut (« Chapitre N » + titre de l'œuvre).
 
 5. **Sauvegarde de progression — seuil de fin** : la progression de lecture (numéro de chapitre lu) n'est sauvegardée en bibliothèque que si l'utilisateur se trouve dans les 15 derniers pourcents du chapitre (`isNearEnd = percentageFromEnd <= 15`). Si l'utilisateur ferme le lecteur avant ce seuil, la progression n'est pas enregistrée.
 
@@ -66,7 +69,9 @@ Le module gère également la lecture hors-ligne des chapitres préalablement t�
 
 11. **Filtrage de domaine** : la WebView n'autorise les navigations principales qu'au sein du même "provider" (domaine de base partagé, ex. `sushiscan.net` et `cdn.sushiscan.net` sont considérés comme le même provider). Toute navigation vers un domaine externe non publicitaire est bloquée.
 
-12. **Mise à jour du lien personnalisé** : après détection d'un nouveau chapitre, le lien personnalisé de l'utilisateur en bibliothèque est automatiquement mis à jour vers l'URL du chapitre suivant (calculée par `ChapterLinkResolver.buildNextUrl`).
+12. **Mise à jour du lien personnalisé** : après détection d'un nouveau chapitre, le lien personnalisé de l'utilisateur en bibliothèque est automatiquement mis à jour vers l'URL du chapitre suivant (calculée par `ChapterLinkResolver.buildNextUrl`). Si le chapitre vient de la page (URL sans numéro), aucune URL ne peut être fabriquée : après un passage N → N+1, c'est l'adresse de la page affichée (le chapitre à reprendre) qui est enregistrée telle quelle — jamais réécrite.
+
+13. **Barre du haut en lecture plein écran** : elle suit le défilement **au prorata** — remonter la fait apparaître progressivement jusqu'à sa taille, descendre la retire progressivement. Quand le défilement s'arrête (doigt levé), elle se recale entière (au moins la moitié révélée) ou cachée : un petit retour en arrière pour relire une ligne ne la ramène pas. Visible au repos, elle réserve sa place au-dessus de la page (jamais par-dessus) ; cachée, la page occupe tout l'écran (barres du système masquées). Purement visuelle : le défilement n'enregistre rien.
 
 13. **Téléchargement depuis la WebView** : la WebView embarquée propose un bouton "Télécharger" qui extrait le HTML de la page via JavaScript (résolution des URLs relatives, forçage de chargement des images lazy), télécharge les images localement via `ChapterDownloadService`, et enregistre le chapitre dans `DownloadManagerService`.
 

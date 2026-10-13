@@ -1,49 +1,53 @@
-import 'package:mangatracker/core/theme/app_colors.dart';
-import 'homepage_bloc_view.dart';
-import '../../profile/views/profile.dart';
-import 'package:mangatracker/features/search/views/search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mangatracker/core/service_locator/service_locator.dart';
-import 'package:mangatracker/features/library/bloc/library_bloc.dart';
-import 'package:mangatracker/features/library/views/library_bloc_view.dart';
-import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
-import 'package:mangatracker/features/auth/services/auth.service.dart';
-import 'package:mangatracker/features/profile/services/gdpr.service.dart';
 import 'package:mangatracker/core/bloc/notification_counts_cubit.dart';
-import 'package:mangatracker/core/services/notification_counts_service.dart';
-import 'package:mangatracker/features/manga/services/notification_service.dart';
-import 'package:mangatracker/l10n/app_localizations.dart';
 import 'package:mangatracker/core/router/app_modals.dart';
+import 'package:mangatracker/core/router/auth_navigation.dart';
+import 'package:mangatracker/core/service_locator/service_locator.dart';
+import 'package:mangatracker/core/services/notification_counts_service.dart';
+import 'package:mangatracker/core/theme/app_colors.dart';
+import 'package:mangatracker/features/home/bloc/home_sections_bloc.dart';
+import 'package:mangatracker/features/home/bloc/home_sections_event.dart';
+import 'package:mangatracker/features/home/bloc/homepage_bloc.dart';
+import 'package:mangatracker/features/home/bloc/homepage_event.dart';
+import 'package:mangatracker/features/home/views/main_tab.dart';
+import 'package:mangatracker/features/home/views/main_tabs_pager.dart';
+import 'package:mangatracker/features/home/widgets/consent_refresh_dialog.dart';
+import 'package:mangatracker/features/library/bloc/library_bloc.dart';
+import 'package:mangatracker/features/library/bloc/library_event.dart';
+import 'package:mangatracker/features/manga/services/notification_service.dart';
+import 'package:mangatracker/features/profile/services/gdpr.service.dart';
+import 'package:mangatracker/l10n/app_localizations.dart';
 
+/// Coque des onglets : barre du bas + onglet affiché ([navigationShell],
+/// fourni par le `StatefulShellRoute`, une URL par onglet).
+///
+/// Conserve tout ce que portait l'ancienne barre à `PageView` interne :
+/// pastilles (`NotificationCountsCubit`) et leur cycle de vie, contrôle du
+/// re-consentement RGPD, ouverture de l'écran d'une notification.
+/// Retour Android sur un autre onglet que l'accueil : retour à l'accueil
+/// (puis sortie de l'app).
 class BottomNavbar extends StatefulWidget {
-  const BottomNavbar({super.key});
+  final StatefulNavigationShell navigationShell;
+
+  const BottomNavbar({super.key, required this.navigationShell});
 
   @override
   State<BottomNavbar> createState() => BottomNavbarState();
 }
 
 class BottomNavbarState extends State<BottomNavbar> {
-  final PageController pageCont = PageController(initialPage: 0);
-  int currntIndex = 0;
-
-  /// Couleur des items non sélectionnés — token V1 `dsText3` (avant :
-  /// `Color(0xffb8b8d2)` ad-hoc hors design system, audit 2026-06-12).
-  Color get unselectedColor =>
-      AppColors.dsText3(Theme.of(context).brightness);
-
-  static const int _accountTab = 3;
-
   /// Pastilles « à traiter » (demandes d'ami + recommandations reçues).
-  /// Créé avec la barre : le badge existe dès le premier rendu (avant, il
-  /// n'apparaissait qu'après un geste qui reconstruisait la barre).
+  /// Créé avec la barre : le badge existe dès le premier rendu.
   final NotificationCountsCubit _counts = NotificationCountsCubit();
 
   /// Demande au profil d'amener l'utilisateur à ce qui l'attend.
   final ValueNotifier<int> _profileFocusRequests = ValueNotifier<int>(0);
 
   late final AppLifecycleListener _lifecycle;
+
+  int get _currentIndex => widget.navigationShell.currentIndex;
 
   @override
   void initState() {
@@ -54,12 +58,25 @@ class BottomNavbarState extends State<BottomNavbar> {
       onResume: _counts.resume,
       onPause: _counts.pause,
     );
-    // RGPD : vérifier après le premier frame si l'utilisateur doit
-    // re-accepter les CGU/Privacy (versions courantes vs versions stockées).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkConsentRefresh();
       _openNotificationLaunchRoute();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant BottomNavbar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previous = oldWidget.navigationShell.currentIndex;
+    if (previous != _currentIndex) _onTabShown(MainTab.values[_currentIndex]);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    _counts.close();
+    _profileFocusRequests.dispose();
+    super.dispose();
   }
 
   /// Application ouverte en touchant une notification : on va à l'écran
@@ -69,22 +86,28 @@ class BottomNavbarState extends State<BottomNavbar> {
     if (location != null && mounted) context.push(location);
   }
 
-  void _onTabTapped(int index) {
-    setState(() => currntIndex = index);
-    pageCont.jumpToPage(index);
-    if (index == _accountTab) {
-      if (_counts.state.total > 0) _profileFocusRequests.value++;
-      _counts.refresh();
+  /// Les onglets restent vivants : on relance en arrière-plan les mêmes
+  /// chargements qu'à leur ouverture (avant, l'onglet était reconstruit à
+  /// chaque visite). Le cache reste affiché pendant ce temps.
+  void _onTabShown(MainTab tab) {
+    switch (tab) {
+      case MainTab.home:
+        getIt<HomePageBloc>().add(const LoadHomePage());
+        getIt<HomeSectionsBloc>().add(const LoadHomeSections());
+      case MainTab.library:
+        getIt<LibraryBloc>().add(const LoadLibrary());
+      case MainTab.search:
+      case MainTab.profile:
+        break;
     }
   }
 
-  @override
-  void dispose() {
-    _lifecycle.dispose();
-    _counts.close();
-    _profileFocusRequests.dispose();
-    pageCont.dispose();
-    super.dispose();
+  void _goTab(int index) {
+    widget.navigationShell.goBranch(index);
+    if (index == MainTab.profile.index) {
+      if (_counts.state.total > 0) _profileFocusRequests.value++;
+      _counts.refresh();
+    }
   }
 
   Future<void> _checkConsentRefresh() async {
@@ -99,12 +122,11 @@ class BottomNavbarState extends State<BottomNavbar> {
     final accepted = await showAppDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => _ConsentRefreshDialog(status: status),
+      builder: (ctx) => ConsentRefreshDialog(status: status),
     );
 
     if (!mounted) return;
     if (accepted == true) {
-      // L'utilisateur a accepté → on enregistre côté backend.
       final ok = await gdpr.recordConsent(
         tosVersion: status.currentTosVersion,
         privacyVersion: status.currentPrivacyVersion,
@@ -119,195 +141,76 @@ class BottomNavbarState extends State<BottomNavbar> {
         );
       }
     } else {
-      // Refus → article 7 RGPD : on déconnecte l'utilisateur.
-      // Il pourra revenir et accepter plus tard, ou supprimer son compte
-      // depuis l'écran de login (auquel cas /user/delete sera appelé).
+      // Refus → article 7 RGPD : on déconnecte l'utilisateur. Il pourra
+      // revenir et accepter plus tard, ou supprimer son compte.
       try {
-        await getIt<AuthService>().logout();
+        await AuthNavigation.signOut();
       } catch (_) {}
-      if (!mounted) return;
-      context.go('/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
+    final scheme = Theme.of(context).colorScheme;
+    final unselected = AppColors.dsText3(Theme.of(context).brightness);
     return BlocProvider<NotificationCountsCubit>.value(
       value: _counts,
-      child: Scaffold(
-      // **Fix 2026-05-19** : passé de `false` à `true` (défaut Scaffold).
-      // Avec `false`, le PageView gardait sa taille pleine quand le clavier
-      // s'ouvre → l'inner Scaffold (Library) avait un espace blanc inutile
-      // entre la fin du contenu et le clavier (~1/3 d'écran perdu). Avec
-      // `true`, le PageView resize correctement → la bottom nav remonte
-      // au-dessus du clavier ET la liste prend tout l'espace dispo.
-      resizeToAvoidBottomInset: true,
-      body: PageView(
-        onPageChanged: (index) {
-          setState(() => currntIndex = index);
-        },
-        controller: pageCont,
-        children: <Widget>[
-          // `.value` : ces BLoCs sont des singletons GetIt. Avec `create`,
-          // le provider en devenait propriétaire et les FERMAIT quand la
-          // page quitte le PageView (changement d'onglet).
-          BlocProvider<HomePageBloc>.value(
-            value: getIt<HomePageBloc>(),
-            child: const HomePageBlocView(),
-          ),
-          BlocProvider<LibraryBloc>.value(
-            value: getIt<LibraryBloc>(),
-            child: const LibraryBlocView(),
-          ),
-          const Search(),
-          Profile(focusPendingRequests: _profileFocusRequests),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: currntIndex,
-        onTap: _onTabTapped,
-        selectedFontSize: 13,
-        selectedIconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary, size: 30),
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedIconTheme: IconThemeData(color: unselectedColor),
-        unselectedItemColor: unselectedColor,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: currntIndex == 0 ? Theme.of(context).colorScheme.primary : unselectedColor,
+      child: MainShellScope(
+        profileFocusRequests: _profileFocusRequests,
+        child: MainTabsBackScope(
+          currentIndex: _currentIndex,
+          onBackToHome: () => _goTab(MainTab.home.index),
+          child: Scaffold(
+            // Le contenu se redimensionne avec le clavier : la barre du bas
+            // remonte au-dessus et la liste garde tout l'espace (2026-05-19).
+            resizeToAvoidBottomInset: true,
+            body: widget.navigationShell,
+            bottomNavigationBar: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              onTap: _goTab,
+              selectedFontSize: 13,
+              selectedIconTheme: IconThemeData(color: scheme.primary, size: 30),
+              selectedItemColor: scheme.primary,
+              unselectedIconTheme: IconThemeData(color: unselected),
+              unselectedItemColor: unselected,
+              items: _items(context, scheme.primary, unselected),
             ),
-            label: l10n?.home ?? 'Accueil',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.book,
-              color: currntIndex == 1 ? Theme.of(context).colorScheme.primary : unselectedColor,
-            ),
-            label: l10n?.library ?? 'Bibliothèque',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.search,
-              color: currntIndex == 2 ? Theme.of(context).colorScheme.primary : unselectedColor,
-            ),
-            label: l10n?.search ?? 'Recherche',
-          ),
-          BottomNavigationBarItem(
-            icon: _NotifBadgedIcon(
-              icon: Icons.person,
-              color: currntIndex == _accountTab
-                  ? Theme.of(context).colorScheme.primary
-                  : unselectedColor,
-            ),
-            label: l10n?.myAccount ?? 'Mon compte',
-          ),
-        ],
-      ),
+        ),
       ),
     );
   }
-}
 
-/// Dialog modal blocking demandant à l'utilisateur d'accepter les nouvelles
-/// versions des CGU / Politique de confidentialité.
-///
-/// L'utilisateur a deux choix :
-///  - Accepter (return true)
-///  - Refuser → l'app le déconnecte (return false). Article 7 RGPD : le
-///    consentement doit être libre, on doit donc proposer une issue.
-class _ConsentRefreshDialog extends StatefulWidget {
-  final ConsentStatus status;
-
-  const _ConsentRefreshDialog({required this.status});
-
-  @override
-  State<_ConsentRefreshDialog> createState() => _ConsentRefreshDialogState();
-}
-
-class _ConsentRefreshDialogState extends State<_ConsentRefreshDialog> {
-  bool _acceptedTos = false;
-  bool _acceptedPrivacy = false;
-
-  bool get _canAccept {
-    final s = widget.status;
-    final tosOk = !s.needsTosAcceptance || _acceptedTos;
-    final privacyOk = !s.needsPrivacyAcceptance || _acceptedPrivacy;
-    return tosOk && privacyOk;
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  List<BottomNavigationBarItem> _items(
+    BuildContext context,
+    Color selected,
+    Color unselected,
+  ) {
     final l10n = AppLocalizations.of(context);
-    final s = widget.status;
-
-    return AlertDialog(
-      title: Text(l10n?.consentRefreshTitle ??
-          'Mise à jour de nos conditions'),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n?.consentRefreshIntro ??
-                  'Nos conditions d\'utilisation et notre politique de confidentialité ont été mises à jour. '
-                      'Veuillez les accepter pour continuer.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            if (s.needsTosAcceptance)
-              CheckboxListTile(
-                value: _acceptedTos,
-                onChanged: (v) => setState(() => _acceptedTos = v ?? false),
-                title: Text(
-                  l10n?.iAcceptTos ??
-                      "J'accepte les Conditions d'utilisation",
-                  style: const TextStyle(fontSize: 14),
-                ),
-                subtitle: Text(
-                  '${l10n?.versionLabel ?? 'Version'} ${s.currentTosVersion}',
-                  style: const TextStyle(fontSize: 11),
-                ),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-              ),
-            if (s.needsPrivacyAcceptance)
-              CheckboxListTile(
-                value: _acceptedPrivacy,
-                onChanged: (v) =>
-                    setState(() => _acceptedPrivacy = v ?? false),
-                title: Text(
-                  l10n?.iAcceptPrivacy ??
-                      "J'accepte la Politique de confidentialité",
-                  style: const TextStyle(fontSize: 14),
-                ),
-                subtitle: Text(
-                  '${l10n?.versionLabel ?? 'Version'} ${s.currentPrivacyVersion}',
-                  style: const TextStyle(fontSize: 11),
-                ),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-              ),
-          ],
-        ),
+    Color colorOf(MainTab tab) =>
+        _currentIndex == tab.index ? selected : unselected;
+    return [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.home, color: colorOf(MainTab.home)),
+        label: l10n?.home ?? 'Accueil',
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n?.refuseAndLogout ?? 'Refuser et se déconnecter'),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.book, color: colorOf(MainTab.library)),
+        label: l10n?.library ?? 'Bibliothèque',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.search, color: colorOf(MainTab.search)),
+        label: l10n?.search ?? 'Recherche',
+      ),
+      BottomNavigationBarItem(
+        icon: _NotifBadgedIcon(
+          icon: Icons.person,
+          color: colorOf(MainTab.profile),
         ),
-        FilledButton(
-          onPressed: _canAccept
-              ? () => Navigator.of(context).pop(true)
-              : null,
-          child: Text(l10n?.iAccept ?? 'Accepter'),
-        ),
-      ],
-    );
+        label: l10n?.myAccount ?? 'Mon compte',
+      ),
+    ];
   }
 }
 

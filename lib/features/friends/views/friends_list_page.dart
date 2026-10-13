@@ -2,45 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangatracker/core/components/app_empty_state.dart';
-import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/components/app_error_state.dart';
+import 'package:mangatracker/core/components/offline_banner.dart';
+import 'package:mangatracker/core/network/api_error_message.dart';
+import 'package:mangatracker/core/router/app_router.dart';
 import 'package:mangatracker/core/theme/app_breakpoints.dart' show AppContentWidth;
 import 'package:mangatracker/core/theme/app_colors.dart';
 import 'package:mangatracker/core/utils/responsive_layout.dart';
 import 'package:mangatracker/features/friends/bloc/friends_bloc.dart';
 import 'package:mangatracker/features/friends/dto/friend.dto.dart';
 import 'package:mangatracker/features/friends/widgets/friend_list_tile.dart';
+import 'package:mangatracker/features/friends/widgets/friends_dialogs.dart';
+import 'package:mangatracker/features/friends/widgets/friends_pending_body.dart';
 import 'package:mangatracker/features/friends/widgets/friends_section_card.dart';
 import 'package:mangatracker/features/friends/widgets/friends_tab_segmented.dart';
 import 'package:mangatracker/features/friends/widgets/user_search_field.dart';
 import 'package:mangatracker/l10n/app_localizations.dart';
+import 'package:mangatracker/core/components/app_back_button.dart';
 
 /// Page « Mes amis » — design V1 « Refined Classic ».
 ///
-/// Structure :
-///  - AppBar transparente avec hairline en bas (style profile_edit.view).
-///  - Pill search input (radius 14, border rouge si query non vide).
-///  - Segmented control (chips pastel) : Amis / Demandes.
-///  - Section card V1 (radius 16, hairline outline, dividers entre rows).
-///  - Empty states / error state via `AppEmptyState` / `AppErrorState`.
-///
-/// Le BLoC, les events et la logique métier sont inchangés (UI-only).
+/// Recherche (avec l'état de relation de chaque résultat), onglets Amis /
+/// Demandes (reçues + envoyées). À l'ouverture, la liste d'amis est relue
+/// sur le serveur (le cache ne sert que hors ligne).
 class FriendsListPage extends StatelessWidget {
   /// Onglet d'arrivée : « Demandes » quand on vient d'une pastille.
   final FriendsTab initialTab;
 
-  const FriendsListPage({super.key, this.initialTab = FriendsTab.accepted});
+  /// Injectable pour les tests.
+  final FriendsBloc Function()? createBloc;
+
+  const FriendsListPage({
+    super.key,
+    this.initialTab = FriendsTab.accepted,
+    this.createBloc,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<FriendsBloc>(
-      create: (_) => FriendsBloc()..add(const LoadFriends()),
+      create: (_) => (createBloc?.call() ?? FriendsBloc())
+        ..add(const LoadFriends(forceRefresh: true)),
       child: _FriendsScaffold(initialTab: initialTab),
     );
   }
 }
 
-class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
+class _FriendsScaffold extends StatelessWidget {
   final FriendsTab initialTab;
 
   const _FriendsScaffold({required this.initialTab});
@@ -49,13 +57,13 @@ class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final brightness = Theme.of(context).brightness;
-    final scheme = Theme.of(context).colorScheme;
     final bg = brightness == Brightness.dark
         ? AppColors.dsBgDark
         : AppColors.dsBgLight;
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        leading: const AppBackButton(fallback: '/profile'),
         backgroundColor: bg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -63,31 +71,22 @@ class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
         centerTitle: true,
         title: Text(
           l10n.friendsTitle,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
         ),
         shape: Border(
-          bottom: BorderSide(
-            color: AppColors.dsHairline(brightness),
-            width: 1,
-          ),
+          bottom: BorderSide(color: AppColors.dsHairline(brightness)),
         ),
       ),
       body: BlocConsumer<FriendsBloc, FriendsState>(
         listenWhen: (a, b) =>
-            b is FriendsLoaded &&
-            (b.lastActionMessage != null || b.lastActionError != null),
-        listener: (context, state) => _onStateMessage(context, state, l10n),
+            b is FriendsLoaded && (b.feedback != null || b.actionError != null),
+        listener: (context, state) => _showMessage(context, state, l10n),
         builder: (context, state) {
-          if (state is FriendsLoading || state is FriendsInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
           if (state is FriendsError) {
             return AppErrorState(
-              message: state.message,
+              message: userFacingErrorMessage(state.error, l10n),
               retryLabel: l10n.retry,
               onRetry: () =>
                   context.read<FriendsBloc>().add(const LoadFriends()),
@@ -96,29 +95,35 @@ class _FriendsScaffold extends StatelessWidget with ResponsiveLayoutMixin {
           if (state is FriendsLoaded) {
             return _FriendsContent(state: state, initialTab: initialTab);
           }
-          return const SizedBox.shrink();
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
 
-  void _onStateMessage(
+  void _showMessage(
     BuildContext context,
     FriendsState state,
     AppLocalizations l10n,
   ) {
     if (state is! FriendsLoaded) return;
     final messenger = ScaffoldMessenger.of(context);
-    if (state.lastActionError != null) {
+    final error = state.actionError;
+    if (error != null) {
       messenger.showSnackBar(SnackBar(
-        content: Text('${l10n.friendsError}: ${state.lastActionError}'),
+        content: Text(userFacingErrorMessage(error, l10n)),
         backgroundColor: Theme.of(context).colorScheme.error,
       ));
-    } else if (state.lastActionMessage == 'request_sent') {
-      messenger.showSnackBar(SnackBar(
-        content: Text(l10n.friendsRequestSent),
-      ));
+      return;
     }
+    final text = switch (state.feedback) {
+      FriendsFeedback.requestSent => l10n.friendsRequestSent,
+      FriendsFeedback.requestCancelled => l10n.friendsRequestCancelled,
+      FriendsFeedback.nowFriends =>
+        l10n.friendsNowFriends(state.feedbackName ?? ''),
+      null => null,
+    };
+    if (text != null) messenger.showSnackBar(SnackBar(content: Text(text)));
   }
 }
 
@@ -135,28 +140,73 @@ class _FriendsContentState extends State<_FriendsContent>
     with ResponsiveLayoutMixin {
   late FriendsTab _tab = widget.initialTab;
 
+  FriendsBloc get _bloc => context.read<FriendsBloc>();
+
+  /// Action d'un résultat de recherche, toujours après confirmation pour ce
+  /// qui part au serveur.
+  Future<void> _onSearchAction(
+    UserSearchResultDto user,
+    FriendRelation relation,
+  ) async {
+    final s = widget.state;
+    final bloc = _bloc;
+    final name = user.effectiveDisplayName;
+    switch (relation) {
+      case FriendRelation.none:
+        if (await confirmSendFriendRequest(context, name)) {
+          bloc.add(SendFriendRequest(user.id, displayName: name));
+        }
+      case FriendRelation.pendingSent:
+        final sent = s.sentTo(user.id);
+        if (sent != null && await confirmCancelFriendRequest(context, name)) {
+          bloc.add(CancelFriendRequest(sent.id));
+        }
+      case FriendRelation.pendingReceived:
+        final received = s.receivedFrom(user.id);
+        if (received != null) {
+          bloc.add(RespondToRequest(
+            friendshipId: received.id,
+            newStatus: FriendshipStatus.accepted,
+          ));
+        }
+      case FriendRelation.friends:
+        _openProfile(user.id, name, user.avatarUrl);
+    }
+  }
+
+  void _openProfile(int userId, String name, String? avatarUrl) {
+    context.push(
+      '/friends/$userId',
+      extra: FriendProfileExtras(displayName: name, avatarUrl: avatarUrl),
+    );
+  }
+
+  Future<void> _cancelSent(FriendshipDto f) async {
+    final bloc = _bloc;
+    if (await confirmCancelFriendRequest(context, f.displayName)) {
+      bloc.add(CancelFriendRequest(f.id));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = widget.state;
     final hPad = horizontalPadding(context);
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<FriendsBloc>().add(const LoadFriends(forceRefresh: true));
-      },
-      // Responsive (audit 2026-06-12) : contenu centré via le wrapper
-      // unifié AppContentWidth (max 1100) au lieu du maxContentWidth local.
+      onRefresh: () async => _bloc.add(const LoadFriends(forceRefresh: true)),
       child: AppContentWidth(
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 24),
           children: [
+            if (s.isOffline) const OfflineBanner(),
             UserSearchField(
               results: s.searchResults,
-              onQueryChanged: (q) =>
-                  context.read<FriendsBloc>().add(SearchUsers(q)),
-              onSendRequest: (userId) => context
-                  .read<FriendsBloc>()
-                  .add(SendFriendRequest(userId)),
+              loading: s.searchLoading,
+              error: s.searchError,
+              relationOf: s.relationOf,
+              onQueryChanged: (q) => _bloc.add(SearchUsers(q)),
+              onAction: _onSearchAction,
             ),
             const SizedBox(height: 18),
             FriendsTabSegmented(
@@ -167,9 +217,18 @@ class _FriendsContentState extends State<_FriendsContent>
             ),
             const SizedBox(height: 16),
             if (_tab == FriendsTab.accepted)
-              _AcceptedBody(items: s.accepted)
+              _AcceptedBody(items: s.accepted, onOpen: _openProfile)
             else
-              _PendingBody(items: s.pending),
+              FriendsPendingBody(
+                received: s.pending,
+                sent: s.sent,
+                onAccept: (f) => _bloc.add(RespondToRequest(
+                  friendshipId: f.id,
+                  newStatus: FriendshipStatus.accepted,
+                )),
+                onReject: (f) => _bloc.add(RemoveFriend(f.id)),
+                onCancelSent: _cancelSent,
+              ),
           ],
         ),
       ),
@@ -179,7 +238,8 @@ class _FriendsContentState extends State<_FriendsContent>
 
 class _AcceptedBody extends StatelessWidget {
   final List<FriendshipDto> items;
-  const _AcceptedBody({required this.items});
+  final void Function(int userId, String name, String? avatarUrl) onOpen;
+  const _AcceptedBody({required this.items, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
@@ -198,47 +258,8 @@ class _AcceptedBody extends StatelessWidget {
           FriendListTile(
             friendship: f,
             // Tap → profil de l'ami (sa bibliothèque).
-            onTap: () => context.push(
-              '/friends/${f.otherUserId}',
-              extra: FriendProfileExtras(
-                displayName: f.displayName,
-                avatarUrl: f.otherAvatarUrl,
-              ),
-            ),
+            onTap: () => onOpen(f.otherUserId, f.displayName, f.otherAvatarUrl),
             onRemove: () =>
-                context.read<FriendsBloc>().add(RemoveFriend(f.id)),
-          ),
-      ],
-    );
-  }
-}
-
-class _PendingBody extends StatelessWidget {
-  final List<FriendshipDto> items;
-  const _PendingBody({required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    if (items.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.mark_email_read_outlined,
-        title: l10n.friendsEmptyPending,
-        subtitle: l10n.friendsEmptyPendingSubtitle,
-      );
-    }
-    return FriendsSectionCard(
-      label: l10n.friendsSectionPending,
-      children: [
-        for (final f in items)
-          FriendListTile(
-            friendship: f,
-            showAcceptReject: true,
-            onAccept: () => context.read<FriendsBloc>().add(RespondToRequest(
-                  friendshipId: f.id,
-                  newStatus: FriendshipStatus.accepted,
-                )),
-            onReject: () =>
                 context.read<FriendsBloc>().add(RemoveFriend(f.id)),
           ),
       ],
