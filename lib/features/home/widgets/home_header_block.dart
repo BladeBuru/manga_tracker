@@ -4,6 +4,7 @@ import 'package:mangatracker/core/components/session_rejected_banner.dart';
 import 'package:mangatracker/core/components/verify_email_banner.dart';
 import 'package:mangatracker/core/components/welcome_header.dart';
 import 'package:mangatracker/core/theme/app_spacing.dart';
+import 'package:mangatracker/features/notifications/widgets/notification_bell_button.dart';
 
 /// Haut de l'accueil : salutation, bandeaux d'etat (hors ligne / session
 /// rejetee) et rappel de verification d'e-mail. Conserve a l'identique ce
@@ -36,7 +37,14 @@ class HomeHeaderBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        WelcomeHeader(username: username),
+        // Salutation à gauche, cloche du centre de notifications à droite.
+        Row(
+          children: [
+            Expanded(child: WelcomeHeader(username: username)),
+            const SizedBox(width: AppSpacing.s),
+            const NotificationBellButton(),
+          ],
+        ),
         if (requiresReauth)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.s + AppSpacing.xs),

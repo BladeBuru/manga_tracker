@@ -18,6 +18,7 @@ import 'package:mangatracker/features/comments/services/comments.service.dart';
 import 'package:mangatracker/features/sharing/services/sharing.service.dart';
 import 'package:mangatracker/features/sharing/services/reading_groups.service.dart';
 import 'package:mangatracker/core/services/notification_counts_service.dart';
+import 'package:mangatracker/features/notifications/services/notifications.service.dart';
 import 'package:mangatracker/core/network/http_service.dart';
 
 import '../../features/auth/services/biometric.service.dart';
@@ -232,6 +233,12 @@ void setupServiceLocator() {
   // chaque `cacheLibrary()`, et `null` à la purge (déconnexion / changement
   // de compte) — sans quoi l'index, qui vit en mémoire, survivrait à la
   // purge du trousseau et signalerait la bibliothèque du compte précédent.
+  // Centre de notifications (2026-10). Mêmes précautions : AJOUTÉ EN FIN, en
+  // lazy et SANS `dependsOn` — le service résout HttpService / StorageService
+  // à l'appel. `NotificationCountsService` le lit aussi à l'appel.
+  getIt.registerLazySingleton<NotificationsService>(
+      () => NotificationsService());
+
   getIt.registerLazySingleton<LibraryIndexService>(() {
     final index = LibraryIndexService();
     try {

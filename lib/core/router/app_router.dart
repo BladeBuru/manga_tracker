@@ -67,6 +67,9 @@ import 'package:mangatracker/features/authors/views/author_page.dart';
 // Inbox (Phase 8.1)
 import 'package:mangatracker/features/sharing/views/inbox_page.dart';
 
+// Centre de notifications
+import 'package:mangatracker/features/notifications/views/notifications_page.dart';
+
 // Reading Groups (Phase 8.3 UI)
 import 'package:mangatracker/features/sharing/views/reading_groups_list_page.dart';
 import 'package:mangatracker/features/sharing/views/reading_group_detail_page.dart';
@@ -334,6 +337,12 @@ GoRouter buildAppRouter() {
         path: '/notifications-settings',
         name: 'notifications-settings',
         builder: (context, state) => const NotificationsSettingsPage(),
+      ),
+      // Centre de notifications — ouvert par la cloche de l'accueil.
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationsPage(),
       ),
       GoRoute(
         path: '/my-data',
